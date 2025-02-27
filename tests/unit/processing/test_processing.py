@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from backend.layers.common.entities import (
+    DatasetArtifactType,
     DatasetConversionStatus,
     DatasetProcessingStatus,
     DatasetUploadStatus,
@@ -65,11 +66,10 @@ class ProcessingTest(BaseProcessingTest):
             cxg_artifact = [artifact for artifact in artifacts if artifact.type == "cxg"][0]
             self.assertTrue(cxg_artifact, f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/")
 
-    @patch("anndata.read_h5ad")
     @patch("backend.layers.processing.process_add_labels.ProcessAddLabels.populate_dataset_citation")
     @patch("backend.layers.processing.process_add_labels.ProcessAddLabels.extract_metadata")
     @patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg")
-    def test_process_all(self, mock_cxg, mock_extract_h5ad, mock_dataset_citation, mock_read_h5ad):
+    def test_process_anndata(self, mock_cxg, mock_extract_h5ad, mock_dataset_citation):
         mock_cxg.return_value = "local.cxg"
 
         dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
@@ -80,6 +80,8 @@ class ProcessingTest(BaseProcessingTest):
         )
 
         pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+        pm.download_from_source_uri = lambda x, y: y
+
         for step_name in ["validate_anndata", "add_labels", "cxg"]:
             assert pm.process(
                 collection.version_id,
@@ -91,8 +93,16 @@ class ProcessingTest(BaseProcessingTest):
                 "fake_cxg_bucket",
             )
 
-        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"))
-        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"))
+        dataset = self.business_logic.get_dataset_version(dataset_version_id)
+
+        def assert_s3_matches_db(uri, artifact_type):
+            self.assertTrue(self.s3_provider.uri_exists(uri))
+            artifact = [artifact for artifact in dataset.artifacts if artifact.type == artifact_type]
+            self.assertTrue(len(artifact) == 1)
+            self.assertEqual(artifact[0].uri, uri)
+
+        assert_s3_matches_db(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad", DatasetArtifactType.RAW_H5AD)
+        assert_s3_matches_db(f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad", DatasetArtifactType.H5AD)
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.h5ad"))
         self.assertFalse(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.rds"))
         self.assertFalse(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.rds"))

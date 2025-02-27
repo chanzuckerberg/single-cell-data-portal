@@ -46,13 +46,13 @@ class ProcessValidateH5AD(ProcessingLogic):
         self.schema_validator = schema_validator
 
     def upload_raw_h5ad(
-        self, dataset_version_id: DatasetVersionId, dataset_uri: str, artifact_bucket: str, key_prefix: str
+        self, dataset_version_id: DatasetVersionId, anndata_uri: str, artifact_bucket: str, key_prefix: str
     ) -> str:
         """
         Upload raw h5ad from dataset_uri to artifact bucket
 
         :param dataset_version_id:
-        :param dataset_uri:
+        :param anndata_uri:
         :param artifact_bucket:
         :param key_prefix:
         :return: local_filename: Local filepath to raw h5ad
@@ -61,7 +61,7 @@ class ProcessValidateH5AD(ProcessingLogic):
 
         # Download the original dataset from Dropbox
         local_filename = self.download_from_source_uri(
-            source_uri=dataset_uri,
+            source_uri=anndata_uri,
             local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
         )
 
@@ -72,8 +72,8 @@ class ProcessValidateH5AD(ProcessingLogic):
             DatasetArtifactType.RAW_H5AD,
             key_prefix,
             dataset_version_id,
-            artifact_bucket,
             DatasetStatusKey.H5AD,
+            artifact_bucket,
         )
         self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
 
@@ -125,10 +125,10 @@ class ProcessValidateH5AD(ProcessingLogic):
         :param artifact_bucket:
         :return:
         """
-        dataset_uri = str(manifest.anndata)
+        anndata_uri = str(manifest.anndata)
         # validate and upload raw h5ad file to s3
         key_prefix = self.get_key_prefix(dataset_version_id.id)
-        local_filename = self.upload_raw_h5ad(dataset_version_id, dataset_uri, artifact_bucket, key_prefix)
+        local_filename = self.upload_raw_h5ad(dataset_version_id, anndata_uri, artifact_bucket, key_prefix)
 
         # Validate and label the dataset
         self.validate_h5ad_file(dataset_version_id, local_filename)
