@@ -1,2 +1,0 @@
-{"levelname": "INFO", "asctime": "2025-02-27T01:51:15.027Z", "name": "processing", "message": "Updating processing status", "lineno": 47, "pathname": "/single-cell-data-portal/backend/layers/processing/process_logic.py", "validation_message": null, "status_key": "atac_fragment", "status_value": "UPLOADING", "dataset_version_id": "6d1bfee5-bbf3-4d2e-b6dc-bc523c40d74a"}
-{"levelname": "ERROR", "asctime": "2025-02-27T01:51:15.027Z", "name": "processing", "message": "test", "lineno": 72, "pathname": "/single-cell-data-portal/backend/layers/processing/process_validate_atac.py"}
