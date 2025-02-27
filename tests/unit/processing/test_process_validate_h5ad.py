@@ -86,10 +86,13 @@ class TestProcessValidateH5AD(BaseProcessingTest):
         self.assertEqual(status.rds_status, DatasetConversionStatus.SKIPPED)
         self.assertEqual(status.h5ad_status, DatasetConversionStatus.CONVERTING)
 
+        raw_uri = f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"
         # Verify that the original (raw.h5ad) file is there
-        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"))
+        self.assertTrue(self.s3_provider.uri_exists(raw_uri))
+        # Verify that the artifact uri is in the database
         artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
         self.assertEqual(1, len(artifacts))
+        self.assertEqual(artifacts[0].uri, raw_uri)
 
     def test_process_validate_fail(self):
         """
