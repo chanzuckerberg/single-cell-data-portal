@@ -1,0 +1,19 @@
+INFO     backend.layers.business.business:business.py:577 {'message': 'ingesting dataset', 'collection_version_id': 08d74161-3e0b-41e5-8d18-e14c96f992d4, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:577 {'message': 'ingesting dataset', 'collection_version_id': 08d74161-3e0b-41e5-8d18-e14c96f992d4, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_validate_atac.py:66 Uploaded 7cf845cc-c4c7-44f0-a529-273d174e9890.atac_fragment to s3://datasets/8ddf8d0c-9505-4b8e-b7ee-fc138a99f427.tsv.bgz
+INFO     processing:process_validate_atac.py:68 Updated database with atac_fragment.
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_validate_atac.py:66 Uploaded 7cf845cc-c4c7-44f0-a529-273d174e9890.atac_index to s3://datasets/8ddf8d0c-9505-4b8e-b7ee-fc138a99f427.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:68 Updated database with atac_index.
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_validate_atac.py:66 Uploaded 4b22e594-43a9-46b1-a68a-ab09f0d7ee91.atac_fragment to s3://datasets/f60bdc9d-221b-4c70-8e0a-3fb4c460cef7.tsv.bgz
+INFO     processing:process_validate_atac.py:68 Updated database with atac_fragment.
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_validate_atac.py:66 Uploaded 4b22e594-43a9-46b1-a68a-ab09f0d7ee91.atac_index to s3://datasets/f60bdc9d-221b-4c70-8e0a-3fb4c460cef7.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:68 Updated database with atac_index.
+INFO     processing:process_logic.py:47 Updating processing status
+INFO     processing:process_validate_atac.py:223 Processing completed successfully
