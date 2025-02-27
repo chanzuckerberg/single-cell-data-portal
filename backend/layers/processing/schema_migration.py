@@ -109,7 +109,8 @@ class SchemaMigrate(ProcessingLogic):
                 {f"{collection_id}_{dataset_id}": reported_changes},
             )
         key_prefix = self.get_key_prefix(dataset_version_id)
-        uri = self.upload_artifact(migrated_file, key_prefix, self.artifact_bucket)
+        key = "/".join([key_prefix, migrated_file])
+        uri = self.upload_artifact(migrated_file, key, self.artifact_bucket)
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             CollectionVersionId(collection_version_id),
             uri,
