@@ -1,0 +1,2 @@
+INFO     backend.layers.business.business:business.py:577 {'message': 'ingesting dataset', 'collection_version_id': b4fc7327-bdc7-41cf-99ef-8a74b3b8697a, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     processing:dataset_metadata_update.py:236 Dataset 6036e53b-2357-450e-aaab-8eb833d9d688 is not successfully processed. Skipping metadata update.
