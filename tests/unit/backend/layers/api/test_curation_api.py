@@ -2754,7 +2754,7 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
                 expected = {}
                 for artifact in artifacts:
                     if artifact.type == DatasetArtifactType.ATAC_FRAGMENT:
-                        expected["atac_fragment"] = f"http://domain/{artifact.id}.{artifact.extension}"
+                        expected["atac_fragment"] = f"http://domain/{artifact.id}-fragment.{artifact.extension}"
                     elif artifact.type == DatasetArtifactType.H5AD:
                         expected["anndata"] = f"http://domain/{dataset.dataset_version_id}.{artifact.extension}"
 
