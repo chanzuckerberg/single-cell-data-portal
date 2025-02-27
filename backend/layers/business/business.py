@@ -684,7 +684,6 @@ class BusinessLogic(BusinessLogicInterface):
         self.database_provider.update_dataset_processing_status(
             new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
         )
-        self.database_provider.clear_dataset_validation_message(new_dataset_version.version_id)
         self.update_dataset_version_status(
             new_dataset_version.version_id,
             DatasetStatusKey.ATAC_FRAGMENT,
