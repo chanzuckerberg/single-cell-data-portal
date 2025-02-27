@@ -684,6 +684,13 @@ class BusinessLogic(BusinessLogicInterface):
         self.database_provider.update_dataset_processing_status(
             new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
         )
+        self.database_provider.clear_dataset_validation_message(new_dataset_version.version_id)
+        self.update_dataset_version_status(
+            new_dataset_version.version_id,
+            DatasetStatusKey.ATAC_FRAGMENT,
+            DatasetConversionStatus.SKIPPED,
+            # TODO: remove when atac is supported
+        )
 
         # Starts the step function process
         if start_step_function:
@@ -880,7 +887,6 @@ class BusinessLogic(BusinessLogicInterface):
         validation_message: Optional[str] = None,
     ) -> None:
         """
-        TODO: split into two method, one for updating validation_message, and the other statuses.
         Updates the status of a dataset version.
         status_key can be one of: [upload, validation, cxg, rds, h5ad, processing]
         """
@@ -902,6 +908,10 @@ class BusinessLogic(BusinessLogicInterface):
             self.database_provider.update_dataset_conversion_status(
                 dataset_version_id, "h5ad_status", new_dataset_status
             )
+        elif status_key == DatasetStatusKey.ATAC_FRAGMENT and isinstance(new_dataset_status, DatasetConversionStatus):
+            self.database_provider.update_dataset_conversion_status(
+                dataset_version_id, "atac_status", new_dataset_status
+            )
         else:
             raise DatasetUpdateException(
                 f"Invalid status update for dataset {dataset_version_id}: cannot set {status_key} to "
@@ -917,8 +927,6 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Registers an artifact to a dataset version.
         """
-
-        # TODO: we should probably validate that artifact_uri is a valid S3 URI
 
         if artifact_type not in [artifact.value for artifact in DatasetArtifactType]:
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
