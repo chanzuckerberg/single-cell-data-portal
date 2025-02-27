@@ -51,6 +51,7 @@ from backend.layers.common.entities import (
     DatasetId,
     DatasetMetadata,
     DatasetProcessingStatus,
+    DatasetStatusKey,
     DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersionId,
@@ -1837,6 +1838,20 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             self.assertEqual(version_from_db.status.validation_status, DatasetValidationStatus.INVALID)
             self.assertEqual(version_from_db.status.validation_message, "Validation error!")
+
+    def test_update_dataset_status_validate_message_with_appending(self):
+        """New messages are appended to the existing ones"""
+        unpublished_collection = self.initialize_unpublished_collection(complete_dataset_ingestion=False)
+        dataset = unpublished_collection.datasets[0]
+        error_message = "Validation error!"
+
+        for _ in range(2):
+            self.business_logic.update_dataset_version_status(
+                dataset.version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID, error_message
+            )
+        version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
+        validation_message = version_from_db.status.validation_message.split("\n")
+        self.assertEqual([error_message] * 2, validation_message)
 
     def test_add_dataset_artifact_ok(self):
         """
