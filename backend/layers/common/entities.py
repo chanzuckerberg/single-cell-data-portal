@@ -16,6 +16,7 @@ class DatasetStatusKey(str, Enum):
     CXG = "cxg"
     RDS = "rds"
     H5AD = "h5ad"
+    ATAC = "atac"
     PROCESSING = "processing"
 
 
@@ -80,6 +81,18 @@ class DatasetArtifactType(str, Enum):
     H5AD = "h5ad"
     RDS = "rds"
     CXG = "cxg"
+    ATAC_FRAGMENT = "atac_fragment"
+    ATAC_INDEX = "atac_index"
+
+
+ARTIFACT_TO_EXTENSION = {
+    DatasetArtifactType.RAW_H5AD: "h5ad",
+    DatasetArtifactType.H5AD: "h5ad",
+    DatasetArtifactType.RDS: "rds",
+    DatasetArtifactType.CXG: "cxg",
+    DatasetArtifactType.ATAC_FRAGMENT: "tsv.bgz",
+    DatasetArtifactType.ATAC_INDEX: "tsv.bgz.tbi",
+}
 
 
 class Visibility(Enum):
@@ -104,12 +117,13 @@ class DatasetStatus:
     cxg_status: Optional[DatasetConversionStatus]
     rds_status: Optional[DatasetConversionStatus]
     h5ad_status: Optional[DatasetConversionStatus]
-    processing_status: Optional[DatasetProcessingStatus]
+    atac_status: Optional[DatasetConversionStatus] = None
+    processing_status: Optional[DatasetProcessingStatus] = None
     validation_message: Optional[str] = None
 
     @staticmethod
     def empty():
-        return DatasetStatus(None, None, None, None, None, None)
+        return DatasetStatus(*[None] * 7)
 
 
 @dataclass
@@ -151,6 +165,10 @@ class DatasetArtifact:
 
     def get_file_name(self):
         return urlparse(self.uri).path.split("/")[-1]
+
+    @property
+    def extension(self):
+        return ARTIFACT_TO_EXTENSION[self.type]
 
 
 @dataclass

@@ -11,7 +11,6 @@
     "backend-wmg",
     "cellguide_pipeline",
     "processing",
-    "dataset_submissions",
     "upload_failures",
     "upload_success",
     "wmg_processing"
@@ -37,9 +36,6 @@
     },
     "wmg_processing": {
       "profile": "wmg_processing"
-    },
-    "dataset_submissions": {
-      "profile": "dataset_submissions"
     },
     "upload_failures": {
       "profile": "upload_failures"

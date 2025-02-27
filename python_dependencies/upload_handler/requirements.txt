@@ -1,5 +1,6 @@
 boto3
 dataclasses-json
+pydantic<3
 psycopg2-binary==2.*
 pyrsistent
 python-json-logger==2.0.7

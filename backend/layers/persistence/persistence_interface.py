@@ -206,6 +206,11 @@ class DatabaseProviderInterface:
         Returns all the artifacts for a specific dataset version
         """
 
+    def get_dataset_artifacts(self, artifact: List[DatasetArtifactId]) -> List[DatasetArtifact]:
+        """
+        Returns a list of dataset artifacts by id
+        """
+
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         """
         Initializes a canonical dataset, generating a dataset_id and a dataset_version_id.
