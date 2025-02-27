@@ -193,6 +193,11 @@ class DatabaseProviderInterface:
         Returns all dataset versions for a canonical dataset_id
         """
 
+    def get_artifact_by_uri_suffix(self, uri_suffix: str) -> Optional[DatasetArtifact]:
+        """
+        Returns a dataset artifact by its uri_suffix
+        """
+
     def get_all_mapped_datasets_and_collections(
         self,
     ) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:  # TODO: add filters if needed
@@ -223,6 +228,20 @@ class DatabaseProviderInterface:
         """
         Adds a dataset artifact to an existing dataset version.
         """
+
+    def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
+        """
+        Updates a dataset artifact uri
+        """
+        pass
+
+    def add_artifact_to_dataset_version(
+        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
+    ) -> None:
+        """
+        Adds an artifact to a dataset version
+        """
+        pass
 
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         """
