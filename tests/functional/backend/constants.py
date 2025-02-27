@@ -21,6 +21,6 @@ DATASET_URI = (
 )
 
 VISIUM_DATASET_URI = (
-    "https://www.dropbox.com/scl/fi/zv7xqd3qkz8xgneomjep7/visium_small.h5ad?rlkey"
-    "=ucco5gxed6zvf6iowudfbf98l&st=f8t2xzh7&dl=0"
+    "https://www.dropbox.com/scl/fi/3y22olsc70of8rbb1es77/visium_small.h5ad?rlkey"
+    "=cgwd59ouk340zlqh6fcnthizz&st=u2nyo3xp&dl=0"
 )
