@@ -127,7 +127,6 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         return file_dir
 
     def get_key_prefix(self, identifier: str) -> str:
-        import os
 
         remote_dev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "")
         if remote_dev_prefix:
