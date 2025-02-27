@@ -7,6 +7,7 @@ from backend.common.utils.dl_sources.uri import DownloadFailed
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
     ARTIFACT_TO_EXTENSION,
+    DatasetArtifactType,
     DatasetConversionStatus,
     DatasetStatusGeneric,
     DatasetStatusKey,
@@ -84,7 +85,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     def create_artifact(
         self,
         file_name: str,
-        artifact_type: str,
+        artifact_type: DatasetArtifactType,
         key_prefix: str,
         dataset_version_id: DatasetVersionId,
         processing_status_key: DatasetStatusKey,
@@ -101,7 +102,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
             if datasets_bucket:
                 key = ".".join([key_prefix, ARTIFACT_TO_EXTENSION[artifact_type]])
                 s3_uri = self.upload_artifact(file_name, key, datasets_bucket)
-                self.logger.info(f"Uploaded {dataset_version_id}.{artifact_type} to {s3_uri}")
+                self.logger.info(f"Uploaded [{dataset_version_id}/{file_name}] to {s3_uri}")
             self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADED)
         except Exception as e:
             self.logger.error(e)
@@ -111,7 +112,6 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         self,
         converter: Callable,
         local_filename: str,
-        error_message: str,
         dataset_version_id: DatasetVersionId,
         processing_status_key: DatasetStatusKey,
     ) -> str:
