@@ -154,7 +154,7 @@ class DatabaseProviderInterface:
         data_submission_policy_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
-    ) -> List[str]:
+    ) -> List[DatasetVersion]:
         """
         Finalizes a collection version. This is equivalent to calling:
         1. update_collection_version_mapping
@@ -193,6 +193,11 @@ class DatabaseProviderInterface:
         Returns all dataset versions for a canonical dataset_id
         """
 
+    def get_artifact_by_uri_suffix(self, uri_suffix: str) -> Optional[DatasetArtifact]:
+        """
+        Returns a dataset artifact by its uri_suffix
+        """
+
     def get_all_mapped_datasets_and_collections(
         self,
     ) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:  # TODO: add filters if needed
@@ -224,6 +229,20 @@ class DatabaseProviderInterface:
         Adds a dataset artifact to an existing dataset version.
         """
 
+    def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
+        """
+        Updates a dataset artifact uri
+        """
+        pass
+
+    def add_artifact_to_dataset_version(
+        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
+    ) -> None:
+        """
+        Adds an artifact to a dataset version
+        """
+        pass
+
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         """
         Updates the processing status for a dataset version.
@@ -249,6 +268,11 @@ class DatabaseProviderInterface:
     def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
         """
         Updates the validation message for a dataset version
+        """
+
+    def clear_dataset_validation_message(self, version_id: DatasetVersionId) -> None:
+        """
+        Clears the validation message for a dataset version
         """
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:

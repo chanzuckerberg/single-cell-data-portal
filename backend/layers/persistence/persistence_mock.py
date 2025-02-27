@@ -310,7 +310,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         data_submission_policy_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
-    ) -> List[str]:
+    ) -> List[DatasetVersion]:
         published_at = published_at if published_at else datetime.utcnow()
 
         dataset_ids_for_new_collection_version = []
@@ -325,7 +325,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             dataset_ids_for_new_collection_version.append(dataset_version.dataset_id.id)
         previous_collection = self.collections.get(collection_id.id)
 
-        dataset_version_ids_to_delete_from_s3 = []
+        dataset_versions_to_delete_from_s3 = []
         if previous_collection is None:
             self.collections[collection_id.id] = CanonicalCollection(
                 id=collection_id,
@@ -347,7 +347,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                     self.datasets[previous_dataset_id].tombstoned = True
                     for dataset_version in self.datasets_versions.values():
                         if dataset_version.dataset_id == previous_dataset_id:
-                            dataset_version_ids_to_delete_from_s3.append(dataset_version.version_id.id)
+                            dataset_versions_to_delete_from_s3.append(dataset_version)
 
             new_collection = copy.deepcopy(previous_collection)
             new_collection.version_id = version_id
@@ -359,7 +359,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.collections_versions[version_id.id].data_submission_policy_version = data_submission_policy_version
         self.collections_versions[version_id.id].is_auto_version = False
 
-        return dataset_version_ids_to_delete_from_s3
+        return dataset_versions_to_delete_from_s3
 
     # OR
     # def update_collection_version_mapping(self, collection_id: CollectionId, version_id: CollectionVersionId) -> None:
@@ -444,13 +444,18 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
-        Returns all dataset versions for a canonical dataset_id. ***AT PRESENT THIS FUNCTION IS NOT USED***
+        Returns all dataset versions for a canonical dataset_id.
         """
         versions = []
         for dataset_version in self.datasets_versions.values():
             if dataset_version.dataset_id == dataset_id:
                 versions.append(self._update_dataset_version_with_canonical(dataset_version))
         return versions
+
+    def get_artifact_by_uri_suffix(self, uri_suffix: str) -> Optional[DatasetArtifact]:
+        for artifact in self.dataset_artifacts.values():
+            if artifact.uri.endswith(uri_suffix):
+                return artifact
 
     def check_artifact_is_part_of_dataset(self, dataset_id: DatasetId, artifact_id: DatasetArtifactId):
         versions = [v for v in self.datasets_versions.values() if v.dataset_id == dataset_id]
@@ -523,6 +528,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                     found_artifact = True
                     break
 
+    def add_artifact_to_dataset_version(self, version_id: DatasetVersionId, artifact_id: DatasetArtifactId) -> None:
+        self.datasets_versions[version_id.id].artifacts.append(self.dataset_artifacts[artifact_id.id])
+
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         version = self.datasets_versions[version_id.id]
         version.metadata = copy.deepcopy(metadata)
@@ -548,7 +556,16 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
         dataset_version = self.datasets_versions[version_id.id]
-        dataset_version.status.validation_message = validation_message
+        if dataset_version.status.validation_message == "":
+            dataset_version.status.validation_message = (
+                dataset_version.status.validation_message + "\n" + validation_message
+            )
+        else:
+            dataset_version.status.validation_message = validation_message
+
+    def clear_dataset_validation_message(self, version_id: DatasetVersionId) -> None:
+        dataset_version = self.datasets_versions[version_id.id]
+        dataset_version.status.validation_message = None
 
     def add_dataset_to_collection_version(self, version_id: CollectionVersionId, dataset_id: DatasetId) -> None:
         # Not needed for now - create_dataset does this

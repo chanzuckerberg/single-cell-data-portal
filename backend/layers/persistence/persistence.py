@@ -666,7 +666,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         data_submission_policy_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
-    ) -> List[str]:
+    ) -> List[DatasetVersion]:
         """
         Finalizes a collection version. Returns a list of ids for all Dataset Versions for any/all tombstoned Datasets.
         """
@@ -708,18 +708,20 @@ class DatabaseProvider(DatabaseProviderInterface):
                         dataset_ids_to_tombstone.append(previous_d_id)
 
             # get all dataset versions for the datasets that are being tombstoned
-            dataset_version_ids_to_delete_from_s3 = []
+            dataset_versions_to_delete_from_s3 = []
             if dataset_ids_to_tombstone:
                 tombstone_dataset_statement = (
                     update(DatasetTable).where(DatasetTable.id.in_(dataset_ids_to_tombstone)).values(tombstone=True)
                 )
                 session.execute(tombstone_dataset_statement)
-                dataset_all_version_ids = (
-                    session.query(DatasetVersionTable.id)
+                dataset_all_versions = (
+                    session.query(DatasetVersionTable)
                     .filter(DatasetVersionTable.dataset_id.in_(dataset_ids_to_tombstone))
                     .all()
                 )
-                dataset_version_ids_to_delete_from_s3.extend(str(dv_id) for dv_id in dataset_all_version_ids)
+                dataset_versions_to_delete_from_s3.extend(
+                    self._hydrate_dataset_version(dv) for dv in dataset_all_versions
+                )
 
             # update dataset versions for datasets that are not being tombstoned
             dataset_version_ids = session.query(CollectionVersionTable.datasets).filter_by(id=version_id.id).one()[0]
@@ -733,7 +735,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 if dataset.published_at is None:
                     dataset.published_at = published_at
 
-            return dataset_version_ids_to_delete_from_s3
+            return dataset_versions_to_delete_from_s3
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId, get_tombstoned: bool = False) -> DatasetVersion:
         """
@@ -840,6 +842,14 @@ class DatabaseProvider(DatabaseProviderInterface):
             )
         return self.get_dataset_artifacts(artifact_ids[0])
 
+    def get_artifact_by_uri_suffix(self, uri_suffix: str) -> Optional[DatasetArtifact]:
+        """
+        Returns the artifact with the given uri suffix
+        """
+        with self._manage_session() as session:
+            artifact = session.query(DatasetArtifactTable).filter(DatasetArtifactTable.uri.endswith(uri_suffix)).one()
+            return self._row_to_dataset_artifact(artifact) if artifact else artifact
+
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         """
         Initializes a canonical dataset, generating a dataset_id and a dataset_version_id.
@@ -892,6 +902,18 @@ class DatabaseProvider(DatabaseProviderInterface):
             artifact = session.query(DatasetArtifactTable).filter_by(id=artifact_id.id).one()
             artifact.uri = artifact_uri
 
+    def add_artifact_to_dataset_version(
+        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
+    ) -> None:
+        """
+        Adds an artifact to a dataset version
+        """
+        with self._manage_session() as session:
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=dataset_version_id.id).one()
+            artifacts = list(dataset_version.artifacts)
+            artifacts.append(uuid.UUID(artifact_id.id))
+            dataset_version.artifacts = artifacts
+
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         """
@@ -943,7 +965,17 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._get_serializable_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version_status = deepcopy(dataset_version.status)
-            dataset_version_status["validation_message"] = validation_message
+            message = dataset_version_status.get("validation_message")
+            message = validation_message if message is None else "\n".join([message, validation_message])
+            dataset_version_status["validation_message"] = message
+            dataset_version.status = dataset_version_status
+
+    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
+    def clear_dataset_validation_message(self, version_id: DatasetVersionId):
+        with self._get_serializable_session() as session:
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
+            dataset_version_status = deepcopy(dataset_version.status)
+            dataset_version_status["validation_message"] = None
             dataset_version.status = dataset_version_status
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
