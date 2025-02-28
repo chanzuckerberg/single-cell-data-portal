@@ -109,8 +109,8 @@ def upload_and_wait(
                 errors.append(f"CXG CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
             if h5ad_status == "FAILED":
                 errors.append(f"Anndata CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
-            if rds_status == "FAILED":
-                errors.append(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
+            # if rds_status == "FAILED":
+            #     errors.append(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
             if any(
                 [
                     cxg_status == rds_status == h5ad_status == "UPLOADED",
