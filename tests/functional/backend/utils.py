@@ -155,7 +155,8 @@ def _wait_for_dataset_status(session, api_url, dataset_id, headers):
                 keep_trying = False
         if time.time() >= timer + 1200:
             raise TimeoutError(
-                f"Dataset upload or conversion timed out after 20 min. Check logs for dataset: {dataset_id}"
+                f"Dataset upload or conversion timed out after 10 min. Check logs for dataset: {dataset_id}"
+                f"upload_status: {upload_status} cxg_status: {cxg_status}, rds_status: {rds_status}, h5ad_status: {h5ad_status}"
             )
         time.sleep(10)
     return {"dataset_id": dataset_id, "errors": errors}
