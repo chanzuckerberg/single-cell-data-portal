@@ -56,11 +56,10 @@ def assertStatusCode(actual: int, expected_response: requests.Response):
 
 def create_test_collection(headers, request, session, api_url, body):
     res = session.post(f"{api_url}/dp/v1/collections", data=json.dumps(body), headers=headers)
-    res.raise_for_status()
+    assertStatusCode(requests.codes.created, res)
     data = json.loads(res.content)
     collection_id = data["collection_id"]
     request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/collections/{collection_id}", headers=headers))
-    assertStatusCode(requests.codes.created, res)
     return collection_id
 
 
@@ -68,10 +67,10 @@ def create_explorer_url(dataset_id: str, deployment_stage: str) -> str:
     return f"https://cellxgene.{deployment_stage}.single-cell.czi.technology/e/{dataset_id}.cxg/"
 
 
-def upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id=None):
+def upload_url_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id=None):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     body = {"url": dropbox_url}
-    errors = []
+
     if existing_dataset_id is None:
         res = session.post(
             f"{api_url}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers
@@ -81,11 +80,44 @@ def upload_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url
         res = session.put(
             f"{api_url}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers
         )
-
-    res.raise_for_status()
+    assertStatusCode(requests.codes.accepted, res)
     dataset_id = json.loads(res.content)["dataset_id"]
-    assert res.status_code == requests.codes.accepted
 
+    return _wait_for_dataset_status(session, api_url, dataset_id, headers)
+
+
+def upload_manifest_and_wait(
+    session, api_url, curation_api_access_token, curator_cookie, collection_id, manifest, existing_dataset_id=None
+):
+    headers = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
+
+    if not existing_dataset_id:
+        # Create dataset id
+        res = session.post(f"{api_url}/curation/v1/collections/{collection_id}/datasets", headers=headers)
+        assertStatusCode(201, res)
+        dataset_id = json.loads(res.content)["dataset_id"]
+        res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers)
+        assertStatusCode(200, res)
+        version_id = json.loads(res.content)["datasets"][0]["dataset_version_id"]
+    else:
+        dataset_id = existing_dataset_id
+
+    # Upload manifest
+    res = session.put(
+        f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
+        data=json.dumps(manifest),
+        headers=headers,
+    )
+    assertStatusCode(202, res)
+
+    # Wait for dataset status
+    return _wait_for_dataset_status(
+        session, api_url, version_id, {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
+    )
+
+
+def _wait_for_dataset_status(session, api_url, dataset_id, headers):
+    errors = []
     keep_trying = True
     expected_upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
     expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", "NA", None]
