@@ -933,7 +933,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         dataset_version = revision.datasets[0]
         artifact_id = [a.id for a in dataset_version.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0]
         anndata_url = f"https://dataset_assets_domain/{dataset_version.version_id}.h5ad"
-        fragment_url = f"https://dataset_assets_domain/{artifact_id}.tsv.bgz"
+        fragment_url = f"https://dataset_assets_domain/{artifact_id}-fragment.tsv.bgz"
         manifest = {"anndata": anndata_url, "atac_fragment": fragment_url}
 
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
@@ -967,7 +967,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         dataset_version = revision.datasets[0]
         anndata_url = f"https://dataset_assets_domain/{dataset_version.version_id}.h5ad"
         missing_dataset_version_id = DatasetVersionId()
-        fragment_url = f"https://dataset_assets_domain/{revision.datasets[0].version_id}.tsv.bgz"
+        fragment_url = f"https://dataset_assets_domain/{revision.datasets[0].version_id}-fragment.tsv.bgz"
         manifest = {"anndata": anndata_url, "atac_fragment": fragment_url}
         with self.assertRaises(InvalidIngestionManifestException):
             self.business_logic.ingest_dataset(revision.version_id, manifest, None, missing_dataset_version_id)
@@ -978,7 +978,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         dataset_version = revision.datasets[0]
         anndata_url = f"https://dataset_assets_domain/{dataset_version.version_id}.h5ad"
         other_dataset_version = revision.datasets[1]
-        fragment_url = f"https://dataset_assets_domain/{other_dataset_version.version_id}.tsv.bgz"
+        fragment_url = f"https://dataset_assets_domain/{other_dataset_version.version_id}-fragment.tsv.bgz"
         manifest = {"anndata": anndata_url, "atac_fragment": fragment_url}
         with self.assertRaises(InvalidIngestionManifestException):
             self.business_logic.ingest_dataset(revision.version_id, manifest, None, dataset_version.version_id)
@@ -988,7 +988,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         published_dataset = self.initialize_published_collection().datasets[0]
         unpublished_dataset = self.initialize_unpublished_collection().datasets[0]
         anndata_url = f"https://dataset_assets_domain/{unpublished_dataset.version_id}.h5ad"
-        fragment_url = f"https://dataset_assets_domain/{published_dataset.version_id}.tsv.bgz"
+        fragment_url = f"https://dataset_assets_domain/{published_dataset.version_id}-fragment.tsv.bgz"
         manifest = {"anndata": anndata_url, "atac_fragment": fragment_url}
         with self.assertRaises(InvalidIngestionManifestException):
             self.business_logic.ingest_dataset(unpublished_dataset.version_id, manifest, None, None)
