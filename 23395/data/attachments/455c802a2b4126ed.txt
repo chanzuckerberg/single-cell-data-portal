@@ -1,0 +1,3 @@
+INFO     backend.layers.business.business:business.py:582 {'message': 'ingesting dataset', 'collection_version_id': 5ab1393e-f8b6-45e2-911d-0cddba2fe6a2, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:582 {'message': 'ingesting dataset', 'collection_version_id': 5ab1393e-f8b6-45e2-911d-0cddba2fe6a2, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': d7acee44-fabf-46af-a921-1fa626657bf1}
+ERROR    processing:dataset_metadata_update.py:257 Cannot find raw H5AD artifact uri for d7acee44-fabf-46af-a921-1fa626657bf1.
