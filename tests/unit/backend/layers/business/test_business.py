@@ -3205,7 +3205,7 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         dataset = collection.datasets[0]
 
         def add_artifact():
-            self.database_provider.add_dataset_artifact(dataset.version_id, DatasetArtifactType.H5AD, "fake_uri")
+            self.database_provider.create_dataset_artifact(dataset.version_id, DatasetArtifactType.H5AD, "fake_uri")
 
         self.assertEqual(len(dataset.artifacts), 5)
 
