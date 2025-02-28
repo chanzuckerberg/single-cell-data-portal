@@ -1,0 +1,2 @@
+INFO     processing:process_validate_atac.py:114 Fragment is optional and not present. Skipping fragment validation.
+INFO     processing:process_logic.py:49 Updating processing status
