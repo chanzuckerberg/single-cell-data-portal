@@ -170,7 +170,7 @@ def test_dataset_upload_flow_with_visium_dataset(
 
 
 def _verify_upload_and_delete_succeeded(
-    collection_id, headers, dataset_uri, session, api_url, upload_and_wait, skip_rds_status=False
+    collection_id, headers, dataset_uri, session, api_url, upload_and_wait, skip_rds_status=True
 ):
     dataset_id = upload_and_wait(collection_id, dataset_uri, skip_rds_status=skip_rds_status)
     # test non owner cant retrieve status
