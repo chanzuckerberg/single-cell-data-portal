@@ -166,7 +166,7 @@ class ProcessValidateATAC(ProcessingLogic):
 
         # Validate the fragment with anndata file
         try:
-            errors, fragment_file, fragment_index_file = self.schema_validator.validate_atac(
+            errors, fragment_index_file, fragment_file = self.schema_validator.validate_atac(
                 local_fragment_filename, local_anndata_filename, CorporaConstants.NEW_ATAC_FRAGMENT_FILENAME
             )
         except Exception as e:
@@ -184,13 +184,13 @@ class ProcessValidateATAC(ProcessingLogic):
         in_migration = os.environ.get("MIGRATION", "").lower() == "true"
         if in_migration:
             # check if the new fragment is the same as the old fragment
-            fragment_unchaged = self.hash_file(local_fragment_filename) == self.hash_file(fragment_file)
+            fragment_unchanged = self.hash_file(local_fragment_filename) == self.hash_file(fragment_file)
         else:
-            fragment_unchaged = False
+            fragment_unchanged = False
 
         # fragment file to avoid uploading the same file multiple times
         # if the fragment file is unchanged from a migration or the fragment file is already ingested, use the old fragment.
-        if fragment_unchaged or (self.business_logic.is_already_ingested(manifest.atac_fragment) and not in_migration):
+        if fragment_unchanged or (self.business_logic.is_already_ingested(manifest.atac_fragment) and not in_migration):
             # get the artifact id of the old fragment, and add it to the new dataset
             artifact_name = str(manifest.atac_fragment).split("/")[-1]
             artifact = self.business_logic.database_provider.get_artifact_by_uri_suffix(artifact_name)
