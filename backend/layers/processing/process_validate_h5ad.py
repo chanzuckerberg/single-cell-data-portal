@@ -10,7 +10,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.common.ingestion_manifest import IngestionManifest
-from backend.layers.processing.exceptions import ValidationFailed
+from backend.layers.processing.exceptions import ValidationAnndataFailed
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
@@ -98,13 +98,13 @@ class ProcessValidateH5AD(ProcessingLogic):
             self.update_processing_status(
                 dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
             )
-            raise ValidationFailed([str(e)]) from None
+            raise ValidationAnndataFailed([str(e)]) from None
 
         if not is_valid:
             self.update_processing_status(
                 dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
             )
-            raise ValidationFailed(errors)
+            raise ValidationAnndataFailed(errors)
         else:
             # Skip seurat conversion
             self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)

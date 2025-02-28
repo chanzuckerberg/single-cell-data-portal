@@ -310,7 +310,9 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         def _add_artifact(bucket, key, key_type):
             ext = ARTIFACT_TO_EXTENSION[key_type]
             key_name = f"{key}.{ext}/" if key_type == DatasetArtifactType.CXG else f"{key}.{ext}"
-            self.database_provider.add_dataset_artifact(dataset_version_id, key_type.value, f"s3://{bucket}/{key_name}")
+            self.database_provider.create_dataset_artifact(
+                dataset_version_id, key_type.value, f"s3://{bucket}/{key_name}"
+            )
             self.s3_provider.upload_file(None, bucket, key_name, None)
 
         _add_artifact("artifacts", f"{dataset_version_id}/raw", DatasetArtifactType.RAW_H5AD)
@@ -321,7 +323,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
         # special case for atac artifacts
         ext = ARTIFACT_TO_EXTENSION[DatasetArtifactType.ATAC_FRAGMENT]
-        artifact_id = self.database_provider.add_dataset_artifact(
+        artifact_id = self.database_provider.create_dataset_artifact(
             dataset_version_id, DatasetArtifactType.ATAC_FRAGMENT, "dummy"
         )
         key_name = f"{artifact_id}.{ext}"
@@ -3203,7 +3205,7 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         dataset = collection.datasets[0]
 
         def add_artifact():
-            self.database_provider.add_dataset_artifact(dataset.version_id, DatasetArtifactType.H5AD, "fake_uri")
+            self.database_provider.create_dataset_artifact(dataset.version_id, DatasetArtifactType.H5AD, "fake_uri")
 
         self.assertEqual(len(dataset.artifacts), 5)
 

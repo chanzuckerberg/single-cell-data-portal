@@ -921,7 +921,11 @@ class BusinessLogic(BusinessLogicInterface):
             self.database_provider.update_dataset_validation_message(dataset_version_id, validation_message)
 
     def add_dataset_artifact(
-        self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
+        self,
+        dataset_version_id: DatasetVersionId,
+        artifact_type: str,
+        artifact_uri: str,
+        artifact_id: Optional[DatasetArtifactId] = None,
     ) -> DatasetArtifactId:
         """
         Registers an artifact to a dataset version.
@@ -930,7 +934,9 @@ class BusinessLogic(BusinessLogicInterface):
         if artifact_type not in [artifact.value for artifact in DatasetArtifactType]:
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
 
-        return self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
+        return self.database_provider.create_dataset_artifact(
+            dataset_version_id, artifact_type, artifact_uri, artifact_id
+        )
 
     def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
         """
