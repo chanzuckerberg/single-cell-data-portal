@@ -1005,6 +1005,23 @@ class BusinessLogic(BusinessLogicInterface):
             # Collection was never published; delete CollectionTable row
             self.database_provider.delete_unpublished_collection(collection_version.collection_id)
 
+    def get_atac_fragment_uris_from_dataset_version_id(self, dataset_version_id: DatasetVersionId) -> List[str]:
+        """
+        get all atac fragment files associated with a dataset version from the public bucket
+        """
+        object_keys = set()
+        d_v = self.get_dataset_version(dataset_version_id)
+        if not d_v:
+            return []
+
+        object_keys.update(
+            [a.uri.rsplit("/", 1)[-1] for a in d_v.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT]
+        )
+        object_keys.update(
+            [a.uri.rsplit("/", 1)[-1] for a in d_v.artifacts if a.type == DatasetArtifactType.ATAC_INDEX]
+        )
+        return list(object_keys)
+
     def delete_dataset_versions_from_public_bucket(self, dataset_version_ids: List[str]) -> List[str]:
         rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
         object_keys = set()
@@ -1014,6 +1031,7 @@ class BusinessLogic(BusinessLogicInterface):
                 if rdev_prefix:
                     dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
                 object_keys.add(dataset_version_s3_object_key)
+            object_keys.update(self.get_atac_fragment_uris_from_dataset_version_id(DatasetVersionId(d_v_id)))
         try:
             self.s3_provider.delete_files(os.getenv("DATASETS_BUCKET"), list(object_keys))
         except S3DeleteException as e:

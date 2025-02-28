@@ -323,13 +323,17 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         _add_artifact("cellxgene", f"{dataset_version_id}", DatasetArtifactType.CXG)
 
         # special case for atac artifacts
-        ext = ARTIFACT_TO_EXTENSION[DatasetArtifactType.ATAC_FRAGMENT]
-        artifact_id = self.database_provider.create_dataset_artifact(
-            dataset_version_id, DatasetArtifactType.ATAC_FRAGMENT, "dummy"
-        )
-        key_name = f"{artifact_id}.{ext}"
+        artifact_id = DatasetArtifactId()
         bucket = "datasets"
-        self.database_provider.update_dataset_artifact(artifact_id, f"s3://{bucket}/{key_name}")
+
+        key_name = f"{artifact_id}.{ARTIFACT_TO_EXTENSION[DatasetArtifactType.ATAC_FRAGMENT]}"
+        uri = f"s3://{bucket}/{key_name}"
+        self.database_provider.create_dataset_artifact(dataset_version_id, DatasetArtifactType.ATAC_FRAGMENT, uri)
+        self.s3_provider.upload_file(None, bucket, key_name, None)
+
+        key_name = f"{artifact_id}.{ARTIFACT_TO_EXTENSION[DatasetArtifactType.ATAC_INDEX]}"
+        uri = f"s3://{bucket}/{key_name}"
+        self.database_provider.create_dataset_artifact(dataset_version_id, DatasetArtifactType.ATAC_INDEX, uri)
         self.s3_provider.upload_file(None, bucket, key_name, None)
 
         self.database_provider.update_dataset_upload_status(dataset_version_id, DatasetUploadStatus.UPLOADED)
@@ -3036,8 +3040,11 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
                 self.s3_provider.upload_file(None, fake_public_bucket, key, None)  # Populate s3 mock with assets
                 self.assertTrue(self.s3_provider.uri_exists(f"s3://{fake_public_bucket}/{key}"))
                 expected_delete_keys.add(f"{d_v_id}.{file_type}")
+            expected_delete_keys.update(
+                self.business_logic.get_atac_fragment_uris_from_dataset_version_id(DatasetVersionId(d_v_id))
+            )
         self.assertTrue(len(expected_delete_keys) > 0)
-        [self.assertTrue(self.s3_provider.file_exists(fake_public_bucket, key)) for key in expected_delete_keys]
+        self.assertTrue(all(self.s3_provider.file_exists(fake_public_bucket, key) for key in expected_delete_keys))
         actual_delete_keys = set(
             self.business_logic.delete_all_dataset_versions_from_public_bucket_for_collection(
                 published_collection.collection_id

@@ -20,6 +20,7 @@ from backend.layers.processing.upload_failures.app import (
     FAILED_CXG_CLEANUP_MESSAGE,
     FAILED_DATASET_CLEANUP_MESSAGE,
     cleanup_artifacts,
+    delete_atac_fragment_files,
     get_failure_slack_notification_message,
     handle_failure,
     parse_event,
@@ -491,9 +492,18 @@ def dataset_version_id() -> str:
     return "example_dataset"
 
 
+@pytest.fixture
+def mock_delete_atac_fragment_files() -> Mock:
+    with patch(f"{module_path}.delete_atac_fragment_files") as mock_delete_atac_fragment_files:
+        yield mock_delete_atac_fragment_files
+
+
+@pytest.mark.usefixtures("mock_delete_atac_fragment_files")
 class TestCleanupArtifacts:
     @pytest.mark.parametrize("error_step", ["validate", "", None])
-    def test_cleanup_artifacts__OK(self, mock_env_vars, mock_delete_many_from_s3, dataset_version_id, error_step):
+    def test_cleanup_artifacts__OK(
+        self, mock_env_vars, mock_delete_many_from_s3, dataset_version_id, error_step, *args
+    ):
         """Check that all artifacts are deleted for the given cases."""
         cleanup_artifacts(dataset_version_id, error_step)
 
@@ -504,7 +514,7 @@ class TestCleanupArtifacts:
         assert mock_delete_many_from_s3.call_count == 3
 
     def test_cleanup_artifacts__not_download_validate(
-        self, mock_env_vars, mock_delete_many_from_s3, dataset_version_id
+        self, mock_env_vars, mock_delete_many_from_s3, dataset_version_id, *args
     ):
         """Check that file in the artifact bucket are not delete if error_step is not download-validate."""
         cleanup_artifacts(dataset_version_id, "not_download_validate")
@@ -515,7 +525,7 @@ class TestCleanupArtifacts:
         assert mock_delete_many_from_s3.call_count == 2
 
     @patch.dict(os.environ, clear=True)
-    def test_cleanup_artifacts__no_buckets(self, caplog, mock_delete_many_from_s3, dataset_version_id):
+    def test_cleanup_artifacts__no_buckets(self, caplog, mock_delete_many_from_s3, dataset_version_id, *args):
         """Check that no files are deleted if buckets are not specified."""
         cleanup_artifacts(dataset_version_id)
 
@@ -525,8 +535,8 @@ class TestCleanupArtifacts:
         assert FAILED_CXG_CLEANUP_MESSAGE in caplog.text
         assert FAILED_DATASET_CLEANUP_MESSAGE in caplog.text
 
-    def test_cleanup_artifacts__elete_many_from_s3_error(
-        self, caplog, mock_env_vars, mock_delete_many_from_s3, dataset_version_id
+    def test_cleanup_artifacts__delete_many_from_s3_error(
+        self, caplog, mock_env_vars, mock_delete_many_from_s3, dataset_version_id, *args
     ):
         """Check that delete_many_from_s3 errors are logged but do not raise exceptions."""
         mock_delete_many_from_s3.side_effect = Exception("Boom!")
@@ -540,3 +550,16 @@ class TestCleanupArtifacts:
         assert FAILED_ARTIFACT_CLEANUP_MESSAGE in caplog.text
         assert FAILED_CXG_CLEANUP_MESSAGE in caplog.text
         assert FAILED_DATASET_CLEANUP_MESSAGE in caplog.text
+
+
+class TestDeleteAtacFragmentFiles:
+    @patch(f"{module_path}.delete_many_from_s3")
+    def test_delete_atac_fragment_files__OK(self, mock_delete_many_from_s3, mock_env_vars):
+        """Check that atac fragment files are deleted."""
+        dataset_version_id = "example_dataset"
+        delete_atac_fragment_files(dataset_version_id)
+
+        # Assertions
+        mock_delete_many_from_s3.assert_called_once_with(
+            mock_env_vars["DATASET_BUCKET"], os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_version_id)
+        )

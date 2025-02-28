@@ -1,13 +1,14 @@
 import json
 import logging
 import os
-from typing import Optional
+from typing import List, Optional
 
 from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.aws import delete_many_from_s3
 from backend.common.utils.result_notification import aws_batch_job_url_fmt_str, aws_sfn_url_fmt_str, notify_slack
 from backend.layers.common.entities import (
     CollectionVersionId,
+    DatasetConversionStatus,
     DatasetProcessingStatus,
     DatasetStatusKey,
     DatasetVersionId,
@@ -181,15 +182,51 @@ def trigger_slack_notification(
 FAILED_ARTIFACT_CLEANUP_MESSAGE = "Failed to clean up artifacts."
 FAILED_DATASET_CLEANUP_MESSAGE = "Failed to clean up datasets."
 FAILED_CXG_CLEANUP_MESSAGE = "Failed to clean up cxgs."
+FAILED_ATAC_DATASET_MESSAGE = "Failed to clean up ATAC datasets fragment files. artifact_id: {}"
+
+
+def delete_atac_fragment_files(dataset_version_id: str) -> None:
+    """Delete all atac fragment files and index files from S3 assocaited with the dataset version"""
+    dataset = get_business_logic().get_dataset_version(DatasetVersionId(dataset_version_id))
+    if not dataset:
+        # If dataset not in db dont worry about deleting its files
+        return
+
+    if dataset.status.atac_status in [
+        DatasetConversionStatus.COPIED,
+        DatasetConversionStatus.SKIPPED,
+        DatasetConversionStatus.NA,
+    ]:
+        # If the dataset is copied , we don't need to delete the files since they are part of another dataset.
+        # If the dataset is skipped or NA, we don't need to delete the files since they are not created.
+        return
+
+    dataset_bucket = os.environ["DATASET_BUCKET"]
+    object_keys: List[str] = get_business_logic().get_atac_fragment_uris_from_dataset_version_id(dataset.version_id)
+    for ok in object_keys:
+        with logger.LogSuppressed(Exception, message=FAILED_ATAC_DATASET_MESSAGE.format(ok)):
+            object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), ok)
+            delete_many_from_s3(dataset_bucket, object_key)
+
+
+def delete_anndata_files(object_key) -> None:
+    with logger.LogSuppressed(Exception, message=FAILED_ARTIFACT_CLEANUP_MESSAGE):
+        artifact_bucket = os.environ["ARTIFACT_BUCKET"]
+        delete_many_from_s3(artifact_bucket, object_key + "/")
 
 
 def cleanup_artifacts(dataset_version_id: str, error_step_name: Optional[str] = None) -> None:
     """Clean up artifacts"""
+
     object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_version_id).strip("/")
-    if not error_step_name or error_step_name in ["validate", "download"]:
-        with logger.LogSuppressed(Exception, message=FAILED_ARTIFACT_CLEANUP_MESSAGE):
-            artifact_bucket = os.environ["ARTIFACT_BUCKET"]
-            delete_many_from_s3(artifact_bucket, object_key + "/")
+    if not error_step_name:
+        delete_anndata_files(object_key)
+        delete_atac_fragment_files(dataset_version_id)
+    elif error_step_name == "validate_anndata":
+        delete_anndata_files(object_key)
+    elif error_step_name == "validate_atac":
+        delete_atac_fragment_files(dataset_version_id)
+
     with logger.LogSuppressed(Exception, message=FAILED_DATASET_CLEANUP_MESSAGE):
         datasets_bucket = os.environ["DATASETS_BUCKET"]
         delete_many_from_s3(datasets_bucket, object_key + ".")

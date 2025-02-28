@@ -198,7 +198,11 @@ class TestProcessValidateAtac:
         )
 
         # Assert
-        artifacts = self.assert_artifacts_uploaded(setup, new_dataset_version.version_id)
+        status = setup.business_logic.get_dataset_status(new_dataset_version.version_id)
+        assert status.atac_status == DatasetConversionStatus.COPIED
+
+        artifacts = setup.business_logic.get_dataset_version(new_dataset_version.version_id).artifacts
+        assert len(artifacts) == 2
 
         atac_frag_index_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_INDEX][0]
         assert setup.s3_provider.file_exists("datasets", atac_frag_index_artifact.uri.split("/")[-1])
