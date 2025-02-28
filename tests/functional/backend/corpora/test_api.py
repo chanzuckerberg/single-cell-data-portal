@@ -5,7 +5,7 @@ import requests
 from requests import HTTPError
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
-from tests.functional.backend.constants import DATASET_URI, VISIUM_DATASET_URI
+from tests.functional.backend.constants import ATAC_SEQ_MANIFEST, DATASET_URI, VISIUM_DATASET_URI
 from tests.functional.backend.skip_reason import skip_creation_on_prod
 from tests.functional.backend.utils import assertStatusCode, create_test_collection
 
@@ -167,8 +167,29 @@ def test_dataset_upload_flow_with_visium_dataset(
     _verify_upload_and_delete_succeeded(collection_id, headers, VISIUM_DATASET_URI, session, api_url, upload_dataset)
 
 
-def _verify_upload_and_delete_succeeded(collection_id, headers, dataset_uri, session, api_url, upload_and_wait):
-    dataset_id = upload_and_wait(collection_id, dataset_uri)
+@skip_creation_on_prod
+def test_dataset_upload_flow_with_atac_seq_dataset(
+    session, curator_cookie, api_url, upload_manifest, request, collection_data, curation_api_access_token
+):
+    collection_id = create_test_collection(
+        {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"},
+        request,
+        session,
+        api_url,
+        collection_data,
+    )
+    _verify_upload_and_delete_succeeded(
+        collection_id,
+        {"Authorization": f"Bearer {curation_api_access_token}"},
+        ATAC_SEQ_MANIFEST,
+        session,
+        api_url,
+        upload_manifest,
+    )
+
+
+def _verify_upload_and_delete_succeeded(collection_id, headers, req_body, session, api_url, upload_and_wait):
+    dataset_id = upload_and_wait(collection_id, req_body)
     # test non owner cant retrieve status
     no_auth_headers = {"Content-Type": "application/json"}
     res = session.get(f"{api_url}/dp/v1/datasets/{dataset_id}/status", headers=no_auth_headers)

@@ -690,12 +690,6 @@ class BusinessLogic(BusinessLogicInterface):
         self.database_provider.update_dataset_processing_status(
             new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
         )
-        self.update_dataset_version_status(
-            new_dataset_version.version_id,
-            DatasetStatusKey.ATAC,
-            DatasetConversionStatus.SKIPPED,
-            # TODO: remove when atac is supported
-        )
 
         # Starts the step function process
         if start_step_function:
