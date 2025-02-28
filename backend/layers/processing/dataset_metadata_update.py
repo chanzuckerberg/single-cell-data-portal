@@ -136,47 +136,47 @@ class DatasetMetadataUpdaterWorker(ProcessDownload):
         finally:
             os.remove(h5ad_filename)
 
-    def update_rds(
-        self,
-        rds_uri: str,
-        new_key_prefix: str,
-        new_dataset_version_id: DatasetVersionId,
-        metadata_update: DatasetArtifactMetadataUpdate,
-    ):
-        seurat_filename = self.download_from_source_uri(
-            source_uri=rds_uri,
-            local_path=CorporaConstants.LABELED_RDS_ARTIFACT_FILENAME,
-        )
+    # def update_rds(
+    #     self,
+    #     rds_uri: str,
+    #     new_key_prefix: str,
+    #     new_dataset_version_id: DatasetVersionId,
+    #     metadata_update: DatasetArtifactMetadataUpdate,
+    # ):
+    #     seurat_filename = self.download_from_source_uri(
+    #         source_uri=rds_uri,
+    #         local_path=CorporaConstants.LABELED_RDS_ARTIFACT_FILENAME,
+    #     )
 
-        try:
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTING
-            )
+    #     try:
+    #         self.update_processing_status(
+    #             new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTING
+    #         )
 
-            rds_object = base.readRDS(seurat_filename)
+    #         rds_object = base.readRDS(seurat_filename)
 
-            for key, val in metadata_update.as_dict_without_none_values().items():
-                seurat_metadata = seurat.Misc(object=rds_object)
-                if seurat_metadata.rx2[key]:
-                    val = val if isinstance(val, list) else [val]
-                    seurat_metadata[seurat_metadata.names.index(key)] = StrVector(val)
+    #         for key, val in metadata_update.as_dict_without_none_values().items():
+    #             seurat_metadata = seurat.Misc(object=rds_object)
+    #             if seurat_metadata.rx2[key]:
+    #                 val = val if isinstance(val, list) else [val]
+    #                 seurat_metadata[seurat_metadata.names.index(key)] = StrVector(val)
 
-            base.saveRDS(rds_object, file=seurat_filename)
+    #         base.saveRDS(rds_object, file=seurat_filename)
 
-            self.create_artifact(
-                seurat_filename,
-                DatasetArtifactType.RDS,
-                new_key_prefix,
-                new_dataset_version_id,
-                self.artifact_bucket,
-                DatasetStatusKey.RDS,
-                datasets_bucket=self.datasets_bucket,
-            )
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTED
-            )
-        finally:
-            os.remove(seurat_filename)
+    #         self.create_artifact(
+    #             seurat_filename,
+    #             DatasetArtifactType.RDS,
+    #             new_key_prefix,
+    #             new_dataset_version_id,
+    #             self.artifact_bucket,
+    #             DatasetStatusKey.RDS,
+    #             datasets_bucket=self.datasets_bucket,
+    #         )
+    #         self.update_processing_status(
+    #             new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.CONVERTED
+    #         )
+    #     finally:
+    #         os.remove(seurat_filename)
 
     def update_cxg(
         self,
@@ -257,18 +257,18 @@ class DatasetMetadataUpdater(ProcessDownload):
             metadata_update,
         )
 
-    @staticmethod
-    def update_rds(
-        artifact_bucket: str,
-        datasets_bucket: str,
-        rds_uri: str,
-        new_key_prefix: str,
-        new_dataset_version_id: DatasetVersionId,
-        metadata_update: DatasetArtifactMetadataUpdate,
-    ):
-        DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket).update_rds(
-            rds_uri, new_key_prefix, new_dataset_version_id, metadata_update
-        )
+    # @staticmethod
+    # def update_rds(
+    #     artifact_bucket: str,
+    #     datasets_bucket: str,
+    #     rds_uri: str,
+    #     new_key_prefix: str,
+    #     new_dataset_version_id: DatasetVersionId,
+    #     metadata_update: DatasetArtifactMetadataUpdate,
+    # ):
+    #     DatasetMetadataUpdaterWorker(artifact_bucket, datasets_bucket).update_rds(
+    #         rds_uri, new_key_prefix, new_dataset_version_id, metadata_update
+    #     )
 
     @staticmethod
     def update_cxg(
@@ -352,29 +352,31 @@ class DatasetMetadataUpdater(ProcessDownload):
         else:
             self.logger.error(f"Cannot find labeled H5AD artifact uri for {current_dataset_version_id}.")
             self.update_processing_status(new_dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.FAILED)
-
-        if DatasetArtifactType.RDS in artifact_uris:
-            self.logger.info("Main: Starting thread for rds update")
-            rds_job = Process(
-                target=DatasetMetadataUpdater.update_rds,
-                args=(
-                    self.artifact_bucket,
-                    self.datasets_bucket,
-                    artifact_uris[DatasetArtifactType.RDS],
-                    new_artifact_key_prefix,
-                    new_dataset_version_id,
-                    metadata_update,
-                ),
-            )
-            artifact_jobs.append(rds_job)
-            rds_job.start()
-        elif current_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED:
-            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
-        else:
-            self.logger.error(
-                f"Cannot find RDS artifact uri for {current_dataset_version_id}, and Conversion Status is not SKIPPED."
-            )
-            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.FAILED)
+        
+        # Mark all RDS conversions as skipped
+        self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
+        # if DatasetArtifactType.RDS in artifact_uris:
+        #     self.logger.info("Main: Starting thread for rds update")
+        #     rds_job = Process(
+        #         target=DatasetMetadataUpdater.update_rds,
+        #         args=(
+        #             self.artifact_bucket,
+        #             self.datasets_bucket,
+        #             artifact_uris[DatasetArtifactType.RDS],
+        #             new_artifact_key_prefix,
+        #             new_dataset_version_id,
+        #             metadata_update,
+        #         ),
+        #     )
+        #     artifact_jobs.append(rds_job)
+        #     rds_job.start()
+        # elif current_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED:
+        #     self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
+        # else:
+        #     self.logger.error(
+        #         f"Cannot find RDS artifact uri for {current_dataset_version_id}, and Conversion Status is not SKIPPED."
+        #     )
+        #     self.update_processing_status(new_dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.FAILED)
 
         if DatasetArtifactType.CXG in artifact_uris:
             self.logger.info("Main: Starting thread for cxg update")
