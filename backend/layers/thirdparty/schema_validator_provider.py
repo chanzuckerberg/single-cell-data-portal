@@ -32,6 +32,11 @@ class SchemaValidatorProviderInterface(Protocol):
     def validate_atac(self, fragment_file, anndata_file, output_file) -> Tuple[Optional[List[str]], str, str]:
         """
         Validates an ATAC fragment file against an anndata file.
+
+        Returns a tuple that contains, in order:
+        1. A List[str] with the validation errors. This is only defined if the first boolean is false
+        2. The path to the index file
+        3. The path to the fragment file
         """
         pass
 
@@ -81,6 +86,11 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
     def validate_atac(self, fragment_file, anndata_file, output_file) -> Tuple[Optional[List[str]], str, str]:
         """
         Validates an ATAC fragment file against an anndata file.
+
+        Returns a tuple that contains, in order:
+        1. A List[str] with the validation errors. This is only defined if the first boolean is false
+        2. The path to the index file
+        3. The path to the fragment file
         """
         import cellxgene_schema.atac_seq as atac_seq
 

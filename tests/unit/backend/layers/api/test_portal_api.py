@@ -101,7 +101,7 @@ class TestCollection(BaseAPIPortalTest):
                     "name": "test_dataset_name",
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
                     "processing_status": {
-                        "atac_status": "SKIPPED",
+                        "atac_status": "NA",
                         "created_at": 0,
                         "cxg_status": "NA",
                         "dataset_id": mock.ANY,
@@ -157,7 +157,7 @@ class TestCollection(BaseAPIPortalTest):
                     "name": "test_dataset_name",
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
                     "processing_status": {
-                        "atac_status": "SKIPPED",
+                        "atac_status": "NA",
                         "created_at": 0,
                         "cxg_status": "NA",
                         "dataset_id": mock.ANY,
@@ -1806,7 +1806,7 @@ class TestDataset(BaseAPIPortalTest):
         self.assertEqual(200, response.status_code)
         actual_body = json.loads(response.data)
         expected_body = {
-            "atac_status": "SKIPPED",
+            "atac_status": "NA",
             "cxg_status": "NA",
             "rds_status": "NA",
             "h5ad_status": "NA",

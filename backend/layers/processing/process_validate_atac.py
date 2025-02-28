@@ -50,7 +50,7 @@ class ProcessValidateATAC(ProcessingLogic):
         :param artifact_type: the type of artifact to upload
         :param dataset_version_id: the dataset version id
         :param datasets_bucket: the bucket to upload the dataset to
-        :param fragment_artifact_id: the artifact id of the fragment file to be use in the fragment index file.
+        :param fragment_artifact_id: the artifact id of the fragment file, to be used in the fragment index filepath for storage
         :return:
         """
         self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.UPLOADING)
@@ -60,7 +60,7 @@ class ProcessValidateATAC(ProcessingLogic):
                 key_prefix = self.get_key_prefix(fragment_artifact_id.id)
             else:
                 key_prefix = self.get_key_prefix(artifact_id.id)
-            key = f"{key_prefix}-fragment.{ARTIFACT_TO_EXTENSION[artifact_type]}"
+            key = key_prefix + "." + ARTIFACT_TO_EXTENSION[artifact_type]
             datasets_s3_uri = self.upload_artifact(file_name, key, datasets_bucket)
             self.logger.info(f"Uploaded [{dataset_version_id}/{artifact_type}] to {datasets_s3_uri}")
             self.business_logic.add_dataset_artifact(dataset_version_id, artifact_type, datasets_s3_uri, artifact_id)
@@ -95,7 +95,7 @@ class ProcessValidateATAC(ProcessingLogic):
                     DatasetValidationStatus.INVALID,
                 )
                 raise ValidationAtacFailed(errors=[str(e), "Fragment file not allowed for non atac anndata."]) from None
-            self.logger.warning("Skipping fragment validation")
+            self.logger.warning("Fragment validation not applicable for dataset assay type.")
             self.update_processing_status(
                 dataset_version_id,
                 DatasetStatusKey.ATAC,
@@ -166,7 +166,7 @@ class ProcessValidateATAC(ProcessingLogic):
 
         # Validate the fragment with anndata file
         try:
-            errors, fragment_file, fragment_index_file = self.schema_validator.validate_atac(
+            errors, fragment_index_file, fragment_file = self.schema_validator.validate_atac(
                 local_fragment_filename, local_anndata_filename, CorporaConstants.NEW_ATAC_FRAGMENT_FILENAME
             )
         except Exception as e:
@@ -184,13 +184,13 @@ class ProcessValidateATAC(ProcessingLogic):
         in_migration = os.environ.get("MIGRATION", "").lower() == "true"
         if in_migration:
             # check if the new fragment is the same as the old fragment
-            fragment_unchaged = self.hash_file(local_fragment_filename) == self.hash_file(fragment_file)
+            fragment_unchanged = self.hash_file(local_fragment_filename) == self.hash_file(fragment_file)
         else:
-            fragment_unchaged = False
+            fragment_unchanged = False
 
         # fragment file to avoid uploading the same file multiple times
-        # if the frament file is unchanged from a migration or the fragment file is already ingested, use the old fragment.
-        if fragment_unchaged or (self.business_logic.is_already_ingested(manifest.atac_fragment) and not in_migration):
+        # if the fragment file is unchanged from a migration or the fragment file is already ingested, use the old fragment.
+        if fragment_unchanged or (self.business_logic.is_already_ingested(manifest.atac_fragment) and not in_migration):
             # get the artifact id of the old fragment, and add it to the new dataset
             artifact_name = str(manifest.atac_fragment).split("/")[-1]
             artifact = self.business_logic.database_provider.get_artifact_by_uri_suffix(artifact_name)
