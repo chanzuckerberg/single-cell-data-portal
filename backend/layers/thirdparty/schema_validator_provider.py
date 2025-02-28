@@ -29,7 +29,7 @@ class SchemaValidatorProviderInterface(Protocol):
         """
         pass
 
-    def validate_atac(self, fragment_file, anndata_file) -> Optional[List[str]]:
+    def validate_atac(self, fragment_file, anndata_file, output_file) -> Tuple[Optional[List[str]], str, str]:
         """
         Validates an ATAC fragment file against an anndata file.
         """
@@ -78,13 +78,18 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
     def count_matrix_nonzero(self, matrix):
         return validate.Validator.count_matrix_nonzero(matrix)
 
-    def validate_atac(self, fragment_file, anndata_file) -> Optional[List[str]]:
+    def validate_atac(self, fragment_file, anndata_file, output_file) -> Tuple[Optional[List[str]], str, str]:
         """
         Validates an ATAC fragment file against an anndata file.
         """
         import cellxgene_schema.atac_seq as atac_seq
 
-        return atac_seq.process_fragment(fragment_file, anndata_file)
+        index_file = output_file + ".tbi"
+        return (
+            atac_seq.process_fragment(fragment_file, anndata_file, True, output_file=output_file),
+            index_file,
+            output_file,
+        )
 
     def check_anndata_requires_fragment(self, anndata_file) -> bool:
         import cellxgene_schema.atac_seq as atac_seq

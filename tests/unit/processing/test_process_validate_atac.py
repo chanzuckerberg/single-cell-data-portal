@@ -30,8 +30,13 @@ def setup():
     base_test.setUpClass()
     base_test.setUp()
     base_test.schema_validator.check_anndata_requires_fragment = Mock(return_value=False)
-    base_test.schema_validator.validate_atac = Mock(return_value=None)
+    base_test.schema_validator.validate_atac = Mock(return_value=([], "fragment.tsv.bgz", "fragment.tsv.bgz.tbi"))
     return base_test
+
+
+@pytest.fixture
+def migration_set(monkeypatch):
+    monkeypatch.setenv("MIGRATION", "true")
 
 
 @pytest.fixture
@@ -67,14 +72,12 @@ def collection_revision_with_fragment(
         "anything",
         DatasetArtifactType.ATAC_FRAGMENT,
         fragment_dataset.version_id,
-        DatasetStatusKey.ATAC_FRAGMENT,
         "datasets",
     )
     process_validate_atac.create_atac_artifact(
         "anything",
         DatasetArtifactType.ATAC_INDEX,
         fragment_dataset.version_id,
-        DatasetStatusKey.ATAC_FRAGMENT,
         "datasets",
         artifact_id,
     )
@@ -206,7 +209,7 @@ class TestProcessValidateAtac:
         assert str(atac_fragment_artifact.id) == str(old_fragment_artifact_id)
 
     def test_old_fragment_replaced_because_hash_difference(
-        self, anndata_uri, collection_revision_with_fragment, process_validate_atac, setup
+        self, anndata_uri, collection_revision_with_fragment, process_validate_atac, setup, migration_set
     ):
         """A published fragment is used in the manifest. This will pass validation, but the hash of the new file is
         different, so a new artifact will be added to the dataset version."""
@@ -325,9 +328,7 @@ class TestSkipATACValidation:
 
         # Assert
         dataset_status = setup.business_logic.get_dataset_status(dataset_version_id)
-        assert (
-            setup.business_logic.get_dataset_status(dataset_version_id).atac_status == DatasetConversionStatus.SKIPPED
-        )
+        assert setup.business_logic.get_dataset_status(dataset_version_id).atac_status == DatasetConversionStatus.NA
         assert dataset_status.validation_message == "test"
 
     def test_not_atac_and_fragment(self, process_validate_atac, unpublished_dataset, setup, manifest_with_fragment):
@@ -411,7 +412,6 @@ class TestCreateAtacArtifact:
             "anything",
             DatasetArtifactType.ATAC_FRAGMENT,
             dataset_version_id,
-            DatasetStatusKey.ATAC_FRAGMENT,
             "datasets",
         )
 
@@ -434,7 +434,6 @@ class TestCreateAtacArtifact:
             "anything",
             DatasetArtifactType.ATAC_INDEX,
             dataset_version_id,
-            DatasetStatusKey.ATAC_FRAGMENT,
             "datasets",
             fragment_artifact_id=fragment_artifact_id,
         )
@@ -461,8 +460,7 @@ class TestCreateAtacArtifact:
                 "anything",
                 DatasetArtifactType.ATAC_FRAGMENT,
                 dataset_version_id,
-                DatasetStatusKey.ATAC_FRAGMENT,
                 "datasets",
             )
 
-        assert e.value.failed_status == DatasetStatusKey.ATAC_FRAGMENT
+        assert e.value.failed_status == DatasetStatusKey.ATAC
