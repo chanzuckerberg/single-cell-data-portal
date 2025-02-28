@@ -69,7 +69,7 @@ def create_explorer_url(dataset_id: str, deployment_stage: str) -> str:
 
 
 def upload_and_wait(
-    session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id=None, skip_rds_status=False
+    session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id=None, skip_rds_status=True
 ):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     body = {"url": dropbox_url}
