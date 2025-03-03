@@ -999,33 +999,29 @@ class BusinessLogic(BusinessLogicInterface):
             # Collection was never published; delete CollectionTable row
             self.database_provider.delete_unpublished_collection(collection_version.collection_id)
 
-    def get_atac_fragment_uris_from_dataset_version_id(self, dataset_version_id: DatasetVersionId) -> List[str]:
+    def get_atac_fragment_uris_from_dataset_version(self, dataset_version: DatasetVersion) -> List[str]:
         """
         get all atac fragment files associated with a dataset version from the public bucket
         """
         object_keys = set()
-        d_v = self.get_dataset_version(dataset_version_id)
-        if not d_v:
-            return []
-
         object_keys.update(
-            [a.uri.rsplit("/", 1)[-1] for a in d_v.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT]
+            [a.uri.rsplit("/", 1)[-1] for a in dataset_version.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT]
         )
         object_keys.update(
-            [a.uri.rsplit("/", 1)[-1] for a in d_v.artifacts if a.type == DatasetArtifactType.ATAC_INDEX]
+            [a.uri.rsplit("/", 1)[-1] for a in dataset_version.artifacts if a.type == DatasetArtifactType.ATAC_INDEX]
         )
         return list(object_keys)
 
-    def delete_dataset_versions_from_public_bucket(self, dataset_version_ids: List[str]) -> List[str]:
+    def delete_dataset_versions_from_public_bucket(self, dataset_versions: List[DatasetVersion]) -> List[str]:
         rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
         object_keys = set()
-        for d_v_id in dataset_version_ids:
+        for d_v in dataset_versions:
             for file_type in ("h5ad", "rds"):
-                dataset_version_s3_object_key = f"{d_v_id}.{file_type}"
+                dataset_version_s3_object_key = f"{d_v.version_id}.{file_type}"
                 if rdev_prefix:
                     dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
                 object_keys.add(dataset_version_s3_object_key)
-            object_keys.update(self.get_atac_fragment_uris_from_dataset_version_id(DatasetVersionId(d_v_id)))
+            object_keys.update(self.get_atac_fragment_uris_from_dataset_version(d_v))
         try:
             self.s3_provider.delete_files(os.getenv("DATASETS_BUCKET"), list(object_keys))
         except S3DeleteException as e:
@@ -1037,7 +1033,7 @@ class BusinessLogic(BusinessLogicInterface):
         Delete all associated publicly-accessible Datasets in s3
         """
         dataset_versions = self.database_provider.get_all_dataset_versions_for_collection(collection_id)
-        return self.delete_dataset_versions_from_public_bucket([dv.version_id.id for dv in dataset_versions])
+        return self.delete_dataset_versions_from_public_bucket(dataset_versions)
 
     def get_unpublished_dataset_versions(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
@@ -1068,7 +1064,7 @@ class BusinessLogic(BusinessLogicInterface):
         self.database_provider.delete_dataset_versions(dataset_versions)
 
     def delete_dataset_version_assets(self, dataset_versions: List[DatasetVersion]) -> None:
-        self.delete_dataset_versions_from_public_bucket([dv.version_id.id for dv in dataset_versions])
+        self.delete_dataset_versions_from_public_bucket(dataset_versions)
         self.delete_artifacts(reduce(lambda artifacts, dv: artifacts + dv.artifacts, dataset_versions, []))
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:

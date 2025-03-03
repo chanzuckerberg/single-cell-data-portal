@@ -614,7 +614,7 @@ class TestDeleteAtacFragmentFiles:
         delete_atac_fragment_files(dataset_version_id)
 
         # Assert
-        mock_business_logic.get_atac_fragment_uris_from_dataset_version_id.assert_not_called()
+        mock_business_logic.get_atac_fragment_uris_from_dataset_version.assert_not_called()
 
     def test_delete_atac_fragment_files__OK(
         self, mock_delete_many_from_s3, mock_env_vars, mock_business_logic, mock_dataset_version, dataset_version_id
@@ -623,7 +623,7 @@ class TestDeleteAtacFragmentFiles:
         # Arrange
         mock_business_logic.get_dataset_version.return_value = mock_dataset_version
         test_uris = ["uri1", "uri2"]
-        mock_business_logic.get_atac_fragment_uris_from_dataset_version_id.return_value = ["uri1", "uri2"]
+        mock_business_logic.get_atac_fragment_uris_from_dataset_version.return_value = ["uri1", "uri2"]
 
         # Act
         delete_atac_fragment_files(dataset_version_id)
@@ -645,7 +645,7 @@ class TestDeleteAtacFragmentFiles:
     ):
         # Arrange
         mock_delete_many_from_s3.side_effect = Exception("Boom!")
-        mock_business_logic.get_atac_fragment_uris_from_dataset_version_id.return_value = ["uri1"]
+        mock_business_logic.get_atac_fragment_uris_from_dataset_version.return_value = ["uri1"]
         # Act
         delete_atac_fragment_files(dataset_version_id)
         # Assert

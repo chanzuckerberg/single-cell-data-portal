@@ -203,7 +203,7 @@ def delete_atac_fragment_files(dataset_version_id: str) -> None:
         # If the dataset is skipped or NA, we don't need to delete the files since they are not created.
         return
 
-    object_keys: List[str] = get_business_logic().get_atac_fragment_uris_from_dataset_version_id(dataset.version_id)
+    object_keys: List[str] = get_business_logic().get_atac_fragment_uris_from_dataset_version(dataset)
     for ok in object_keys:
         object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), ok)
         delete_and_catch_error("DATASETS_BUCKET", object_key, FAILED_ATAC_DATASET_MESSAGE.format(ok))
