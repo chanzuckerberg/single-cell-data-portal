@@ -713,12 +713,13 @@ class DatabaseProvider(DatabaseProviderInterface):
                     update(DatasetTable).where(DatasetTable.id.in_(dataset_ids_to_tombstone)).values(tombstone=True)
                 )
                 session.execute(tombstone_dataset_statement)
-                dataset_all_version_ids = (
-                    session.query(DatasetVersionTable.id)
+                dataset_all_versions = [
+                    self._hydrate_dataset_version(dv)
+                    for dv in session.query(DatasetVersionTable)
                     .filter(DatasetVersionTable.dataset_id.in_(dataset_ids_to_tombstone))
                     .all()
-                )
-                dataset_versions_to_delete_from_s3.extend(dataset_all_version_ids)
+                ]
+                dataset_versions_to_delete_from_s3.extend(dataset_all_versions)
 
             # update dataset versions for datasets that are not being tombstoned
             dataset_version_ids = session.query(CollectionVersionTable.datasets).filter_by(id=version_id.id).one()[0]

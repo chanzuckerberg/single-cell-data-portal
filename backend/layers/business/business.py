@@ -1168,14 +1168,14 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Finalize Collection publication and delete any tombstoned assets
         is_auto_version = version.is_auto_version
-        dataset_version_ids_to_delete_from_s3 = self.database_provider.finalize_collection_version(
+        dataset_versions_to_delete_from_s3 = self.database_provider.finalize_collection_version(
             version.collection_id,
             version_id,
             schema_version,
             data_submission_policy_version,
             update_revised_at=has_dataset_revisions,
         )
-        self.delete_dataset_versions_from_public_bucket(dataset_version_ids_to_delete_from_s3)
+        self.delete_dataset_versions_from_public_bucket(dataset_versions_to_delete_from_s3)
 
         # Handle cleanup of unpublished versions
         versions_to_keep = {dv.version_id.id for dv in version.datasets}
