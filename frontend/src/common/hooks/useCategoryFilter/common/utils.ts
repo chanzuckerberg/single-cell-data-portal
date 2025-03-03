@@ -1,4 +1,5 @@
 import { Filters } from "react-table";
+import { TOOLTIP_SPECIFIC_ONTOLOGIES } from "src/components/common/Filter/common/constants";
 import { removeOntologyTermIdPrefix } from "src/common/hooks/useCategoryFilter/common/multiPanelOntologyUtils";
 import { COLLATOR_CASE_INSENSITIVE } from "src/components/common/Filter/common/constants";
 import {
@@ -75,6 +76,73 @@ export function buildCategoryValueLabel(
 
   // Return all other category values as is.
   return categoryValueId;
+}
+
+/**
+ * Returns the values need for displaying an explanatory tooltip for cell type or tissue in the
+ * multi-panel ontology filter.
+ * @param config - Config model of category to build category value views for.
+ * @param categoryValueId - Category value to display (e.g. "E:WBbt:0004025").
+ * @returns Object with trigger and content properties for the tooltip.
+ */
+export function buildCategoryValueTooltip(
+  config: CategoryFilterConfig,
+  categoryValueId: CategoryValueId
+) {
+  if (
+    config.categoryFilterId !== CATEGORY_FILTER_ID.TISSUE_CALCULATED &&
+    config.categoryFilterId !== CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED
+  ) {
+    return;
+  }
+  const speciesIdsWithTooltips = getTypedKeys(TOOLTIP_SPECIFIC_ONTOLOGIES);
+
+  const match = speciesIdsWithTooltips.find(
+    (speciesId) =>
+      typeof categoryValueId === "string" &&
+      categoryValueId.startsWith(speciesId, 2)
+  );
+
+  if (match) {
+    return {
+      trigger: TOOLTIP_SPECIFIC_ONTOLOGIES[match].ontologyId,
+      content: buildTooltipContent(
+        config.categoryFilterId,
+        TOOLTIP_SPECIFIC_ONTOLOGIES[match].species
+      ),
+    };
+  }
+}
+
+/**
+ * Build the content for the tooltip for the given category value.
+ * @param categoryFilterId - ID of category to build category value views for.
+ * @param species - Species to display in the tooltip.
+ * @returns String to display as a label for the given category and category value.
+ */
+const buildTooltipContent = (
+  categoryFilterId:
+    | CATEGORY_FILTER_ID.TISSUE_CALCULATED
+    | CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
+  species: string
+) => {
+  const filterLabel = {
+    [CATEGORY_FILTER_ID.TISSUE_CALCULATED]: "tissue",
+    [CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED]: "cell type",
+  };
+
+  return `This ${filterLabel[categoryFilterId]} is specific to ${species}`;
+};
+
+/**
+ * Get the keys of the given object, typed to the object's keys.
+ * @param obj - Object to get keys of.
+ * @returns Array of keys of the given object.
+ */
+function getTypedKeys<T extends Record<string, unknown>>(
+  obj: T
+): Array<keyof T> {
+  return Object.keys(obj) as Array<keyof T>;
 }
 
 /**

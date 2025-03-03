@@ -19,6 +19,9 @@ import {
   useFilterSearch,
 } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 import { FilterContent as Content } from "./style";
+import { FilterFooter } from "../FilterFooter";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { FEATURES } from "src/common/featureFlags/features";
 
 interface Props {
   categoryView: CategoryView;
@@ -33,6 +36,7 @@ export default function FilterContent({
   const clientHeightRef = useRef<number>(0);
   const filterRef = useRef<HTMLDivElement>(null);
   const minHeight = clientHeightRef.current;
+  const showMultiSpeciesFeatures = useFeatureFlag(FEATURES.MULTI_SPECIES);
 
   useEffect(() => {
     if (filterRef.current) {
@@ -41,9 +45,14 @@ export default function FilterContent({
   }, []);
 
   return (
-    <Content minHeight={minHeight} ref={filterRef}>
-      {buildBasicFilterContent(categoryView, onFilter, filterSearchState)}
-    </Content>
+    <div>
+      <Content minHeight={minHeight} ref={filterRef}>
+        {buildBasicFilterContent(categoryView, onFilter, filterSearchState)}
+      </Content>
+      {showMultiSpeciesFeatures && (
+        <FilterFooter componentId={categoryView.footerComponentId} />
+      )}
+    </div>
   );
 }
 
