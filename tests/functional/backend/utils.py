@@ -148,7 +148,7 @@ def _wait_for_dataset_status(session, api_url, dataset_id, headers):
                 [
                     cxg_status == h5ad_status == "UPLOADED"
                     and rds_status == "SKIPPED"
-                    and atac_status in ["SKIPPED", "UPLOADED"],
+                    and atac_status in ["SKIPPED", "UPLOADED", "NA", "COPIED"],
                     errors,
                 ]
             ):
