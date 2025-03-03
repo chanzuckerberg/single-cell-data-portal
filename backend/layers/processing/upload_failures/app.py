@@ -209,7 +209,7 @@ def delete_atac_fragment_files(dataset_version_id: str) -> None:
         delete_and_catch_error("DATASETS_BUCKET", object_key, FAILED_ATAC_DATASET_MESSAGE.format(ok))
 
 
-def delete_and_catch_error(bucket_name: str, object_key: str, error_message) -> None:
+def delete_and_catch_error(bucket_name: str, object_key: str, error_message: str) -> None:
     with logger.LogSuppressed(Exception, message=error_message):
         bucket_name = os.environ[bucket_name]
         delete_many_from_s3(bucket_name, object_key)
