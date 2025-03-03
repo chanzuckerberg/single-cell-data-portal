@@ -737,6 +737,10 @@ export interface SelectCategoryValueView {
   selected: boolean;
   selectedPartial: boolean;
   visible: boolean;
+  tooltip?: {
+    trigger: string;
+    content: string;
+  };
 }
 
 /**

@@ -2,6 +2,7 @@ import { Filters } from "react-table";
 import { track } from "src/common/analytics";
 import {
   buildCategoryValueLabel,
+  buildCategoryValueTooltip,
   getCategoryFilter,
   sortCategoryValueViews,
 } from "src/common/hooks/useCategoryFilter/common/utils";
@@ -148,6 +149,7 @@ export function buildSelectCategoryValueViews(
         ),
         selected,
         selectedPartial,
+        tooltip: buildCategoryValueTooltip(config, categoryValueId),
         visible: visibleUINodeIds
           ? visibleUINodeIds.has(categoryValueId)
           : true,

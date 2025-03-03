@@ -1114,3 +1114,18 @@ export const COLLATOR_CASE_INSENSITIVE = new Intl.Collator("en", {
   numeric: true,
   sensitivity: "base",
 });
+
+export const TOOLTIP_SPECIFIC_ONTOLOGIES = {
+  WBbt: {
+    ontologyId: "WBbt",
+    species: "Caenorhabditis elegans (worm)",
+  },
+  ZFA: {
+    ontologyId: "ZFA",
+    species: "Danio rerio (zebrafish)",
+  },
+  FBbt: {
+    ontologyId: "FBbt",
+    species: "Drosophila melanogaster (fruit fly)",
+  },
+};
