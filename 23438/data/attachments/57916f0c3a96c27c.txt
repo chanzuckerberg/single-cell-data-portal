@@ -1,0 +1,11 @@
+INFO     backend.layers.business.business:business.py:582 {'message': 'ingesting dataset', 'collection_version_id': 6e485047-4ee2-4cda-9079-3b47efc94d7c, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:582 {'message': 'ingesting dataset', 'collection_version_id': 6e485047-4ee2-4cda-9079-3b47efc94d7c, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': 2a38d2b7-8b03-4937-80a2-b9f4e87b5827}
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:100 Uploaded [e39f3395-4331-48f2-903d-c084b872834d/local.h5ad] to s3://artifact_bucket/e39f3395-4331-48f2-903d-c084b872834d/local.h5ad
+INFO     processing:process_logic.py:102 Updated database with h5ad.
+INFO     processing:process_logic.py:106 Uploaded [e39f3395-4331-48f2-903d-c084b872834d/local.h5ad] to s3://datasets_bucket/e39f3395-4331-48f2-903d-c084b872834d.h5ad
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:49 Updating processing status
