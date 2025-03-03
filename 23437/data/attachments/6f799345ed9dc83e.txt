@@ -1,0 +1,3 @@
+INFO     backend.layers.business.business:business.py:582 {'message': 'ingesting dataset', 'collection_version_id': 1011eb23-4ba0-44ed-bf48-bf199addd47c, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:582 {'message': 'ingesting dataset', 'collection_version_id': 1011eb23-4ba0-44ed-bf48-bf199addd47c, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': 1e0c95f0-fe8a-4c1d-951b-99e23f224cd2}
+INFO     processing:process_logic.py:49 Updating processing status
