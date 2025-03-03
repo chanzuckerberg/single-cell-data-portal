@@ -12,7 +12,7 @@ from tests.functional.backend.utils import (
     make_cookie,
     make_proxy_auth_token,
     make_session,
-    upload_and_wait,
+    upload_url_and_wait,
 )
 
 # Amount to reduce chance of collision where multiple test instances select the same collection to test against
@@ -50,7 +50,8 @@ class SmokeTestsInitializer:
         _threads = []
         for _ in range(NUM_TEST_DATASETS):
             _thread = threading.Thread(
-                target=upload_and_wait, args=(self.session, self.api, self.curator_cookie, collection_id, dropbox_url)
+                target=upload_url_and_wait,
+                args=(self.session, self.api, self.curator_cookie, collection_id, dropbox_url),
             )
             _threads.append(_thread)
             _thread.start()

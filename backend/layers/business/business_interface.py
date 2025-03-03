@@ -157,8 +157,15 @@ class BusinessLogicInterface:
         pass
 
     def add_dataset_artifact(
-        self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
+        self,
+        dataset_version_id: DatasetVersionId,
+        artifact_type: str,
+        artifact_uri: str,
+        artifact_id: Optional[DatasetArtifactId] = None,
     ) -> DatasetArtifactId:
+        pass
+
+    def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
         pass
 
     def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:

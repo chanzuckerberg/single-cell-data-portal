@@ -1,21 +1,23 @@
+import tempfile
 from unittest.mock import patch
 
 import anndata
 import numpy as np
 import pandas
+from dask.array import from_array
 
 from backend.layers.common.entities import OntologyTermId, SpatialMetadata, TissueOntologyTermId
-from backend.layers.processing.process_validate import ProcessValidate
+from backend.layers.processing.process_add_labels import ProcessAddLabels
+from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 
-class TestProcessingValidate(BaseProcessingTest):
+class TestAddLabels(BaseProcessingTest):
     def setUp(self):
         super().setUp()
-        self.pdv = ProcessValidate(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+        self.pal = ProcessAddLabels(self.business_logic, self.uri_provider, self.s3_provider, SchemaValidatorProvider())
 
-    @patch("scanpy.read_h5ad")
-    def test_extract_metadata(self, mock_read_h5ad):
+    def test_extract_metadata(self):
         df = pandas.DataFrame(
             np.random.randint(10, size=(50001, 5)) * 50, columns=list("ABCDE"), index=(str(i) for i in range(50001))
         )
@@ -77,7 +79,7 @@ class TestProcessingValidate(BaseProcessingTest):
         uns = {
             "title": "my test dataset",
             "X_approximate_distribution": "normal",
-            "batch_condition": np.array({"batchA", "batchB"}),
+            "batch_condition": ["batchA", "batchB"],
             "schema_version": "3.0.0",
             "default_embedding": "X_umap",
             "citation": "Publication: https://doi.org/12.2345/science.abc1234 Dataset Version: "
@@ -100,10 +102,11 @@ class TestProcessingValidate(BaseProcessingTest):
 
         obsm = {"X_umap": np.zeros([50001, 2]), "X_pca": np.zeros([50001, 2])}
 
-        adata = anndata.AnnData(X=df, obs=obs, obsm=obsm, uns=uns, var=var)
-        mock_read_h5ad.return_value = adata
+        adata = anndata.AnnData(X=from_array(df.to_numpy()), obs=obs, obsm=obsm, uns=uns, var=var)
 
-        extracted_metadata = self.pdv.extract_metadata("dummy")
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted_metadata = self.pal.extract_metadata(f.name)
 
         self.assertEqual(extracted_metadata.organism, [OntologyTermId("Homo sapiens", "NCBITaxon:8505")])
 
@@ -156,7 +159,7 @@ class TestProcessingValidate(BaseProcessingTest):
         )
 
         self.assertEqual(extracted_metadata.x_approximate_distribution, "NORMAL")
-        self.assertEqual(extracted_metadata.batch_condition, np.array({"batchA", "batchB"}))
+        self.assertCountEqual(extracted_metadata.batch_condition, ["batchA", "batchB"])
         self.assertEqual(extracted_metadata.schema_version, "3.0.0")
         self.assertEqual(extracted_metadata.citation, uns["citation"])
 
@@ -177,7 +180,7 @@ class TestProcessingValidate(BaseProcessingTest):
         self.assertEqual(extracted_metadata.raw_data_location, "X")
         self.assertEqual(extracted_metadata.spatial, None)
 
-    @patch("scanpy.read_h5ad")
+    @patch("cellxgene_schema.utils.read_h5ad")
     def test_extract_metadata_find_raw_layer(self, mock_read_h5ad):
         # Setup anndata to be read
         non_zeros_X_layer_df = pandas.DataFrame(
@@ -241,7 +244,7 @@ class TestProcessingValidate(BaseProcessingTest):
         uns = {
             "title": "my test dataset",
             "X_approximate_distribution": "normal",
-            "batch_condition": np.array({"batchA", "batchB"}),
+            "batch_condition": ["batchA", "batchB"],
             "schema_version": "3.0.0",
             "citation": "Publication: https://doi.org/12.2345/science.abc1234 Dataset Version: "
             "https://datasets.cellxgene.cziscience.com/dataset_id.h5ad curated and distributed by "
@@ -262,7 +265,7 @@ class TestProcessingValidate(BaseProcessingTest):
         obsm = {"X_umap": np.zeros([11, 2])}
 
         adata = anndata.AnnData(
-            X=non_zeros_X_layer_df,
+            X=from_array(non_zeros_X_layer_df.to_numpy()),
             obs=obs,
             obsm=obsm,
             uns=uns,
@@ -272,10 +275,9 @@ class TestProcessingValidate(BaseProcessingTest):
         adata_raw = anndata.AnnData(X=zeros_layer_df, obs=obs, uns=uns)
         adata.raw = adata_raw
 
-        mock_read_h5ad.return_value = adata
-
-        # Run the extraction method
-        extracted_metadata = self.pdv.extract_metadata("dummy")
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted_metadata = self.pal.extract_metadata(f.name)
 
         # Verify that the "my_awesome_wonky_layer" was read and not the default X layer. The layer contains only zeros
         # which should result in a mean_genes_per_cell value of 0 compared to 3 if the X layer was read.
@@ -288,7 +290,7 @@ class TestProcessingValidate(BaseProcessingTest):
             "is_single": np.bool_(True),
             "dummy_library_id": {"images": {"fullres": "dummy_fullres"}},
         }
-        self.assertEqual(self.pdv.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=True))
+        self.assertEqual(self.pal.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=True))
 
     def test_get_spatial_metadata__is_single_true_and_fullres_false(self):
         spatial_dict = {
@@ -296,17 +298,17 @@ class TestProcessingValidate(BaseProcessingTest):
             "dummy_library_id": {"images": {}},
         }
         self.assertEqual(
-            self.pdv.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=False)
+            self.pal.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=False)
         )
 
     def test_get_spatial_metadata__is_single_true_and_no_library_id(self):
         spatial_dict = {"is_single": np.bool_(True)}
         self.assertEqual(
-            self.pdv.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=False)
+            self.pal.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=True, has_fullres=False)
         )
 
     def test_get_spatial_metadata__is_single_false(self):
         spatial_dict = {"is_single": np.bool_(False)}
         self.assertEqual(
-            self.pdv.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=False, has_fullres=False)
+            self.pal.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=False, has_fullres=False)
         )

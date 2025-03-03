@@ -444,13 +444,23 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
-        Returns all dataset versions for a canonical dataset_id. ***AT PRESENT THIS FUNCTION IS NOT USED***
+        Returns all dataset versions for a canonical dataset_id.
         """
         versions = []
         for dataset_version in self.datasets_versions.values():
             if dataset_version.dataset_id == dataset_id:
                 versions.append(self._update_dataset_version_with_canonical(dataset_version))
         return versions
+
+    def get_artifact_by_uri_suffix(self, uri_suffix: str) -> Optional[DatasetArtifact]:
+        for artifact in self.dataset_artifacts.values():
+            if artifact.uri.endswith(uri_suffix):
+                return artifact
+
+    def check_artifact_is_part_of_dataset(self, dataset_id: DatasetId, artifact_id: DatasetArtifactId):
+        versions = [v for v in self.datasets_versions.values() if v.dataset_id == dataset_id]
+        artifacts = [a for v in versions for a in v.artifacts]
+        return any(a.id == artifact_id for a in artifacts)
 
     def _get_all_datasets(self) -> Iterable[DatasetVersion]:
         """
@@ -496,11 +506,15 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     ) -> None:
         self.collections_versions[collection_version_id.id].datasets.append(dataset_version_id)
 
-    def add_dataset_artifact(
-        self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
+    def create_dataset_artifact(
+        self,
+        dataset_version_id: DatasetVersionId,
+        artifact_type: str,
+        artifact_uri: str,
+        artifact_id: Optional[DatasetArtifactId] = None,
     ) -> DatasetArtifactId:
-        version = self.datasets_versions[version_id.id]
-        artifact_id = DatasetArtifactId()
+        version = self.datasets_versions[dataset_version_id.id]
+        artifact_id = artifact_id if artifact_id else DatasetArtifactId()
         dataset_artifact = DatasetArtifact(artifact_id, artifact_type, artifact_uri)
         version.artifacts.append(dataset_artifact)
         self.dataset_artifacts[artifact_id.id] = dataset_artifact
@@ -517,6 +531,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                     artifact.uri = artifact_uri
                     found_artifact = True
                     break
+
+    def add_artifact_to_dataset_version(self, version_id: DatasetVersionId, artifact_id: DatasetArtifactId) -> None:
+        self.datasets_versions[version_id.id].artifacts.append(self.dataset_artifacts[artifact_id.id])
 
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         version = self.datasets_versions[version_id.id]
@@ -543,7 +560,12 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
         dataset_version = self.datasets_versions[version_id.id]
-        dataset_version.status.validation_message = validation_message
+        if dataset_version.status.validation_message is not None:
+            dataset_version.status.validation_message = (
+                dataset_version.status.validation_message + "\n" + validation_message
+            )
+        else:
+            dataset_version.status.validation_message = validation_message
 
     def add_dataset_to_collection_version(self, version_id: CollectionVersionId, dataset_id: DatasetId) -> None:
         # Not needed for now - create_dataset does this
@@ -581,7 +603,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             new_dataset_version = self.get_dataset_version(new_dataset_version_id)
             if collection_version.collection_id != new_dataset_version.collection_id:
                 raise ValueError(
-                    f"Dataset version {new_dataset_version_id} does not belong to collection {collection_version.collection_id}"
+                    f"Dataset version {new_dataset_version_id} does not belong to collection "
+                    f"{collection_version.collection_id}"
                 )
 
         idx = next(i for i, e in enumerate(collection_version.datasets) if e == old_dataset_version_id)

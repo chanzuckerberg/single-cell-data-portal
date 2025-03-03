@@ -1,7 +1,8 @@
-# Same file as https://github.com/chanzuckerberg/single-cell-infra/blob/main/.happy/terraform/modules/sfn/main.tf
 # This is used for environment (dev, staging, prod) deployments
 locals {
-  timeout = 86400 # 24 hours
+  h5ad_timeout = 86400 # 24 hours
+  atac_timeout = 86400 # 24 hours
+  cxg_timeout = 172800 # 48 hours
 }
 
 data aws_region current {}
@@ -12,413 +13,195 @@ resource "aws_sfn_state_machine" "state_machine" {
 
   definition = <<EOF
 {
-    "StartAt": "DefineDefaults",
-    "States": {
-      "DefineDefaults": {
-        "Type": "Pass",
-        "Next": "ApplyDefaults",
-        "ResultPath": "$.inputDefaults",
-        "Parameters": {
-          "job_queue": "${var.job_queue_arn}"
-        }
-      },
-      "ApplyDefaults": {
-        "Type": "Pass",
-        "Next": "Download",
-        "Parameters": {
-          "args.$": "States.JsonMerge($.inputDefaults, $$.Execution.Input, false)"
-        },
-        "ResultPath": "$.withDefaults",
-        "OutputPath": "$.withDefaults.args"
-      },
-      "Download": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::batch:submitJob.sync",
-        "Next": "RegisterJobDefinition",
-        "Parameters": {
-          "JobDefinition":"${var.job_definition_arn}",
-          "JobName": "download",
-          "JobQueue.$": "$.job_queue",
-          "RetryStrategy": {
-            "Attempts": ${var.max_attempts},
-            "EvaluateOnExit": [
-              {
-                "Action": "EXIT",
-                "OnExitCode": "1"
-              },
-              {
-                "Action": "RETRY",
-                "OnExitCode": "*"
-              }
-            ]
-          },
-          "ContainerOverrides": {
-            "Environment": [
-              {
-                "Name": "DROPBOX_URL",
-                "Value.$": "$.url"
-              },
-              {
-                "Name": "DATASET_VERSION_ID",
-                "Value.$": "$.dataset_version_id"
-              },
-              {
-                "Name": "STEP_NAME",
-                "Value": "download"
-              },
-              {
-                "Name": "TASK_TOKEN",
-                "Value.$": "$$.Task.Token"
-              }
-            ]
-          }
-        },
-        "TimeoutSeconds": ${local.timeout},
-        "Catch": [
-          {
-            "ErrorEquals": [
-              "States.ALL"
-            ],
-            "Next": "HandleErrors",
-            "ResultPath": "$.error"
-          }
-        ],
-        "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-            "IntervalSeconds": 2,
-            "MaxAttempts": 7,
-            "BackoffRate": 5
-        } ],
-        "ResultPath": "$.batch"
-      },
-      "RegisterJobDefinition": {
-        "Type": "Task",
-        "Next": "Validate",
-        "Parameters": {
-          "JobDefinitionName.$": "$.batch.JobDefinitionName",
-          "Type": "container",
-          "ContainerProperties" :{
-            "Image" : "${var.image}",
-            "JobRoleArn": "${var.batch_role_arn}",
-            "Environment" : [
-              {
-                "Name" : "ARTIFACT_BUCKET",
-                "Value" : "${var.artifact_bucket}"
-              },
-              {
-                "Name" : "CELLXGENE_BUCKET",
-                "Value" : "${var.cellxgene_bucket}"
-              },
-              {
-                "Name" : "DATASETS_BUCKET",
-                "Value" : "${var.datasets_bucket}"
-              },
-              {
-                "Name" : "DEPLOYMENT_STAGE",
-                "Value" : "${var.deployment_stage}"
-              },
-              {
-                "Name" : "AWS_DEFAULT_REGION",
-                "Value" : "${data.aws_region.current.name}"
-              },
-              {
-                "Name" : "REMOTE_DEV_PREFIX",
-                "Value" : "${var.remote_dev_prefix}"
-              },
-              {
-                "Name" : "FRONTEND_URL",
-                "Value" : "${var.frontend_url}"
-              }
-            ],
-            "Vcpus.$" : "$.batch.Vcpus",
-            "Memory.$" : "$.batch.Memory",
-            "LinuxParameters.$" : "$.batch.LinuxParameters",
-            "LogConfiguration" : {
-              "LogDriver" : "awslogs",
-              "Options" : {
-                "awslogs-group" : "${var.batch_job_log_group}",
-                "awslogs-region" : "${data.aws_region.current.name}"
-              }
-            }
-          }
-        },
-        "Resource": "arn:aws:states:::aws-sdk:batch:registerJobDefinition",
-        "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-            "IntervalSeconds": 2,
-            "MaxAttempts": 7,
-            "BackoffRate": 5
-        } ],
-        "ResultPath": "$.batch"
-      },
-      "Validate": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::batch:submitJob.sync",
-        "Next": "CxgSeuratParallel",
-        "Parameters": {
-          "JobDefinition.$": "$.batch.JobDefinitionName",
-          "JobName": "validate",
-          "JobQueue.$": "$.job_queue",
-          "ContainerOverrides": {
-            "Environment": [
-              {
-                "Name": "DATASET_VERSION_ID",
-                "Value.$": "$.dataset_version_id"
-              },
-              {
-                "Name": "COLLECTION_VERSION_ID",
-                "Value.$": "$.collection_version_id"
-              },
-              {
-                "Name": "STEP_NAME",
-                "Value": "validate"
-              }
-            ]
-          }
-        },
-        "ResultPath": null,
-        "TimeoutSeconds": ${local.timeout},
-        "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-            "IntervalSeconds": 2,
-            "MaxAttempts": 7,
-            "BackoffRate": 5
-        } ],
-        "Catch": [
-          {
-            "ErrorEquals": [
-              "States.ALL"
-            ],
-            "Next": "HandleErrors",
-            "ResultPath": "$.error"
-          }
-        ]
-      },
-      "CxgSeuratParallel": {
-        "Type": "Parallel",
-        "Next": "HandleSuccess",
-        "Branches": [
-          {
-            "StartAt": "Cxg",
-            "States": {
-              "Cxg": {
-                "Type": "Task",
-                "End": true,
-                "Resource": "arn:aws:states:::batch:submitJob.sync",
-                "Parameters": {
-                  "JobDefinition.$": "$.batch.JobDefinitionName",
-                  "JobName": "cxg",
-                  "JobQueue.$": "$.job_queue",
-                  "ContainerOverrides": {
-                    "Environment": [
-                      {
-                        "Name": "DATASET_VERSION_ID",
-                        "Value.$": "$.dataset_version_id"
-                      },
-                      {
-                        "Name": "STEP_NAME",
-                        "Value": "cxg"
-                      }
-                    ]
-                  }
-                },
-                "Retry": [ {
-                    "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-                    "IntervalSeconds": 2,
-                    "MaxAttempts": 7,
-                    "BackoffRate": 5
-                } ],
-                "Catch": [
-                  {
-                    "ErrorEquals": [
-                      "States.ALL"
-                    ],
-                    "Next": "CatchCxgFailure",
-                    "ResultPath": "$.error"
-                  }
-                ],
-                "ResultPath": null,
-                "TimeoutSeconds": 360000
-              },
-              "CatchCxgFailure": {
-                "Type": "Pass",
-                "End": true
-              }
-            }
-          },
-          {
-            "StartAt": "Seurat",
-            "States": {
-              "Seurat": {
-                "Type": "Task",
-                "End": true,
-                "Resource": "arn:aws:states:::batch:submitJob.sync",
-                "Parameters": {
-                  "JobDefinition.$": "$.batch.JobDefinitionName",
-                  "JobName": "seurat",
-                  "JobQueue.$": "$.job_queue",
-                  "ContainerOverrides": {
-                    "Environment": [
-                      {
-                        "Name": "DATASET_VERSION_ID",
-                        "Value.$": "$.dataset_version_id"
-                      },
-                      {
-                        "Name": "STEP_NAME",
-                        "Value": "seurat"
-                      }
-                    ]
-                  }
-                },
-                "Retry": [ {
-                    "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-                    "IntervalSeconds": 2,
-                    "MaxAttempts": 7,
-                    "BackoffRate": 5
-                } ],
-                "Catch": [
-                  {
-                    "ErrorEquals": [
-                      "States.ALL"
-                    ],
-                    "Next": "CatchSeuratFailure",
-                    "ResultPath": "$.error"
-                  }
-                ],
-                "TimeoutSeconds": ${local.timeout}
-              },
-              "CatchSeuratFailure": {
-                "Type": "Pass",
-                "End": true
-              }
-            }
-          }
-        ]
-      },
-      "HandleSuccess": {
-        "Type": "Task",
-        "InputPath": "$",
-        "Resource": "${var.lambda_success_handler}",
-        "Parameters": {
-          "execution_id.$": "$$.Execution.Id",
-          "cxg_job.$": "$[0]",
-          "seurat_job.$": "$[1]"
-        },
-        "Retry": [ {
-            "ErrorEquals": ["Lambda.AWSLambdaException"],
-            "IntervalSeconds": 1,
-            "MaxAttempts": 3,
-            "BackoffRate": 2.0
-        } ],
-        "Next": "DeregisterJobDefinition",
-        "ResultPath": null
-      },
-      "HandleErrors": {
-        "Type": "Task",
-        "InputPath": "$",
-        "Resource": "${var.lambda_error_handler}",
-        "Parameters": {
-          "execution_id.$": "$$.Execution.Id",
-          "error.$": "$.error",
-          "dataset_version_id.$": "$.dataset_version_id",
-          "collection_version_id.$": "$.collection_version_id"
-        },
-        "Retry": [ {
-            "ErrorEquals": ["Lambda.AWSLambdaException"],
-            "IntervalSeconds": 1,
-            "MaxAttempts": 3,
-            "BackoffRate": 2.0
-        } ],
-        "Next": "DeregisterJobDefinitionAfterHandleErrors",
-        "ResultPath": null
-      },
-      "DeregisterJobDefinitionAfterHandleErrors": {
-        "Type": "Task",
-        "Next": "CheckForErrors",
-        "Parameters": {
-          "JobDefinition.$": "$.batch.JobDefinitionName"
-        },
-        "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
-        "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-            "IntervalSeconds": 2,
-            "MaxAttempts": 7,
-            "BackoffRate": 5
-        } ],
-        "ResultPath": null
-      },
-      "DeregisterJobDefinition": {
-        "Type": "Task",
-        "Next": "CheckForErrors",
-        "Parameters": {
-          "JobDefinition.$": "$[0].batch.JobDefinitionName"
-        },
-        "Resource": "arn:aws:states:::aws-sdk:batch:deregisterJobDefinition",
-        "Retry": [ {
-            "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-            "IntervalSeconds": 2,
-            "MaxAttempts": 7,
-            "BackoffRate": 5
-        } ],
-        "ResultPath": null
-      },
-      "CheckForErrors": {
-        "Type": "Choice",
-        "Choices": [
-          {
-            "Variable": "$.error",
-            "IsPresent": true,
-            "Next": "DownloadValidateError"
-          },
-          {
-            "Or": [
-              {
-                "Variable": "$[0].error",
-                "IsPresent": true
-              },
-              {
-                "Variable": "$[1].error",
-                "IsPresent": true
-              }
-            ],
-            "Next": "ConversionError"
-          }
-        ],
-        "Default": "EndPass"
-      },
-      "ConversionError": {
-        "Type": "Fail",
-        "Cause": "CXG and/or Seurat conversion failed."
-      },
-      "DownloadValidateError": {
-        "Type": "Fail",
-        "Cause": "An error occurred during Download/Validate."
-      },
-      "EndPass": {
-        "Type": "Pass",
-        "End": true
-      }
-    }
-}
-EOF
-}
-
-resource "aws_sfn_state_machine" "state_machine_seurat" {
-  name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-seurat-sfn"
-  role_arn = var.role_arn
-
-  definition = <<EOF
-{
-  "StartAt": "Seurat",
+  "StartAt": "DefineDefaults",
   "States": {
-    "Seurat": {
+    "DefineDefaults": {
+      "Type": "Pass",
+      "Next": "ApplyDefaults",
+      "ResultPath": "$.inputDefaults",
+      "Parameters": {
+        "job_queue": "${var.job_queue_arn}"
+      }
+    },
+    "ApplyDefaults": {
+      "Type": "Pass",
+      "Next": "Parallel",
+      "Parameters": {
+        "args.$": "States.JsonMerge($.inputDefaults, $$.Execution.Input, false)"
+      },
+      "ResultPath": "$.withDefaults",
+      "OutputPath": "$.withDefaults.args"
+    },
+    "Parallel": {
+      "Type": "Parallel",
+      "Next": "AddLabels",
+      "Branches": [
+        {
+          "StartAt": "ValidateAnndata",
+          "States": {
+            "ValidateAnndata": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::batch:submitJob.sync",
+              "Parameters": {
+                "JobDefinition": "${var.job_definition_arn}",
+                "JobName": "validate_anndata",
+                "JobQueue.$": "$.job_queue",
+                "ContainerOverrides": {
+                  "Environment": [
+                    {
+                      "Name": "MANIFEST",
+                      "Value.$": "$.manifest"
+                    },
+                    {
+                      "Name": "DATASET_VERSION_ID",
+                      "Value.$": "$.dataset_version_id"
+                    },
+                    {
+                      "Name": "COLLECTION_VERSION_ID",
+                      "Value.$": "$.collection_version_id"
+                    },
+                    {
+                      "Name": "STEP_NAME",
+                      "Value": "validate_anndata"
+                    }
+                  ]
+                }
+              },
+              "ResultPath": null,
+              "TimeoutSeconds": ${local.h5ad_timeout},
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "AWS.Batch.TooManyRequestsException",
+                    "Batch.BatchException",
+                    "Batch.AWSBatchException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 7,
+                  "BackoffRate": 5
+                }
+              ],
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "ValidateAtac",
+          "States": {
+            "ValidateAtac": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::batch:submitJob.sync",
+              "Parameters": {
+                "JobDefinition": "${var.cxg_definition_arn}",
+                "JobName": "validate_atac",
+                "JobQueue.$": "$.job_queue",
+                "ContainerOverrides": {
+                  "Environment": [
+                    {
+                      "Name": "MANIFEST",
+                      "Value.$": "$.manifest"
+                    },
+                    {
+                      "Name": "DATASET_VERSION_ID",
+                      "Value.$": "$.dataset_version_id"
+                    },
+                    {
+                      "Name": "COLLECTION_VERSION_ID",
+                      "Value.$": "$.collection_version_id"
+                    },
+                    {
+                      "Name": "STEP_NAME",
+                      "Value": "validate_atac"
+                    }
+                  ]
+                }
+              },
+              "ResultPath": null,
+              "TimeoutSeconds": ${local.atac_timeout},
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "AWS.Batch.TooManyRequestsException",
+                    "Batch.BatchException",
+                    "Batch.AWSBatchException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 7,
+                  "BackoffRate": 5
+                }
+              ],
+              "End": true
+            }
+          }
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleErrors"
+        }
+      ],
+      "ResultPath": null
+    },
+    "AddLabels": {
       "Type": "Task",
-      "End": true,
       "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Next": "Cxg",
       "Parameters": {
         "JobDefinition": "${var.job_definition_arn}",
-        "JobName": "seurat",
-        "JobQueue": "${var.job_queue_arn}",
+        "JobName": "add_labels",
+        "JobQueue.$": "$.job_queue",
+        "ContainerOverrides": {
+          "Environment": [
+            {
+              "Name": "DATASET_VERSION_ID",
+              "Value.$": "$.dataset_version_id"
+            },
+            {
+              "Name": "COLLECTION_VERSION_ID",
+              "Value.$": "$.collection_version_id"
+            },
+            {
+              "Name": "STEP_NAME",
+              "Value": "add_labels"
+            }
+          ]
+        }
+      },
+      "ResultPath": null,
+      "TimeoutSeconds": ${local.h5ad_timeout},
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "AWS.Batch.TooManyRequestsException",
+            "Batch.BatchException",
+            "Batch.AWSBatchException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 7,
+          "BackoffRate": 5
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleErrors",
+          "ResultPath": "$.error"
+        }
+      ]
+    },
+    "Cxg": {
+      "Type": "Task",
+      "Next": "HandleSuccess",
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobDefinition": "${var.cxg_definition_arn}",
+        "JobName": "cxg",
+        "JobQueue.$": "$.job_queue",
         "ContainerOverrides": {
           "Environment": [
             {
@@ -427,15 +210,86 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
             },
             {
               "Name": "STEP_NAME",
-              "Value": "seurat"
+              "Value": "cxg"
             }
           ]
         }
       },
-      "TimeoutSeconds": ${local.timeout}
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "AWS.Batch.TooManyRequestsException",
+            "Batch.BatchException",
+            "Batch.AWSBatchException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 7,
+          "BackoffRate": 5
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "HandleErrors",
+          "ResultPath": "$.error"
+        }
+      ],
+      "ResultPath": null,
+      "TimeoutSeconds": ${local.cxg_timeout}
+    },
+    "HandleSuccess": {
+      "Type": "Task",
+      "InputPath": "$",
+      "Resource": "${var.lambda_success_handler}",
+      "Parameters": {
+        "execution_id.$": "$$.Execution.Id",
+        "cxg_job.$": "$"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.AWSLambdaException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "End": true,
+      "ResultPath": null
+    },
+    "HandleErrors": {
+      "Type": "Task",
+      "InputPath": "$",
+      "Resource": "${var.lambda_error_handler}",
+      "Parameters": {
+        "execution_id.$": "$$.Execution.Id",
+        "error.$": "$.error",
+        "dataset_version_id.$": "$.dataset_version_id",
+        "collection_version_id.$": "$.collection_version_id"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.AWSLambdaException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "ResultPath": null,
+      "Next": "RaiseError"
+    },
+    "RaiseError": {
+      "Type": "Fail",
+      "Cause": "Failed to ingest dataset."
     }
   }
 }
+
 EOF
 }
 
@@ -452,7 +306,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
       "End": true,
       "Resource": "arn:aws:states:::batch:submitJob.sync",
       "Parameters": {
-        "JobDefinition": "${var.job_definition_arn}",
+        "JobDefinition": "${var.cxg_definition_arn}",
         "JobName": "cxg_remaster",
         "JobQueue": "${var.job_queue_arn}",
         "ContainerOverrides": {
@@ -468,7 +322,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
           ]
         }
       },
-      "TimeoutSeconds": ${local.timeout}
+      "TimeoutSeconds": ${local.cxg_timeout}
     }
   }
 }

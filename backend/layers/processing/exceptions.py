@@ -13,8 +13,18 @@ class ProcessingCanceled(ProcessingException):
 
 
 @dataclass
-class ValidationFailed(ProcessingException):
-    errors: List[str]
+class ValidationAnndataFailed(ProcessingException):
+    def __init__(self, errors: List[str]):
+        self.errors = errors
+
+
+class ValidationAtacFailed(ProcessingException):
+    def __init__(self, errors: List[str]):
+        self.errors = errors
+
+
+class AddLabelsFailed(ProcessingException):
+    failed_status: DatasetStatusKey = DatasetStatusKey.H5AD
 
 
 class ProcessingFailed(ProcessingException):

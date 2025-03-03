@@ -10,7 +10,8 @@ from tests.functional.backend.utils import (
     make_cookie,
     make_proxy_auth_token,
     make_session,
-    upload_and_wait,
+    upload_manifest_and_wait,
+    upload_url_and_wait,
 )
 
 
@@ -79,10 +80,8 @@ def curation_api_access_token(session, api_url, config, tmp_path_factory, worker
 
 @pytest.fixture(scope="session")
 def upload_dataset(session, api_url, curator_cookie, request):
-    def _upload_dataset(collection_id, dropbox_url, existing_dataset_id=None, skip_rds_status=False):
-        result = upload_and_wait(
-            session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id, skip_rds_status
-        )
+    def _upload_dataset(collection_id, dropbox_url, existing_dataset_id=None):
+        result = upload_url_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id)
         dataset_id = result["dataset_id"]
         headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
         request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/datasets/{dataset_id}", headers=headers))
@@ -91,6 +90,22 @@ def upload_dataset(session, api_url, curator_cookie, request):
         return dataset_id
 
     return _upload_dataset
+
+
+@pytest.fixture(scope="session")
+def upload_manifest(session, api_url, curation_api_access_token, curator_cookie, request):
+    def _upload_manifest(collection_id: str, manifest: dict, existing_dataset_id=None):
+        result = upload_manifest_and_wait(
+            session, api_url, curation_api_access_token, curator_cookie, collection_id, manifest, existing_dataset_id
+        )
+        dataset_id = result["dataset_id"]
+        headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
+        request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/datasets/{dataset_id}", headers=headers))
+        if result["errors"]:
+            raise pytest.fail(str(result["errors"]))
+        return dataset_id
+
+    return _upload_manifest
 
 
 @pytest.fixture()

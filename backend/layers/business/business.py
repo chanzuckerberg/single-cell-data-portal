@@ -6,6 +6,8 @@ from datetime import datetime
 from functools import reduce
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
+from pydantic import ValidationError
+
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.corpora_config import CorporaConfig
 from backend.common.doi import doi_curie_from_link
@@ -38,6 +40,7 @@ from backend.layers.business.exceptions import (
     DatasetNotFoundException,
     DatasetUpdateException,
     DatasetVersionNotFoundException,
+    InvalidIngestionManifestException,
     InvalidURIException,
     MaxFileSizeExceededException,
     NoPreviousCollectionVersionException,
@@ -46,6 +49,7 @@ from backend.layers.business.exceptions import (
 from backend.layers.common import validation
 from backend.layers.common.cleanup import sanitize, sanitize_dataset_artifact_metadata_update
 from backend.layers.common.entities import (
+    ARTIFACT_TO_EXTENSION,
     CanonicalCollection,
     CollectionId,
     CollectionLinkType,
@@ -77,6 +81,7 @@ from backend.layers.common.entities import (
 from backend.layers.common.helpers import (
     get_published_at_and_collection_version_id_else_not_found,
 )
+from backend.layers.common.ingestion_manifest import IngestionManifest
 from backend.layers.common.regex import S3_URI_REGEX
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
@@ -114,12 +119,26 @@ class BusinessLogic(BusinessLogicInterface):
         super().__init__()
 
     @staticmethod
-    def generate_permanent_url(dataset_version_id: DatasetVersionId, asset_type: DatasetArtifactType):
+    def generate_permanent_url(
+        dataset_version: DatasetVersion, artifact_id: DatasetArtifactId, asset_type: DatasetArtifactType
+    ) -> str:
         """
         Return the permanent URL for the given asset.
         """
+        if asset_type in [DatasetArtifactType.ATAC_INDEX, DatasetArtifactType.ATAC_FRAGMENT]:
+            fmt_str = "{}/{}-fragment.{}"
+        else:
+            fmt_str = "{}/{}.{}"
+
+        if asset_type == DatasetArtifactType.ATAC_INDEX:
+            entity_id = [a for a in dataset_version.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0].id
+        elif asset_type == DatasetArtifactType.ATAC_FRAGMENT:
+            entity_id = artifact_id
+        else:
+            entity_id = dataset_version.version_id
+
         base_url = CorporaConfig().dataset_assets_base_url
-        return f"{base_url}/{dataset_version_id.id}.{asset_type}"
+        return fmt_str.format(base_url, entity_id.id, ARTIFACT_TO_EXTENSION[asset_type])
 
     @staticmethod
     def generate_dataset_citation(
@@ -495,7 +514,8 @@ class BusinessLogic(BusinessLogicInterface):
         dataset = self.database_provider.get_dataset_version(dataset_version_id)
         if dataset.status.processing_status != expected_status:
             raise DatasetInWrongStatusException(
-                f"Dataset {dataset_version_id.id} processing status must be {expected_status.name} but is {dataset.status.processing_status}."
+                f"Dataset {dataset_version_id.id} processing status must be {expected_status.name} but is "
+                f"{dataset.status.processing_status}."
             )
         return dataset
 
@@ -537,11 +557,14 @@ class BusinessLogic(BusinessLogicInterface):
 
         return new_dataset_version
 
+    def is_already_ingested(self, uri):
+        return str(uri).startswith(CorporaConfig().dataset_assets_base_url)
+
     # TODO: Alternatives: 1) return DatasetVersion 2) Return a new class
     def ingest_dataset(
         self,
         collection_version_id: CollectionVersionId,
-        url: str,
+        url: dict | str,  # TODO: change to manifest
         file_size: Optional[int],
         current_dataset_version_id: Optional[DatasetVersionId],
         start_step_function: bool = True,
@@ -550,25 +573,70 @@ class BusinessLogic(BusinessLogicInterface):
         Creates a canonical dataset and starts its ingestion by invoking the step function
         If `size` is not provided, it will be inferred automatically
         """
+        # Convert old style input to new style
+        try:
+            manifest = IngestionManifest(anndata=url) if isinstance(url, str) else IngestionManifest(**url)
+        except ValidationError as e:
+            raise InvalidIngestionManifestException("Ingestion manifest is invalid.", errors=e.errors()) from e
+
         logger.info(
             {
                 "message": "ingesting dataset",
                 "collection_version_id": collection_version_id,
-                "url": url,
+                "manifest": manifest,
                 "current_dataset_version_id": current_dataset_version_id,
             }
         )
-        if not self.uri_provider.validate(url):
-            raise InvalidURIException(f"Trying to upload invalid URI: {url}")
 
+        # Validate the URIs
+        # TODO: This should be done in the IngestionManifest class
+        for key, _url in manifest.model_dump(exclude_unset=True).items():
+            _url = str(_url)
+            if not self.uri_provider.validate(_url):
+                raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
+            if not self.is_already_ingested(_url):
+                continue
+            if not current_dataset_version_id:
+                raise InvalidIngestionManifestException(
+                    message="Cannot ingest public datasets without a current dataset version"
+                )
+            if key == "anndata":
+                dataset_version_id, extension = _url.split("/")[-1].split(".", maxsplit=1)
+                if extension != ARTIFACT_TO_EXTENSION[DatasetArtifactType.H5AD]:
+                    raise InvalidIngestionManifestException(message=f"{_url} is not an h5ad file")
+                previous_dv = self.database_provider.get_dataset_version(DatasetVersionId(dataset_version_id))
+                if previous_dv is None:
+                    raise InvalidIngestionManifestException(
+                        message=f"{_url} refers to existing dataset, but that dataset could not be found."
+                    )
+                all_dvs = self.database_provider.get_all_versions_for_dataset(previous_dv.dataset_id)
+                if current_dataset_version_id not in [dv.version_id for dv in all_dvs]:
+                    raise InvalidIngestionManifestException(message=f"{_url} is not a part of the canonical dataset")
+                manifest.anndata = [a for a in previous_dv.artifacts if a.type == DatasetArtifactType.RAW_H5AD][0].uri
+
+            if key == "atac_fragment":
+                file_name, extension = _url.split("/")[-1].split(".", 1)
+                artifact_id = file_name.rsplit("-", 1)[0]
+                if extension != ARTIFACT_TO_EXTENSION[DatasetArtifactType.ATAC_FRAGMENT]:
+                    raise InvalidIngestionManifestException(message=f"{_url} is not an atac_fragments file")
+                artifact = self.database_provider.get_dataset_artifacts([DatasetArtifactId(artifact_id)])
+                if not len(artifact):
+                    raise InvalidIngestionManifestException(message=f"{_url} atac_fragments not found")
+                dataset_id = self.get_dataset_version(current_dataset_version_id).dataset_id
+                if not self.database_provider.check_artifact_is_part_of_dataset(dataset_id, artifact[0].id):
+                    raise InvalidIngestionManifestException(
+                        message=f"{_url} atac_fragments is not a part of the canonical dataset"
+                    )
         if file_size is None:
-            file_info = self.uri_provider.get_file_info(url)
+            file_info = self.uri_provider.get_file_info(str(manifest.anndata))
             file_size = file_info.size
 
         max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2**30
 
         if file_size is not None and file_size > max_file_size_gb:
-            raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
+            raise MaxFileSizeExceededException(
+                f"{manifest.anndata} exceeds the maximum allowed file size of {max_file_size_gb} Gb"
+            )
 
         # Ensure that the collection exists and is not published
         collection = self._assert_collection_version_unpublished(collection_version_id)
@@ -625,7 +693,9 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Starts the step function process
         if start_step_function:
-            self.step_function_provider.start_step_function(collection_version_id, new_dataset_version.version_id, url)
+            self.step_function_provider.start_step_function(
+                collection_version_id, new_dataset_version.version_id, manifest.model_dump_json()
+            )
 
         return (new_dataset_version.version_id, new_dataset_version.dataset_id)
 
@@ -712,7 +782,8 @@ class BusinessLogic(BusinessLogicInterface):
         self, owner: str = None
     ) -> List[CollectionVersionWithPrivateDatasets]:
         """
-        Returns collection versions with their datasets for private collections. Only private collections with datasets, or
+        Returns collection versions with their datasets for private collections. Only private collections with
+        datasets, or
         unpublished revisions with new or updated datasets are returned; unpublished revisions with no new datasets, and
         no changed datasets are not returned.
 
@@ -789,14 +860,15 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Returns data required for download: file size and permanent URL.
         """
-        artifacts = self.get_dataset_artifacts(dataset_version_id)
+        dataset_version = self.database_provider.get_dataset_version(dataset_version_id)
+        artifacts = dataset_version.artifacts
         artifact = next((a for a in artifacts if a.id == artifact_id), None)
 
         if not artifact:
             raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
 
         file_size = self.s3_provider.get_file_size(artifact.uri)
-        url = self.generate_permanent_url(dataset_version_id, artifact.type)
+        url = self.generate_permanent_url(dataset_version, artifact.id, artifact.type)
 
         return DatasetArtifactDownloadData(file_size, url)
 
@@ -814,7 +886,6 @@ class BusinessLogic(BusinessLogicInterface):
         validation_message: Optional[str] = None,
     ) -> None:
         """
-        TODO: split into two method, one for updating validation_message, and the other statuses.
         Updates the status of a dataset version.
         status_key can be one of: [upload, validation, cxg, rds, h5ad, processing]
         """
@@ -836,6 +907,10 @@ class BusinessLogic(BusinessLogicInterface):
             self.database_provider.update_dataset_conversion_status(
                 dataset_version_id, "h5ad_status", new_dataset_status
             )
+        elif status_key == DatasetStatusKey.ATAC and isinstance(new_dataset_status, DatasetConversionStatus):
+            self.database_provider.update_dataset_conversion_status(
+                dataset_version_id, "atac_status", new_dataset_status
+            )
         else:
             raise DatasetUpdateException(
                 f"Invalid status update for dataset {dataset_version_id}: cannot set {status_key} to "
@@ -846,18 +921,22 @@ class BusinessLogic(BusinessLogicInterface):
             self.database_provider.update_dataset_validation_message(dataset_version_id, validation_message)
 
     def add_dataset_artifact(
-        self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
+        self,
+        dataset_version_id: DatasetVersionId,
+        artifact_type: str,
+        artifact_uri: str,
+        artifact_id: Optional[DatasetArtifactId] = None,
     ) -> DatasetArtifactId:
         """
         Registers an artifact to a dataset version.
         """
 
-        # TODO: we should probably validate that artifact_uri is a valid S3 URI
-
         if artifact_type not in [artifact.value for artifact in DatasetArtifactType]:
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
 
-        return self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
+        return self.database_provider.create_dataset_artifact(
+            dataset_version_id, artifact_type, artifact_uri, artifact_id
+        )
 
     def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
         """
@@ -1016,7 +1095,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Restore s3 public assets
         for dv_id in dataset_versions_to_restore:
-            for ext in (DatasetArtifactType.H5AD, DatasetArtifactType.RDS):
+            for ext in [ARTIFACT_TO_EXTENSION[x] for x in (DatasetArtifactType.H5AD, DatasetArtifactType.RDS)]:
                 object_key = f"{dv_id}.{ext}"
                 self.s3_provider.restore_object(os.getenv("DATASETS_BUCKET"), object_key)
 
@@ -1057,15 +1136,18 @@ class BusinessLogic(BusinessLogicInterface):
             if canonical_datasets != version_datasets:
                 has_dataset_revisions = True
 
-        # Check Crossref for updates in publisher metadata since last publish of revision, or since private collection was created.
-        # Raise exception if DOI has moved from pre-print to published, forcing curators to re-publish the collection once corresponding
+        # Check Crossref for updates in publisher metadata since last publish of revision, or since private
+        # collection was created.
+        # Raise exception if DOI has moved from pre-print to published, forcing curators to re-publish the collection
+        # once corresponding
         # artifacts update is complete.
         last_action_at = date_of_last_publish if is_revision else version.created_at
         doi_update = self._update_crossref_metadata(version, last_action_at)
         if doi_update:
             raise CollectionPublishException(
                 [
-                    f"DOI was updated from {doi_update[0]} to {doi_update[1]} requiring updates to corresponding artifacts. "
+                    f"DOI was updated from {doi_update[0]} to {doi_update[1]} requiring updates to corresponding "
+                    f"artifacts. "
                     "Retry publish once artifact updates are complete."
                 ]
             )
@@ -1195,11 +1277,14 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Call Crossref for the latest publisher metadata and:
         - if a DOI has moved from pre-print to published, trigger update to collection (and artifacts), otherwise,
-        - if Crossref has been updated since last publish of revision or since private collection was created, update collection
+        - if Crossref has been updated since last publish of revision or since private collection was created,
+        update collection
           version publisher metadata.
 
-        :param collection_version_id: The collection version (either a revision or a private collection) to check publisher updates for.
-        :param last_action_at: The originally published at or revised at date of revision, or the created at date of a private collection.
+        :param collection_version_id: The collection version (either a revision or a private collection) to check
+        publisher updates for.
+        :param last_action_at: The originally published at or revised at date of revision, or the created at date of
+        a private collection.
         :return: Tuple of current DOI and DOI returned from Crossref if DOI has changed, otherwise None.
         """
         # Get the DOI from the collection version metadata; exit if no DOI.
@@ -1216,7 +1301,6 @@ class BusinessLogic(BusinessLogicInterface):
         # Handle change in publisher metadata from pre-print to published.
         crossref_doi = f"https://doi.org/{crossref_doi_curie}"
         if crossref_doi != link_doi.uri:
-
             # Set the DOI in the collection version metadata links to be the returned DOI and update collection
             # version (subsequently triggering update of artifacts).
             updated_links = [Link(link.name, link.type, crossref_doi) if link.type == "DOI" else link for link in links]

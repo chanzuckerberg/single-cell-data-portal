@@ -16,6 +16,7 @@ from backend.layers.common.entities import (
     CollectionLinkType,
     CollectionMetadata,
     CollectionVersion,
+    DatasetArtifactType,
     DatasetProcessingStatus,
     DatasetStatusKey,
     DatasetUploadStatus,
@@ -1508,7 +1509,10 @@ class TestDeleteDataset(BaseAPIPortalTest):
         """
         Helper method to call the delete endpoint
         """
-        test_url = f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}{'?' + query_param_str if query_param_str else ''}"
+        test_url = (
+            f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}"
+            f"{'?' + query_param_str if query_param_str else ''}"
+        )
         headers = auth() if callable(auth) else auth
         return self.app.delete(test_url, headers=headers)
 
@@ -1806,6 +1810,35 @@ class TestGetDatasets(BaseAPIPortalTest):
         body = response.json
         self.assertEqual([], body["assets"])
 
+    def test_get_dataset_atac_assets(self):
+        dataset = self.generate_dataset(
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags-fragment.tsv.bgz"),
+                DatasetArtifactUpdate(
+                    DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags-fragment.tsv.bgz.tbi"
+                ),
+            ]
+        )
+        artifacts = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
+        atac_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0]
+
+        test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}"
+        response = self.app.get(test_url)
+        body = response.json
+
+        expected_assets = [
+            {"filesize": -1, "filetype": "H5AD", "url": f"http://domain/{dataset.dataset_version_id}.h5ad"},
+            {"filesize": -1, "filetype": "ATAC_FRAGMENT", "url": f"http://domain/{atac_artifact.id}-fragment.tsv.bgz"},
+            {
+                "filesize": -1,
+                "filetype": "ATAC_INDEX",
+                "url": f"http://domain/{atac_artifact.id}-fragment.tsv.bgz.tbi",
+            },
+        ]
+
+        assert expected_assets == body["assets"]
+
     def test_get_all_datasets_200(self):
         crossref_return_value_1 = (generate_mock_publisher_metadata(), "12.3456/j.celrep", 17169328.664)
         self.crossref_provider.fetch_metadata = Mock(return_value=crossref_return_value_1)
@@ -1854,7 +1887,8 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertEqual(3, len(response.json))
 
         with self.subTest(
-            "Contains collection_id, collection_version_id, collection_name, collection_doi, and collection_doi_label"
+            "Contains collection_id, collection_version_id, collection_name, collection_doi, "
+            "and collection_doi_label"
         ):
             collection_ids = {published_collection_1.collection_id.id, published_collection_2.collection_id.id}
             collection__version_ids = {
@@ -2159,6 +2193,44 @@ class TestGetDatasets(BaseAPIPortalTest):
             self.assertIn(revision_1_dataset_updated.dataset_version_id, response_dataset["explorer_url"])
             self.assertIsNone(response_dataset["published_at"])
             self.assertIsNone(response_dataset["revised_at"])
+
+    def test_get_datasets_atac_seq(self):
+        collection = self.generate_unpublished_collection()
+        dataset = self.generate_dataset(
+            collection_version=collection,
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags-fragment.tsv.bgz"),
+                DatasetArtifactUpdate(
+                    DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags-fragment.tsv.bgz.tbi"
+                ),
+            ],
+        )
+        self.business_logic.publish_collection_version(collection.version_id)
+        artifacts = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
+        atac_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0]
+
+        response = self.app.get("/curation/v1/datasets")
+        body = response.json
+        expected_assets = [
+            {
+                "filesize": -1,
+                "filetype": "H5AD",
+                "url": f"http://domain/{dataset.dataset_version_id}.h5ad",
+            },
+            {
+                "filesize": -1,
+                "filetype": "ATAC_FRAGMENT",
+                "url": f"http://domain/{atac_artifact.id}-fragment.tsv.bgz",
+            },
+            {
+                "filesize": -1,
+                "filetype": "ATAC_INDEX",
+                "url": f"http://domain/{atac_artifact.id}-fragment.tsv.bgz.tbi",
+            },
+        ]
+        assert len(body) == 1, body
+        assert expected_assets == body[0]["assets"]
 
     def test_get_private_datasets_400(self):
         # 400 if PRIVATE and schema version.
@@ -2640,6 +2712,95 @@ class TestGetDatasetIdVersions(BaseAPIPortalTest):
             self.assertEqual(410, response.status_code)
 
 
+class TestGetDatasetManifest(BaseAPIPortalTest):
+    def test_get_manifest_cases_ok(self):
+        cases = [
+            {
+                "artifacts": {
+                    "atac_fragment": DatasetArtifactUpdate(
+                        DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags-fragment.tsv.bgz"
+                    )
+                },
+                "name": "fragments_only",
+            },
+            {
+                "artifacts": {"anndata": DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")},
+                "name": "anndata_only",
+            },
+            {
+                "artifacts": {
+                    "anndata": DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
+                    "atac_fragment": DatasetArtifactUpdate(
+                        DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags-fragment.tsv.bgz"
+                    ),
+                },
+                "name": "anndata_and_fragments",
+            },
+            {"artifacts": {}, "name": "no_artifacts"},
+        ]
+        for case in cases:
+            with self.subTest(f"Get manifest case: {case['name']}"):
+
+                collection = self.generate_unpublished_collection()
+
+                dataset = self.generate_dataset(
+                    collection_version=collection,
+                    artifacts=list(case["artifacts"].values()),
+                )
+                artifacts = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
+
+                assert len(artifacts) == len(case["artifacts"])
+
+                expected = {}
+                for artifact in artifacts:
+                    if artifact.type == DatasetArtifactType.ATAC_FRAGMENT:
+                        expected["atac_fragment"] = f"http://domain/{artifact.id}-fragment.{artifact.extension}"
+                    elif artifact.type == DatasetArtifactType.H5AD:
+                        expected["anndata"] = f"http://domain/{dataset.dataset_version_id}.{artifact.extension}"
+
+                test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}/manifest"
+                response = self.app.get(test_url)
+                self.assertEqual(200, response.status_code)
+
+                assert expected == response.json
+
+    def test__get_manifest_tombstoned__410(self):
+        published_collection = self.generate_published_collection()
+        dataset = published_collection.datasets[0]
+        self.business_logic.tombstone_collection(published_collection.collection_id)
+        with self.subTest("Returns 410 when a tombstoned canonical id is requested"):
+            resp = self.app.get(
+                f"/curation/v1/collections/{published_collection.collection_id}/datasets/{dataset.dataset_id}/manifest"
+            )
+            self.assertEqual(410, resp.status_code)
+
+    def test__get_manifest_by_dataset_version_id_fails(self):
+        collection = self.generate_unpublished_collection(add_datasets=1)
+        dataset = collection.datasets[0]
+
+        test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.version_id}/manifest"
+        response = self.app.get(test_url)
+        # TODO: I think this should be a 404 but this is also the behaviour of GET /collections/{
+        #  colleciton_id}/datasets/{dataset_version_id}
+        self.assertEqual(403, response.status_code)
+
+    def test__get_manifest_by_missing_dataset_id_fails(self):
+        import uuid
+
+        collection = self.generate_unpublished_collection(add_datasets=0)
+
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{uuid.uuid4()}/manifest"
+        response = self.app.get(test_url)
+        self.assertEqual(404, response.status_code)
+
+    def test__get_manifest_by_missing_collection_id_fails(self):
+        import uuid
+
+        test_url = f"/curation/v1/collections/{uuid.uuid4()}/datasets/{uuid.uuid4()}/manifest"
+        response = self.app.get(test_url)
+        self.assertEqual(404, response.status_code)
+
+
 class TestPostDataset(BaseAPIPortalTest):
     """
     Unit test for POST /datasets, which is used to add an empty dataset to a collection version
@@ -2769,12 +2930,7 @@ class TestPostRevision(BaseAPIPortalTest):
     return_value={"size": 1, "name": "file.h5ad"},
 )
 @patch("backend.layers.thirdparty.step_function_provider.StepFunctionProvider")
-class TestPutLink(BaseAPIPortalTest):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
-        cls.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
+class BasePutTest:
 
     def test__from_link__no_auth(self, *mocks):
         """
@@ -2783,11 +2939,11 @@ class TestPutLink(BaseAPIPortalTest):
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)]
         )
-        body = {"link": self.good_link}
+        body = self.good_request_body
         headers = None
-        for id in [dataset.dataset_version_id, dataset.dataset_id]:
+        for dataset_id in [dataset.dataset_version_id, dataset.dataset_id]:
             response = self.app.put(
-                f"/curation/v1/collections/{dataset.collection_id}/datasets/{id}",
+                self.endpoint.format(collection_version_id=dataset.collection_id, dataset_version_id=dataset_id),
                 json=body,
                 headers=headers,
             )
@@ -2803,11 +2959,11 @@ class TestPutLink(BaseAPIPortalTest):
             statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
             publish=True,
         )
-        body = {"link": self.good_link}
+        body = self.good_request_body
         headers = self.make_owner_header()
-        for id in [dataset.dataset_version_id, dataset.dataset_id]:
+        for dataset_id in [dataset.dataset_version_id, dataset.dataset_id]:
             response = self.app.put(
-                f"/curation/v1/collections/{dataset.collection_id}/datasets/{id}",
+                self.endpoint.format(collection_version_id=dataset.collection_id, dataset_version_id=dataset_id),
                 json=body,
                 headers=headers,
             )
@@ -2823,11 +2979,11 @@ class TestPutLink(BaseAPIPortalTest):
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
         )
-        body = {"link": self.dummy_link}
+        body = self.dummy_request_body
         headers = self.make_not_owner_header()
-        for id in [dataset.dataset_version_id, dataset.dataset_id]:
+        for dataset_id in [dataset.dataset_version_id, dataset.dataset_id]:
             response = self.app.put(
-                f"/curation/v1/collections/{dataset.collection_id}/datasets/{id}",
+                self.endpoint.format(collection_version_id=dataset.collection_id, dataset_version_id=dataset_id),
                 json=body,
                 headers=headers,
             )
@@ -2841,9 +2997,9 @@ class TestPutLink(BaseAPIPortalTest):
         """
 
         def _test_create(collection_id, dataset_id, headers):
-            body = {"link": self.good_link}
+            body = self.good_request_body
             response = self.app.put(
-                f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}",
+                self.endpoint.format(collection_version_id=collection_id, dataset_version_id=dataset_id),
                 json=body,
                 headers=headers,
             )
@@ -2873,9 +3029,9 @@ class TestPutLink(BaseAPIPortalTest):
         """
 
         def _test_create(collection_id, dataset_id, headers):
-            body = {"link": self.good_link}
+            body = self.good_request_body
             response = self.app.put(
-                f"/curation/v1/collections/{collection_id}/datasets/{dataset_id}",
+                self.endpoint.format(collection_version_id=collection_id, dataset_version_id=dataset_id),
                 json=body,
                 headers=headers,
             )
@@ -2905,10 +3061,12 @@ class TestPutLink(BaseAPIPortalTest):
         """
 
         def _test_create(collection_version_id, dataset_version_id):
-            body = {"link": self.good_link}
+            body = self.good_request_body
             headers = self.make_owner_header()
             response = self.app.put(
-                f"/curation/v1/collections/{collection_version_id}/datasets/{dataset_version_id}",
+                self.endpoint.format(
+                    collection_version_id=collection_version_id, dataset_version_id=dataset_version_id
+                ),
                 json=body,
                 headers=headers,
             )
@@ -2927,6 +3085,53 @@ class TestPutLink(BaseAPIPortalTest):
                 statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
             )
             _test_create(dataset.collection_id, dataset.dataset_version_id)
+
+    def test_with_bad_already_ingested_anndata__400(self, *mocks):
+        """
+        Calling Put /datasets/:dataset_id with a bad published anndata link should fail with 400
+        """
+        header = self.make_super_curator_header()
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
+        )
+        body = self.ingested_dataset_request_body
+        response = self.app.put(
+            self.endpoint.format(collection_version_id=dataset.collection_id, dataset_version_id=dataset.dataset_id),
+            json=body,
+            headers=header,
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertIn("detail", response.json.keys())
+
+
+class TestPutLink(BasePutTest, BaseAPIPortalTest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.good_request_body = {"link": "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"}
+        cls.dummy_request_body = {"link": "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"}
+        cls.ingested_dataset_request_body = {"link": "http://domain/1234.txt"}
+        cls.endpoint = "/curation/v1/collections/{collection_version_id}/datasets/{dataset_version_id}"
+
+
+class TestPutManifest(BasePutTest, BaseAPIPortalTest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.good_request_body = {"anndata": "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"}
+        cls.dummy_request_body = {"anndata": "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"}
+        cls.ingested_dataset_request_body = {"anndata": "http://domain/1234.txt"}
+        cls.endpoint = "/curation/v1/collections/{collection_version_id}/datasets/{dataset_version_id}/manifest"
+
+
+class TestPutManifestATAC(TestPutManifest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.good_request_body = {
+            "anndata": "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0",
+            "atat_seq_fragment": "https://www.dropbox.com/scl/fo/kfk8ahs6e109i5puqbdhs/AIe45xJ361JqwH89fwanGwE?dl=0",
+        }
 
 
 class TestAuthToken(BaseAPIPortalTest):
