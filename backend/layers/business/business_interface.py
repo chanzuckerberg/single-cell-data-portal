@@ -24,6 +24,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     PublishedDatasetVersion,
 )
+from backend.layers.common.ingestion_manifest import IngestionManifest
 
 
 class BusinessLogicInterface:
@@ -105,6 +106,9 @@ class BusinessLogicInterface:
         pass
 
     def publish_collection_version(self, version_id: CollectionVersionId, data_submission_policy_version: str) -> None:
+        pass
+
+    def get_ingestion_manifest(self, dataset_version_id: DatasetVersionId) -> IngestionManifest:
         pass
 
     def ingest_dataset(

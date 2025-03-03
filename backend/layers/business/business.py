@@ -560,6 +560,24 @@ class BusinessLogic(BusinessLogicInterface):
     def is_already_ingested(self, uri):
         return str(uri).startswith(CorporaConfig().dataset_assets_base_url)
 
+    def get_ingestion_manifest(self, dataset_version_id: DatasetVersionId) -> IngestionManifest:
+        dataset_version = self.database_provider.get_dataset_version(dataset_version_id)
+        if dataset_version is None:
+            raise DatasetNotFoundException(f"Dataset {dataset_version_id.id} not found")
+
+        raw_h5ad_uri = [
+            artifact.uri
+            for artifact in self.get_dataset_artifacts(dataset_version_id)
+            if artifact.type == DatasetArtifactType.RAW_H5AD
+        ][0]
+        atac_fragment_uri = [
+            artifact.uri
+            for artifact in self.get_dataset_artifacts(dataset_version_id)
+            if artifact.type == DatasetArtifactType.ATAC_FRAGMENT
+        ]
+        atac_fragment_uri = None if not atac_fragment_uri else atac_fragment_uri[0]
+        return IngestionManifest(anndata=raw_h5ad_uri, atac_fragment=atac_fragment_uri)
+
     # TODO: Alternatives: 1) return DatasetVersion 2) Return a new class
     def ingest_dataset(
         self,
