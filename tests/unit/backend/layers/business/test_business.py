@@ -326,15 +326,9 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         artifact_id = DatasetArtifactId()
         bucket = "datasets"
 
-        key_name = f"{artifact_id}.{ARTIFACT_TO_EXTENSION[DatasetArtifactType.ATAC_FRAGMENT]}"
-        uri = f"s3://{bucket}/{key_name}"
-        self.database_provider.create_dataset_artifact(dataset_version_id, DatasetArtifactType.ATAC_FRAGMENT, uri)
-        self.s3_provider.upload_file(None, bucket, key_name, None)
-
-        key_name = f"{artifact_id}.{ARTIFACT_TO_EXTENSION[DatasetArtifactType.ATAC_INDEX]}"
-        uri = f"s3://{bucket}/{key_name}"
-        self.database_provider.create_dataset_artifact(dataset_version_id, DatasetArtifactType.ATAC_INDEX, uri)
-        self.s3_provider.upload_file(None, bucket, key_name, None)
+        key_name = f"{artifact_id}-fragment"
+        _add_artifact(bucket, key_name, DatasetArtifactType.ATAC_FRAGMENT)
+        _add_artifact(bucket, key_name, DatasetArtifactType.ATAC_INDEX)
 
         self.database_provider.update_dataset_upload_status(dataset_version_id, DatasetUploadStatus.UPLOADED)
         self.database_provider.update_dataset_validation_status(dataset_version_id, DatasetValidationStatus.VALID)
@@ -3229,7 +3223,7 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         def add_artifact():
             self.database_provider.create_dataset_artifact(dataset.version_id, DatasetArtifactType.H5AD, "fake_uri")
 
-        self.assertEqual(len(dataset.artifacts), 5)
+        self.assertEqual(len(dataset.artifacts), 6)
 
         from concurrent.futures import ThreadPoolExecutor
 
@@ -3240,7 +3234,7 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         dv = self.business_logic.get_dataset_version(dataset.version_id)
         self.assertIsNotNone(dv)
         if dv is not None:
-            self.assertEqual(len(dv.artifacts), 15)
+            self.assertEqual(len(dv.artifacts), 16)
 
 
 class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
