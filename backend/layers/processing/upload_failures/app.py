@@ -139,7 +139,9 @@ def get_failure_slack_notification_message(
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Dataset processing job failed! Please follow the triage steps: https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit#bookmark=id.3ofm47y0709y\n"
+                    "text": f"Dataset processing job failed! Please follow the triage steps: "
+                    f"https://docs.google.com/document/d/1n5cngEIz-Lqk9737zz3makXGTMrEKT5kN4lsofXPRso/edit"
+                    f"#bookmark=id.3ofm47y0709y\n"
                     f"*Owner*: {collection_owner}\n"
                     f"*Collection URL*: {collection_url}\n"
                     f"*Collection Version URL*: {collection_version_url}\n"
@@ -201,35 +203,27 @@ def delete_atac_fragment_files(dataset_version_id: str) -> None:
         # If the dataset is skipped or NA, we don't need to delete the files since they are not created.
         return
 
-    dataset_bucket = os.environ["DATASET_BUCKET"]
     object_keys: List[str] = get_business_logic().get_atac_fragment_uris_from_dataset_version_id(dataset.version_id)
     for ok in object_keys:
-        with logger.LogSuppressed(Exception, message=FAILED_ATAC_DATASET_MESSAGE.format(ok)):
-            object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), ok)
-            delete_many_from_s3(dataset_bucket, object_key)
+        object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), ok)
+        delete_and_catch_error("DATASETS_BUCKET", object_key, FAILED_ATAC_DATASET_MESSAGE.format(ok))
 
 
-def delete_anndata_files(object_key) -> None:
-    with logger.LogSuppressed(Exception, message=FAILED_ARTIFACT_CLEANUP_MESSAGE):
-        artifact_bucket = os.environ["ARTIFACT_BUCKET"]
-        delete_many_from_s3(artifact_bucket, object_key + "/")
+def delete_and_catch_error(bucket_name: str, object_key: str, error_message) -> None:
+    with logger.LogSuppressed(Exception, message=error_message):
+        bucket_name = os.environ[bucket_name]
+        delete_many_from_s3(bucket_name, object_key)
 
 
 def cleanup_artifacts(dataset_version_id: str, error_step_name: Optional[str] = None) -> None:
     """Clean up artifacts"""
 
     object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_version_id).strip("/")
-    if not error_step_name:
-        delete_anndata_files(object_key)
-        delete_atac_fragment_files(dataset_version_id)
-    elif error_step_name == "validate_anndata":
-        delete_anndata_files(object_key)
-    elif error_step_name == "validate_atac":
+
+    if error_step_name in ["validate_anndata", None]:
+        delete_and_catch_error("ARTIFACT_BUCKET", object_key + "/", FAILED_ARTIFACT_CLEANUP_MESSAGE)
+    if error_step_name in ["validate_atac", None]:
         delete_atac_fragment_files(dataset_version_id)
 
-    with logger.LogSuppressed(Exception, message=FAILED_DATASET_CLEANUP_MESSAGE):
-        datasets_bucket = os.environ["DATASETS_BUCKET"]
-        delete_many_from_s3(datasets_bucket, object_key + ".")
-    with logger.LogSuppressed(Exception, message=FAILED_CXG_CLEANUP_MESSAGE):
-        cellxgene_bucket = os.environ["CELLXGENE_BUCKET"]
-        delete_many_from_s3(cellxgene_bucket, object_key + ".cxg/")
+    delete_and_catch_error("DATASETS_BUCKET", object_key + ".", FAILED_DATASET_CLEANUP_MESSAGE)
+    delete_and_catch_error("CELLXGENE_BUCKET", object_key + ".cxg/", FAILED_CXG_CLEANUP_MESSAGE)

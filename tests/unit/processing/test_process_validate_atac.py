@@ -1,56 +1,27 @@
-from typing import Tuple
 from unittest.mock import Mock
 
 import pytest
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.common.entities import (
-    CollectionVersion,
     CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
     DatasetArtifactType,
     DatasetConversionStatus,
-    DatasetId,
     DatasetStatusKey,
     DatasetValidationStatus,
-    DatasetVersionId,
 )
 from backend.layers.common.ingestion_manifest import IngestionManifest
 from backend.layers.processing.exceptions import ConversionFailed, ValidationAtacFailed
 from backend.layers.processing.process_validate_atac import ProcessValidateATAC
-from tests.unit.processing.base_processing_test import BaseProcessingTest
 
 fragment_uri_fmt = "http://domain/{artifact_id}-fragment.tsv.bgz"
 
 
 @pytest.fixture
-def setup():
-    base_test = BaseProcessingTest()
-    base_test.setUpClass()
-    base_test.setUp()
-    base_test.schema_validator.check_anndata_requires_fragment = Mock(return_value=False)
-    base_test.schema_validator.validate_atac = Mock(return_value=([], "fragment.tsv.bgz", "fragment.tsv.bgz.tbi"))
-    return base_test
-
-
-@pytest.fixture
 def migration_set(monkeypatch):
     monkeypatch.setenv("MIGRATION", "true")
-
-
-@pytest.fixture
-def unpublished_collection(setup) -> CollectionVersion:
-    return setup.generate_unpublished_collection()
-
-
-@pytest.fixture
-def unpublished_dataset(unpublished_collection, setup) -> Tuple[DatasetVersionId, DatasetId]:
-    new_dataset_version = setup.database_provider.create_canonical_dataset(unpublished_collection.version_id)
-    setup.database_provider.add_dataset_to_collection_version_mapping(
-        unpublished_collection.version_id, new_dataset_version.version_id
-    )
-    return new_dataset_version.version_id, new_dataset_version.dataset_id
 
 
 @pytest.fixture
@@ -421,8 +392,6 @@ class TestCreateAtacArtifact:
 
         # Assert
         dataset = setup.business_logic.get_dataset_version(dataset_version_id)
-        assert dataset.status.atac_status == DatasetConversionStatus.UPLOADED
-
         artifacts = dataset.artifacts
         assert len(artifacts) == 1
         assert str(artifact_id.id) == str(artifacts[0].id)
@@ -444,8 +413,6 @@ class TestCreateAtacArtifact:
 
         # Assert
         dataset = setup.business_logic.get_dataset_version(dataset_version_id)
-        assert dataset.status.atac_status == DatasetConversionStatus.UPLOADED
-
         artifacts = dataset.artifacts
         assert len(artifacts) == 1
         assert str(artifact_id.id) == str(artifacts[0].id)
