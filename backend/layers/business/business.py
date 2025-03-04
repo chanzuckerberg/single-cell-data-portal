@@ -564,19 +564,17 @@ class BusinessLogic(BusinessLogicInterface):
         dataset_version = self.database_provider.get_dataset_version(dataset_version_id)
         if dataset_version is None:
             raise DatasetNotFoundException(f"Dataset {dataset_version_id.id} not found")
-
-        raw_h5ad_uri = [
-            artifact.uri
-            for artifact in self.get_dataset_artifacts(dataset_version_id)
-            if artifact.type == DatasetArtifactType.RAW_H5AD
-        ][0]
-        atac_fragment_uri = [
-            artifact.uri
-            for artifact in self.get_dataset_artifacts(dataset_version_id)
-            if artifact.type == DatasetArtifactType.ATAC_FRAGMENT
-        ]
-        atac_fragment_uri = None if not atac_fragment_uri else atac_fragment_uri[0]
+        raw_h5ad_uri = self.get_artifact_type_from_dataset(dataset_version, DatasetArtifactType.RAW_H5AD)
+        atac_fragment_uri = self.get_artifact_type_from_dataset(dataset_version, DatasetArtifactType.ATAC_FRAGMENT)
         return IngestionManifest(anndata=raw_h5ad_uri, atac_fragment=atac_fragment_uri)
+
+    def get_artifact_type_from_dataset(
+        self, dataset_version: DatasetVersion, artifact_type: DatasetArtifactType
+    ) -> Optional[str]:
+        uris = [artifact.uri for artifact in dataset_version.artifacts if artifact.type == artifact_type]
+        if not uris:
+            return None
+        return uris[0]
 
     # TODO: Alternatives: 1) return DatasetVersion 2) Return a new class
     def ingest_dataset(
