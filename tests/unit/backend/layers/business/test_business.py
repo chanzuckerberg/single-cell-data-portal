@@ -60,6 +60,7 @@ from backend.layers.common.entities import (
     SpatialMetadata,
     TissueOntologyTermId,
 )
+from backend.layers.common.ingestion_manifest import IngestionManifest
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
@@ -1731,6 +1732,20 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         self.assertEqual(status.processing_status, DatasetProcessingStatus.SUCCESS)
         self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
         self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
+
+    def test_get_ingest_manifest(self):
+        published_version = self.initialize_published_collection()
+        dataset = published_version.datasets[0]
+        expected_manifest = IngestionManifest(
+            anndata=[artifact.uri for artifact in dataset.artifacts if artifact.type == DatasetArtifactType.RAW_H5AD][
+                0
+            ],
+            atac_fragment=[
+                artifact.uri for artifact in dataset.artifacts if artifact.type == DatasetArtifactType.ATAC_FRAGMENT
+            ][0],
+        )
+        manifest = self.business_logic.get_ingestion_manifest(dataset.version_id)
+        self.assertEqual(expected_manifest, manifest)
 
 
 class TestGetAllDatasets(BaseBusinessLogicTestCase):

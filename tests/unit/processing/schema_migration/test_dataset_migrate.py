@@ -1,4 +1,5 @@
-from backend.layers.common.entities import DatasetArtifact, DatasetVersionId
+from backend.layers.common.entities import DatasetVersionId
+from backend.layers.common.ingestion_manifest import IngestionManifest
 
 
 class TestDatasetMigrate:
@@ -6,9 +7,10 @@ class TestDatasetMigrate:
         schema_migrate, collections = schema_migrate_and_collections
         private = collections["private"][0]
         schema_migrate.business_logic.s3_provider.parse_s3_uri.return_value = ("fake-bucket", "object_key.h5ad")
-        schema_migrate.business_logic.get_dataset_artifacts.return_value = [
-            DatasetArtifact(id=None, type="raw_h5ad", uri="s3://fake-bucket/object_key.h5ad")
-        ]
+        schema_migrate.business_logic.get_ingestion_manifest.return_value = IngestionManifest(
+            anndata="s3://fake-bucket/object_key.h5ad"
+        )
+
         new_dataset_version_id = DatasetVersionId()
         schema_migrate.business_logic.ingest_dataset.return_value = (
             new_dataset_version_id,
@@ -21,7 +23,10 @@ class TestDatasetMigrate:
         assert response["collection_version_id"] == private.version_id.id
         assert response["dataset_version_id"] == new_dataset_version_id.id
         assert dataset_version_id != new_dataset_version_id.id
-        assert response["manifest"] == f"{{'anndata':'s3://artifact-bucket/{dataset_version_id}/migrated.h5ad'}}"
+        assert (
+            response["manifest"]
+            == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad","atac_fragment":null}}'
+        )
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]
         schema_migrate.schema_validator.migrate.assert_called_once_with(
@@ -32,9 +37,9 @@ class TestDatasetMigrate:
         schema_migrate, collections = schema_migrate_and_collections
         published = collections["published"][0]
         schema_migrate.business_logic.s3_provider.parse_s3_uri.return_value = ("fake-bucket", "object_key.h5ad")
-        schema_migrate.business_logic.get_dataset_artifacts.return_value = [
-            DatasetArtifact(id=None, type="raw_h5ad", uri="s3://fake-bucket/object_key.h5ad")
-        ]
+        schema_migrate.business_logic.get_ingestion_manifest.return_value = IngestionManifest(
+            anndata="s3://fake-bucket/object_key.h5ad"
+        )
         new_dataset_version_id = DatasetVersionId()
         schema_migrate.business_logic.ingest_dataset.return_value = (
             new_dataset_version_id,
@@ -47,7 +52,10 @@ class TestDatasetMigrate:
         assert response["collection_version_id"] == published.version_id.id
         assert response["dataset_version_id"] == new_dataset_version_id.id
         assert dataset_version_id != new_dataset_version_id.id
-        assert response["manifest"] == f"{{'anndata':'s3://artifact-bucket/{dataset_version_id}/migrated.h5ad'}}"
+        assert (
+            response["manifest"]
+            == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad","atac_fragment":null}}'
+        )
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]
         schema_migrate.schema_validator.migrate.assert_called_once_with(
@@ -58,9 +66,9 @@ class TestDatasetMigrate:
         schema_migrate, collections = schema_migrate_and_collections
         revision = collections["revision"][0]
         schema_migrate.business_logic.s3_provider.parse_s3_uri.return_value = ("fake-bucket", "object_key.h5ad")
-        schema_migrate.business_logic.get_dataset_artifacts.return_value = [
-            DatasetArtifact(id=None, type="raw_h5ad", uri="s3://fake-bucket/object_key.h5ad")
-        ]
+        schema_migrate.business_logic.get_ingestion_manifest.return_value = IngestionManifest(
+            anndata="s3://fake-bucket/object_key.h5ad"
+        )
         new_dataset_version_id = DatasetVersionId()
         schema_migrate.business_logic.ingest_dataset.return_value = (
             new_dataset_version_id,
@@ -73,7 +81,10 @@ class TestDatasetMigrate:
         assert response["collection_version_id"] == revision.version_id.id
         assert response["dataset_version_id"] == new_dataset_version_id.id
         assert dataset_version_id != new_dataset_version_id.id
-        assert response["manifest"] == f"{{'anndata':'s3://artifact-bucket/{dataset_version_id}/migrated.h5ad'}}"
+        assert (
+            response["manifest"]
+            == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad","atac_fragment":null}}'
+        )
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]
         schema_migrate.schema_validator.migrate.assert_called_once_with(
