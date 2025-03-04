@@ -60,12 +60,11 @@ class ProcessValidateATAC(ProcessingLogic):
                 key_prefix = self.get_key_prefix(fragment_artifact_id.id)
             else:
                 key_prefix = self.get_key_prefix(artifact_id.id)
-            key = key_prefix + "." + ARTIFACT_TO_EXTENSION[artifact_type]
+            key = f"{key_prefix}-fragment.{ARTIFACT_TO_EXTENSION[artifact_type]}"
             datasets_s3_uri = self.upload_artifact(file_name, key, datasets_bucket)
             self.logger.info(f"Uploaded [{dataset_version_id}/{artifact_type}] to {datasets_s3_uri}")
             self.business_logic.add_dataset_artifact(dataset_version_id, artifact_type, datasets_s3_uri, artifact_id)
             self.logger.info(f"Updated database with {artifact_type}.")
-            self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.UPLOADED)
             return artifact_id
         except Exception as e:
             self.logger.error(e)
@@ -198,7 +197,7 @@ class ProcessValidateATAC(ProcessingLogic):
             # get the artifact id of the old fragment index, and add it to the new dataset
             artifact = self.business_logic.database_provider.get_artifact_by_uri_suffix(artifact_name + ".tbi")
             self.business_logic.database_provider.add_artifact_to_dataset_version(dataset_version_id, artifact.id)
-            self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.UPLOADED)
+            self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.COPIED)
         else:
             fragment_artifact_id = self.create_atac_artifact(
                 fragment_file,
@@ -213,5 +212,6 @@ class ProcessValidateATAC(ProcessingLogic):
                 datasets_bucket,
                 fragment_artifact_id,
             )
+            self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.UPLOADED)
         self.logger.info("Processing completed successfully")
         return

@@ -171,8 +171,9 @@ def test_dataset_upload_flow_with_visium_dataset(
 def test_dataset_upload_flow_with_atac_seq_dataset(
     session, curator_cookie, api_url, upload_manifest, request, collection_data, curation_api_access_token
 ):
+    headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     collection_id = create_test_collection(
-        {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"},
+        headers,
         request,
         session,
         api_url,
@@ -180,7 +181,7 @@ def test_dataset_upload_flow_with_atac_seq_dataset(
     )
     _verify_upload_and_delete_succeeded(
         collection_id,
-        {"Authorization": f"Bearer {curation_api_access_token}"},
+        headers,
         ATAC_SEQ_MANIFEST,
         session,
         api_url,
