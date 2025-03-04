@@ -59,6 +59,7 @@ class DatasetValidationStatus(DatasetStatusGeneric, Enum):
 
 class DatasetConversionStatus(DatasetStatusGeneric, Enum):
     NA = "NA"
+    COPIED = "COPIED"  # when the artifact is copied from another dataset version
     CONVERTING = "CONVERTING"
     CONVERTED = "CONVERTED"
     UPLOADING = "UPLOADING"
