@@ -129,6 +129,112 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
       ],
     },
   ],
+  [ONTOLOGY_VIEW_KEY.WBls]: [
+    {
+      label: "Unfertilized Egg",
+      ontology_term_id: "WBls:0000669",
+    },
+    {
+      label: "Embryo",
+      ontology_term_id: "WBls:0000803",
+    },
+    {
+      label: "Larval",
+      ontology_term_id: "WBls:0000816", // TODO(smccanny): what is the correct term?
+      children: [
+        {
+          label: "L1 Larva",
+          ontology_term_id: "WBls:0000804",
+        },
+        {
+          label: "L2 Larva",
+          ontology_term_id: "WBls:0000025",
+        },
+        {
+          label: "Dauer Larva",
+          ontology_term_id: "WBls:0000031",
+        },
+        {
+          label: "L3 Larva",
+          ontology_term_id: "WBls:0000027",
+        },
+        {
+          label: "L4 Larva",
+          ontology_term_id: "WBls:0000029",
+        },
+      ],
+    },
+    {
+      label: "Adult",
+      ontology_term_id: "WBls:0000041",
+    },
+  ],
+  [ONTOLOGY_VIEW_KEY.ZFS]: [
+    {
+      label: "Zygote",
+      ontology_term_id: "ZFS:0000000",
+    },
+    {
+      label: "Cleavage",
+      ontology_term_id: "ZFS:0000002",
+    },
+    {
+      label: "Blastula",
+      ontology_term_id: "ZFS:0000003",
+    },
+    {
+      label: "Gastrula",
+      ontology_term_id: "ZFS:0000004",
+    },
+    {
+      label: "Segmentation",
+      ontology_term_id: "ZFS:0000005",
+    },
+    {
+      label: "Pharyngula",
+      ontology_term_id: "ZFS:0000006",
+    },
+    {
+      label: "Hatching",
+      ontology_term_id: "ZFS:0000007",
+    },
+  ],
+  [ONTOLOGY_VIEW_KEY.FBdv]: [
+    {
+      label: "Embryo",
+      ontology_term_id: "FBdv:00000005",
+    },
+    {
+      label: "Larval",
+      ontology_term_id: "WBls:0000803", // TODO(smccanny): what is the correct term?
+      children: [
+        {
+          label: "First Instar Larva",
+          ontology_term_id: "FBdv:00005360",
+        },
+        {
+          label: "Second Instar Larva",
+          ontology_term_id: "FBdv:00005364",
+        },
+        {
+          label: "Third Instar Larva",
+          ontology_term_id: "FBdv:00005368",
+        },
+        {
+          label: "Prepupa",
+          ontology_term_id: "FBdv:00005372",
+        },
+      ],
+    },
+    {
+      label: "Pupa",
+      ontology_term_id: "FBdv:00005374",
+    },
+    {
+      label: "Adult",
+      ontology_term_id: "FBdv:00007002",
+    },
+  ],
   [ONTOLOGY_VIEW_KEY.UBERON]: [
     {
       label: "Embryo",

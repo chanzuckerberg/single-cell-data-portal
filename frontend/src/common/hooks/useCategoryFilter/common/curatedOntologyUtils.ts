@@ -18,6 +18,7 @@ import {
   ONTOLOGY_VIEW_KEY,
   ONTOLOGY_VIEW_LABEL,
   ORGANISM,
+  ORGANISM_LOOKUP,
 } from "src/components/common/Filter/common/entities";
 import {
   findOntologyNodeById,
@@ -399,8 +400,12 @@ function isDevelopmentStageSpeciesVisible(
     .filter((selectCategoryValue) => selectCategoryValue.selected)
     .map((selectCategoryValue) => selectCategoryValue.categoryValueId);
 
-  // If no organisms are selected, all species can be displayed.
-  if (selectedOrganisms.length === 0) {
+  // If no organisms are selected, display Human and Mouse by default.
+  if (
+    selectedOrganisms.length === 0 &&
+    (speciesKey === ONTOLOGY_VIEW_KEY.HsapDv ||
+      speciesKey === ONTOLOGY_VIEW_KEY.MmusDv)
+  ) {
     return true;
   }
 
@@ -411,12 +416,21 @@ function isDevelopmentStageSpeciesVisible(
   if (speciesKey === ONTOLOGY_VIEW_KEY.MmusDv) {
     return selectedOrganisms.includes(ORGANISM.MUS_MUSCULUS);
   }
-  // Check the "other" case where any species other than human and mouse must be selected.
+  if (speciesKey === ONTOLOGY_VIEW_KEY.WBls) {
+    return selectedOrganisms.includes(ORGANISM.C_ELEGANS);
+  }
+  if (speciesKey === ONTOLOGY_VIEW_KEY.ZFS) {
+    return selectedOrganisms.includes(ORGANISM.D_RERIO);
+  }
+  if (speciesKey === ONTOLOGY_VIEW_KEY.FBdv) {
+    return selectedOrganisms.includes(ORGANISM.DROSOPHILA);
+  }
+
+  // Check the "other" case where any species other than the curated species have been selected
+
   return (
-    selectedOrganisms.filter(
-      (organism) =>
-        organism !== ORGANISM.HOMO_SAPIENS && organism !== ORGANISM.MUS_MUSCULUS
-    ).length > 0
+    selectedOrganisms.filter((organism) => !ORGANISM_LOOKUP[organism]).length >
+    0
   );
 }
 
