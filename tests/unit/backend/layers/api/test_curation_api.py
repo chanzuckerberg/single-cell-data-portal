@@ -2565,8 +2565,8 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
         self.assertEqual(200, response.status_code)
         expected_obs_columns = ["test", "obs"]
         expected_var_columns = ["test", "var"]
-        self.assertEqual(response.json["obs_columns"], expected_obs_columns)
-        self.assertEqual(response.json["var_columns"], expected_var_columns)
+        self.assertEqual(response.json["obs_column_names"], expected_obs_columns)
+        self.assertEqual(response.json["var_column_names"], expected_var_columns)
 
 
 class TestGetDatasetIdVersions(BaseAPIPortalTest):
