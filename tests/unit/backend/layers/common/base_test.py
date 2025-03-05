@@ -169,8 +169,8 @@ class BaseTest(unittest.TestCase):
         )
         self.business_logic.get_anndata_metadata = Mock(
             return_value=AnndataMetadata(
-                obs_column_names=["test", "obs"],
-                var_column_names=["test", "var"],
+                ["test", "obs"],
+                ["test", "var"],
             )
         )
 
