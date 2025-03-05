@@ -20,8 +20,8 @@ class DatasetArtifactDownloadData:
 
 @dataclass
 class AnndataMetadata:
-    obs_columns: List[str]
-    var_columns: List[str]
+    obs_column_names: List[str]
+    var_column_names: List[str]
 
 
 @dataclass
