@@ -19,6 +19,12 @@ class DatasetArtifactDownloadData:
 
 
 @dataclass
+class AnndataMetadata:
+    obs_columns: List[str]
+    var_columns: List[str]
+
+
+@dataclass
 class CollectionMetadataUpdate:
     """
     This class can be used to issue an update to the collection metadata.

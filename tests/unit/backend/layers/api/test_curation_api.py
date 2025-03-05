@@ -2554,6 +2554,20 @@ class TestGetDatasetVersion(BaseAPIPortalTest):
             response = self.app.get(test_url, headers=headers)
             self.assertEqual(410, response.status_code)
 
+    def test_get_dataset_version_anndata_ok(self):
+        collection = self.generate_published_collection()
+        initial_published_dataset_version_id = collection.datasets[0].version_id
+
+        headers = self.make_owner_header()
+
+        test_url = f"/curation/v1/dataset_versions/{initial_published_dataset_version_id}/anndata"
+        response = self.app.get(test_url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        expected_obs_columns = ["test", "obs"]
+        expected_var_columns = ["test", "var"]
+        self.assertEqual(response.json["obs_columns"], expected_obs_columns)
+        self.assertEqual(response.json["var_columns"], expected_var_columns)
+
 
 class TestGetDatasetIdVersions(BaseAPIPortalTest):
     def test_get_dataset_id_versions_ok(self):

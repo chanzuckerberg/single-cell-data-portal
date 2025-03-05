@@ -6,6 +6,9 @@ from datetime import datetime
 from functools import reduce
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
+import fsspec
+import h5py
+
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.corpora_config import CorporaConfig
 from backend.common.doi import doi_curie_from_link
@@ -17,6 +20,7 @@ from backend.common.providers.crossref_provider import (
 )
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import (
+    AnndataMetadata,
     CollectionMetadataUpdate,
     CollectionQueryFilter,
     DatasetArtifactDownloadData,
@@ -1372,3 +1376,19 @@ class BusinessLogic(BusinessLogicInterface):
         )
         self.database_provider.replace_collection_version(collection_id, previous_version.version_id)
         return version_to_replace
+
+    def get_anndata_metadata(self, dataset_version_id: DatasetVersionId) -> Optional[AnndataMetadata]:
+        dataset_version = self.get_dataset_version(dataset_version_id)
+        if dataset_version is None:
+            raise DatasetNotFoundException()
+        if dataset_version.canonical_dataset.tombstoned:
+            raise DatasetIsTombstonedException()
+        dataset_artifacts = self.get_dataset_artifacts(DatasetVersionId(dataset_version_id))
+        for artifact in dataset_artifacts:
+            if artifact.type == "H5AD":
+                with h5py.File(fsspec.filesystem("s3").open(artifact.uri)) as f:
+                    obs_column_names = list(f["obs"].keys())
+                    var_column_names = list(f["var"].keys())
+
+                    return AnndataMetadata(obs_column_names=obs_column_names, var_column_names=var_column_names)
+        raise ArtifactNotFoundException()

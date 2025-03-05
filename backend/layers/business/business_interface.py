@@ -1,6 +1,7 @@
 from typing import Iterable, List, Optional, Tuple
 
 from backend.layers.business.entities import (
+    AnndataMetadata,
     CollectionMetadataUpdate,
     CollectionQueryFilter,
     DatasetArtifactDownloadData,
@@ -190,3 +191,6 @@ class BusinessLogicInterface:
         state
         :param dataset_id: The dataset id to restore the previous version of.
         """
+
+    def get_anndata_metadata(self, dataset_version_id: DatasetVersionId) -> AnndataMetadata:
+        pass

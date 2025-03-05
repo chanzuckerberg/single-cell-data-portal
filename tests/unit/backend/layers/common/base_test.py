@@ -9,6 +9,7 @@ from unittest.mock import Mock
 from backend.common.corpora_config import CorporaConfig
 from backend.common.providers.crossref_provider import CrossrefProviderInterface
 from backend.layers.business.business import BusinessLogic
+from backend.layers.business.entities import AnndataMetadata
 from backend.layers.common.entities import (
     CollectionId,
     CollectionMetadata,
@@ -165,6 +166,12 @@ class BaseTest(unittest.TestCase):
             step_function_provider,
             self.s3_provider,
             self.uri_provider,
+        )
+        self.business_logic.get_anndata_metadata = Mock(
+            return_value=AnndataMetadata(
+                obs_column_names=["test", "obs"],
+                var_column_names=["test", "var"],
+            )
         )
 
     def tearDown(self):
