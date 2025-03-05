@@ -12,7 +12,9 @@ ddtrace>=2.1.4, <3
 Flask>=2.2.3, <3
 Flask-Cors>=3.0.6
 flask-server-timing>=0.1.2
+fsspec==2025.2.0
 gunicorn[gevent]==22.0.0
+h5py==3.13.0
 matplotlib>=3.6.3, <3.7 # 3.7.0 isn't compatible with scanpy: https://github.com/scverse/scanpy/issues/2411
 psutil>=5.9.5, <6
 psycopg2-binary==2.*
