@@ -263,6 +263,7 @@ resource "aws_sfn_state_machine" "state_machine" {
     },
     "HandleErrors": {
       "Type": "Task",
+      "InputPath": "$",
       "Resource": "${var.lambda_error_handler}",
       "Parameters": {
         "execution_id.$": "$$.Execution.Id",
