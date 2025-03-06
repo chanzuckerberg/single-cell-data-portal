@@ -405,22 +405,6 @@ module upload_sfn {
   batch_job_log_group = module.upload_batch.batch_job_log_group
 }
 
-module dataset_submissions_lambda {
-  source                     = "../lambda"
-  image                      = "${local.lambda_dataset_submissions_repo}:${local.image_tag}"
-  name                       = "dataset-submissions"
-  custom_stack_name          = local.custom_stack_name
-  remote_dev_prefix          = local.remote_dev_prefix
-  deployment_stage           = local.deployment_stage
-  artifact_bucket            = local.artifact_bucket
-  cellxgene_bucket           = local.cellxgene_bucket
-  datasets_bucket            = local.datasets_bucket
-  lambda_execution_role      = aws_iam_role.dataset_submissions_lambda_service_role.arn
-  step_function_arn          = module.upload_sfn.step_function_arn
-  subnets                    = local.subnets
-  security_groups            = local.security_groups
-}
-
 module schema_migration {
   source                        = "../schema_migration"
   image                         = "${local.upload_image_repo}:${local.image_tag}"
@@ -527,23 +511,4 @@ resource "aws_iam_policy" "lambda_step_function_execution_policy" {
 resource "aws_iam_role_policy_attachment" "lambda_step_function_execution_policy_attachment" {
   role       = aws_iam_role.dataset_submissions_lambda_service_role.name
   policy_arn = aws_iam_policy.lambda_step_function_execution_policy.arn
-}
-
-resource "aws_lambda_permission" "allow_dataset_submissions_lambda_execution" {
-  statement_id  = "AllowExecutionFromS3Bucket"
-  action        = "lambda:InvokeFunction"
-  function_name = module.dataset_submissions_lambda.arn
-  principal     = "s3.amazonaws.com"
-  source_arn    = try(local.secret["s3_buckets"]["dataset_submissions"]["arn"], "")
-}
-
-resource "aws_s3_bucket_notification" "on_dataset_submissions_object_created" {
-  bucket = local.dataset_submissions_bucket
-
-  lambda_function {
-    lambda_function_arn = module.dataset_submissions_lambda.arn
-    events = ["s3:ObjectCreated:*"]
-  }
-
-  depends_on = [aws_lambda_permission.allow_dataset_submissions_lambda_execution]
 }

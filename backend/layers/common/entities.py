@@ -16,7 +16,7 @@ class DatasetStatusKey(str, Enum):
     CXG = "cxg"
     RDS = "rds"
     H5AD = "h5ad"
-    ATAC_FRAGMENT = "atac_fragment"
+    ATAC = "atac"
     PROCESSING = "processing"
 
 
@@ -59,6 +59,7 @@ class DatasetValidationStatus(DatasetStatusGeneric, Enum):
 
 class DatasetConversionStatus(DatasetStatusGeneric, Enum):
     NA = "NA"
+    COPIED = "COPIED"  # when the artifact is copied from another dataset version
     CONVERTING = "CONVERTING"
     CONVERTED = "CONVERTED"
     UPLOADING = "UPLOADING"

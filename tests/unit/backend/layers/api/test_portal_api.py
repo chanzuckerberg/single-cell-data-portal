@@ -101,7 +101,7 @@ class TestCollection(BaseAPIPortalTest):
                     "name": "test_dataset_name",
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
                     "processing_status": {
-                        "atac_status": "SKIPPED",
+                        "atac_status": "NA",
                         "created_at": 0,
                         "cxg_status": "NA",
                         "dataset_id": mock.ANY,
@@ -157,7 +157,7 @@ class TestCollection(BaseAPIPortalTest):
                     "name": "test_dataset_name",
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
                     "processing_status": {
-                        "atac_status": "SKIPPED",
+                        "atac_status": "NA",
                         "created_at": 0,
                         "cxg_status": "NA",
                         "dataset_id": mock.ANY,
@@ -1806,7 +1806,7 @@ class TestDataset(BaseAPIPortalTest):
         self.assertEqual(200, response.status_code)
         actual_body = json.loads(response.data)
         expected_body = {
-            "atac_status": "SKIPPED",
+            "atac_status": "NA",
             "cxg_status": "NA",
             "rds_status": "NA",
             "h5ad_status": "NA",
@@ -2004,6 +2004,9 @@ class TestDataset(BaseAPIPortalTest):
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.CXG, "s3://mock-bucket/mock-key.cxg"),
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, "s3://mock-bucket/mock-key.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.RDS, "s3://mock-bucket/mock-key.rds"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "s3://mock-bucket/mock-key.tsv.bgz"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_INDEX, "s3://mock-bucket/mock-key.tsv.bgz.tbi"),
             ]
         )
 
@@ -2014,9 +2017,12 @@ class TestDataset(BaseAPIPortalTest):
         body = json.loads(response.data)
         self.assertIn("assets", body)
         assets = body["assets"]
-        self.assertEqual(len(assets), 2)
+        self.assertEqual(len(assets), 5)
         self.assertEqual(assets[0]["s3_uri"], "s3://mock-bucket/mock-key.cxg")
         self.assertEqual(assets[1]["s3_uri"], "s3://mock-bucket/mock-key.h5ad")
+        self.assertEqual(assets[2]["s3_uri"], "s3://mock-bucket/mock-key.rds")
+        self.assertEqual(assets[3]["s3_uri"], "s3://mock-bucket/mock-key.tsv.bgz")
+        self.assertEqual(assets[4]["s3_uri"], "s3://mock-bucket/mock-key.tsv.bgz.tbi")
 
     # ✅
     def test__cancel_dataset_download__ok(self):

@@ -21,7 +21,7 @@ from backend.layers.processing.exceptions import ConversionFailed, ValidationAta
 from backend.layers.processing.process_validate_atac import ProcessValidateATAC
 from tests.unit.processing.base_processing_test import BaseProcessingTest
 
-fragment_uri_fmt = "http://domain/{artifact_id}.tsv.bgz"
+fragment_uri_fmt = "http://domain/{artifact_id}-fragment.tsv.bgz"
 
 
 @pytest.fixture
@@ -30,8 +30,13 @@ def setup():
     base_test.setUpClass()
     base_test.setUp()
     base_test.schema_validator.check_anndata_requires_fragment = Mock(return_value=False)
-    base_test.schema_validator.validate_atac = Mock(return_value=None)
+    base_test.schema_validator.validate_atac = Mock(return_value=([], "fragment.tsv.bgz", "fragment.tsv.bgz.tbi"))
     return base_test
+
+
+@pytest.fixture
+def migration_set(monkeypatch):
+    monkeypatch.setenv("MIGRATION", "true")
 
 
 @pytest.fixture
@@ -67,14 +72,12 @@ def collection_revision_with_fragment(
         "anything",
         DatasetArtifactType.ATAC_FRAGMENT,
         fragment_dataset.version_id,
-        DatasetStatusKey.ATAC_FRAGMENT,
         "datasets",
     )
     process_validate_atac.create_atac_artifact(
         "anything",
         DatasetArtifactType.ATAC_INDEX,
         fragment_dataset.version_id,
-        DatasetStatusKey.ATAC_FRAGMENT,
         "datasets",
         artifact_id,
     )
@@ -124,11 +127,11 @@ class TestProcessValidateAtac:
     def assert_new_fragment_added(self, artifacts, setup):
         atac_fragment_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0]
         assert setup.s3_provider.file_exists("datasets", atac_fragment_artifact.uri.split("/")[-1])
-        assert atac_fragment_artifact.uri == f"s3://datasets/{atac_fragment_artifact.id}.tsv.bgz"
+        assert atac_fragment_artifact.uri == f"s3://datasets/{atac_fragment_artifact.id}-fragment.tsv.bgz"
 
         atac_frag_index_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_INDEX][0]
         assert setup.s3_provider.file_exists("datasets", atac_frag_index_artifact.uri.split("/")[-1])
-        assert atac_frag_index_artifact.uri == f"s3://datasets/{atac_fragment_artifact.id}.tsv.bgz.tbi"
+        assert atac_frag_index_artifact.uri == f"s3://datasets/{atac_fragment_artifact.id}-fragment.tsv.bgz.tbi"
 
     def assert_artifacts_uploaded(self, setup, dataset_version_id) -> list[DatasetArtifact]:
         status = setup.business_logic.get_dataset_status(dataset_version_id)
@@ -195,7 +198,11 @@ class TestProcessValidateAtac:
         )
 
         # Assert
-        artifacts = self.assert_artifacts_uploaded(setup, new_dataset_version.version_id)
+        status = setup.business_logic.get_dataset_status(new_dataset_version.version_id)
+        assert status.atac_status == DatasetConversionStatus.COPIED
+
+        artifacts = setup.business_logic.get_dataset_version(new_dataset_version.version_id).artifacts
+        assert len(artifacts) == 2
 
         atac_frag_index_artifact = [a for a in artifacts if a.type == DatasetArtifactType.ATAC_INDEX][0]
         assert setup.s3_provider.file_exists("datasets", atac_frag_index_artifact.uri.split("/")[-1])
@@ -206,7 +213,7 @@ class TestProcessValidateAtac:
         assert str(atac_fragment_artifact.id) == str(old_fragment_artifact_id)
 
     def test_old_fragment_replaced_because_hash_difference(
-        self, anndata_uri, collection_revision_with_fragment, process_validate_atac, setup
+        self, anndata_uri, collection_revision_with_fragment, process_validate_atac, setup, migration_set
     ):
         """A published fragment is used in the manifest. This will pass validation, but the hash of the new file is
         different, so a new artifact will be added to the dataset version."""
@@ -325,9 +332,7 @@ class TestSkipATACValidation:
 
         # Assert
         dataset_status = setup.business_logic.get_dataset_status(dataset_version_id)
-        assert (
-            setup.business_logic.get_dataset_status(dataset_version_id).atac_status == DatasetConversionStatus.SKIPPED
-        )
+        assert setup.business_logic.get_dataset_status(dataset_version_id).atac_status == DatasetConversionStatus.NA
         assert dataset_status.validation_message == "test"
 
     def test_not_atac_and_fragment(self, process_validate_atac, unpublished_dataset, setup, manifest_with_fragment):
@@ -411,19 +416,16 @@ class TestCreateAtacArtifact:
             "anything",
             DatasetArtifactType.ATAC_FRAGMENT,
             dataset_version_id,
-            DatasetStatusKey.ATAC_FRAGMENT,
             "datasets",
         )
 
         # Assert
         dataset = setup.business_logic.get_dataset_version(dataset_version_id)
-        assert dataset.status.atac_status == DatasetConversionStatus.UPLOADED
-
         artifacts = dataset.artifacts
         assert len(artifacts) == 1
         assert str(artifact_id.id) == str(artifacts[0].id)
         assert artifacts[0].type == DatasetArtifactType.ATAC_FRAGMENT
-        assert artifacts[0].uri == f"s3://datasets/{artifacts[0].id}.tsv.bgz"
+        assert artifacts[0].uri == f"s3://datasets/{artifacts[0].id}-fragment.tsv.bgz"
 
     def test_fragment_index(self, process_validate_atac, unpublished_dataset, setup):
         """Test that the create_atac_artifact method creates an artifact for the fragment index."""
@@ -434,20 +436,17 @@ class TestCreateAtacArtifact:
             "anything",
             DatasetArtifactType.ATAC_INDEX,
             dataset_version_id,
-            DatasetStatusKey.ATAC_FRAGMENT,
             "datasets",
             fragment_artifact_id=fragment_artifact_id,
         )
 
         # Assert
         dataset = setup.business_logic.get_dataset_version(dataset_version_id)
-        assert dataset.status.atac_status == DatasetConversionStatus.UPLOADED
-
         artifacts = dataset.artifacts
         assert len(artifacts) == 1
         assert str(artifact_id.id) == str(artifacts[0].id)
         assert artifacts[0].type == DatasetArtifactType.ATAC_INDEX
-        assert artifacts[0].uri == f"s3://datasets/{fragment_artifact_id.id}.tsv.bgz.tbi"
+        assert artifacts[0].uri == f"s3://datasets/{fragment_artifact_id.id}-fragment.tsv.bgz.tbi"
 
     def test_exception(self, process_validate_atac, unpublished_dataset, setup):
         """Test that the create_atac_artifact method raises an exception when the artifact cannot be created."""
@@ -461,8 +460,7 @@ class TestCreateAtacArtifact:
                 "anything",
                 DatasetArtifactType.ATAC_FRAGMENT,
                 dataset_version_id,
-                DatasetStatusKey.ATAC_FRAGMENT,
                 "datasets",
             )
 
-        assert e.value.failed_status == DatasetStatusKey.ATAC_FRAGMENT
+        assert e.value.failed_status == DatasetStatusKey.ATAC

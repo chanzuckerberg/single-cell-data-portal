@@ -26,7 +26,6 @@ from backend.layers.common.entities import (
     CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
-    DatasetArtifactType,
     DatasetConversionStatus,
     DatasetId,
     DatasetMetadata,
@@ -714,14 +713,13 @@ class DatabaseProvider(DatabaseProviderInterface):
                     update(DatasetTable).where(DatasetTable.id.in_(dataset_ids_to_tombstone)).values(tombstone=True)
                 )
                 session.execute(tombstone_dataset_statement)
-                dataset_all_versions = (
-                    session.query(DatasetVersionTable)
+                dataset_all_versions = [
+                    self._hydrate_dataset_version(dv)
+                    for dv in session.query(DatasetVersionTable)
                     .filter(DatasetVersionTable.dataset_id.in_(dataset_ids_to_tombstone))
                     .all()
-                )
-                dataset_versions_to_delete_from_s3.extend(
-                    self._hydrate_dataset_version(dv) for dv in dataset_all_versions
-                )
+                ]
+                dataset_versions_to_delete_from_s3.extend(dataset_all_versions)
 
             # update dataset versions for datasets that are not being tombstoned
             dataset_version_ids = session.query(CollectionVersionTable.datasets).filter_by(id=version_id.id).one()[0]
@@ -878,17 +876,21 @@ class DatabaseProvider(DatabaseProviderInterface):
             return self._row_to_dataset_version(dataset_version, CanonicalDataset(dataset_id, None, False, None), [])
 
     @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
-    def add_dataset_artifact(
-        self, version_id: DatasetVersionId, artifact_type: DatasetArtifactType, artifact_uri: str
+    def create_dataset_artifact(
+        self,
+        dataset_version_id: DatasetVersionId,
+        artifact_type: str,
+        artifact_uri: str,
+        artifact_id: Optional[DatasetArtifactId] = None,
     ) -> DatasetArtifactId:
         """
         Adds a dataset artifact to an existing dataset version.
         """
-        artifact_id = DatasetArtifactId()
+        artifact_id = artifact_id if artifact_id else DatasetArtifactId()
         artifact = DatasetArtifactTable(id=artifact_id.id, type=artifact_type, uri=artifact_uri)
         with self._get_serializable_session() as session:
             session.add(artifact)
-            dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=dataset_version_id.id).one()
             artifacts = list(dataset_version.artifacts)
             artifacts.append(uuid.UUID(artifact_id.id))
             dataset_version.artifacts = artifacts
@@ -906,7 +908,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
     ) -> None:
         """
-        Adds an artifact to a dataset version
+        Adds an artifact to an existing dataset version
         """
         with self._manage_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=dataset_version_id.id).one()
@@ -968,14 +970,6 @@ class DatabaseProvider(DatabaseProviderInterface):
             message = dataset_version_status.get("validation_message")
             message = validation_message if message is None else "\n".join([message, validation_message])
             dataset_version_status["validation_message"] = message
-            dataset_version.status = dataset_version_status
-
-    @retry(wait=wait_fixed(1), stop=stop_after_attempt(5))
-    def clear_dataset_validation_message(self, version_id: DatasetVersionId):
-        with self._get_serializable_session() as session:
-            dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
-            dataset_version_status = deepcopy(dataset_version.status)
-            dataset_version_status["validation_message"] = None
             dataset_version.status = dataset_version_status
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
@@ -1089,14 +1083,16 @@ class DatabaseProvider(DatabaseProviderInterface):
             # Confirm collection version datasets length matches given dataset version IDs length.
             if len(collection_version.datasets) != len(dataset_version_ids):
                 raise ValueError(
-                    f"Dataset Version IDs length does not match Collection Version {collection_version_id} Datasets length"
+                    f"Dataset Version IDs length does not match Collection Version {collection_version_id} Datasets "
+                    f"length"
                 )
 
             # Confirm all given dataset version IDs belong to collection version.
             if {dv_id.id for dv_id in dataset_version_ids} != {str(d) for d in collection_version.datasets}:
                 raise ValueError("Dataset Version IDs do not match saved Collection Version Dataset IDs")
 
-            # Replace collection version datasets with given, ordered dataset version IDs and update custom ordered flag.
+            # Replace collection version datasets with given, ordered dataset version IDs and update custom ordered
+            # flag.
             updated_datasets = [uuid.UUID(dv_id.id) for dv_id in dataset_version_ids]
             collection_version.datasets = updated_datasets
             collection_version.has_custom_dataset_order = True

@@ -125,6 +125,11 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Return the permanent URL for the given asset.
         """
+        if asset_type in [DatasetArtifactType.ATAC_INDEX, DatasetArtifactType.ATAC_FRAGMENT]:
+            fmt_str = "{}/{}-fragment.{}"
+        else:
+            fmt_str = "{}/{}.{}"
+
         if asset_type == DatasetArtifactType.ATAC_INDEX:
             entity_id = [a for a in dataset_version.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0].id
         elif asset_type == DatasetArtifactType.ATAC_FRAGMENT:
@@ -133,7 +138,7 @@ class BusinessLogic(BusinessLogicInterface):
             entity_id = dataset_version.version_id
 
         base_url = CorporaConfig().dataset_assets_base_url
-        return f"{base_url}/{entity_id.id}.{ARTIFACT_TO_EXTENSION[asset_type]}"
+        return fmt_str.format(base_url, entity_id.id, ARTIFACT_TO_EXTENSION[asset_type])
 
     @staticmethod
     def generate_dataset_citation(
@@ -555,6 +560,22 @@ class BusinessLogic(BusinessLogicInterface):
     def is_already_ingested(self, uri):
         return str(uri).startswith(CorporaConfig().dataset_assets_base_url)
 
+    def get_ingestion_manifest(self, dataset_version_id: DatasetVersionId) -> IngestionManifest:
+        dataset_version = self.database_provider.get_dataset_version(dataset_version_id)
+        if dataset_version is None:
+            raise DatasetNotFoundException(f"Dataset {dataset_version_id.id} not found")
+        raw_h5ad_uri = self.get_artifact_type_from_dataset(dataset_version, DatasetArtifactType.RAW_H5AD)
+        atac_fragment_uri = self.get_artifact_type_from_dataset(dataset_version, DatasetArtifactType.ATAC_FRAGMENT)
+        return IngestionManifest(anndata=raw_h5ad_uri, atac_fragment=atac_fragment_uri)
+
+    def get_artifact_type_from_dataset(
+        self, dataset_version: DatasetVersion, artifact_type: DatasetArtifactType
+    ) -> Optional[str]:
+        uris = [artifact.uri for artifact in dataset_version.artifacts if artifact.type == artifact_type]
+        if not uris:
+            return None
+        return uris[0]
+
     # TODO: Alternatives: 1) return DatasetVersion 2) Return a new class
     def ingest_dataset(
         self,
@@ -610,7 +631,8 @@ class BusinessLogic(BusinessLogicInterface):
                 manifest.anndata = [a for a in previous_dv.artifacts if a.type == DatasetArtifactType.RAW_H5AD][0].uri
 
             if key == "atac_fragment":
-                artifact_id, extension = _url.split("/")[-1].split(".", 1)
+                file_name, extension = _url.split("/")[-1].split(".", 1)
+                artifact_id = file_name.rsplit("-", 1)[0]
                 if extension != ARTIFACT_TO_EXTENSION[DatasetArtifactType.ATAC_FRAGMENT]:
                     raise InvalidIngestionManifestException(message=f"{_url} is not an atac_fragments file")
                 artifact = self.database_provider.get_dataset_artifacts([DatasetArtifactId(artifact_id)])
@@ -683,13 +705,6 @@ class BusinessLogic(BusinessLogicInterface):
         self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
         self.database_provider.update_dataset_processing_status(
             new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
-        )
-        self.database_provider.clear_dataset_validation_message(new_dataset_version.version_id)
-        self.update_dataset_version_status(
-            new_dataset_version.version_id,
-            DatasetStatusKey.ATAC_FRAGMENT,
-            DatasetConversionStatus.SKIPPED,
-            # TODO: remove when atac is supported
         )
 
         # Starts the step function process
@@ -908,7 +923,7 @@ class BusinessLogic(BusinessLogicInterface):
             self.database_provider.update_dataset_conversion_status(
                 dataset_version_id, "h5ad_status", new_dataset_status
             )
-        elif status_key == DatasetStatusKey.ATAC_FRAGMENT and isinstance(new_dataset_status, DatasetConversionStatus):
+        elif status_key == DatasetStatusKey.ATAC and isinstance(new_dataset_status, DatasetConversionStatus):
             self.database_provider.update_dataset_conversion_status(
                 dataset_version_id, "atac_status", new_dataset_status
             )
@@ -922,7 +937,11 @@ class BusinessLogic(BusinessLogicInterface):
             self.database_provider.update_dataset_validation_message(dataset_version_id, validation_message)
 
     def add_dataset_artifact(
-        self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
+        self,
+        dataset_version_id: DatasetVersionId,
+        artifact_type: str,
+        artifact_uri: str,
+        artifact_id: Optional[DatasetArtifactId] = None,
     ) -> DatasetArtifactId:
         """
         Registers an artifact to a dataset version.
@@ -931,7 +950,9 @@ class BusinessLogic(BusinessLogicInterface):
         if artifact_type not in [artifact.value for artifact in DatasetArtifactType]:
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
 
-        return self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
+        return self.database_provider.create_dataset_artifact(
+            dataset_version_id, artifact_type, artifact_uri, artifact_id
+        )
 
     def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
         """
@@ -994,23 +1015,29 @@ class BusinessLogic(BusinessLogicInterface):
             # Collection was never published; delete CollectionTable row
             self.database_provider.delete_unpublished_collection(collection_version.collection_id)
 
+    def get_atac_fragment_uris_from_dataset_version(self, dataset_version: DatasetVersion) -> List[str]:
+        """
+        get all atac fragment files associated with a dataset version from the public bucket
+        """
+        object_keys = set()
+        object_keys.update(
+            [a.uri.rsplit("/", 1)[-1] for a in dataset_version.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT]
+        )
+        object_keys.update(
+            [a.uri.rsplit("/", 1)[-1] for a in dataset_version.artifacts if a.type == DatasetArtifactType.ATAC_INDEX]
+        )
+        return list(object_keys)
+
     def delete_dataset_versions_from_public_bucket(self, dataset_versions: List[DatasetVersion]) -> List[str]:
         rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
         object_keys = set()
-        # TODO, modify to delete fragment and index file as well. The fragment file and index used the artifact ID to
-        #  identify it.
         for d_v in dataset_versions:
             for file_type in ("h5ad", "rds"):
                 dataset_version_s3_object_key = f"{d_v.version_id}.{file_type}"
                 if rdev_prefix:
                     dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
                 object_keys.add(dataset_version_s3_object_key)
-            object_keys.update(
-                [a.uri.rsplit("/", 1)[-1] for a in d_v.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT]
-            )
-            object_keys.update(
-                [a.uri.rsplit("/", 1)[-1] for a in d_v.artifacts if a.type == DatasetArtifactType.ATAC_INDEX]
-            )
+            object_keys.update(self.get_atac_fragment_uris_from_dataset_version(d_v))
         try:
             self.s3_provider.delete_files(os.getenv("DATASETS_BUCKET"), list(object_keys))
         except S3DeleteException as e:

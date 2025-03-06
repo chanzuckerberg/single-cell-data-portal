@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 from backend.layers.common.entities import (
+    DatasetArtifactType,
     DatasetConversionStatus,
     DatasetProcessingStatus,
     DatasetUploadStatus,
@@ -93,12 +94,24 @@ class ProcessingTest(BaseProcessingTest):
                 "fake_cxg_bucket",
             )
 
-        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"))
-        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"))
+        dataset = self.business_logic.get_dataset_version(dataset_version_id)
+
+        def assert_s3_matches_db(uri, artifact_type):
+            self.assertTrue(self.s3_provider.uri_exists(uri))
+            artifact = [artifact for artifact in dataset.artifacts if artifact.type == artifact_type]
+            self.assertTrue(len(artifact) == 1)
+            self.assertEqual(artifact[0].uri, uri)
+
+        assert_s3_matches_db(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad", DatasetArtifactType.RAW_H5AD)
+        assert_s3_matches_db(f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad", DatasetArtifactType.H5AD)
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.h5ad"))
         self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/"))
-        self.assertFalse(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.tsv.bgz"))
-        self.assertFalse(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.tsv.bgz.tbi"))
+        self.assertFalse(
+            self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}-fragment.tsv.bgz")
+        )
+        self.assertFalse(
+            self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}-fragment.tsv.bgz.tbi")
+        )
         self.assertFalse(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.rds"))
         self.assertFalse(self.s3_provider.uri_exists(f"s3://fake_datasets_bucket/{dataset_version_id.id}.rds"))
 

@@ -506,11 +506,15 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     ) -> None:
         self.collections_versions[collection_version_id.id].datasets.append(dataset_version_id)
 
-    def add_dataset_artifact(
-        self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
+    def create_dataset_artifact(
+        self,
+        dataset_version_id: DatasetVersionId,
+        artifact_type: str,
+        artifact_uri: str,
+        artifact_id: Optional[DatasetArtifactId] = None,
     ) -> DatasetArtifactId:
-        version = self.datasets_versions[version_id.id]
-        artifact_id = DatasetArtifactId()
+        version = self.datasets_versions[dataset_version_id.id]
+        artifact_id = artifact_id if artifact_id else DatasetArtifactId()
         dataset_artifact = DatasetArtifact(artifact_id, artifact_type, artifact_uri)
         version.artifacts.append(dataset_artifact)
         self.dataset_artifacts[artifact_id.id] = dataset_artifact
@@ -556,16 +560,12 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
         dataset_version = self.datasets_versions[version_id.id]
-        if dataset_version.status.validation_message == "":
+        if dataset_version.status.validation_message is not None:
             dataset_version.status.validation_message = (
                 dataset_version.status.validation_message + "\n" + validation_message
             )
         else:
             dataset_version.status.validation_message = validation_message
-
-    def clear_dataset_validation_message(self, version_id: DatasetVersionId) -> None:
-        dataset_version = self.datasets_versions[version_id.id]
-        dataset_version.status.validation_message = None
 
     def add_dataset_to_collection_version(self, version_id: CollectionVersionId, dataset_id: DatasetId) -> None:
         # Not needed for now - create_dataset does this

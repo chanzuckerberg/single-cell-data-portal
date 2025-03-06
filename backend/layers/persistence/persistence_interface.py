@@ -222,11 +222,15 @@ class DatabaseProviderInterface:
         Returns the newly created DatasetVersion.
         """
 
-    def add_dataset_artifact(
-        self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
+    def create_dataset_artifact(
+        self,
+        dataset_version_id: DatasetVersionId,
+        artifact_type: str,
+        artifact_uri: str,
+        artifact_id: Optional[DatasetArtifactId] = None,
     ) -> DatasetArtifactId:
         """
-        Adds a dataset artifact to an existing dataset version.
+        Create a dataset artifact to add to a dataset version.
         """
 
     def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:

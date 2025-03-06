@@ -1814,8 +1814,10 @@ class TestGetDatasets(BaseAPIPortalTest):
         dataset = self.generate_dataset(
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"),
-                DatasetArtifactUpdate(DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags.tsv.bgz.tbi"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags-fragment.tsv.bgz"),
+                DatasetArtifactUpdate(
+                    DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags-fragment.tsv.bgz.tbi"
+                ),
             ]
         )
         artifacts = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
@@ -1827,11 +1829,11 @@ class TestGetDatasets(BaseAPIPortalTest):
 
         expected_assets = [
             {"filesize": -1, "filetype": "H5AD", "url": f"http://domain/{dataset.dataset_version_id}.h5ad"},
-            {"filesize": -1, "filetype": "ATAC_FRAGMENT", "url": f"http://domain/{atac_artifact.id}.tsv.bgz"},
+            {"filesize": -1, "filetype": "ATAC_FRAGMENT", "url": f"http://domain/{atac_artifact.id}-fragment.tsv.bgz"},
             {
                 "filesize": -1,
                 "filetype": "ATAC_INDEX",
-                "url": f"http://domain/{atac_artifact.id}.tsv.bgz.tbi",
+                "url": f"http://domain/{atac_artifact.id}-fragment.tsv.bgz.tbi",
             },
         ]
 
@@ -2198,8 +2200,10 @@ class TestGetDatasets(BaseAPIPortalTest):
             collection_version=collection,
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"),
-                DatasetArtifactUpdate(DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags.tsv.bgz.tbi"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags-fragment.tsv.bgz"),
+                DatasetArtifactUpdate(
+                    DatasetArtifactType.ATAC_INDEX, "http://mock.uri/atac_frags-fragment.tsv.bgz.tbi"
+                ),
             ],
         )
         self.business_logic.publish_collection_version(collection.version_id)
@@ -2217,12 +2221,12 @@ class TestGetDatasets(BaseAPIPortalTest):
             {
                 "filesize": -1,
                 "filetype": "ATAC_FRAGMENT",
-                "url": f"http://domain/{atac_artifact.id}.tsv.bgz",
+                "url": f"http://domain/{atac_artifact.id}-fragment.tsv.bgz",
             },
             {
                 "filesize": -1,
                 "filetype": "ATAC_INDEX",
-                "url": f"http://domain/{atac_artifact.id}.tsv.bgz.tbi",
+                "url": f"http://domain/{atac_artifact.id}-fragment.tsv.bgz.tbi",
             },
         ]
         assert len(body) == 1, body
@@ -2714,7 +2718,7 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
             {
                 "artifacts": {
                     "atac_fragment": DatasetArtifactUpdate(
-                        DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"
+                        DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags-fragment.tsv.bgz"
                     )
                 },
                 "name": "fragments_only",
@@ -2727,7 +2731,7 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
                 "artifacts": {
                     "anndata": DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
                     "atac_fragment": DatasetArtifactUpdate(
-                        DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags.tsv.bgz"
+                        DatasetArtifactType.ATAC_FRAGMENT, "http://mock.uri/atac_frags-fragment.tsv.bgz"
                     ),
                 },
                 "name": "anndata_and_fragments",
@@ -2750,7 +2754,7 @@ class TestGetDatasetManifest(BaseAPIPortalTest):
                 expected = {}
                 for artifact in artifacts:
                     if artifact.type == DatasetArtifactType.ATAC_FRAGMENT:
-                        expected["atac_fragment"] = f"http://domain/{artifact.id}.{artifact.extension}"
+                        expected["atac_fragment"] = f"http://domain/{artifact.id}-fragment.{artifact.extension}"
                     elif artifact.type == DatasetArtifactType.H5AD:
                         expected["anndata"] = f"http://domain/{dataset.dataset_version_id}.{artifact.extension}"
 
