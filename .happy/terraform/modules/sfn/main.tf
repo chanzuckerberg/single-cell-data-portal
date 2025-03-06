@@ -140,7 +140,8 @@ resource "aws_sfn_state_machine" "state_machine" {
           "ErrorEquals": [
             "States.ALL"
           ],
-          "Next": "HandleErrors"
+          "Next": "HandleErrors",
+          "ResultPath": "$.error"
         }
       ],
       "ResultPath": null
@@ -262,7 +263,6 @@ resource "aws_sfn_state_machine" "state_machine" {
     },
     "HandleErrors": {
       "Type": "Task",
-      "InputPath": "$",
       "Resource": "${var.lambda_error_handler}",
       "Parameters": {
         "execution_id.$": "$$.Execution.Id",
@@ -280,7 +280,6 @@ resource "aws_sfn_state_machine" "state_machine" {
           "BackoffRate": 2.0
         }
       ],
-      "ResultPath": null,
       "Next": "RaiseError"
     },
     "RaiseError": {
