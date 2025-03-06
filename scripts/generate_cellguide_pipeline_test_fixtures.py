@@ -12,8 +12,8 @@ from enum import Enum
 from unittest.mock import patch
 
 from backend.cellguide.pipeline.canonical_marker_genes import get_canonical_marker_genes
+from backend.cellguide.pipeline.canonical_marker_genes.canonical_markers import get_latest_asctb_data
 from backend.cellguide.pipeline.computational_marker_genes import get_computational_marker_genes
-from backend.cellguide.pipeline.constants import ASCTB_MASTER_SHEET_URL
 from backend.cellguide.pipeline.explorer_cxgs import get_valid_cxgs
 from backend.cellguide.pipeline.metadata import get_cell_metadata, get_tissue_metadata
 from backend.cellguide.pipeline.ontology_tree import (
@@ -22,11 +22,10 @@ from backend.cellguide.pipeline.ontology_tree import (
 )
 from backend.cellguide.pipeline.source_collections import get_source_collections_data
 from backend.cellguide.pipeline.utils import output_json
-from backend.common.census_cube.utils import setup_retry_session
 from tests.test_utils.mocks import (
     mock_bootstrap_rows_percentiles,
-    mock_get_asctb_master_sheet,
     mock_get_folders_from_s3,
+    mock_get_latest_asctb_data,
     mock_get_title_and_citation_from_doi,
 )
 from tests.unit.backend.cellguide.pipeline.constants import (
@@ -104,8 +103,8 @@ def run_cellguide_pipeline(fixture_type: FixtureType):
             new=mock_get_folders_from_s3,
         ),
         patch(
-            "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_asctb_master_sheet",
-            new=mock_get_asctb_master_sheet,
+            "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.get_latest_asctb_data",
+            new=mock_get_latest_asctb_data,
         ),
         patch(
             "backend.cellguide.pipeline.canonical_marker_genes.canonical_markers.CrossrefProvider",
@@ -165,13 +164,9 @@ def run_cellguide_pipeline(fixture_type: FixtureType):
             )
 
         if fixture_type in [FixtureType.canonical_marker_genes, FixtureType.all]:
-            # output asct-b master sheet
-            session = setup_retry_session()
-            response = session.get(ASCTB_MASTER_SHEET_URL)
-            if response.status_code != 200:
-                raise Exception(f"Failed to retrieve ASCT-B master sheet from {ASCTB_MASTER_SHEET_URL}")
+            # output asct-b master sheet data
+            data = get_latest_asctb_data()
 
-            data = response.json()
             data = {tissue: data[tissue] for tissue in CANONICAL_MARKER_GENE_TEST_TISSUES}
             output_json(data, f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ASCTB_MASTER_SHEET_FIXTURE_FILENAME}")
 
