@@ -280,6 +280,7 @@ resource "aws_sfn_state_machine" "state_machine" {
           "MaxAttempts": 3,
           "BackoffRate": 2.0
         }
+      "ResultPath": null,
       ],
       "Next": "RaiseError"
     },
