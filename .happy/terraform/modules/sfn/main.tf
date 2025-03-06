@@ -140,7 +140,8 @@ resource "aws_sfn_state_machine" "state_machine" {
           "ErrorEquals": [
             "States.ALL"
           ],
-          "Next": "HandleErrors"
+          "Next": "HandleErrors",
+          "ResultPath": "$.error"
         }
       ],
       "ResultPath": null
