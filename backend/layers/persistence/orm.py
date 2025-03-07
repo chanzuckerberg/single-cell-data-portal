@@ -1,9 +1,8 @@
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, String
+from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN, JSON, UUID
 from sqlalchemy.orm import registry
 from sqlalchemy.schema import MetaData
 
-from backend.layers.common.entities import DatasetArtifactType
 from backend.layers.persistence.constants import SCHEMA_NAME
 
 metadata = MetaData(schema=SCHEMA_NAME)
@@ -68,5 +67,5 @@ class DatasetArtifactTable:
     __tablename__ = "DatasetArtifact"
 
     id = Column(UUID(as_uuid=True), primary_key=True)
-    type = Column(Enum(DatasetArtifactType))
+    type = Column(String)
     uri = Column(String)
