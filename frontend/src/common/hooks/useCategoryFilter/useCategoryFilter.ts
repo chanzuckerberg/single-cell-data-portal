@@ -103,8 +103,7 @@ export function useCategoryFilter<T extends Categories>(
   
 ): FilterInstance {
   const showMultiSpeciesFeatures = useFeatureFlag(FEATURES.MULTI_SPECIES);
-
-
+  console.log("multiSpeciesFeatures", showMultiSpeciesFeatures);
   // Complete set of categories and category values for the result set.
   const [categorySet, setCategorySet] = useState<CategorySet>();
 

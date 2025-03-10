@@ -33,6 +33,7 @@ import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils
 import { API_URL } from "src/configs/configs";
 import { VIEW_MODE } from "src/common/hooks/useViewMode";
 import { newWormDataset, newFruitFlyDataset, newFruitFlyDataset2, newZebraFishDataset } from "./tempAdditionalDatasets";
+
 /**
  * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).
  */
@@ -758,6 +759,8 @@ function fetchAndProcessDatasetResponse(
     .then((datasets: DatasetResponse[]) => {
       // TODO(smccanny): Remove this once we have a schema 5.3 data in staging and dev envs to test against.
       // Add additional datasets to the response.
+
+      console.log("datasets", datasets);
       datasets.push(newWormDataset);
       datasets.push(newFruitFlyDataset);
       datasets.push(newFruitFlyDataset2);

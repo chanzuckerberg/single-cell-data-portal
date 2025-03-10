@@ -86,6 +86,7 @@ export function buildCuratedOntologyCategoryView(
     label,
     source,
   } = config;
+
   // Build tree view models (e.g. individual tree structures for displaying different ontologies (e.g. human vs mouse
   // vs other for development stage, or just tissues for tissue).
   const treeViews = Object.keys(source).reduce(
@@ -403,6 +404,8 @@ function isDevelopmentStageSpeciesVisible(
     .map((selectCategoryValue) => selectCategoryValue.categoryValueId);
 
   // Before the feature flag is turned on, keep the current filter behavior
+  console.log('showMultiSpeciesFeatures', showMultiSpeciesFeatures)
+  
   if (
     !showMultiSpeciesFeatures && 
     selectedOrganisms.length === 0  &&
@@ -440,7 +443,6 @@ function isDevelopmentStageSpeciesVisible(
   }
 
   // Check the "other" case where any species other than the curated species have been selected
-
   return (
     selectedOrganisms.filter((organism) => !ORGANISM_LOOKUP[organism]).length >
     0
