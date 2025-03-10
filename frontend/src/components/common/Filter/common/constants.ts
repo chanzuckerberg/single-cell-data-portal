@@ -13,6 +13,7 @@ import {
 } from "src/components/common/Filter/common/entities";
 import cell_type_descendants_json from "src/components/common/Filter/descendant_mappings/cell_type_descendants.json";
 import tissue_descendants_json from "src/components/common/Filter/descendant_mappings/tissue_descendants.json";
+
 /**
  * Homo sapiens, Mus musculus and other organisms development stage ontology tree.
  */

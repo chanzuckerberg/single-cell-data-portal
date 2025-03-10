@@ -759,8 +759,6 @@ function fetchAndProcessDatasetResponse(
     .then((datasets: DatasetResponse[]) => {
       // TODO(smccanny): Remove this once we have a schema 5.3 data in staging and dev envs to test against.
       // Add additional datasets to the response.
-
-      console.log("datasets", datasets);
       datasets.push(newWormDataset);
       datasets.push(newFruitFlyDataset);
       datasets.push(newFruitFlyDataset2);
