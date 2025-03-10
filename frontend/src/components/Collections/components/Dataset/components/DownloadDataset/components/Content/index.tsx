@@ -116,7 +116,6 @@ const Content: FC<Props> = ({
   };
 
   const availableFormats = dataAssets.map((dataAsset) => dataAsset.filetype);
-  console.log(availableFormats)
 
   return (
     <>
