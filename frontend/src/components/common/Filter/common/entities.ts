@@ -7,6 +7,7 @@ import {
   Ontology,
   PublisherMetadata,
 } from "src/common/entities";
+import { ReactNode } from "react";
 
 /**
  * Payload key when tracking select of category values. For example, "organ" in FILTER_SELECT_ORGAN : {organ: "brain"}.
@@ -756,7 +757,7 @@ export interface SelectCategoryValueView {
   visible: boolean;
   tooltip?: {
     trigger: string;
-    content: string;
+    content: ReactNode;
   };
 }
 

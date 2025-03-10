@@ -404,7 +404,7 @@ function isDevelopmentStageSpeciesVisible(
     .map((selectCategoryValue) => selectCategoryValue.categoryValueId);
 
   // Before the feature flag is turned on, keep the current filter behavior
-  console.log('showMultiSpeciesFeatures', showMultiSpeciesFeatures)
+  console.log("showMultiSpeciesFeatures", showMultiSpeciesFeatures)
   
   if (
     !showMultiSpeciesFeatures && 
