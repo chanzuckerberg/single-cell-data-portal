@@ -18,7 +18,7 @@ export const newWormDataset = {
     },
   ],
   cell_type_ancestors: ["WBbt:0006930", "WBbt:0005750", "WBbt:0005762"],
-  collection_id: "180bff9c-c8a5-4539-b13b-ddbc00d643e6",
+  collection_id: "89f3e0a4-bbe5-4861-9add-71526aa62afd",
   created_at: 1728319480.965303,
   dataset_assets: [
     {
@@ -168,7 +168,7 @@ export const newFruitFlyDataset = {
     },
   ],
   cell_type_ancestors: ["FBbt:00004860"],
-  collection_id: "180bff9c-c8a5-4539-b13b-ddbc00d643e6",
+  collection_id: "89f3e0a4-bbe5-4861-9add-71526aa62afd",
   created_at: 1728319480.965303,
   dataset_assets: [
     {
@@ -310,7 +310,7 @@ export const newZebraFishDataset = {
     },
   ],
   cell_type_ancestors: ["ZFA:0005140"],
-  collection_id: "180bff9c-c8a5-4539-b13b-ddbc00d643e6",
+  collection_id: "89f3e0a4-bbe5-4861-9add-71526aa62afd",
   created_at: 1728319480.965303,
   dataset_assets: [
     {
@@ -452,7 +452,7 @@ export const newFruitFlyDataset2 = {
     },
   ],
   cell_type_ancestors: ["FBbt:00004860"],
-  collection_id: "180bff9c-c8a5-4539-b13b-ddbc00d643e6",
+  collection_id: "89f3e0a4-bbe5-4861-9add-71526aa62afd",
   created_at: 1728319480.965303,
   dataset_assets: [
     {

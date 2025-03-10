@@ -762,6 +762,7 @@ function fetchAndProcessDatasetResponse(
   return fetch(url, DEFAULT_FETCH_OPTIONS)
     .then((response) => response.json())
     .then((datasets: DatasetResponse[]) => {
+      console.log(datasets)
       // TODO(smccanny): Remove this once we have a schema 5.3 data in staging and dev envs to test against.
       // Add additional datasets to the response.
       datasets.push(newWormDataset);
