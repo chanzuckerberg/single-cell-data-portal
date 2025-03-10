@@ -13,7 +13,8 @@ import {
 } from "src/components/common/Filter/components/FilterContent/components/common/style";
 import { ViewSublist } from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterViewList/style";
 import { ListItemInfo } from "./components/ListItemInfo";
-
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { FEATURES } from "src/common/featureFlags/features";
 interface Props {
   categoryFilterId: CATEGORY_FILTER_ID;
   isZerosVisible: boolean;
@@ -60,6 +61,8 @@ export default function FilterViewList({
 }: Props): JSX.Element {
   const filteredValues = filterCategoryValues(values, isZerosVisible);
   const ViewList = nested ? ViewSublist : List;
+  const showMultiSpeciesFeatures = useFeatureFlag(FEATURES.MULTI_SPECIES);
+  
   return (
     <ViewList dense disablePadding subheader={ViewHeader}>
       {/* No matches */}
@@ -108,7 +111,7 @@ export default function FilterViewList({
                     primary={
                       <span>
                         {label}
-                        {tooltip && (
+                        {showMultiSpeciesFeatures && tooltip && (
                           <ListItemInfo content={tooltip.content}>
                             {tooltip.trigger}
                           </ListItemInfo>

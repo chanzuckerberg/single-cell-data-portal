@@ -57,6 +57,8 @@ import {
   buildSelectCategoryView,
   onFilterSelectCategory,
 } from "./common/selectUtils";
+import { useFeatureFlag } from "../useFeatureFlag";
+import { FEATURES } from "src/common/featureFlags/features";
 
 /**
  * Shape of return value from this useFilter hook.
@@ -98,7 +100,11 @@ export function useCategoryFilter<T extends Categories>(
   filters: Filters<T>,
   setFilter: SetFilterFn,
   initialMultiPanelSelectedUIState: MultiPanelSelectedUIState
+  
 ): FilterInstance {
+  const showMultiSpeciesFeatures = useFeatureFlag(FEATURES.MULTI_SPECIES);
+
+
   // Complete set of categories and category values for the result set.
   const [categorySet, setCategorySet] = useState<CategorySet>();
 
@@ -264,7 +270,8 @@ export function useCategoryFilter<T extends Categories>(
     categoryViews: buildCategoryViews(
       filterState,
       multiPanelUIState,
-      ontologyTermLabelsById
+      ontologyTermLabelsById,
+      showMultiSpeciesFeatures
     ),
     multiPanelSelectedUIState,
     onFilter,
@@ -434,7 +441,8 @@ function buildCategorySet<T extends Categories>(
 function buildCategoryViews(
   filterState?: FilterState,
   multiPanelUIState?: MultiPanelUIState,
-  ontologyTermLabelsById?: Map<string, string>
+  ontologyTermLabelsById?: Map<string, string>,
+  showMultiSpeciesFeatures: boolean = false
 ): CategoryView[] {
   if (!filterState || !multiPanelUIState || !ontologyTermLabelsById) {
     return [];
@@ -466,7 +474,8 @@ function buildCategoryViews(
           config as CuratedOntologyCategoryFilterConfig,
           rangeOrSelectValue as KeyedSelectCategoryValue,
           filterState,
-          ontologyTermLabelsById
+          ontologyTermLabelsById,
+          showMultiSpeciesFeatures
         );
       }
 
