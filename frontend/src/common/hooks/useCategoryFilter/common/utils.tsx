@@ -131,12 +131,11 @@ const buildTooltipContent = (
     [CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED]: "cell type",
   };
 
-return(
-  <div>
-    This {filterLabel[categoryFilterId]} is specific to{" "}
-    <span>{ species }</span>
-  </div>
-)
+  return (
+    <div>
+      This {filterLabel[categoryFilterId]} is specific to <span>{species}</span>
+    </div>
+  );
 };
 
 /**

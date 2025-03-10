@@ -100,7 +100,6 @@ export function useCategoryFilter<T extends Categories>(
   filters: Filters<T>,
   setFilter: SetFilterFn,
   initialMultiPanelSelectedUIState: MultiPanelSelectedUIState
-  
 ): FilterInstance {
   const showMultiSpeciesFeatures = useFeatureFlag(FEATURES.MULTI_SPECIES);
   console.log("multiSpeciesFeatures", showMultiSpeciesFeatures);
@@ -441,7 +440,7 @@ function buildCategoryViews(
   filterState?: FilterState,
   multiPanelUIState?: MultiPanelUIState,
   ontologyTermLabelsById?: Map<string, string>,
-  showMultiSpeciesFeatures: boolean = false
+  showMultiSpeciesFeatures?: boolean
 ): CategoryView[] {
   if (!filterState || !multiPanelUIState || !ontologyTermLabelsById) {
     return [];

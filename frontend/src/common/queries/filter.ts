@@ -32,7 +32,12 @@ import {
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { API_URL } from "src/configs/configs";
 import { VIEW_MODE } from "src/common/hooks/useViewMode";
-import { newWormDataset, newFruitFlyDataset, newFruitFlyDataset2, newZebraFishDataset } from "./tempAdditionalDatasets";
+import {
+  newWormDataset,
+  newFruitFlyDataset,
+  newFruitFlyDataset2,
+  newZebraFishDataset,
+} from "./tempAdditionalDatasets";
 
 /**
  * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).

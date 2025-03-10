@@ -62,7 +62,6 @@ export default function FilterViewList({
   const filteredValues = filterCategoryValues(values, isZerosVisible);
   const ViewList = nested ? ViewSublist : List;
   const showMultiSpeciesFeatures = useFeatureFlag(FEATURES.MULTI_SPECIES);
-  
   return (
     <ViewList dense disablePadding subheader={ViewHeader}>
       {/* No matches */}

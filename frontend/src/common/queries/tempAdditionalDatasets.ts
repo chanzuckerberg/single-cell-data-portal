@@ -1,6 +1,7 @@
 import { TISSUE_TYPE } from "src/components/common/Filter/common/entities"; 
 import { IS_PRIMARY_DATA } from "src/common/entities";
 
+// prettier-ignore
 export const newWormDataset = {
   assay: [
     {

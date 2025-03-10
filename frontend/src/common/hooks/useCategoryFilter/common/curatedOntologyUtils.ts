@@ -75,7 +75,7 @@ export function buildCuratedOntologyCategoryView(
   categoryValueByValue: KeyedSelectCategoryValue,
   filterState: FilterState,
   ontologyTermLabelsById: Map<string, string>,
-  showMultiSpeciesFeatures: boolean
+  showMultiSpeciesFeatures?: boolean
 ): OntologyCategoryView {
   const {
     categoryFilterId,
@@ -393,7 +393,7 @@ function handleOntologyChildRemoved(
 function isDevelopmentStageSpeciesVisible(
   filterState: FilterState,
   speciesKey: ONTOLOGY_VIEW_KEY,
-  showMultiSpeciesFeatures: boolean
+  showMultiSpeciesFeatures?: boolean
 ) {
   // Find the current selected values for organism.
   const organismCategoryValues = filterState[
@@ -404,11 +404,10 @@ function isDevelopmentStageSpeciesVisible(
     .map((selectCategoryValue) => selectCategoryValue.categoryValueId);
 
   // Before the feature flag is turned on, keep the current filter behavior
-  console.log("showMultiSpeciesFeatures", showMultiSpeciesFeatures)
-  
+  console.log("showMultiSpeciesFeatures", showMultiSpeciesFeatures);
   if (
-    !showMultiSpeciesFeatures && 
-    selectedOrganisms.length === 0  &&
+    !showMultiSpeciesFeatures &&
+    selectedOrganisms.length === 0 &&
     speciesKey !== ONTOLOGY_VIEW_KEY.WBls &&
     speciesKey !== ONTOLOGY_VIEW_KEY.ZFS &&
     speciesKey !== ONTOLOGY_VIEW_KEY.FBdv
