@@ -86,7 +86,6 @@ export function buildCuratedOntologyCategoryView(
     label,
     source,
   } = config;
-  console.log("showMultiSpeciesFeatures", showMultiSpeciesFeatures);
   // Build tree view models (e.g. individual tree structures for displaying different ontologies (e.g. human vs mouse
   // vs other for development stage, or just tissues for tissue).
   const treeViews = Object.keys(source).reduce(
