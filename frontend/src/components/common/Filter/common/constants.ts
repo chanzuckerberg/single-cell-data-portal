@@ -206,7 +206,7 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
     },
     {
       label: "Larval",
-      ontology_term_id: "WBls:0000803", // TODO(smccanny): what is the correct term?
+      ontology_term_id: "FBdv:00005336",
       children: [
         {
           label: "First Instar Larva",
@@ -1224,14 +1224,14 @@ export const COLLATOR_CASE_INSENSITIVE = new Intl.Collator("en", {
 export const TOOLTIP_SPECIFIC_ONTOLOGIES = {
   WBbt: {
     ontologyId: "WBbt",
-    species: "Caenorhabditis elegans (worm)",
+    species: "Caenorhabditis elegans",
   },
   ZFA: {
     ontologyId: "ZFA",
-    species: "Danio rerio (zebrafish)",
+    species: "Danio rerio",
   },
   FBbt: {
     ontologyId: "FBbt",
-    species: "Drosophila melanogaster (fruit fly)",
+    species: "Drosophila melanogaster",
   },
 };

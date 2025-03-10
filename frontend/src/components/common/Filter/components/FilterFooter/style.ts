@@ -19,10 +19,10 @@ export const StyledTooltip = styled("div")`
   a {
     text-decoration: none;
     color: inherit;
-    border-bottom: 1px solid;
+    border-bottom: 1px dotted;
   }
   a:hover {
-    border-bottom: 1px dotted;
+    border-bottom: 1px solid;
   }
 `;
 
@@ -56,6 +56,10 @@ export const FooterContent = styled("div")`
   padding: ${spacesS}px;
   ${fontBodyXs}
   color: ${gray500};
+  position: sticky;
+  bottom: 0;
+  width: calc(100% - 25px);
+  background: white;
 `;
 
 export const LinkButton = styled("button")`

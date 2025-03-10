@@ -5,6 +5,9 @@ export const StyledTooltip = styled("div")`
   padding: ${spacesXxs}px 0;
   text-align: center;
   line-height: 20px;
+  span{
+    font-style: italic;
+  }
 `;
 
 export const TooltipContent = styled("div")`
@@ -21,5 +24,7 @@ export const TooltipTrigger = styled("div")`
   padding-left: ${spacesS}px;
   display: inline;
   color: ${gray400};
-  font-weight: 400 !important;
+  span{
+    font-weight: 400 !important;
+  }
 `;

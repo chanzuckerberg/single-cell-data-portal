@@ -521,8 +521,8 @@ export enum ORGANISM {
   "HOMO_SAPIENS" = "Homo sapiens",
   "MUS_MUSCULUS" = "Mus musculus",
   "C_ELEGANS" = "Caenorhabditis elegans",
-  "D_RERIO" = "Danio Rerio",
-  "DROSOPHILA" = "Drosophila",
+  "D_RERIO" = "Danio rerio",
+  "DROSOPHILA" = "Drosophila melanogaster",
 }
 
 /**
@@ -638,7 +638,7 @@ export enum ONTOLOGY_VIEW_LABEL {
   "UBERON" = "Other Organisms",
   "WBls" = "Caenorhabditis elegans",
   "ZFS" = "Danio Rerio",
-  "FBdv" = "Drosophila",
+  "FBdv" = "Drosophila melanogaster",
 }
 
 /**

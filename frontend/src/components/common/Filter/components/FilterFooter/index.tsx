@@ -9,7 +9,7 @@ export const FilterFooter = ({
     return null;
   }
 
-  const Component = FOOTER_COMPONENT_MAP[componentId] || "Hello";
+  const Component = FOOTER_COMPONENT_MAP[componentId] || null;
 
   return <Component />;
 };

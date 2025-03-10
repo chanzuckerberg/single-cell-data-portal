@@ -18,7 +18,7 @@ export function ListItemInfo({
         slotProps={{
           tooltip: {
             style: {
-              maxWidth: 245, // Override the max-width specification for dark sdsStyle.
+              maxWidth: 225, // Override the max-width specification for dark sdsStyle.
             },
           },
         }}
