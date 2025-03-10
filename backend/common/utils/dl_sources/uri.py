@@ -6,6 +6,7 @@ from urllib.parse import ParseResult, urlparse
 import boto3
 import requests
 
+from backend.common.corpora_config import CorporaConfig
 from backend.common.utils import downloader
 from backend.layers.thirdparty.s3_provider import S3Provider
 
@@ -197,6 +198,35 @@ class S3URI(URI):
         self.s3_provider.download_file(self.bucket_name, self.key, local_file_name)
 
 
+class CXGPublicURL(URI):
+    """Supports URLs from the public Cellxgene endpoint."""
+
+    _netloc = urlparse(CorporaConfig().dataset_assets_base_url).netloc
+    _scheme = "https"
+
+    @classmethod
+    def validate(cls, uri: str):
+        parsed_uri = urlparse(uri)
+        return (
+            cls(uri, parsed_uri)
+            if parsed_uri.scheme == cls._scheme and parsed_uri.netloc.endswith(cls._netloc)
+            else None
+        )
+
+    def file_info(self) -> dict:
+        resp = requests.get(self.uri, headers={"Range": "bytes=0-0"})
+        resp.raise_for_status()
+
+        return {
+            "size": int(self._get_key(resp.headers, "content-range").split("/")[1]),
+            "name": self.parsed_uri.path,
+        }
+
+    def download(self, local_file_name: str):
+        self._disk_space_check()
+        downloader.download(self.uri, local_file_name)
+
+
 class RegisteredSources:
     """Manages all of the download sources."""
 
@@ -231,3 +261,4 @@ def from_uri(uri: str) -> typing.Optional[URI]:
 RegisteredSources.add(DropBoxURL)
 RegisteredSources.add(S3URL)
 RegisteredSources.add(S3URI)
+RegisteredSources.add(CXGPublicURL)
