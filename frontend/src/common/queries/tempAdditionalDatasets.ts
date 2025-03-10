@@ -1,7 +1,8 @@
-import { TISSUE_TYPE } from "src/components/common/Filter/common/entities"; 
+/* eslint-disable sonarjs/no-duplicate-string */
+
+import { TISSUE_TYPE } from "src/components/common/Filter/common/entities";
 import { IS_PRIMARY_DATA } from "src/common/entities";
 
-// prettier-ignore
 export const newWormDataset = {
   assay: [
     {
@@ -166,9 +167,7 @@ export const newFruitFlyDataset = {
       ontology_term_id: "FBbt:00004861",
     },
   ],
-  cell_type_ancestors: [
-    "FBbt:00004860",
-  ],
+  cell_type_ancestors: ["FBbt:00004860"],
   collection_id: "180bff9c-c8a5-4539-b13b-ddbc00d643e6",
   created_at: 1728319480.965303,
   dataset_assets: [
@@ -228,9 +227,7 @@ export const newFruitFlyDataset = {
       ontology_term_id: "FBdv:00007086",
     },
   ],
-  development_stage_ancestors: [
-    "FBdv:00007002",
-  ],
+  development_stage_ancestors: ["FBdv:00007002"],
   disease: [
     {
       label: "Alzheimer disease",
@@ -293,10 +290,7 @@ export const newFruitFlyDataset = {
       tissue_type: TISSUE_TYPE.TISSUE,
     },
   ],
-  tissue_ancestors: [
-    "FBbt:00025990",
-    "FBbt:00000000",
-  ],
+  tissue_ancestors: ["FBbt:00025990", "FBbt:00000000"],
   tombstone: false,
   updated_at: 1728319480.965303,
 };
@@ -315,9 +309,7 @@ export const newZebraFishDataset = {
       ontology_term_id: "ZFA:0009173",
     },
   ],
-  cell_type_ancestors: [
-    "ZFA:0005140",
-  ],
+  cell_type_ancestors: ["ZFA:0005140"],
   collection_id: "180bff9c-c8a5-4539-b13b-ddbc00d643e6",
   created_at: 1728319480.965303,
   dataset_assets: [
@@ -440,10 +432,7 @@ export const newZebraFishDataset = {
       tissue_type: TISSUE_TYPE.TISSUE,
     },
   ],
-  tissue_ancestors: [
-    "ZFA:0001477",
-    "ZFA:0000037",
-  ],
+  tissue_ancestors: ["ZFA:0001477", "ZFA:0000037"],
   tombstone: false,
   updated_at: 1728319480.965303,
 };
@@ -462,9 +451,7 @@ export const newFruitFlyDataset2 = {
       ontology_term_id: "FBbt:00049952",
     },
   ],
-  cell_type_ancestors: [
-    "FBbt:00004860",
-  ],
+  cell_type_ancestors: ["FBbt:00004860"],
   collection_id: "180bff9c-c8a5-4539-b13b-ddbc00d643e6",
   created_at: 1728319480.965303,
   dataset_assets: [
@@ -527,7 +514,7 @@ export const newFruitFlyDataset2 = {
   development_stage_ancestors: [
     "FBdv:00005342",
     "FBdv:00005372",
-    "FBdv:00005336"
+    "FBdv:00005336",
   ],
   disease: [
     {
@@ -587,11 +574,7 @@ export const newFruitFlyDataset2 = {
       tissue_type: TISSUE_TYPE.TISSUE,
     },
   ],
-  tissue_ancestors: [
-    "FBbt:00005520",
-    "FBbt:00006001",
-    "FBbt:00026000",
-  ],
+  tissue_ancestors: ["FBbt:00005520", "FBbt:00006001", "FBbt:00026000"],
   tombstone: false,
   updated_at: 1728319480.965303,
 };
