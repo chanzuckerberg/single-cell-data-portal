@@ -21,6 +21,7 @@ class CorporaConfig(SecretConfig):
             deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
             if deployment_stage == "test":
                 collections_base_url = "https://frontend.corporanet.local:3000"
+                dataset_assets_base_url = "https://datasets.test.technology"
             elif deployment_stage == "prod":
                 collections_base_url = "https://cellxgene.cziscience.com"
             else:
