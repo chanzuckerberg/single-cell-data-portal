@@ -6,13 +6,6 @@ from unittest import TestCase
 import boto3
 from moto import mock_aws
 
-from backend.common.corpora_config import CorporaConfig
-
-# Mocking the DOMAIN for CXGPublicURL early to avoid import issues cause by the CorporaConfig
-DOMAIN = "datasets.test.technology"
-mock_config = CorporaConfig()
-mock_config.set({"dataset_assets_base_url": f"https://{DOMAIN}"})
-
 from backend.common.utils.dl_sources.uri import S3URI, S3URL, CXGPublicURL, DropBoxURL, RegisteredSources, from_uri
 
 
@@ -142,11 +135,11 @@ class TestCXGPubURL(TestCase):
 
     @mock_aws
     def test__validate_with_valid_url__ok(self):
-        url = f"https://{DOMAIN}/key/file.txt"
+        url = "https://datasets.test.technology/key/file.txt"
         url = CXGPublicURL.validate(url)
 
         self.assertEqual("https", url.scheme)
-        self.assertEqual(DOMAIN, url.netloc)
+        self.assertEqual("datasets.test.technology", url.netloc)
         self.assertEqual("/key/file.txt", url.path)
 
     @mock_aws

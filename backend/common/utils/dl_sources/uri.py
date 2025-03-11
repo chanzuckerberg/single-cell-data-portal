@@ -164,8 +164,15 @@ class S3URL(URI):
 class CXGPublicURL(S3URL):
     """Supports URLs from the public Cellxgene endpoint."""
 
-    _netloc = urlparse(CorporaConfig().dataset_assets_base_url).netloc
-    _scheme = urlparse(CorporaConfig().dataset_assets_base_url).scheme
+    @classmethod
+    @property
+    def _netloc(cls):
+        return urlparse(CorporaConfig().dataset_assets_base_url).netloc
+
+    @classmethod
+    @property
+    def _schema(cls):
+        return urlparse(CorporaConfig().dataset_assets_base_url).scheme
 
 
 class S3URI(URI):
