@@ -6,4 +6,5 @@ export const FilterDivider = styled.hr`
   box-shadow: inset 0px -0.5px 0px ${gray300};
   height: 0.5px;
   margin: ${spacesL}px 0;
+  color: green;
 `;
