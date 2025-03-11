@@ -135,7 +135,9 @@ class TestCXGPubURL(TestCase):
 
     @mock.patch("backend.common.utils.dl_sources.uri.CorporaConfig")
     def test__validate_with_valid_url__ok(self, config_mock):
-        config_mock.dataset_assets_base_url = "https://datasets.test.technology"
+        config = mock.Mock()
+        config.dataset_assets_base_url = "https://datasets.test.technology"
+        config_mock.return_value = config
 
         url = "https://datasets.test.technology/key/file.txt"
         url = CXGPublicURL.validate(url)
@@ -146,7 +148,10 @@ class TestCXGPubURL(TestCase):
 
     @mock.patch("backend.common.utils.dl_sources.uri.CorporaConfig")
     def test__validate_with_invalid_url__returns_none(self, config_mock):
-        config_mock.dataset_assets_base_url = "https://datasets.test.technology"
+        config = mock.Mock()
+        config.dataset_assets_base_url = "https://datasets.test.technology"
+        config_mock.return_value = config
+
         url = CXGPublicURL.validate("http://somebucket.s3.amazonaws.com/key")
         self.assertIsNone(url)
 

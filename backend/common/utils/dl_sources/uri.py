@@ -220,17 +220,17 @@ class RegisteredSources:
     @classmethod
     def add(cls, parser: typing.Type[URI]):
         if issubclass(parser, URI):
-            cls._registered.append(parser)
+            cls._sources.append(parser)
         else:
             raise TypeError(f"subclass type {URI.__name__} expected")
 
     @classmethod
     def remove(cls, parser: typing.Type[URI]):
-        cls._registered.remove(parser)
+        cls._sources.remove(parser)
 
     @classmethod
     def get(cls) -> typing.Iterable:
-        return cls._registered
+        return cls._sources
 
     @classmethod
     def is_empty(cls) -> bool:
