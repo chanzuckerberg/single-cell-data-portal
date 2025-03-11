@@ -215,12 +215,12 @@ class S3URI(URI):
 class RegisteredSources:
     """Manages all of the download sources."""
 
-    _registered: typing.Set[typing.Type[URI]] = set()
+    _sources: typing.List[typing.Type[URI]] = []
 
     @classmethod
     def add(cls, parser: typing.Type[URI]):
         if issubclass(parser, URI):
-            cls._registered.add(parser)
+            cls._registered.append(parser)
         else:
             raise TypeError(f"subclass type {URI.__name__} expected")
 
@@ -232,18 +232,26 @@ class RegisteredSources:
     def get(cls) -> typing.Iterable:
         return cls._registered
 
+    @classmethod
+    def is_empty(cls) -> bool:
+        return not cls._sources
+
+    @classmethod
+    def empty(cls):
+        cls._sources = []
+
 
 def from_uri(uri: str) -> typing.Optional[URI]:
     """Given a URI return a object that can be used by the processing container to download data."""
+    if RegisteredSources.is_empty():
+        # RegisteredSources are processed in the order registered and returns the first match.
+        RegisteredSources.add(DropBoxURL)
+        RegisteredSources.add(CXGPublicURL)
+        RegisteredSources.add(S3URL)
+        RegisteredSources.add(S3URI)
+
     for source in RegisteredSources.get():
         uri_obj = source.validate(uri)
         if uri_obj:
             return uri_obj
     return None
-
-
-# RegisteredSources are processed in the order registered and returns the first match.
-RegisteredSources.add(DropBoxURL)
-RegisteredSources.add(CXGPublicURL)
-RegisteredSources.add(S3URL)
-RegisteredSources.add(S3URI)

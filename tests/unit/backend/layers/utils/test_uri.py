@@ -1,7 +1,7 @@
 import os
 import unittest
 from tempfile import TemporaryDirectory
-from unittest import TestCase
+from unittest import TestCase, mock
 
 import boto3
 from moto import mock_aws
@@ -133,8 +133,10 @@ class TestS3URL(TestCase):
 
 class TestCXGPubURL(TestCase):
 
-    @mock_aws
-    def test__validate_with_valid_url__ok(self):
+    @mock.patch("backend.common.utils.dl_sources.uri.CorporaConfig")
+    def test__validate_with_valid_url__ok(self, config_mock):
+        config_mock.dataset_assets_base_url = "https://datasets.test.technology"
+
         url = "https://datasets.test.technology/key/file.txt"
         url = CXGPublicURL.validate(url)
 
@@ -142,8 +144,9 @@ class TestCXGPubURL(TestCase):
         self.assertEqual("datasets.test.technology", url.netloc)
         self.assertEqual("/key/file.txt", url.path)
 
-    @mock_aws
-    def test__validate_with_invalid_url__returns_none(self):
+    @mock.patch("backend.common.utils.dl_sources.uri.CorporaConfig")
+    def test__validate_with_invalid_url__returns_none(self, config_mock):
+        config_mock.dataset_assets_base_url = "https://datasets.test.technology"
         url = CXGPublicURL.validate("http://somebucket.s3.amazonaws.com/key")
         self.assertIsNone(url)
 
