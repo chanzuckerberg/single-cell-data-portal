@@ -9,7 +9,6 @@ const { describe } = test;
 describe("api/deployed_version", () => {
   test("Returns commit SHA", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.DEPLOYED_VERSION}`, page);
-
     await tryUntil(
       async () => {
         const commitSha = await page.textContent("body");

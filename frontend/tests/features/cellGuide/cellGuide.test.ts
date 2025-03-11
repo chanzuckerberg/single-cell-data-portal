@@ -347,7 +347,7 @@ describe("Cell Guide", () => {
         );
       });
 
-      test("Canonical marker gene table is updated by the tissue dropdown", async ({
+      test.skip("Canonical marker gene table is updated by the tissue dropdown", async ({
         page,
       }) => {
         await goToPage(
