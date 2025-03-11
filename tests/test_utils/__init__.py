@@ -1,7 +1,9 @@
+import json
+
+
 def compare_dicts(dict1, dict2):
     """
-    This function recursive compares two dictionaries handling cases where the values
-    are unordered arrays with elements that could be dictionaries.
+    Recursively compares two dictionaries, handling unordered lists and lists of dictionaries.
     """
     if len(dict1) != len(dict2):
         return False
@@ -19,12 +21,16 @@ def compare_dicts(dict1, dict2):
         elif isinstance(value1, list) and isinstance(value2, list):
             if len(value1) != len(value2):
                 return False
-            # check if the lists contain dictionaries as elements
-            if len(value1) > 0 and isinstance(value1[0], dict) and isinstance(value2[0], dict):
-                for i in range(len(value1)):
-                    if not compare_dicts(value1[i], value2[i]):
-                        return False
-            elif sorted(value1) != sorted(value2):
+
+            # Handle lists of dictionaries (sort by keys before comparing)
+            if all(isinstance(v, dict) for v in value1) and all(isinstance(v, dict) for v in value2):
+                sorted_value1 = sorted(value1, key=lambda d: json.dumps(d, sort_keys=True))
+                sorted_value2 = sorted(value2, key=lambda d: json.dumps(d, sort_keys=True))
+                if not all(compare_dicts(d1, d2) for d1, d2 in zip(sorted_value1, sorted_value2, strict=True)):
+                    return False
+
+            # Handle lists with mixed data (sort elements before comparing)
+            elif sorted(value1, key=str) != sorted(value2, key=str):
                 return False
         else:
             if value1 != value2:
