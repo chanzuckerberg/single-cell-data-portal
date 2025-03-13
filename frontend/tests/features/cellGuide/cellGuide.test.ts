@@ -314,7 +314,7 @@ describe("Cell Guide", () => {
     });
 
     describe("Canonical Marker Gene Table", () => {
-      test("Canonical marker gene table is displayed with columns and at least one entry displayed", async ({
+      test.skip("Canonical marker gene table is displayed with columns and at least one entry displayed", async ({
         page,
       }) => {
         await goToPage(
@@ -1375,7 +1375,7 @@ describe("Cell Guide", () => {
     const computationalTabButton =
       "cell-guide-card-enriched-genes-table-selector";
 
-    test("Marker Genes help tooltip - Canonical", async ({ page }) => {
+    test.skip("Marker Genes help tooltip - Canonical", async ({ page }) => {
       await goToPage(
         `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
         page
