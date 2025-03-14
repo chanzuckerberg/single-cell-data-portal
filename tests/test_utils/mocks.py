@@ -34,7 +34,7 @@ def mock_get_folders_from_s3(bucket, prefix):
         return [{"Prefix": f"s3://{bucket}/{prefix}CL_{i}.cxg/"} for i in range(100)]
 
 
-def mock_get_asctb_master_sheet():
+def mock_get_latest_asctb_data():
     with open(f"{CELLGUIDE_PIPELINE_FIXTURES_BASEPATH}/{ASCTB_MASTER_SHEET_FIXTURE_FILENAME}", "r") as f:
         return json.load(f)
 
