@@ -154,7 +154,7 @@ class DatabaseProviderInterface:
         data_submission_policy_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
-    ) -> List[str]:
+    ) -> List[DatasetVersion]:
         """
         Finalizes a collection version. This is equivalent to calling:
         1. update_collection_version_mapping

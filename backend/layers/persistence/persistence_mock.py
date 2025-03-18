@@ -310,7 +310,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         data_submission_policy_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
-    ) -> List[str]:
+    ) -> List[DatasetVersion]:
         published_at = published_at if published_at else datetime.utcnow()
 
         dataset_ids_for_new_collection_version = []
@@ -325,7 +325,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             dataset_ids_for_new_collection_version.append(dataset_version.dataset_id.id)
         previous_collection = self.collections.get(collection_id.id)
 
-        dataset_version_ids_to_delete_from_s3 = []
+        dataset_versions_to_delete_from_s3 = []
         if previous_collection is None:
             self.collections[collection_id.id] = CanonicalCollection(
                 id=collection_id,
@@ -347,7 +347,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                     self.datasets[previous_dataset_id].tombstoned = True
                     for dataset_version in self.datasets_versions.values():
                         if dataset_version.dataset_id == previous_dataset_id:
-                            dataset_version_ids_to_delete_from_s3.append(dataset_version.version_id.id)
+                            dataset_versions_to_delete_from_s3.append(dataset_version)
 
             new_collection = copy.deepcopy(previous_collection)
             new_collection.version_id = version_id
@@ -359,7 +359,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.collections_versions[version_id.id].data_submission_policy_version = data_submission_policy_version
         self.collections_versions[version_id.id].is_auto_version = False
 
-        return dataset_version_ids_to_delete_from_s3
+        return dataset_versions_to_delete_from_s3
 
     # OR
     # def update_collection_version_mapping(self, collection_id: CollectionId, version_id: CollectionVersionId) -> None:

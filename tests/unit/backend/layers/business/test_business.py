@@ -60,6 +60,7 @@ from backend.layers.common.entities import (
     SpatialMetadata,
     TissueOntologyTermId,
 )
+from backend.layers.common.ingestion_manifest import IngestionManifest
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
@@ -323,14 +324,12 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         _add_artifact("cellxgene", f"{dataset_version_id}", DatasetArtifactType.CXG)
 
         # special case for atac artifacts
-        ext = ARTIFACT_TO_EXTENSION[DatasetArtifactType.ATAC_FRAGMENT]
-        artifact_id = self.database_provider.create_dataset_artifact(
-            dataset_version_id, DatasetArtifactType.ATAC_FRAGMENT, "dummy"
-        )
-        key_name = f"{artifact_id}.{ext}"
+        artifact_id = DatasetArtifactId()
         bucket = "datasets"
-        self.database_provider.update_dataset_artifact(artifact_id, f"s3://{bucket}/{key_name}")
-        self.s3_provider.upload_file(None, bucket, key_name, None)
+
+        key_name = f"{artifact_id}-fragment"
+        _add_artifact(bucket, key_name, DatasetArtifactType.ATAC_FRAGMENT)
+        _add_artifact(bucket, key_name, DatasetArtifactType.ATAC_INDEX)
 
         self.database_provider.update_dataset_upload_status(dataset_version_id, DatasetUploadStatus.UPLOADED)
         self.database_provider.update_dataset_validation_status(dataset_version_id, DatasetValidationStatus.VALID)
@@ -1732,6 +1731,20 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
         self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
 
+    def test_get_ingest_manifest(self):
+        published_version = self.initialize_published_collection()
+        dataset = published_version.datasets[0]
+        expected_manifest = IngestionManifest(
+            anndata=[artifact.uri for artifact in dataset.artifacts if artifact.type == DatasetArtifactType.RAW_H5AD][
+                0
+            ],
+            atac_fragment=[
+                artifact.uri for artifact in dataset.artifacts if artifact.type == DatasetArtifactType.ATAC_FRAGMENT
+            ][0],
+        )
+        manifest = self.business_logic.get_ingestion_manifest(dataset.version_id)
+        self.assertEqual(expected_manifest, manifest)
+
 
 class TestGetAllDatasets(BaseBusinessLogicTestCase):
     def test_get_all_private_datasets_ok(self):
@@ -3025,19 +3038,20 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
 
         self.complete_dataset_processing_with_success(replaced_dataset_version_id)
 
-        dataset_version_ids = [d_v.version_id.id for d_v in published_collection.datasets] + [
-            replaced_dataset_version_id
+        dataset_versions = published_collection.datasets + [
+            self.business_logic.get_dataset_version(replaced_dataset_version_id)
         ]
         expected_delete_keys = set()
         fake_public_bucket = "datasets"
-        for d_v_id in dataset_version_ids:
+        for d_v in dataset_versions:
             for file_type in ("h5ad", "rds"):
-                key = f"{d_v_id}.{file_type}"
+                key = f"{d_v.version_id}.{file_type}"
                 self.s3_provider.upload_file(None, fake_public_bucket, key, None)  # Populate s3 mock with assets
                 self.assertTrue(self.s3_provider.uri_exists(f"s3://{fake_public_bucket}/{key}"))
-                expected_delete_keys.add(f"{d_v_id}.{file_type}")
+                expected_delete_keys.add(f"{d_v.version_id}.{file_type}")
+            expected_delete_keys.update(self.business_logic.get_atac_fragment_uris_from_dataset_version(d_v))
         self.assertTrue(len(expected_delete_keys) > 0)
-        [self.assertTrue(self.s3_provider.file_exists(fake_public_bucket, key)) for key in expected_delete_keys]
+        self.assertTrue(all(self.s3_provider.file_exists(fake_public_bucket, key) for key in expected_delete_keys))
         actual_delete_keys = set(
             self.business_logic.delete_all_dataset_versions_from_public_bucket_for_collection(
                 published_collection.collection_id
@@ -3222,7 +3236,7 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         def add_artifact():
             self.database_provider.create_dataset_artifact(dataset.version_id, DatasetArtifactType.H5AD, "fake_uri")
 
-        self.assertEqual(len(dataset.artifacts), 5)
+        self.assertEqual(len(dataset.artifacts), 6)
 
         from concurrent.futures import ThreadPoolExecutor
 
@@ -3233,7 +3247,7 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         dv = self.business_logic.get_dataset_version(dataset.version_id)
         self.assertIsNotNone(dv)
         if dv is not None:
-            self.assertEqual(len(dv.artifacts), 15)
+            self.assertEqual(len(dv.artifacts), 16)
 
 
 class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
