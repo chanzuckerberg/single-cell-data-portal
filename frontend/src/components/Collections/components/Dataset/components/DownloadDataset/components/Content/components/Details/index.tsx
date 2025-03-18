@@ -1,16 +1,18 @@
 import { FC, ReactNode } from "react";
 import { DialogLoader } from "src/components/Datasets/components/DownloadDataset/style";
-import { FormLabel } from "@mui/material";
-import { FormControl, NoneSelected } from "./style";
+import { FormLabel, FormControl } from "@mui/material";
+import { NoneSelected } from "./style";
 
 interface Props {
   downloadPreview?: ReactNode;
+  hasDownloadLinks: boolean;
   selected: boolean;
   isLoading: boolean;
 }
 
 const Details: FC<Props> = ({
   downloadPreview,
+  hasDownloadLinks,
   selected = false,
   isLoading = false,
 }) => {
@@ -26,6 +28,13 @@ const Details: FC<Props> = ({
           <p>Select files to download</p>
         </NoneSelected>
       );
+    }
+
+    if (!isLoading && !hasDownloadLinks) {
+      <NoneSelected>
+        <h4>No Download Links Available</h4>
+        <p>Please try again later.</p>
+      </NoneSelected>;
     }
     return downloadPreview;
   }

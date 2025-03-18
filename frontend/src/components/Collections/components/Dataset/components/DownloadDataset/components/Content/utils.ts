@@ -19,7 +19,7 @@ export const downloadMultipleFiles = (
 
 export const getDownloadLink = async (
   asset: DatasetAsset
-): Promise<DownloadLinkType> => {
+): Promise<DownloadLinkType | null> => {
   try {
     const url = apiTemplateToUrl(API.DATASET_ASSET_DOWNLOAD_LINK, {
       asset_id: asset.id,
@@ -38,10 +38,6 @@ export const getDownloadLink = async (
     };
   } catch (error) {
     console.error("Error fetching download link for asset:", asset, error);
-    return {
-      filetype: asset.filetype,
-      fileSize: undefined,
-      downloadURL: undefined,
-    };
+    return null;
   }
 };

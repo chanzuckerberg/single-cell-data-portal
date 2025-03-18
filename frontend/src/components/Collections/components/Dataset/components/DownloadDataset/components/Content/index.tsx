@@ -13,72 +13,72 @@ import { Button } from "src/components/common/Button";
 import { possibleDownloadFormats } from "./components/DataFormat/constants";
 import { downloadMultipleFiles, getDownloadLink } from "./utils";
 
-// TODO: (smccanny) delete this hard coded test array
-const dataAssets = [
-  {
-    created_at: 0,
-    dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
-    filename: "raw.h5ad",
-    filetype: "RAW_H5AD",
-    id: "14aa6934-b111-4738-90f4-feadc3584e2e",
-    s3_uri:
-      "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/raw.h5ad",
-    updated_at: 0,
-    user_submitted: true,
-  },
-  {
-    created_at: 0,
-    dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
-    filename: "local.h5ad",
-    filetype: "H5AD",
-    id: "8a7f782f-0ab3-4118-bea3-0706eca08f12",
-    s3_uri:
-      "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.h5ad",
-    updated_at: 0,
-    user_submitted: true,
-  },
-  {
-    created_at: 0,
-    dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
-    filename: "",
-    filetype: "CXG",
-    id: "1ec622f0-f0ef-4a50-983b-bc7774b66dcc",
-    s3_uri:
-      "s3://hosted-cellxgene-staging/30a7b283-82db-408f-92fa-238998378eb5.cxg/",
-    updated_at: 0,
-    user_submitted: true,
-  },
-  {
-    created_at: 0,
-    dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
-    filename: "local.rds",
-    filetype: "RDS",
-    id: "4dd72160-f924-447f-93f4-ac5253ce4606",
-    s3_uri:
-      "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
-    updated_at: 0,
-    user_submitted: true,
-  },
-  {
-    created_at: 0,
-    dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
-    filename: "tsv.gz",
-    filetype: "ATAC_INDEX",
-    id: "4dd72160-f924-447f-93f4-ac5253ce4606",
-    s3_uri:
-      "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
-    updated_at: 0,
-    user_submitted: true,
-  },
-  {
-    dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
-    filename: "fragment",
-    filetype: "ATAC_FRAGMENT",
-    id: "4dd72160-f924-447f-93f4-ac5253ce4606",
-    s3_uri:
-      "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
-  },
-] as Dataset["dataset_assets"];
+// // TODO: (smccanny) delete this hard coded test array
+// const dataAssets = [
+//   {
+//     created_at: 0,
+//     dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
+//     filename: "raw.h5ad",
+//     filetype: "RAW_H5AD",
+//     id: "14aa6934-b111-4738-90f4-feadc3584e2e",
+//     s3_uri:
+//       "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/raw.h5ad",
+//     updated_at: 0,
+//     user_submitted: true,
+//   },
+//   {
+//     created_at: 0,
+//     dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
+//     filename: "local.h5ad",
+//     filetype: "H5AD",
+//     id: "8a7f782f-0ab3-4118-bea3-0706eca08f12",
+//     s3_uri:
+//       "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.h5ad",
+//     updated_at: 0,
+//     user_submitted: true,
+//   },
+//   {
+//     created_at: 0,
+//     dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
+//     filename: "",
+//     filetype: "CXG",
+//     id: "1ec622f0-f0ef-4a50-983b-bc7774b66dcc",
+//     s3_uri:
+//       "s3://hosted-cellxgene-staging/30a7b283-82db-408f-92fa-238998378eb5.cxg/",
+//     updated_at: 0,
+//     user_submitted: true,
+//   },
+//   {
+//     created_at: 0,
+//     dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
+//     filename: "local.rds",
+//     filetype: "RDS",
+//     id: "4dd72160-f924-447f-93f4-ac5253ce4606",
+//     s3_uri:
+//       "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
+//     updated_at: 0,
+//     user_submitted: true,
+//   },
+//   {
+//     created_at: 0,
+//     dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
+//     filename: "tsv.gz",
+//     filetype: "ATAC_INDEX",
+//     id: "4dd72160-f924-447f-93f4-ac5253ce4606",
+//     s3_uri:
+//       "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
+//     updated_at: 0,
+//     user_submitted: true,
+//   },
+//   {
+//     dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
+//     filename: "fragment",
+//     filetype: "ATAC_FRAGMENT",
+//     id: "4dd72160-f924-447f-93f4-ac5253ce4606",
+//     s3_uri:
+//       "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
+//   },
+// ] as Dataset["dataset_assets"];
 
 interface Props {
   isError?: boolean;
@@ -99,7 +99,7 @@ const Content: FC<Props> = ({
   isLoading = false,
   onClose,
   name,
-  // dataAssets: dataAssetsSource,
+  dataAssets,
 }) => {
   const [selectedFormats, setSelectedFormats] = useState<
     DATASET_ASSET_FORMAT[]
@@ -178,7 +178,12 @@ const Content: FC<Props> = ({
       try {
         // Fetch download links and update state
         const newLinks = await Promise.all(assets.map(getDownloadLink));
-        setDownloadLinks((prev) => [...new Set([...prev, ...newLinks])]);
+        const newLinksFiltered = newLinks.filter(
+          (link) => link !== null
+        ) as DownloadLinkType[];
+        setDownloadLinks((prev) => [
+          ...new Set([...prev, ...newLinksFiltered]),
+        ]);
       } catch (error) {
         console.error("Error fetching download links", error);
       } finally {
@@ -227,6 +232,7 @@ const Content: FC<Props> = ({
               handleChange={handleChange}
               selectedFormats={selectedFormats}
               downloadLinks={downloadLinks}
+              isDisabled={downloadLinks.length === 0}
             />
             <Details
               downloadPreview={
@@ -239,6 +245,7 @@ const Content: FC<Props> = ({
                 />
               }
               isLoading={isDownloadLinkLoading}
+              hasDownloadLinks={downloadLinks.length > 0}
               selected={selectedFormats.length > 0}
             />
           </>
