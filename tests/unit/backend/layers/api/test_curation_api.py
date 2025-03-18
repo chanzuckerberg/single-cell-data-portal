@@ -666,10 +666,12 @@ class TestGetCollectionID(BaseAPIPortalTest):
             collection_version=collection_version,
             metadata=dataset_metadata,
             artifacts=[
-                DatasetArtifactUpdate(type="h5ad", uri="http://test_filename/1234-5678-9/local.h5ad"),
-                DatasetArtifactUpdate(type="rds", uri="http://test_filename/1234-5678-9/local.rds"),
-                DatasetArtifactUpdate(type="cxg", uri="http://test_filename/1234-5678-9/local.cxg"),
-                DatasetArtifactUpdate(type="raw_h5ad", uri="http://test_filename/1234-5678-9/raw.h5ad"),
+                DatasetArtifactUpdate(type=DatasetArtifactType.H5AD, uri="http://test_filename/1234-5678-9/local.h5ad"),
+                DatasetArtifactUpdate(type=DatasetArtifactType.RDS, uri="http://test_filename/1234-5678-9/local.rds"),
+                DatasetArtifactUpdate(type=DatasetArtifactType.CXG, uri="http://test_filename/1234-5678-9/local.cxg"),
+                DatasetArtifactUpdate(
+                    type=DatasetArtifactType.RAW_H5AD, uri="http://test_filename/1234-5678-9/raw.h5ad"
+                ),
             ],
         )
         self.business_logic.publish_collection_version(collection_version.version_id)
