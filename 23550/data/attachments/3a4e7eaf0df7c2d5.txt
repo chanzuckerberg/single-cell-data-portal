@@ -1,0 +1,17 @@
+INFO     backend.layers.business.business:business.py:553 {'message': 'ingesting dataset', 'collection_version_id': 0a3335e8-5e1a-4dbb-9c08-ddf1f218bf70, 'url': 'http://fake.url', 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:553 {'message': 'ingesting dataset', 'collection_version_id': 0a3335e8-5e1a-4dbb-9c08-ddf1f218bf70, 'url': None, 'current_dataset_version_id': 6c09d534-89c9-4681-b086-b64727dad0cc}
+INFO     processing:dataset_metadata_update.py:333 Main: No raw h5ad update required
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:process_logic.py:91 Uploaded [2ac7aa9a-a134-44b2-ab76-4015e4969511/raw.h5ad] to s3://artifact_bucket/2ac7aa9a-a134-44b2-ab76-4015e4969511/raw.h5ad
+INFO     processing:process_logic.py:93 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:dataset_metadata_update.py:337 Main: Starting thread for h5ad update
+ERROR    processing:dataset_metadata_update.py:374 Cannot find RDS artifact uri for 6c09d534-89c9-4681-b086-b64727dad0cc, and Conversion Status is not SKIPPED.
+INFO     processing:process_logic.py:45 Updating processing status
+INFO     processing:dataset_metadata_update.py:380 Main: Starting thread for cxg update
+INFO     processing:process_logic.py:45 Updating processing status
