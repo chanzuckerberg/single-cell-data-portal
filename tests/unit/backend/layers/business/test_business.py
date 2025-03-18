@@ -312,9 +312,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         def _add_artifact(bucket, key, key_type):
             ext = ARTIFACT_TO_EXTENSION[key_type]
             key_name = f"{key}.{ext}/" if key_type == DatasetArtifactType.CXG else f"{key}.{ext}"
-            self.database_provider.create_dataset_artifact(
-                dataset_version_id, key_type.value, f"s3://{bucket}/{key_name}"
-            )
+            self.database_provider.create_dataset_artifact(dataset_version_id, key_type, f"s3://{bucket}/{key_name}")
             self.s3_provider.upload_file(None, bucket, key_name, None)
 
         _add_artifact("artifacts", f"{dataset_version_id}/raw", DatasetArtifactType.RAW_H5AD)
@@ -1876,7 +1874,9 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
         self.assertEqual(2, len(unpublished_collection.datasets))
         for dataset in unpublished_collection.datasets:
             self.assertEqual(dataset.artifacts, [])
-            self.business_logic.add_dataset_artifact(dataset.version_id, "h5ad", "http://fake.uri/artifact.h5ad")
+            self.business_logic.add_dataset_artifact(
+                dataset.version_id, DatasetArtifactType.H5AD, "http://fake.uri/artifact.h5ad"
+            )
 
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             self.assertEqual(1, len(version_from_db.artifacts))
