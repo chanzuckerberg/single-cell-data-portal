@@ -1,67 +1,80 @@
 import React, { FC } from "react";
 import { DATASET_ASSET_FORMAT } from "src/common/entities";
-import { FormControl, FormLabel, RadioGroup } from "@mui/material";
-import { InputRadio, Tooltip } from "@czi-sds/components";
-import {
-  TOOLTIP_SLOT_PROPS,
-  TOOLTIP_TITLE,
-} from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/DataFormat/constants";
-
+import { FormLabel } from "@mui/material";
+import { FormControl } from "./style";
+import { InputCheckbox } from "@czi-sds/components";
+import { DownloadLinkType } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content";
+import { possibleDownloadFormats } from "./constants"; 
 interface Props {
   handleChange: (format: DATASET_ASSET_FORMAT) => void;
-  isDisabled: boolean;
-  selectedFormat: DATASET_ASSET_FORMAT | "";
-  availableFormats: DATASET_ASSET_FORMAT[];
+  isDisabled?: boolean;
+  selectedFormats: DATASET_ASSET_FORMAT[];
+  availableFormats: Set<DATASET_ASSET_FORMAT>;
+  downloadLinks: DownloadLinkType[];
 }
 
 const DataFormat: FC<Props> = ({
   handleChange: handleChangeRaw,
   isDisabled = false,
-  selectedFormat,
+  selectedFormats,
   availableFormats,
+  downloadLinks,
 }) => {
-  const isH5AD = availableFormats.includes(DATASET_ASSET_FORMAT.H5AD);
-  const isRDS = availableFormats.includes(DATASET_ASSET_FORMAT.RDS);
   const handleChange = (event: React.FormEvent<HTMLElement>) => {
     const value = (event.target as HTMLInputElement)
       .value as DATASET_ASSET_FORMAT;
-
     handleChangeRaw(value);
   };
 
+  const humanFileSize = (size: number) => {
+    let i = size == 0 ? 0 : Math.floor(Math.log(size) / Math.log(1024));
+    return +((size / Math.pow(1024, i)).toFixed(0)) * 1 + ' ' + ['B', 'KB', 'MB', 'GB', 'TB'][i];
+}
+
+  const getFileSize = (downloadLinks: DownloadLinkType[], fileType: DATASET_ASSET_FORMAT) => {
+    let fileSize: number | string = '--';
+    if (downloadLinks.length === 0) {
+      return fileSize;
+    }
+    if (fileType === DATASET_ASSET_FORMAT.ATAC_INDEX) {      
+      fileSize = downloadLinks
+        .filter(x => x.filetype === DATASET_ASSET_FORMAT.ATAC_INDEX || x.filetype === DATASET_ASSET_FORMAT.ATAC_FRAGMENT )
+        .reduce((acc, x) => {
+          return x.fileSize ? acc + x.fileSize : acc;
+      }, 0);
+    } else {
+      fileSize = downloadLinks.find(x => x.filetype === fileType)?.fileSize || '--';
+    }
+    if (typeof fileSize === 'string') {
+      return fileSize;
+    }
+    return humanFileSize(fileSize);
+  }
+
   return (
     <FormControl>
-      <FormLabel>Data Format</FormLabel>
-      <RadioGroup
-        name="dataFormat"
-        onChange={handleChange}
-        row
-        value={selectedFormat}
-        style={{ height: "15px" }}
-      >
-        <InputRadio
-          disabled={isDisabled || !isH5AD}
-          label=".h5ad (AnnData v0.10)"
-          value={DATASET_ASSET_FORMAT.H5AD}
-        />
-        <Tooltip
-          arrow
-          placement="top"
-          sdsStyle="dark"
-          slotProps={TOOLTIP_SLOT_PROPS}
-          title={isRDS ? null : TOOLTIP_TITLE}
-        >
-          {/* The radio button is enclosed within a <span> tag to enable tooltip functionality when the radio button is disabled. */}
-          {/* See https://github.com/chanzuckerberg/sci-components/blob/main/packages/components/src/core/Tooltip/index.tsx#L28. */}
-          <span>
-            <InputRadio
-              disabled={isDisabled || !isRDS}
-              label=".rds (Seurat v5)"
-              value={DATASET_ASSET_FORMAT.RDS}
-            />
-          </span>
-        </Tooltip>
-      </RadioGroup>
+      {
+        possibleDownloadFormats.map(({format, label, type, description}) => (availableFormats.has(format) && (
+          <div className="data-format-info">
+            <FormLabel className="data-format-type">{type}</FormLabel>
+            <span className="data-format-checkbox-group">
+              <InputCheckbox
+                disabled={isDisabled || !availableFormats.has(format)}
+                label={
+                  <span>
+                    {label}
+                    <span className="file-size">{getFileSize(downloadLinks, format)}</span>
+                  </span>
+                }
+                value={format}
+                onChange={handleChange}
+                checked={selectedFormats.includes(format)}
+              />
+            </span>
+            <p className="data-type-description">{description}</p>
+          </div>
+        )))    
+      }      
     </FormControl>
   );
 };

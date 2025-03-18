@@ -1,7 +1,7 @@
-import { Icon } from "@czi-sds/components";
+import { fontBodyXxs, fontHeaderS, Icon } from "@czi-sds/components";
 import styled from "@emotion/styled";
 import { FormControl as MFormControl } from "@mui/material";
-import { cornersM, spacesM, spacesS, textPrimary } from "src/common/theme";
+import { cornersM, cornersL, spacesM, spacesS, textPrimary, gray100, gray500 } from "src/common/theme";
 
 export const FormControl = styled(MFormControl)`
   min-height: 240px;
@@ -31,4 +31,26 @@ export const StyledLink = styled.a`
 
 export const TextWrapper = styled.span`
   display: inline;
+`;
+
+export const NoneSelected = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: ${spacesS}px;
+  justify-content: center;
+  min-height: 150px;
+  border-radius: 8px;
+  background-color: ${gray100};
+  margin-top: ${spacesS}px;
+  h4{
+    ${fontHeaderS}  
+    font-weight: 600;
+    margin-bottom: 0;
+  }
+  p{
+    ${fontBodyXxs}  
+    color: ${gray500};
+    margin-bottom: 0;
+  }
 `;

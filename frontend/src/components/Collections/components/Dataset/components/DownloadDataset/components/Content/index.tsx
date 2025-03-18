@@ -1,9 +1,5 @@
 import React, { FC, useEffect, useState } from "react";
-import { API } from "src/common/API";
 import { Dataset, DATASET_ASSET_FORMAT } from "src/common/entities";
-import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
-import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
-import { API_URL } from "src/configs/configs";
 import DownloadLink from "./components/DownloadLink";
 import DataFormat from "./components/DataFormat";
 import Details from "./components/Details";
@@ -13,13 +9,82 @@ import { EVENTS } from "src/common/analytics/events";
 import { DialogActions, DialogContent, DialogTitle } from "@czi-sds/components";
 import { DialogLoader as Loader } from "src/components/Datasets/components/DownloadDataset/style";
 import { Button } from "src/components/common/Button";
+import { possibleDownloadFormats } from "./components/DataFormat/constants";
+import { downloadMultipleFiles, getDownloadLink } from "./utils";
+
+
+const dataAssets = [
+  {
+      "created_at": 0,
+      "dataset_id": "30a7b283-82db-408f-92fa-238998378eb5",
+      "filename": "raw.h5ad",
+      "filetype": "RAW_H5AD",
+      "id": "14aa6934-b111-4738-90f4-feadc3584e2e",
+      "s3_uri": "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/raw.h5ad",
+      "updated_at": 0,
+      "user_submitted": true
+  },
+  {
+      "created_at": 0,
+      "dataset_id": "30a7b283-82db-408f-92fa-238998378eb5",
+      "filename": "local.h5ad",
+      "filetype": "H5AD",
+      "id": "8a7f782f-0ab3-4118-bea3-0706eca08f12",
+      "s3_uri": "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.h5ad",
+      "updated_at": 0,
+      "user_submitted": true
+  },
+  {
+      "created_at": 0,
+      "dataset_id": "30a7b283-82db-408f-92fa-238998378eb5",
+      "filename": "",
+      "filetype": "CXG",
+      "id": "1ec622f0-f0ef-4a50-983b-bc7774b66dcc",
+      "s3_uri": "s3://hosted-cellxgene-staging/30a7b283-82db-408f-92fa-238998378eb5.cxg/",
+      "updated_at": 0,
+      "user_submitted": true
+  },
+  {
+      "created_at": 0,
+      "dataset_id": "30a7b283-82db-408f-92fa-238998378eb5",
+      "filename": "local.rds",
+      "filetype": "RDS",
+      "id": "4dd72160-f924-447f-93f4-ac5253ce4606",
+      "s3_uri": "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
+      "updated_at": 0,
+      "user_submitted": true
+  },
+  {
+    "created_at": 0,
+    "dataset_id": "30a7b283-82db-408f-92fa-238998378eb5",
+    "filename": "tsv.gz",
+    "filetype": "ATAC_INDEX",
+    "id": "4dd72160-f924-447f-93f4-ac5253ce4606",
+    "s3_uri": "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
+    "updated_at": 0,
+    "user_submitted": true
+  },
+  {
+    "dataset_id": "30a7b283-82db-408f-92fa-238998378eb5",
+    "filename": "fragment",
+    "filetype": "ATAC_FRAGMENT",
+    "id": "4dd72160-f924-447f-93f4-ac5253ce4606",
+    "s3_uri": "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
+  }
+] as Dataset["dataset_assets"];
 
 interface Props {
   isError?: boolean;
   isLoading?: boolean;
   onClose: () => void;
   name: string;
-  dataAssets: Dataset["dataset_assets"];
+  // dataAssets: Dataset["dataset_assets"];
+}
+
+export interface DownloadLinkType {
+  filetype: DATASET_ASSET_FORMAT;
+  fileSize: number | undefined;
+  downloadURL: string | undefined; 
 }
 
 const Content: FC<Props> = ({
@@ -27,73 +92,72 @@ const Content: FC<Props> = ({
   isLoading = false,
   onClose,
   name,
-  dataAssets,
+  // dataAssets: dataAssetsSource,
 }) => {
-  const [selectedFormat, setSelectedFormat] = useState<
-    DATASET_ASSET_FORMAT | ""
-  >("");
-  const [fileSize, setFileSize] = useState<number>(0);
-  const [downloadLink, setDownloadLink] = useState<string>("");
-  const [isDownloadLinkLoading, setIsDownloadLinkLoading] =
-    useState<boolean>(false);
-  const isDownloadDisabled =
-    !downloadLink || isDownloadLinkLoading || isError || isLoading;
+  const [selectedFormats, setSelectedFormats] = useState<DATASET_ASSET_FORMAT[]>([]);
+  const [formatsToDownload, setFormatsToDownload] = useState<DATASET_ASSET_FORMAT[]>([]);
+  const [downloadLinks, setDownloadLinks] = useState<DownloadLinkType[]>([]);
+  const [isDownloadLinkLoading, setIsDownloadLinkLoading] = useState<boolean>(false);
+  
+  const isDownloadDisabled = !selectedFormats.length || isDownloadLinkLoading || isError || isLoading;  
+  const availableFormats = new Set(dataAssets.map((dataAsset) => dataAsset.filetype));
 
   useEffect(() => {
-    if (!selectedFormat) return;
+    const isATACIncomplete = (format: DATASET_ASSET_FORMAT) => {
+      if (format !== DATASET_ASSET_FORMAT.ATAC_INDEX) return false;
+      const hasIndex = availableFormats.has(DATASET_ASSET_FORMAT.ATAC_INDEX);
+      const hasFragment = availableFormats.has(DATASET_ASSET_FORMAT.ATAC_FRAGMENT);
+      return !(hasIndex && hasFragment);
+    };
 
-    const asset = dataAssets.filter(
-      (dataAsset) => dataAsset.filetype === selectedFormat
-    );
+    const selectedFormats = possibleDownloadFormats
+      .filter(({ format }) => availableFormats.has(format) && !isATACIncomplete(format))
+      .map(({ format }) => format);
 
-    if (!asset.length) {
-      throw Error(`Format ${selectedFormat} not available`);
-    }
+    setSelectedFormats(selectedFormats);     
+  }, [])
 
-    const { dataset_id: datasetId, id: assetId } = asset[0];
-
-    getDownloadLink({
-      assetId,
-      datasetId,
-      setFileSize,
-      setIsDownloadLinkLoading,
-    });
-
-    async function getDownloadLink({
-      assetId,
-      datasetId,
-      setFileSize,
-      setIsDownloadLinkLoading,
-    }: GetDownloadLinkArgs) {
+  useEffect(() => {
+    const fetchDownloadLinks = async () => {
       setIsDownloadLinkLoading(true);
+      if (selectedFormats.length === 0) {
+        setIsDownloadLinkLoading(false);
+        return;
+      }
+      // Determine formats to download, ensuring ATAC_INDEX includes ATAC_FRAGMENT
+      const formatsToDownload = selectedFormats.flatMap((format) => 
+        format === DATASET_ASSET_FORMAT.ATAC_INDEX
+          ? [DATASET_ASSET_FORMAT.ATAC_INDEX, DATASET_ASSET_FORMAT.ATAC_FRAGMENT]
+          : [format]
+      );
+      setFormatsToDownload(formatsToDownload);
+      if (formatsToDownload.length === 0) return;
 
-      const replace = {
-        asset_id: assetId,
-        dataset_id: datasetId,
-      };
-
-      const url = apiTemplateToUrl(API.DATASET_ASSET_DOWNLOAD_LINK, replace);
-
-      try {
-        const result = await (
-          await fetch(`${API_URL}${url}`, {
-            ...DEFAULT_FETCH_OPTIONS,
-            method: "GET",
-          })
-        ).json();
-
-        const { file_size } = result;
-        const downloadURL = result.url;
-
-        setFileSize(file_size);
-        setDownloadLink(downloadURL);
-      } catch (error) {
-        console.error("Please try again");
+      // Exit early if all formats already have download links
+      if (formatsToDownload.every((format) => downloadLinks.some((link) => link.filetype === format))) {
+        setIsDownloadLinkLoading(false);
+        return;
       }
 
-      setIsDownloadLinkLoading(false);
+      // Filter assets for selected formats
+      const assets = dataAssets.filter((asset) => formatsToDownload.includes(asset.filetype));
+      if (assets.length === 0) {
+        setIsDownloadLinkLoading(false);
+        throw new Error("No Download Formats available");
+      }
+
+      try {
+        // Fetch download links and update state
+        const newLinks = await Promise.all(assets.map(getDownloadLink));
+        setDownloadLinks((prev) => [...new Set([...prev, ...newLinks])]);
+      } catch (error) {
+        console.error("Error fetching download links", error);
+      } finally {
+        setIsDownloadLinkLoading(false);
+      }
     }
-  }, [selectedFormat, dataAssets]);
+    fetchDownloadLinks();
+  }, [selectedFormats, dataAssets]);
 
   /**
    * Tracks dataset download analytics as specified by the custom analytics event.
@@ -106,20 +170,21 @@ const Content: FC<Props> = ({
   ) => {
     track(event, {
       dataset_name: name,
-      data_format: dataFormat || selectedFormat,
+      data_format: dataFormat || selectedFormats,
     });
   };
 
   const handleChange = (format: DATASET_ASSET_FORMAT) => {
-    setSelectedFormat(format);
+    if (selectedFormats.includes(format)) {
+      setSelectedFormats(selectedFormats.filter((f) => f !== format));
+    } else {
+      setSelectedFormats([...selectedFormats, format]);
+    }
     handleAnalytics(EVENTS.DOWNLOAD_DATA_FORMAT_CLICKED, format);
   };
-
-  const availableFormats = dataAssets.map((dataAsset) => dataAsset.filetype);
-
   return (
     <>
-      <DialogTitle title="Download Dataset" />
+      <DialogTitle title="Download Data" />
       <DialogContent>
         {isError && <div>Dataset download is currently not available.</div>}
         {isLoading && <Loader sdsStyle="minimal" />}
@@ -129,26 +194,21 @@ const Content: FC<Props> = ({
             <DataFormat
               availableFormats={availableFormats}
               handleChange={handleChange}
-              isDisabled={isDownloadLinkLoading}
-              selectedFormat={selectedFormat}
+              selectedFormats={selectedFormats}
+              downloadLinks={downloadLinks}
             />
             <Details
               downloadPreview={
-                !!downloadLink &&
-                !isDownloadLinkLoading && (
                   <DownloadLink
-                    downloadLink={downloadLink}
+                    formatsToDownload={formatsToDownload}
+                    downloadLinks={downloadLinks}
                     handleAnalytics={() =>
                       handleAnalytics(EVENTS.DOWNLOAD_DATA_COPY)
                     }
-                    selectedFormat={selectedFormat}
                   />
-                )
               }
-              fileSize={fileSize}
               isLoading={isDownloadLinkLoading}
-              selected={Boolean(fileSize)}
-              selectedFormat={selectedFormat}
+              selected={selectedFormats.length > 0}
             />
           </>
         )}
@@ -165,8 +225,10 @@ const Content: FC<Props> = ({
         <Button
           data-testid="download-asset-download-button"
           disabled={isDownloadDisabled}
-          href={downloadLink}
-          onClick={() => handleAnalytics(EVENTS.DOWNLOAD_DATA_COMPLETE)}
+          onClick={() =>{
+            downloadMultipleFiles(formatsToDownload, downloadLinks);
+            handleAnalytics(EVENTS.DOWNLOAD_DATA_COMPLETE);
+          }}
           sdsStyle="square"
           sdsType="primary"
         >
@@ -175,13 +237,6 @@ const Content: FC<Props> = ({
       </DialogActions>
     </>
   );
-
-  interface GetDownloadLinkArgs {
-    assetId: string;
-    datasetId: string;
-    setFileSize: (value: number) => void;
-    setIsDownloadLinkLoading: (value: boolean) => void;
-  }
 };
 
 export default Content;
