@@ -33,7 +33,6 @@ from backend.layers.business.exceptions import (
     CollectionPublishException,
     CollectionUpdateException,
     CollectionVersionException,
-    DatasetIngestException,
     DatasetInWrongStatusException,
     DatasetIsPrivateException,
     DatasetIsTombstonedException,
@@ -939,17 +938,13 @@ class BusinessLogic(BusinessLogicInterface):
     def add_dataset_artifact(
         self,
         dataset_version_id: DatasetVersionId,
-        artifact_type: str,
+        artifact_type: DatasetArtifactType,
         artifact_uri: str,
         artifact_id: Optional[DatasetArtifactId] = None,
     ) -> DatasetArtifactId:
         """
         Registers an artifact to a dataset version.
         """
-
-        if artifact_type not in [artifact.value for artifact in DatasetArtifactType]:
-            raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
-
         return self.database_provider.create_dataset_artifact(
             dataset_version_id, artifact_type, artifact_uri, artifact_id
         )
