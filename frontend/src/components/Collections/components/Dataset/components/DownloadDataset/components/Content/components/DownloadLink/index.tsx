@@ -14,7 +14,7 @@ const DownloadLink: FC<Props> = ({
   handleAnalytics,
   formatsToDownload,
 }) => {
-  const copyText = downloadLinks.reduce((acc,download) => {
+  const copyText = downloadLinks.reduce((acc, download) => {
     if (!formatsToDownload.includes(download.filetype)) {
       return acc;
     }

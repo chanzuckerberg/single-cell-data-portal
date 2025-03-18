@@ -8,26 +8,26 @@ export const FormControl = styled(MFormControl)`
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-gap: ${spacesXxl}px !important;
-  .data-format-info label{
+  .data-format-info label {
     display: flex;
   }
-  .data-format-checkbox-group{
+  .data-format-checkbox-group {
     display: flex;
     flex-direction: row;
     align-items: center;
   }
-  .data-format-checkbox-group label{
+  .data-format-checkbox-group label {
     margin-bottom: 0;
   }
-  .file-size{
+  .file-size {
     padding-left: ${spacesS}px;
     color: #6c6c6c;
   }
 
-  .data-format-type{
+  .data-format-type {
     margin-bottom: ${spacesS}px;
   }
-  .data-type-description{
+  .data-type-description {
     ${fontBodyXxs}
     padding-left: ${spacesXl}px;
     color: ${gray500};

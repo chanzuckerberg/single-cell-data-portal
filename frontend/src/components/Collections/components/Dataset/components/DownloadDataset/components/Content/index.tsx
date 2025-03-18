@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-duplicate-string */
 import React, { FC, useEffect, useState } from "react";
 import { Dataset, DATASET_ASSET_FORMAT } from "src/common/entities";
 import DownloadLink from "./components/DownloadLink";
@@ -12,65 +13,71 @@ import { Button } from "src/components/common/Button";
 import { possibleDownloadFormats } from "./components/DataFormat/constants";
 import { downloadMultipleFiles, getDownloadLink } from "./utils";
 
-
+// TODO: (smccanny) delete this hard coded test array
 const dataAssets = [
   {
-      "created_at": 0,
-      "dataset_id": "30a7b283-82db-408f-92fa-238998378eb5",
-      "filename": "raw.h5ad",
-      "filetype": "RAW_H5AD",
-      "id": "14aa6934-b111-4738-90f4-feadc3584e2e",
-      "s3_uri": "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/raw.h5ad",
-      "updated_at": 0,
-      "user_submitted": true
+    created_at: 0,
+    dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
+    filename: "raw.h5ad",
+    filetype: "RAW_H5AD",
+    id: "14aa6934-b111-4738-90f4-feadc3584e2e",
+    s3_uri:
+      "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/raw.h5ad",
+    updated_at: 0,
+    user_submitted: true,
   },
   {
-      "created_at": 0,
-      "dataset_id": "30a7b283-82db-408f-92fa-238998378eb5",
-      "filename": "local.h5ad",
-      "filetype": "H5AD",
-      "id": "8a7f782f-0ab3-4118-bea3-0706eca08f12",
-      "s3_uri": "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.h5ad",
-      "updated_at": 0,
-      "user_submitted": true
+    created_at: 0,
+    dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
+    filename: "local.h5ad",
+    filetype: "H5AD",
+    id: "8a7f782f-0ab3-4118-bea3-0706eca08f12",
+    s3_uri:
+      "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.h5ad",
+    updated_at: 0,
+    user_submitted: true,
   },
   {
-      "created_at": 0,
-      "dataset_id": "30a7b283-82db-408f-92fa-238998378eb5",
-      "filename": "",
-      "filetype": "CXG",
-      "id": "1ec622f0-f0ef-4a50-983b-bc7774b66dcc",
-      "s3_uri": "s3://hosted-cellxgene-staging/30a7b283-82db-408f-92fa-238998378eb5.cxg/",
-      "updated_at": 0,
-      "user_submitted": true
+    created_at: 0,
+    dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
+    filename: "",
+    filetype: "CXG",
+    id: "1ec622f0-f0ef-4a50-983b-bc7774b66dcc",
+    s3_uri:
+      "s3://hosted-cellxgene-staging/30a7b283-82db-408f-92fa-238998378eb5.cxg/",
+    updated_at: 0,
+    user_submitted: true,
   },
   {
-      "created_at": 0,
-      "dataset_id": "30a7b283-82db-408f-92fa-238998378eb5",
-      "filename": "local.rds",
-      "filetype": "RDS",
-      "id": "4dd72160-f924-447f-93f4-ac5253ce4606",
-      "s3_uri": "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
-      "updated_at": 0,
-      "user_submitted": true
+    created_at: 0,
+    dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
+    filename: "local.rds",
+    filetype: "RDS",
+    id: "4dd72160-f924-447f-93f4-ac5253ce4606",
+    s3_uri:
+      "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
+    updated_at: 0,
+    user_submitted: true,
   },
   {
-    "created_at": 0,
-    "dataset_id": "30a7b283-82db-408f-92fa-238998378eb5",
-    "filename": "tsv.gz",
-    "filetype": "ATAC_INDEX",
-    "id": "4dd72160-f924-447f-93f4-ac5253ce4606",
-    "s3_uri": "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
-    "updated_at": 0,
-    "user_submitted": true
+    created_at: 0,
+    dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
+    filename: "tsv.gz",
+    filetype: "ATAC_INDEX",
+    id: "4dd72160-f924-447f-93f4-ac5253ce4606",
+    s3_uri:
+      "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
+    updated_at: 0,
+    user_submitted: true,
   },
   {
-    "dataset_id": "30a7b283-82db-408f-92fa-238998378eb5",
-    "filename": "fragment",
-    "filetype": "ATAC_FRAGMENT",
-    "id": "4dd72160-f924-447f-93f4-ac5253ce4606",
-    "s3_uri": "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
-  }
+    dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
+    filename: "fragment",
+    filetype: "ATAC_FRAGMENT",
+    id: "4dd72160-f924-447f-93f4-ac5253ce4606",
+    s3_uri:
+      "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
+  },
 ] as Dataset["dataset_assets"];
 
 interface Props {
@@ -78,13 +85,13 @@ interface Props {
   isLoading?: boolean;
   onClose: () => void;
   name: string;
-  // dataAssets: Dataset["dataset_assets"];
+  dataAssets: Dataset["dataset_assets"];
 }
 
 export interface DownloadLinkType {
   filetype: DATASET_ASSET_FORMAT;
   fileSize: number | undefined;
-  downloadURL: string | undefined; 
+  downloadURL: string | undefined;
 }
 
 const Content: FC<Props> = ({
@@ -94,28 +101,41 @@ const Content: FC<Props> = ({
   name,
   // dataAssets: dataAssetsSource,
 }) => {
-  const [selectedFormats, setSelectedFormats] = useState<DATASET_ASSET_FORMAT[]>([]);
-  const [formatsToDownload, setFormatsToDownload] = useState<DATASET_ASSET_FORMAT[]>([]);
+  const [selectedFormats, setSelectedFormats] = useState<
+    DATASET_ASSET_FORMAT[]
+  >([]);
+  const [formatsToDownload, setFormatsToDownload] = useState<
+    DATASET_ASSET_FORMAT[]
+  >([]);
   const [downloadLinks, setDownloadLinks] = useState<DownloadLinkType[]>([]);
-  const [isDownloadLinkLoading, setIsDownloadLinkLoading] = useState<boolean>(false);
-  
-  const isDownloadDisabled = !selectedFormats.length || isDownloadLinkLoading || isError || isLoading;  
-  const availableFormats = new Set(dataAssets.map((dataAsset) => dataAsset.filetype));
+  const [isDownloadLinkLoading, setIsDownloadLinkLoading] =
+    useState<boolean>(false);
+
+  const isDownloadDisabled =
+    !selectedFormats.length || isDownloadLinkLoading || isError || isLoading;
 
   useEffect(() => {
+    const availableFormats = new Set(
+      dataAssets.map((dataAsset) => dataAsset.filetype)
+    );
     const isATACIncomplete = (format: DATASET_ASSET_FORMAT) => {
       if (format !== DATASET_ASSET_FORMAT.ATAC_INDEX) return false;
       const hasIndex = availableFormats.has(DATASET_ASSET_FORMAT.ATAC_INDEX);
-      const hasFragment = availableFormats.has(DATASET_ASSET_FORMAT.ATAC_FRAGMENT);
+      const hasFragment = availableFormats.has(
+        DATASET_ASSET_FORMAT.ATAC_FRAGMENT
+      );
       return !(hasIndex && hasFragment);
     };
 
     const selectedFormats = possibleDownloadFormats
-      .filter(({ format }) => availableFormats.has(format) && !isATACIncomplete(format))
+      .filter(
+        ({ format }) =>
+          availableFormats.has(format) && !isATACIncomplete(format)
+      )
       .map(({ format }) => format);
 
-    setSelectedFormats(selectedFormats);     
-  }, [])
+    setSelectedFormats(selectedFormats);
+  }, []);
 
   useEffect(() => {
     const fetchDownloadLinks = async () => {
@@ -125,22 +145,31 @@ const Content: FC<Props> = ({
         return;
       }
       // Determine formats to download, ensuring ATAC_INDEX includes ATAC_FRAGMENT
-      const formatsToDownload = selectedFormats.flatMap((format) => 
+      const formatsToDownload = selectedFormats.flatMap((format) =>
         format === DATASET_ASSET_FORMAT.ATAC_INDEX
-          ? [DATASET_ASSET_FORMAT.ATAC_INDEX, DATASET_ASSET_FORMAT.ATAC_FRAGMENT]
+          ? [
+              DATASET_ASSET_FORMAT.ATAC_INDEX,
+              DATASET_ASSET_FORMAT.ATAC_FRAGMENT,
+            ]
           : [format]
       );
       setFormatsToDownload(formatsToDownload);
       if (formatsToDownload.length === 0) return;
 
       // Exit early if all formats already have download links
-      if (formatsToDownload.every((format) => downloadLinks.some((link) => link.filetype === format))) {
+      if (
+        formatsToDownload.every((format) =>
+          downloadLinks.some((link) => link.filetype === format)
+        )
+      ) {
         setIsDownloadLinkLoading(false);
         return;
       }
 
       // Filter assets for selected formats
-      const assets = dataAssets.filter((asset) => formatsToDownload.includes(asset.filetype));
+      const assets = dataAssets.filter((asset) =>
+        formatsToDownload.includes(asset.filetype)
+      );
       if (assets.length === 0) {
         setIsDownloadLinkLoading(false);
         throw new Error("No Download Formats available");
@@ -155,9 +184,9 @@ const Content: FC<Props> = ({
       } finally {
         setIsDownloadLinkLoading(false);
       }
-    }
+    };
     fetchDownloadLinks();
-  }, [selectedFormats, dataAssets]);
+  }, [selectedFormats, downloadLinks]);
 
   /**
    * Tracks dataset download analytics as specified by the custom analytics event.
@@ -192,20 +221,22 @@ const Content: FC<Props> = ({
           <>
             <Name name={name} />
             <DataFormat
-              availableFormats={availableFormats}
+              availableFormats={
+                new Set(dataAssets.map((dataAsset) => dataAsset.filetype))
+              }
               handleChange={handleChange}
               selectedFormats={selectedFormats}
               downloadLinks={downloadLinks}
             />
             <Details
               downloadPreview={
-                  <DownloadLink
-                    formatsToDownload={formatsToDownload}
-                    downloadLinks={downloadLinks}
-                    handleAnalytics={() =>
-                      handleAnalytics(EVENTS.DOWNLOAD_DATA_COPY)
-                    }
-                  />
+                <DownloadLink
+                  formatsToDownload={formatsToDownload}
+                  downloadLinks={downloadLinks}
+                  handleAnalytics={() =>
+                    handleAnalytics(EVENTS.DOWNLOAD_DATA_COPY)
+                  }
+                />
               }
               isLoading={isDownloadLinkLoading}
               selected={selectedFormats.length > 0}
@@ -225,7 +256,7 @@ const Content: FC<Props> = ({
         <Button
           data-testid="download-asset-download-button"
           disabled={isDownloadDisabled}
-          onClick={() =>{
+          onClick={() => {
             downloadMultipleFiles(formatsToDownload, downloadLinks);
             handleAnalytics(EVENTS.DOWNLOAD_DATA_COMPLETE);
           }}

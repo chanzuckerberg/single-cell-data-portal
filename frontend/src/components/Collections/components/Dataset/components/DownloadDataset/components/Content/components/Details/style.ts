@@ -1,7 +1,14 @@
 import { fontBodyXxs, fontHeaderS, Icon } from "@czi-sds/components";
 import styled from "@emotion/styled";
 import { FormControl as MFormControl } from "@mui/material";
-import { cornersM, cornersL, spacesM, spacesS, textPrimary, gray100, gray500 } from "src/common/theme";
+import {
+  cornersM,
+  spacesM,
+  spacesS,
+  textPrimary,
+  gray100,
+  gray500,
+} from "src/common/theme";
 
 export const FormControl = styled(MFormControl)`
   min-height: 240px;
@@ -43,13 +50,13 @@ export const NoneSelected = styled.div`
   border-radius: 8px;
   background-color: ${gray100};
   margin-top: ${spacesS}px;
-  h4{
-    ${fontHeaderS}  
+  h4 {
+    ${fontHeaderS}
     font-weight: 600;
     margin-bottom: 0;
   }
-  p{
-    ${fontBodyXxs}  
+  p {
+    ${fontBodyXxs}
     color: ${gray500};
     margin-bottom: 0;
   }
