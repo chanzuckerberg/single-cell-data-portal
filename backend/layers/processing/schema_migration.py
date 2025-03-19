@@ -6,7 +6,6 @@ import random
 from typing import Dict, Iterable, List, Tuple
 
 from backend.common.corpora_config import CorporaConfig
-from backend.common.layers.ingestion_manifest import S3Url
 from backend.common.utils.json import CustomJSONEncoder
 from backend.common.utils.result_notification import upload_to_slack
 from backend.layers.business.business import BusinessLogic
@@ -18,6 +17,7 @@ from backend.layers.common.entities import (
     DatasetProcessingStatus,
     DatasetVersionId,
 )
+from backend.layers.common.ingestion_manifest import S3Url
 from backend.layers.processing import logger
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
