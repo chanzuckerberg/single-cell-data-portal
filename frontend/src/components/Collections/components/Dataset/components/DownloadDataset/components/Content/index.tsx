@@ -144,7 +144,7 @@ const Content: FC<Props> = ({
       .map(({ format }) => format);
 
     setSelectedFormats(selectedFormats);
-  }, [dataAssets]);
+  }, [availableFormats, dataAssets]);
 
   useEffect(() => {
     const fetchDownloadLinks = async () => {
@@ -190,7 +190,7 @@ const Content: FC<Props> = ({
       }
     };
     fetchDownloadLinks();
-  }, [selectedFormats, dataAssets, downloadLinks]);
+  }, [selectedFormats, dataAssets, downloadLinks, formatsToDownload]);
 
   /**
    * Tracks dataset download analytics as specified by the custom analytics event.
