@@ -202,7 +202,7 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
     {
       label: "Adult",
       ontology_term_id: "ZFS:0000044",
-    }
+    },
   ],
   [ONTOLOGY_VIEW_KEY.FBdv]: [
     {
@@ -284,7 +284,7 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
         {
           label: "Mature Adult",
           ontology_term_id: "FBdv:00007026",
-        }
+        },
       ],
     },
   ],
@@ -785,7 +785,8 @@ export const CELL_TYPE_LEVEL_2_ONTOLOGY_TERM_SET: OntologyTermSet = {
 export const CELL_TYPE_DESCENDANTS: OntologyDescendants =
   cell_type_descendants_json;
 export const TISSUE_DESCENDANTS: OntologyDescendants = tissue_descendants_json;
-export const NON_UBERON_DEVELOPMENTAL_STAGE_DESCENDANTS: OntologyDescendants = non_uberon_developmental_stage_descendants_json
+export const NON_UBERON_DEVELOPMENTAL_STAGE_DESCENDANTS: OntologyDescendants =
+  non_uberon_developmental_stage_descendants_json;
 
 export const ORGANISM_TAXON = {
   WORM: "NCBITaxon:6239",
