@@ -12,7 +12,12 @@ export const downloadMultipleFiles = (
 ) => {
   downloadLinks.forEach((download) => {
     if (formatsToDownload.includes(download.filetype) && download.downloadURL) {
-      window.open(download.downloadURL);
+      const a = document.createElement("a");
+      a.href = download.downloadURL;
+      a.download = download.downloadURL.split("/").pop() || "";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
   });
 };
