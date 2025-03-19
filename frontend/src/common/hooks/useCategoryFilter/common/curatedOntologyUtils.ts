@@ -18,6 +18,7 @@ import {
   ONTOLOGY_VIEW_KEY,
   ONTOLOGY_VIEW_LABEL,
   ORGANISM,
+  ORGANISM_LOOKUP,
 } from "src/components/common/Filter/common/entities";
 import {
   findOntologyNodeById,
@@ -73,13 +74,15 @@ export function buildCuratedOntologyCategoryView(
   config: CuratedOntologyCategoryFilterConfig,
   categoryValueByValue: KeyedSelectCategoryValue,
   filterState: FilterState,
-  ontologyTermLabelsById: Map<string, string>
+  ontologyTermLabelsById: Map<string, string>,
+  showMultiSpeciesFeatures?: boolean
 ): OntologyCategoryView {
   const {
     categoryFilterId,
     isLabelVisible,
     isSearchable,
     isZerosVisible,
+    footerComponentId,
     label,
     source,
   } = config;
@@ -98,7 +101,8 @@ export function buildCuratedOntologyCategoryView(
         categoryFilterId === CATEGORY_FILTER_ID.DEVELOPMENT_STAGE &&
         !isDevelopmentStageSpeciesVisible(
           filterState,
-          ontologyViewKey as ONTOLOGY_VIEW_KEY
+          ontologyViewKey as ONTOLOGY_VIEW_KEY,
+          showMultiSpeciesFeatures
         )
       ) {
         return accum;
@@ -147,6 +151,7 @@ export function buildCuratedOntologyCategoryView(
     isSearchable,
     isZerosVisible,
     label,
+    footerComponentId,
     views: treeViews,
   };
 
@@ -379,15 +384,17 @@ function handleOntologyChildRemoved(
 /**
  * Development stage species is only visible if:
  * 1. There are no selected organisms or,
- * 2. The given species is selected.
+ * 2. The given species is selected or,
+ * 3. There are filters applied for that species.
  * @param filterState - Categories, category value and their counts with the current filter applied. Required to
- * determine if development stfage species should be visible.
+ * determine if development stage species should be visible.
  * @param speciesKey - The species to check if a corresponding organism has been selected for.
  * @returns True if given species is to be displayed.
  */
 function isDevelopmentStageSpeciesVisible(
   filterState: FilterState,
-  speciesKey: ONTOLOGY_VIEW_KEY
+  speciesKey: ONTOLOGY_VIEW_KEY,
+  showMultiSpeciesFeatures?: boolean
 ) {
   // Find the current selected values for organism.
   const organismCategoryValues = filterState[
@@ -397,8 +404,40 @@ function isDevelopmentStageSpeciesVisible(
     .filter((selectCategoryValue) => selectCategoryValue.selected)
     .map((selectCategoryValue) => selectCategoryValue.categoryValueId);
 
-  // If no organisms are selected, all species can be displayed.
-  if (selectedOrganisms.length === 0) {
+  // Before the feature flag is turned on, keep the current filter behavior
+  if (
+    !showMultiSpeciesFeatures &&
+    selectedOrganisms.length === 0 &&
+    speciesKey !== ONTOLOGY_VIEW_KEY.WBls &&
+    speciesKey !== ONTOLOGY_VIEW_KEY.ZFS &&
+    speciesKey !== ONTOLOGY_VIEW_KEY.FBdv
+  ) {
+    return true;
+  }
+
+  // If there is a filter applied for a specific species, show the species
+  const developmentalStageValues = filterState[
+    CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
+  ] as KeyedSelectCategoryValue;
+  const selectedDevelopmentalStages = [
+    ...developmentalStageValues.values(),
+  ].filter((selectCategoryValue) => selectCategoryValue.selected);
+  const species = selectedDevelopmentalStages.map((selectCategoryValue) => {
+    const categoryValueId = selectCategoryValue.categoryValueId;
+    return categoryValueId.split(":")[0];
+  });
+  if (species.includes(speciesKey)) {
+    return true;
+  }
+
+  // If no organisms are selected, and no developmental stages of specific species are selected
+  // display Human and Mouse by default.
+  if (
+    selectedOrganisms.length === 0 &&
+    selectedDevelopmentalStages.length === 0 &&
+    (speciesKey === ONTOLOGY_VIEW_KEY.HsapDv ||
+      speciesKey === ONTOLOGY_VIEW_KEY.MmusDv)
+  ) {
     return true;
   }
 
@@ -409,12 +448,20 @@ function isDevelopmentStageSpeciesVisible(
   if (speciesKey === ONTOLOGY_VIEW_KEY.MmusDv) {
     return selectedOrganisms.includes(ORGANISM.MUS_MUSCULUS);
   }
-  // Check the "other" case where any species other than human and mouse must be selected.
+  if (speciesKey === ONTOLOGY_VIEW_KEY.WBls) {
+    return selectedOrganisms.includes(ORGANISM.C_ELEGANS);
+  }
+  if (speciesKey === ONTOLOGY_VIEW_KEY.ZFS) {
+    return selectedOrganisms.includes(ORGANISM.D_RERIO);
+  }
+  if (speciesKey === ONTOLOGY_VIEW_KEY.FBdv) {
+    return selectedOrganisms.includes(ORGANISM.DROSOPHILA);
+  }
+
+  // Check the "other" case where any species other than the curated species have been selected
   return (
-    selectedOrganisms.filter(
-      (organism) =>
-        organism !== ORGANISM.HOMO_SAPIENS && organism !== ORGANISM.MUS_MUSCULUS
-    ).length > 0
+    selectedOrganisms.filter((organism) => !ORGANISM_LOOKUP[organism]).length >
+    0
   );
 }
 
