@@ -20,8 +20,6 @@ import {
 } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 import { FilterContent as Content } from "./style";
 import { FilterFooter } from "../FilterFooter";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
-import { FEATURES } from "src/common/featureFlags/features";
 
 interface Props {
   categoryView: CategoryView;
@@ -35,9 +33,6 @@ export default function FilterContent({
   const filterSearchState = useFilterSearch();
   const clientHeightRef = useRef<number>(0);
   const filterRef = useRef<HTMLDivElement>(null);
-  const minHeight = clientHeightRef.current;
-  const showMultiSpeciesFeatures = useFeatureFlag(FEATURES.MULTI_SPECIES);
-
   useEffect(() => {
     if (filterRef.current) {
       clientHeightRef.current = filterRef.current.clientHeight;
@@ -45,14 +40,11 @@ export default function FilterContent({
   }, []);
 
   return (
-    <div>
-      <Content minHeight={minHeight} ref={filterRef}>
+    <>
+      <Content ref={filterRef}>
         {buildBasicFilterContent(categoryView, onFilter, filterSearchState)}
       </Content>
-      {showMultiSpeciesFeatures && (
-        <FilterFooter componentId={categoryView.footerComponentId} />
-      )}
-    </div>
+    </>
   );
 }
 
@@ -73,14 +65,18 @@ function buildBasicFilterContent(
 
   // Handle ontology categories.
   if (isOntologyCategoryView(categoryView)) {
+    // (ie. Developmental Stage Filter)
     return (
-      <FilterViews
-        categoryFilterId={categoryFilterId}
-        isSearchable={categoryView.isSearchable}
-        isZerosVisible={categoryView.isZerosVisible}
-        onFilter={onFilter}
-        views={categoryView.views}
-      />
+      <>
+        <FilterViews
+          categoryFilterId={categoryFilterId}
+          isSearchable={categoryView.isSearchable}
+          isZerosVisible={categoryView.isZerosVisible}
+          onFilter={onFilter}
+          views={categoryView.views}
+          footerComponentId={categoryView.footerComponentId}
+        />
+      </>
     );
   }
 
@@ -105,14 +101,18 @@ function buildBasicFilterContent(
 
   // Handle ontology multi panel categories
   if (isOntologyMultiPanelCategoryView(categoryView)) {
+    // (ie. Cell Type and Tissue Type)
     return (
-      <FilterMultiPanelCategoryView
-        categoryView={categoryView}
-        clearSearchValueFn={clearSearchValueFn}
-        onFilter={onFilter}
-        searchValue={searchValue}
-        setSearchValue={setSearchValue}
-      />
+      <>
+        <FilterMultiPanelCategoryView
+          categoryView={categoryView}
+          clearSearchValueFn={clearSearchValueFn}
+          onFilter={onFilter}
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+        />
+        <FilterFooter componentId={categoryView.footerComponentId} />
+      </>
     );
   }
 

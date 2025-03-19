@@ -56,9 +56,6 @@ export const FooterContent = styled("div")`
   padding: ${spacesS}px;
   ${fontBodyXs}
   color: ${gray500};
-  position: sticky;
-  bottom: 0;
-  width: calc(100% - 25px);
   background: white;
 `;
 

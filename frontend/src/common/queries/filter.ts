@@ -39,6 +39,8 @@ import {
   newFruitFlyDataset,
   newFruitFlyDataset2,
   newZebraFishDataset,
+  newFruitFlyDataset3,
+  newFruitFlyDataset4,
 } from "./tempAdditionalDatasets";
 
 /**
@@ -770,6 +772,8 @@ function fetchAndProcessDatasetResponse(
       datasets.push(newWormDataset);
       datasets.push(newFruitFlyDataset);
       datasets.push(newFruitFlyDataset2);
+      datasets.push(newFruitFlyDataset3);
+      datasets.push(newFruitFlyDataset4);
       datasets.push(newZebraFishDataset);
       // Correct any dirty data returned from endpoint.
       const sanitizedDatasets = datasets.map((dataset: DatasetResponse) => {

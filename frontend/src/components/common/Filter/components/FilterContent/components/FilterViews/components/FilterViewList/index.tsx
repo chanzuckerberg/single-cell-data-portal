@@ -66,8 +66,6 @@ export default function FilterViewList({
     <ViewList dense disablePadding subheader={ViewHeader}>
       {/* No matches */}
       {filteredValues.length === 0 ? (
-        // TODO(smccanny): if organism has mapping in descendant_mappings
-        // then don't even show panel
         <NoMatches>No items found</NoMatches>
       ) : (
         filteredValues.map((filteredValue) => {
