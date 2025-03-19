@@ -17,6 +17,7 @@ from backend.layers.common.entities import (
     DatasetProcessingStatus,
     DatasetVersionId,
 )
+from backend.layers.common.ingestion_manifest import S3Url
 from backend.layers.processing import logger
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
@@ -91,7 +92,7 @@ class SchemaMigrate(ProcessingLogic):
         self, collection_version_id: str, collection_id: str, dataset_id: str, dataset_version_id: str
     ) -> Dict[str, str]:
         manifest = self.business_logic.get_ingestion_manifest(DatasetVersionId(dataset_version_id))
-        source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(manifest.anndata)
+        source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(str(manifest.anndata))
         self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
         migrated_file = "migrated.h5ad"
         reported_changes = self.schema_validator.migrate(
@@ -106,7 +107,7 @@ class SchemaMigrate(ProcessingLogic):
         key_prefix = self.get_key_prefix(dataset_version_id)
         key = "/".join([key_prefix, migrated_file])
         uri = self.upload_artifact(migrated_file, key, self.artifact_bucket)
-        manifest.anndata = uri
+        manifest.anndata = S3Url(uri)
         manifest_dict = manifest.model_dump()
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             CollectionVersionId(collection_version_id),

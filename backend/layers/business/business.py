@@ -606,7 +606,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Validate the URIs
         # TODO: This should be done in the IngestionManifest class
-        for key, _url in manifest.model_dump(exclude_unset=True).items():
+        for key, _url in manifest.model_dump(exclude_none=True).items():
             _url = str(_url)
             if not self.uri_provider.validate(_url):
                 raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
@@ -939,15 +939,14 @@ class BusinessLogic(BusinessLogicInterface):
     def add_dataset_artifact(
         self,
         dataset_version_id: DatasetVersionId,
-        artifact_type: str,
+        artifact_type: DatasetArtifactType,
         artifact_uri: str,
         artifact_id: Optional[DatasetArtifactId] = None,
     ) -> DatasetArtifactId:
         """
         Registers an artifact to a dataset version.
         """
-
-        if artifact_type not in [artifact.value for artifact in DatasetArtifactType]:
+        if not isinstance(artifact_type, DatasetArtifactType):
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
 
         return self.database_provider.create_dataset_artifact(

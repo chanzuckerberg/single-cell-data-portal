@@ -2,7 +2,7 @@
 
 Changing DatasetArtifactTable.type from an enum to a string to allow for new ATAC artifact types.
 
-Revision ID: 92c817dddc7d
+Revision ID: 08_92c817dddc7d
 Revises: 07_e31a29561f38
 Create Date: 2025-03-06 12:31:12.249307
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "92c817dddc7d"
+revision = "08_92c817dddc7d"
 down_revision = "07_e31a29561f38"
 branch_labels = None
 depends_on = None

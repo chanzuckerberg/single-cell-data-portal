@@ -26,6 +26,7 @@ from backend.layers.common.entities import (
     CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
+    DatasetArtifactType,
     DatasetConversionStatus,
     DatasetId,
     DatasetMetadata,
@@ -154,7 +155,7 @@ class DatabaseProvider(DatabaseProviderInterface):
     def _row_to_dataset_artifact(self, row: Any):
         return DatasetArtifact(
             DatasetArtifactId(str(row.id)),
-            row.type,
+            DatasetArtifactType[row.type],
             row.uri,
         )
 
@@ -879,7 +880,7 @@ class DatabaseProvider(DatabaseProviderInterface):
     def create_dataset_artifact(
         self,
         dataset_version_id: DatasetVersionId,
-        artifact_type: str,
+        artifact_type: DatasetArtifactType,
         artifact_uri: str,
         artifact_id: Optional[DatasetArtifactId] = None,
     ) -> DatasetArtifactId:
@@ -887,7 +888,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Adds a dataset artifact to an existing dataset version.
         """
         artifact_id = artifact_id if artifact_id else DatasetArtifactId()
-        artifact = DatasetArtifactTable(id=artifact_id.id, type=artifact_type, uri=artifact_uri)
+        artifact = DatasetArtifactTable(id=artifact_id.id, type=artifact_type.name, uri=artifact_uri)
         with self._get_serializable_session() as session:
             session.add(artifact)
             dataset_version = session.query(DatasetVersionTable).filter_by(id=dataset_version_id.id).one()

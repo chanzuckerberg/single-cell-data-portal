@@ -47,7 +47,7 @@ class ProcessingTest(BaseProcessingTest):
             mock.return_value = "local.cxg"
             ps = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
             self.business_logic.add_dataset_artifact(
-                dataset_version_id, "h5ad", f"s3://fake_bucket_name/{dataset_id}/local.h5ad"
+                dataset_version_id, DatasetArtifactType.H5AD, f"s3://fake_bucket_name/{dataset_id}/local.h5ad"
             )
             ps.process(dataset_version_id, "fake_bucket_name", "fake_cxg_bucket")
 
