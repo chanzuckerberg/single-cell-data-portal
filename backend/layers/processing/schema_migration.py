@@ -6,6 +6,7 @@ import random
 from typing import Dict, Iterable, List, Tuple
 
 from backend.common.corpora_config import CorporaConfig
+from backend.common.layers.ingestion_manifest import S3Url
 from backend.common.utils.json import CustomJSONEncoder
 from backend.common.utils.result_notification import upload_to_slack
 from backend.layers.business.business import BusinessLogic
@@ -106,7 +107,7 @@ class SchemaMigrate(ProcessingLogic):
         key_prefix = self.get_key_prefix(dataset_version_id)
         key = "/".join([key_prefix, migrated_file])
         uri = self.upload_artifact(migrated_file, key, self.artifact_bucket)
-        manifest.anndata = uri
+        manifest.anndata = S3Url(uri)
         manifest_dict = manifest.model_dump()
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             CollectionVersionId(collection_version_id),
