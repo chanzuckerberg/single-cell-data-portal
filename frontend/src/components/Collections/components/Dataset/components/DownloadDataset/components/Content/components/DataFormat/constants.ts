@@ -1,5 +1,5 @@
 import { DATASET_ASSET_FORMAT } from "src/common/entities";
-export const possibleDownloadFormats = [
+export const POSSIBLE_DOWNLOAD_FORMATS = [
   {
     format: DATASET_ASSET_FORMAT.H5AD,
     label: ".h5ad (AnnData v0.10)",

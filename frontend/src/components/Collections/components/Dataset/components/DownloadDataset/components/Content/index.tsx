@@ -11,7 +11,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { DialogActions, DialogContent, DialogTitle } from "@czi-sds/components";
 import { DialogLoader as Loader } from "src/components/Datasets/components/DownloadDataset/style";
 import { Button } from "src/components/common/Button";
-import { possibleDownloadFormats } from "./components/DataFormat/constants";
+import { POSSIBLE_DOWNLOAD_FORMATS } from "./components/DataFormat/constants";
 import { downloadMultipleFiles, getDownloadLink } from "./utils";
 
 // // TODO: (smccanny) delete this hard coded test array before merging
@@ -136,12 +136,9 @@ const Content: FC<Props> = ({
       return !(hasIndex && hasFragment);
     };
 
-    const selectedFormats = possibleDownloadFormats
-      .filter(
-        ({ format }) =>
-          availableFormats.has(format) && !isATACIncomplete(format)
-      )
-      .map(({ format }) => format);
+    const selectedFormats = POSSIBLE_DOWNLOAD_FORMATS.filter(
+      ({ format }) => availableFormats.has(format) && !isATACIncomplete(format)
+    ).map(({ format }) => format);
 
     setSelectedFormats(selectedFormats);
   }, [availableFormats, dataAssets]);
