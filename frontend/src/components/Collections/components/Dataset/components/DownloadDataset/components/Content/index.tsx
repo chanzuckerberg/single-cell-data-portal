@@ -1,5 +1,6 @@
+// // TODO: (smccanny) delete this before merging
 /* eslint-disable sonarjs/no-duplicate-string */
-import React, { FC, useEffect, useState } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 import { Dataset, DATASET_ASSET_FORMAT } from "src/common/entities";
 import DownloadLink from "./components/DownloadLink";
 import DataFormat from "./components/DataFormat";
@@ -13,7 +14,7 @@ import { Button } from "src/components/common/Button";
 import { possibleDownloadFormats } from "./components/DataFormat/constants";
 import { downloadMultipleFiles, getDownloadLink } from "./utils";
 
-// // TODO: (smccanny) delete this hard coded test array
+// // TODO: (smccanny) delete this hard coded test array before merging
 // const dataAssets = [
 //   {
 //     created_at: 0,
@@ -104,9 +105,6 @@ const Content: FC<Props> = ({
   const [selectedFormats, setSelectedFormats] = useState<
     DATASET_ASSET_FORMAT[]
   >([]);
-  const [formatsToDownload, setFormatsToDownload] = useState<
-    DATASET_ASSET_FORMAT[]
-  >([]);
   const [downloadLinks, setDownloadLinks] = useState<DownloadLinkType[]>([]);
   const [isDownloadLinkLoading, setIsDownloadLinkLoading] =
     useState<boolean>(false);
@@ -114,10 +112,21 @@ const Content: FC<Props> = ({
   const isDownloadDisabled =
     !selectedFormats.length || isDownloadLinkLoading || isError || isLoading;
 
-  useEffect(() => {
-    const availableFormats = new Set(
-      dataAssets.map((dataAsset) => dataAsset.filetype)
+  const availableFormats = useMemo(
+    () => new Set(dataAssets.map((dataAsset) => dataAsset.filetype)),
+    [dataAssets]
+  );
+
+  // Determine formats to download, ensuring ATAC_INDEX includes ATAC_FRAGMENT
+  const formatsToDownload = useMemo(() => {
+    return selectedFormats.flatMap((format) =>
+      format === DATASET_ASSET_FORMAT.ATAC_INDEX
+        ? [DATASET_ASSET_FORMAT.ATAC_INDEX, DATASET_ASSET_FORMAT.ATAC_FRAGMENT]
+        : [format]
     );
+  }, [selectedFormats]);
+
+  useEffect(() => {
     const isATACIncomplete = (format: DATASET_ASSET_FORMAT) => {
       if (format !== DATASET_ASSET_FORMAT.ATAC_INDEX) return false;
       const hasIndex = availableFormats.has(DATASET_ASSET_FORMAT.ATAC_INDEX);
@@ -135,7 +144,7 @@ const Content: FC<Props> = ({
       .map(({ format }) => format);
 
     setSelectedFormats(selectedFormats);
-  }, []);
+  }, [dataAssets]);
 
   useEffect(() => {
     const fetchDownloadLinks = async () => {
@@ -144,16 +153,6 @@ const Content: FC<Props> = ({
         setIsDownloadLinkLoading(false);
         return;
       }
-      // Determine formats to download, ensuring ATAC_INDEX includes ATAC_FRAGMENT
-      const formatsToDownload = selectedFormats.flatMap((format) =>
-        format === DATASET_ASSET_FORMAT.ATAC_INDEX
-          ? [
-              DATASET_ASSET_FORMAT.ATAC_INDEX,
-              DATASET_ASSET_FORMAT.ATAC_FRAGMENT,
-            ]
-          : [format]
-      );
-      setFormatsToDownload(formatsToDownload);
       if (formatsToDownload.length === 0) return;
 
       // Exit early if all formats already have download links
@@ -191,7 +190,7 @@ const Content: FC<Props> = ({
       }
     };
     fetchDownloadLinks();
-  }, [selectedFormats, downloadLinks]);
+  }, [selectedFormats, dataAssets, downloadLinks]);
 
   /**
    * Tracks dataset download analytics as specified by the custom analytics event.
@@ -226,9 +225,7 @@ const Content: FC<Props> = ({
           <>
             <Name name={name} />
             <DataFormat
-              availableFormats={
-                new Set(dataAssets.map((dataAsset) => dataAsset.filetype))
-              }
+              availableFormats={availableFormats}
               handleChange={handleChange}
               selectedFormats={selectedFormats}
               downloadLinks={downloadLinks}

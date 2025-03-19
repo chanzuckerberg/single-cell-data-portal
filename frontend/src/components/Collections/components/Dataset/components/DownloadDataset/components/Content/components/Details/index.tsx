@@ -20,6 +20,15 @@ const Details: FC<Props> = ({
     if (isLoading) {
       return <DialogLoader sdsStyle="minimal" />;
     }
+    
+    if (!isLoading && !hasDownloadLinks) {
+      return (
+        <NoneSelected>
+        <h4>No Download Links Available</h4>
+        <p>Please try again later.</p>
+        </NoneSelected>
+      );
+    }
 
     if (!selected) {
       return (
@@ -30,12 +39,6 @@ const Details: FC<Props> = ({
       );
     }
 
-    if (!isLoading && !hasDownloadLinks) {
-      <NoneSelected>
-        <h4>No Download Links Available</h4>
-        <p>Please try again later.</p>
-      </NoneSelected>;
-    }
     return downloadPreview;
   }
 
