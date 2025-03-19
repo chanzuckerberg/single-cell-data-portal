@@ -85,7 +85,7 @@ export const newWormDataset = {
       ontology_term_id: "WBls:0000798",
     },
   ],
-  development_stage_ancestors: ["WBls:0000804", "WBls:0000816"],
+  development_stage_ancestors: [],
   disease: [
     {
       label: "Alzheimer disease",
@@ -223,11 +223,11 @@ export const newFruitFlyDataset = {
   ],
   development_stage: [
     {
-      label: "day 11 of adulthood",
-      ontology_term_id: "FBdv:00007086",
+      label: "embryonic stage",
+      ontology_term_id: "FBdv:00005289",
     },
   ],
-  development_stage_ancestors: ["FBdv:00007002"],
+  development_stage_ancestors: [],
   disease: [
     {
       label: "Alzheimer disease",
@@ -369,7 +369,7 @@ export const newZebraFishDataset = {
       ontology_term_id: "ZFS:0000033",
     },
   ],
-  development_stage_ancestors: ["ZFS:0000007"],
+  development_stage_ancestors: [],
   disease: [
     {
       label: "Alzheimer disease",
@@ -507,15 +507,11 @@ export const newFruitFlyDataset2 = {
   ],
   development_stage: [
     {
-      label: "Adult",
-      ontology_term_id: "FBdv:00007002",
+      label: "late embryonic stage",
+      ontology_term_id: "FBdv:00005333",
     },
   ],
-  development_stage_ancestors: [
-    "FBdv:00005342",
-    "FBdv:00005372",
-    "FBdv:00005336",
-  ],
+  development_stage_ancestors: [],
   disease: [
     {
       label: "normal",

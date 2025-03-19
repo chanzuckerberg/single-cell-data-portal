@@ -13,7 +13,7 @@ import {
 } from "src/components/common/Filter/common/entities";
 import cell_type_descendants_json from "src/components/common/Filter/descendant_mappings/cell_type_descendants.json";
 import tissue_descendants_json from "src/components/common/Filter/descendant_mappings/tissue_descendants.json";
-
+import non_uberon_developmental_stage_descendants_json from "src/components/common/Filter/descendant_mappings/non_uberon_developmental_stage_descendants.json";
 /**
  * Homo sapiens, Mus musculus and other organisms development stage ontology tree.
  */
@@ -173,37 +173,75 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.ZFS]: [
     {
       label: "Zygote",
-      ontology_term_id: "ZFS:0000000",
+      ontology_term_id: "ZFS:0000001",
     },
     {
       label: "Cleavage",
-      ontology_term_id: "ZFS:0000002",
+      ontology_term_id: "ZFS:0000046",
     },
     {
       label: "Blastula",
-      ontology_term_id: "ZFS:0000003",
+      ontology_term_id: "ZFS:0000045",
     },
     {
       label: "Gastrula",
-      ontology_term_id: "ZFS:0000004",
+      ontology_term_id: "ZFS:0000047",
     },
     {
       label: "Segmentation",
-      ontology_term_id: "ZFS:0000005",
+      ontology_term_id: "ZFS:0000049",
     },
     {
       label: "Pharyngula",
-      ontology_term_id: "ZFS:0000006",
+      ontology_term_id: "ZFS:0000050",
     },
     {
       label: "Hatching",
-      ontology_term_id: "ZFS:0000007",
+      ontology_term_id: "ZFS:0007000",
     },
+    {
+      label: "Adult",
+      ontology_term_id: "ZFS:0000044",
+    }
   ],
   [ONTOLOGY_VIEW_KEY.FBdv]: [
     {
-      label: "Embryo",
-      ontology_term_id: "FBdv:00000005",
+      label: "Oogenesis",
+      ontology_term_id: "FBdv:00004886",
+    },
+    {
+      label: "Egg",
+      ontology_term_id: "FBdv:00005286",
+    },
+    {
+      label: "Embryonic",
+      ontology_term_id: "FBdv:00005289",
+      children: [
+        {
+          label: "Pre-Blastoderm",
+          ontology_term_id: "FBdv:00005290",
+        },
+        {
+          label: "Blastoderm",
+          ontology_term_id: "FBdv:00005304",
+        },
+        {
+          label: "Gastrula",
+          ontology_term_id: "FBdv:00005317",
+        },
+        {
+          label: "Extended Germ Band",
+          ontology_term_id: "FBdv:00005321",
+        },
+        {
+          label: "Dorsal Closure",
+          ontology_term_id: "FBdv:00005331",
+        },
+        {
+          label: "Late Embryonic",
+          ontology_term_id: "FBdv:00005333",
+        },
+      ],
     },
     {
       label: "Larval",
@@ -211,29 +249,43 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
       children: [
         {
           label: "First Instar Larva",
-          ontology_term_id: "FBdv:00005360",
+          ontology_term_id: "FBdv:00005337",
         },
         {
           label: "Second Instar Larva",
-          ontology_term_id: "FBdv:00005364",
+          ontology_term_id: "FBdv:00005338",
         },
         {
           label: "Third Instar Larva",
-          ontology_term_id: "FBdv:00005368",
-        },
-        {
-          label: "Prepupa",
-          ontology_term_id: "FBdv:00005372",
+          ontology_term_id: "FBdv:00005339",
         },
       ],
     },
     {
-      label: "Pupa",
-      ontology_term_id: "FBdv:00005374",
-    },
-    {
       label: "Adult",
-      ontology_term_id: "FBdv:00007002",
+      ontology_term_id: "FBdv:00005369",
+      children: [
+        {
+          label: "Pre Pupal",
+          ontology_term_id: "FBdv:00005342",
+        },
+        {
+          label: "Pupal",
+          ontology_term_id: "FBdv:00005349",
+        },
+        {
+          label: "Pharate Adult",
+          ontology_term_id: "FBdv:00006011",
+        },
+        {
+          label: "Immature Adult ",
+          ontology_term_id: "FBdv:00007025",
+        },
+        {
+          label: "Mature Adult",
+          ontology_term_id: "FBdv:00007026",
+        }
+      ],
     },
   ],
   [ONTOLOGY_VIEW_KEY.UBERON]: [
@@ -733,7 +785,13 @@ export const CELL_TYPE_LEVEL_2_ONTOLOGY_TERM_SET: OntologyTermSet = {
 export const CELL_TYPE_DESCENDANTS: OntologyDescendants =
   cell_type_descendants_json;
 export const TISSUE_DESCENDANTS: OntologyDescendants = tissue_descendants_json;
+export const NON_UBERON_DEVELOPMENTAL_STAGE_DESCENDANTS: OntologyDescendants = non_uberon_developmental_stage_descendants_json
 
+export const ORGANISM_TAXON = {
+  WORM: "NCBITaxon:6239",
+  ZEBRA_FISH: "NCBITaxon:7955",
+  FRUIT_FLY: "NCBITaxon:7227",
+};
 /**
  * Tissues to be included for display in tissue system ontology tree.
  */

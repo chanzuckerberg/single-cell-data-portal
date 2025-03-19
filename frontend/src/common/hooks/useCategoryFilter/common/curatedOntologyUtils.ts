@@ -384,9 +384,10 @@ function handleOntologyChildRemoved(
 /**
  * Development stage species is only visible if:
  * 1. There are no selected organisms or,
- * 2. The given species is selected.
+ * 2. The given species is selected or,
+ * 3. There are filters applied for that species.
  * @param filterState - Categories, category value and their counts with the current filter applied. Required to
- * determine if development stfage species should be visible.
+ * determine if development stage species should be visible.
  * @param speciesKey - The species to check if a corresponding organism has been selected for.
  * @returns True if given species is to be displayed.
  */
@@ -404,7 +405,6 @@ function isDevelopmentStageSpeciesVisible(
     .map((selectCategoryValue) => selectCategoryValue.categoryValueId);
 
   // Before the feature flag is turned on, keep the current filter behavior
-  console.log("showMultiSpeciesFeatures", showMultiSpeciesFeatures);
   if (
     !showMultiSpeciesFeatures &&
     selectedOrganisms.length === 0 &&
@@ -415,9 +415,26 @@ function isDevelopmentStageSpeciesVisible(
     return true;
   }
 
-  // If no organisms are selected, display Human and Mouse by default.
+  // If there is a filter applied for a specific species, show the species
+  const developmentalStageValues = filterState[
+    CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
+  ] as KeyedSelectCategoryValue;
+  const selectedDevelopmentalStages = [
+    ...developmentalStageValues.values(),
+  ].filter((selectCategoryValue) => selectCategoryValue.selected);
+  const species = selectedDevelopmentalStages.map((selectCategoryValue) => {
+    const categoryValueId = selectCategoryValue.categoryValueId;
+    return categoryValueId.split(":")[0];
+  });
+  if (species.includes(speciesKey)) {
+    return true;
+  }
+
+  // If no organisms are selected, and no developmental stages of specific species are selected
+  // display Human and Mouse by default.
   if (
     selectedOrganisms.length === 0 &&
+    selectedDevelopmentalStages.length === 0 &&
     (speciesKey === ONTOLOGY_VIEW_KEY.HsapDv ||
       speciesKey === ONTOLOGY_VIEW_KEY.MmusDv)
   ) {
