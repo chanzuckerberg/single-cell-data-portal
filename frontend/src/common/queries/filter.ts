@@ -1077,7 +1077,7 @@ function addDevelopmentalStageAncestors(
     datasetResponse.development_stage_ancestors.length === 0 ||
     !datasetResponse.development_stage_ancestors
   ) {
-    const development_stage_ancestors = [
+    return [
       ...new Set(
         datasetResponse.development_stage.flatMap(
           (development_stage) =>
@@ -1087,7 +1087,6 @@ function addDevelopmentalStageAncestors(
         )
       ),
     ];
-    return development_stage_ancestors;
   }
 
   return datasetResponse.development_stage_ancestors;

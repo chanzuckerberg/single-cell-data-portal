@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { CommonThemeProps } from "@czi-sds/components";
 import { scrollbar } from "src/components/common/Filter/components/FilterContent/components/common/style";
-import { spacesS, gray200, spacesXxs } from "src/common/theme";
+import { spacesS, gray200 } from "src/common/theme";
 
 export const VIEW_LIST_ITEM_HEIGHT = 32;
 export const VIEW_LIST_SUBHEADER_HEIGHT = 23;
