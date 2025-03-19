@@ -195,3 +195,12 @@ def make_proxy_auth_token(config, deployment_stage) -> dict:
         access_token = res.json()["access_token"]
         return {"Authorization": f"Bearer {access_token}"}
     return {}
+
+
+def get_curation_api_access_token(session, api_url, config) -> str:
+    response = session.post(
+        f"{api_url}/curation/v1/auth/token",
+        headers={"x-api-key": config.super_curator_api_key},
+    )
+    response.raise_for_status()
+    return response.json()["access_token"]

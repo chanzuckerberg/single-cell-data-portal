@@ -6,17 +6,17 @@ import threading
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
 from backend.common.corpora_config import CorporaAuthConfig
-from tests.functional.backend.constants import API_URL, DATASET_URI
+from tests.functional.backend.constants import API_URL, ATAC_SEQ_MANIFEST, DATASET_MANIFEST, VISIUM_DATASET_MANIFEST
 from tests.functional.backend.utils import (
     get_auth_token,
+    get_curation_api_access_token,
     make_cookie,
     make_proxy_auth_token,
     make_session,
-    upload_url_and_wait,
+    upload_manifest_and_wait,
 )
 
 # Amount to reduce chance of collision where multiple test instances select the same collection to test against
-NUM_TEST_DATASETS = 3
 NUM_TEST_COLLECTIONS = 10
 TEST_ACCT_CONTACT_NAME = "Smoke Test User"
 
@@ -31,7 +31,10 @@ class SmokeTestsInitializer:
         username, password = self.config.test_account_username, self.config.test_account_password
         auth_token = get_auth_token(username, password, self.session, self.config, self.deployment_stage)
         self.curator_cookie = make_cookie(auth_token)
+        self.curation_api_access_token = get_curation_api_access_token(self.session, self.api, self.config)
+        self.manifests = [DATASET_MANIFEST, VISIUM_DATASET_MANIFEST, ATAC_SEQ_MANIFEST]
         self.headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
+        self.collection_counter = 0
 
     def get_collection_count(self):
         res = self.session.get(f"{self.api}/curation/v1/collections?visiblity=PUBLIC", headers=self.headers)
@@ -45,13 +48,21 @@ class SmokeTestsInitializer:
                 return num_collections
         return num_collections
 
-    def create_and_publish_collection(self, dropbox_url):
+    def create_and_publish_collection(self):
         collection_id = self.create_collection()
         _threads = []
-        for _ in range(NUM_TEST_DATASETS):
+
+        for manifest in self.manifests:
             _thread = threading.Thread(
-                target=upload_url_and_wait,
-                args=(self.session, self.api, self.curator_cookie, collection_id, dropbox_url),
+                target=upload_manifest_and_wait,
+                args=(
+                    self.session,
+                    self.api,
+                    self.curation_api_access_token,
+                    self.curator_cookie,
+                    collection_id,
+                    manifest,
+                ),
             )
             _threads.append(_thread)
             _thread.start()
@@ -67,7 +78,7 @@ class SmokeTestsInitializer:
             "curator_name": "John Smith",
             "description": "Well here are some words",
             "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "http://protocol.com"}],
-            "name": "test collection",
+            "name": f"test collection {self.collection_counter}",
         }
 
         res = self.session.post(f"{self.api}/dp/v1/collections", data=json.dumps(data), headers=self.headers)
@@ -92,7 +103,7 @@ if __name__ == "__main__":
     num_to_create = NUM_TEST_COLLECTIONS - collection_count
     threads = []
     for _ in range(num_to_create):
-        thread = threading.Thread(target=smoke_test_init.create_and_publish_collection, args=(DATASET_URI,))
+        thread = threading.Thread(target=smoke_test_init.create_and_publish_collection)
         threads.append(thread)
         thread.start()
     for thread in threads:
