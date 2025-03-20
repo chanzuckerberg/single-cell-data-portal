@@ -122,14 +122,14 @@ if __name__ == "__main__":
     if visium_collection_count < 1:
         thread = threading.Thread(
             target=smoke_test_init.create_and_publish_collection,
-            args=(VISIUM_ACCT_CONTACT_NAME, "Visium Test Collection", VISIUM_DATASET_MANIFEST),
+            args=(VISIUM_ACCT_CONTACT_NAME, "Visium Test Collection", VISIUM_DATASET_MANIFEST, 1),
         )
         threads.append(thread)
 
     if atac_seq_collection_count < 1:
         thread = threading.Thread(
             target=smoke_test_init.create_and_publish_collection,
-            args=(ATAC_SEQ_ACCT_CONTACT_NAME, "ATAC Seq Test Collection", ATAC_SEQ_MANIFEST),
+            args=(ATAC_SEQ_ACCT_CONTACT_NAME, "ATAC Seq Test Collection", ATAC_SEQ_MANIFEST, 1),
         )
         threads.append(thread)
 
