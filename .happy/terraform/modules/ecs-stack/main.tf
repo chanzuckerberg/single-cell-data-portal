@@ -55,6 +55,7 @@ locals {
   lambda_upload_success_repo      = local.secret["ecrs"]["upload_success"]["url"]
   lambda_upload_repo              = local.secret["ecrs"]["upload_failures"]["url"]
   lambda_dataset_submissions_repo = local.secret["ecrs"]["dataset_submissions"]["url"]
+  lambda_dataset_version_cleanup_repo = local.secret["ecrs"]["dataset_version_cleanup"]["url"]
   wmg_upload_image_repo           = local.secret["ecrs"]["wmg_processing"]["url"]
   cg_upload_image_repo            = local.secret["ecrs"]["cellguide_pipeline"]["url"]
   batch_role_arn                  = local.secret["batch_queues"]["upload"]["role_arn"]
@@ -420,6 +421,22 @@ module dataset_submissions_lambda {
   security_groups            = local.security_groups
 }
 
+module dataset_version_cleanup_lambda {
+  source                     = "../lambda"
+  image                      = "${local.lambda_dataset_version_cleanup_repo}:${local.image_tag}"
+  name                       = "dataset-version-cleanup"
+  custom_stack_name          = local.custom_stack_name
+  remote_dev_prefix          = local.remote_dev_prefix
+  deployment_stage           = local.deployment_stage
+  artifact_bucket            = local.artifact_bucket
+  cellxgene_bucket           = local.cellxgene_bucket
+  datasets_bucket            = local.datasets_bucket
+  lambda_execution_role      = aws_iam_role.dataset_version_cleanup_lambda_service_role.arn
+  step_function_arn          = module.upload_sfn.step_function_arn
+  subnets                    = local.subnets
+  security_groups            = local.security_groups
+}
+
 module schema_migration {
   source                        = "../schema_migration"
   image                         = "${local.upload_image_repo}:${local.image_tag}"
@@ -545,4 +562,82 @@ resource "aws_s3_bucket_notification" "on_dataset_submissions_object_created" {
   }
 
   depends_on = [aws_lambda_permission.allow_dataset_submissions_lambda_execution]
+}
+
+resource "aws_iam_role" "dataset_version_cleanup_lambda_service_role" {
+  name               = "corpora-dataset-version-cleanup-service-role-${local.custom_stack_name}"
+  path               = "/service-role/"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+
+data "aws_iam_policy_document" "lambda_db_s3_policy_document" {
+  statement {
+    sid      = "cw"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = [
+      "arn:aws:logs:*:*:*"
+    ]
+  }
+  statement {
+    sid    = "networking"
+    effect = "Allow"
+    actions = [
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:CreateNetworkInterface",
+      "ec2:DeleteNetworkInterface",
+      "ec2:DescribeInstances",
+      "ec2:AttachNetworkInterface",
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeSubnets",
+      "ec2:DescribeVpcs"
+    ]
+    resources = ["*"]
+  }
+  statement {
+    actions = [
+      "secretsmanager:DescribeSecret",
+      "secretsmanager:GetSecretValue"
+    ]
+    resources = [
+      "arn:aws:secretsmanager:us-west-2:${var.aws_account_id}:secret:corpora/backend/${var.deployment_stage}/*"
+    ]
+  }
+  statement {
+    sid     = "s3"
+    effect  = "Allow"
+    actions = [
+      "s3:ListBucket",
+      "s3:DeleteObject"
+    ]
+    resources = [
+      "arn:aws:s3:::${local.artifact_bucket}",
+      "arn:aws:s3:::${local.artifact_bucket}/*",
+      "arn:aws:s3:::${local.cellxgene_bucket}",
+      "arn:aws:s3:::${local.cellxgene_bucket}/*",
+      "arn:aws:s3:::${local.datasets_bucket}",
+      "arn:aws:s3:::${local.datasets_bucket}/*"
+    ]
+  }
+}
+
+resource "aws_iam_policy" "lambda_db_s3_policy" {
+  name = "lambda-db-s3-policy-${local.custom_stack_name}"
+  policy = data.aws_iam_policy_document.lambda_db_s3_policy_document.json
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_db_s3_policy_attachment" {
+  role       = aws_iam_role.dataset_version_cleanup_lambda_service_role.name
+  policy_arn = aws_iam_policy.lambda_db_s3_policy.arn
+}
+
+resource "aws_lambda_permission" "allow_dataset_version_cleanup_lambda_execution" {
+  action        = "lambda:InvokeFunction"
+  function_name = module.dataset_version_cleanup_lambda.arn
+  principal     = "sts.amazonaws.com"
+  source_arn    = local.schema_migration_batch_role_arn
 }
