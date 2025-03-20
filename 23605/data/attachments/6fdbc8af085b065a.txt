@@ -1,0 +1,3 @@
+WARNING  processing:process_validate_atac.py:89 Anndata does not support atac fragment files for the following reason: test
+WARNING  processing:process_validate_atac.py:97 Fragment validation not applicable for dataset assay type.
+INFO     processing:process_logic.py:55 Updating processing status
