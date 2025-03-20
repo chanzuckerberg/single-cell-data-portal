@@ -26,6 +26,6 @@ VISIUM_DATASET_URI = (
 )
 
 ATAC_SEQ_MANIFEST = {
-    "anndata": "https://www.dropbox.com/scl/fi/rth5ol8dyn3qypmnr3w79/atac.h5ad?rlkey=lpor3wj4he2n4dkp6pq3v4c6t&st=xs0mhcer&dl=0",
+    "anndata": "https://www.dropbox.com/scl/fi/rth5ol8dyn3qypmnr3w79/atac.h5ad?rlkey=lpor3wj4he2n4dkp6pq3v4c6t&st=dni608bw&dl=0",
     "atac_fragment": "https://www.dropbox.com/scl/fi/p4kmriyki1xyvcc9bvwxc/fragments_sorted.tsv.gz?rlkey=hydxliidfy4yneaan2rrw2arp&dl=0",
 }
