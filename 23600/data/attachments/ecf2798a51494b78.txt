@@ -1,0 +1,18 @@
+Agent is down or Remote Config is not enabled in the Agent
+Check your Agent version, you need an Agent running on 7.39.1 version or above.
+Check Your Remote Config environment variables on your Agent:
+DD_REMOTE_CONFIGURATION_ENABLED=true
+See: https://docs.datadoghq.com/agent/guide/how_remote_config_works/
+{"levelname": "DEBUG", "asctime": "2025-03-20T18:20:58.020Z", "name": "ddtrace.internal.remoteconfig.worker", "message": "Agent is down or Remote Config is not enabled in the Agent\nCheck your Agent version, you need an Agent running on 7.39.1 version or above.\nCheck Your Remote Config environment variables on your Agent:\nDD_REMOTE_CONFIGURATION_ENABLED=true\nSee: https://docs.datadoghq.com/agent/guide/how_remote_config_works/", "lineno": 53, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/internal/remoteconfig/worker.py", "request_id": ""}
+[PID 1 | PPID 0] Subscriber ASM is getting data, 1 additional messages skipped
+{"levelname": "DEBUG", "asctime": "2025-03-20T18:21:01.020Z", "name": "ddtrace.internal.remoteconfig._subscribers", "message": "[PID 1 | PPID 0] Subscriber ASM is getting data, 1 additional messages skipped", "lineno": 45, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/internal/remoteconfig/_subscribers.py", "request_id": ""}
+[PID 1 | PPID 0] Subscriber ASM got data, 1 additional messages skipped
+{"levelname": "DEBUG", "asctime": "2025-03-20T18:21:01.020Z", "name": "ddtrace.internal.remoteconfig._subscribers", "message": "[PID 1 | PPID 0] Subscriber ASM got data, 1 additional messages skipped", "lineno": 47, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/internal/remoteconfig/_subscribers.py", "request_id": ""}
+Agent is down or Remote Config is not enabled in the Agent
+Check your Agent version, you need an Agent running on 7.39.1 version or above.
+Check Your Remote Config environment variables on your Agent:
+DD_REMOTE_CONFIGURATION_ENABLED=true
+See: https://docs.datadoghq.com/agent/guide/how_remote_config_works/
+{"levelname": "DEBUG", "asctime": "2025-03-20T18:21:03.020Z", "name": "ddtrace.internal.remoteconfig.worker", "message": "Agent is down or Remote Config is not enabled in the Agent\nCheck your Agent version, you need an Agent running on 7.39.1 version or above.\nCheck Your Remote Config environment variables on your Agent:\nDD_REMOTE_CONFIGURATION_ENABLED=true\nSee: https://docs.datadoghq.com/agent/guide/how_remote_config_works/", "lineno": 53, "pathname": "/usr/local/lib/python3.10/dist-packages/ddtrace/internal/remoteconfig/worker.py", "request_id": ""}
+{"levelname": "INFO", "asctime": "2025-03-20T18:21:11.020Z", "name": "corpora-api-wmg-test", "message": "", "lineno": 76, "pathname": "/single-cell-data-portal/backend/common/server/config.py", "request_id": "f65765c6-9b52-4d59-aca6-3c9820bd429f", "type": "REQUEST", "details": {"url": "/wmg/v2/markers", "method": "POST", "content_length": 118}}
+{"levelname": "INFO", "asctime": "2025-03-20T18:21:11.020Z", "name": "corpora-api-wmg-test", "message": "", "lineno": 88, "pathname": "/single-cell-data-portal/backend/common/server/config.py", "request_id": "f65765c6-9b52-4d59-aca6-3c9820bd429f", "type": "RESPONSE", "details": {"status_code": 200, "content_length": 69, "response_time": 0.014303207397460938}}
