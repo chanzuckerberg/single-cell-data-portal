@@ -17,6 +17,7 @@ from tests.functional.backend.utils import (
 )
 
 # Amount to reduce chance of collision where multiple test instances select the same collection to test against
+NUM_TEST_DATASETS = 3
 NUM_TEST_COLLECTIONS = 10
 TEST_ACCT_CONTACT_NAME = "Smoke Test User"
 
@@ -48,24 +49,29 @@ class SmokeTestsInitializer:
                 return num_collections
         return num_collections
 
+    def start_upload_thread(self, collection_id, manifest) -> threading.Thread:
+        _thread = threading.Thread(
+            target=upload_manifest_and_wait,
+            args=(
+                self.session,
+                self.api,
+                self.curation_api_access_token,
+                self.curator_cookie,
+                collection_id,
+                manifest,
+            ),
+        )
+        _thread.start()
+        return _thread
+
     def create_and_publish_collection(self):
         collection_id = self.create_collection()
         _threads = []
-
-        for manifest in self.manifests:
-            _thread = threading.Thread(
-                target=upload_manifest_and_wait,
-                args=(
-                    self.session,
-                    self.api,
-                    self.curation_api_access_token,
-                    self.curator_cookie,
-                    collection_id,
-                    manifest,
-                ),
-            )
-            _threads.append(_thread)
-            _thread.start()
+        for _ in range(NUM_TEST_DATASETS):
+            _threads.append(self.start_upload_thread(collection_id, DATASET_MANIFEST))
+        if self.collection_counter == 0:
+            _threads.append(self.start_upload_thread(collection_id, VISIUM_DATASET_MANIFEST))
+            _threads.append(self.start_upload_thread(collection_id, ATAC_SEQ_MANIFEST))
         for _thread in _threads:
             _thread.join()
         self.publish_collection(collection_id)
