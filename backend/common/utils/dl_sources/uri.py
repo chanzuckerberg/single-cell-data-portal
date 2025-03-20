@@ -6,8 +6,11 @@ from urllib.parse import ParseResult, urlparse
 import boto3
 import requests
 
+from backend.common.corpora_config import CorporaConfig
 from backend.common.utils import downloader
 from backend.layers.thirdparty.s3_provider import S3Provider
+
+# todo: convert to pydantic models
 
 
 class DownloadFailed(Exception):
@@ -158,6 +161,20 @@ class S3URL(URI):
         downloader.download(self.uri, local_file_name)
 
 
+class CXGPublicURL(S3URL):
+    """Supports URLs from the public Cellxgene endpoint."""
+
+    @classmethod
+    @property
+    def _netloc(cls):
+        return urlparse(CorporaConfig().dataset_assets_base_url).netloc
+
+    @classmethod
+    @property
+    def _schema(cls):
+        return urlparse(CorporaConfig().dataset_assets_base_url).scheme
+
+
 class S3URI(URI):
     """
     Handles S3 URIs: s3://<bucket>/<key>
@@ -198,34 +215,43 @@ class S3URI(URI):
 class RegisteredSources:
     """Manages all of the download sources."""
 
-    _registered: typing.Set[typing.Type[URI]] = set()
+    _sources: typing.List[typing.Type[URI]] = []
 
     @classmethod
     def add(cls, parser: typing.Type[URI]):
         if issubclass(parser, URI):
-            cls._registered.add(parser)
+            cls._sources.append(parser)
         else:
             raise TypeError(f"subclass type {URI.__name__} expected")
 
     @classmethod
     def remove(cls, parser: typing.Type[URI]):
-        cls._registered.remove(parser)
+        cls._sources.remove(parser)
 
     @classmethod
     def get(cls) -> typing.Iterable:
-        return cls._registered
+        return cls._sources
+
+    @classmethod
+    def is_empty(cls) -> bool:
+        return not cls._sources
+
+    @classmethod
+    def empty(cls):
+        cls._sources = []
 
 
 def from_uri(uri: str) -> typing.Optional[URI]:
     """Given a URI return a object that can be used by the processing container to download data."""
+    if RegisteredSources.is_empty():
+        # RegisteredSources are processed in the order registered and returns the first match.
+        RegisteredSources.add(DropBoxURL)
+        RegisteredSources.add(CXGPublicURL)
+        RegisteredSources.add(S3URL)
+        RegisteredSources.add(S3URI)
+
     for source in RegisteredSources.get():
         uri_obj = source.validate(uri)
         if uri_obj:
             return uri_obj
     return None
-
-
-# RegisteredSources are processed in the order registered and returns the first match.
-RegisteredSources.add(DropBoxURL)
-RegisteredSources.add(S3URL)
-RegisteredSources.add(S3URI)

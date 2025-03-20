@@ -154,7 +154,7 @@ class DatabaseProviderInterface:
         data_submission_policy_version: str,
         published_at: Optional[datetime] = None,
         update_revised_at: bool = False,
-    ) -> List[str]:
+    ) -> List[DatasetVersion]:
         """
         Finalizes a collection version. This is equivalent to calling:
         1. update_collection_version_mapping
@@ -193,6 +193,11 @@ class DatabaseProviderInterface:
         Returns all dataset versions for a canonical dataset_id
         """
 
+    def get_artifact_by_uri_suffix(self, uri_suffix: str) -> Optional[DatasetArtifact]:
+        """
+        Returns a dataset artifact by its uri_suffix
+        """
+
     def get_all_mapped_datasets_and_collections(
         self,
     ) -> Tuple[List[DatasetVersion], List[CollectionVersion]]:  # TODO: add filters if needed
@@ -206,18 +211,41 @@ class DatabaseProviderInterface:
         Returns all the artifacts for a specific dataset version
         """
 
+    def get_dataset_artifacts(self, artifact: List[DatasetArtifactId]) -> List[DatasetArtifact]:
+        """
+        Returns a list of dataset artifacts by id
+        """
+
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         """
         Initializes a canonical dataset, generating a dataset_id and a dataset_version_id.
         Returns the newly created DatasetVersion.
         """
 
-    def add_dataset_artifact(
-        self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
+    def create_dataset_artifact(
+        self,
+        dataset_version_id: DatasetVersionId,
+        artifact_type: str,
+        artifact_uri: str,
+        artifact_id: Optional[DatasetArtifactId] = None,
     ) -> DatasetArtifactId:
         """
-        Adds a dataset artifact to an existing dataset version.
+        Create a dataset artifact to add to a dataset version.
         """
+
+    def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
+        """
+        Updates a dataset artifact uri
+        """
+        pass
+
+    def add_artifact_to_dataset_version(
+        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
+    ) -> None:
+        """
+        Adds an artifact to a dataset version
+        """
+        pass
 
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         """

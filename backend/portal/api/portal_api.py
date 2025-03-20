@@ -93,6 +93,7 @@ def _dataset_processing_status_to_response(status: DatasetStatus, dataset_id: st
     Converts a DatasetStatus object to an object compliant to the API specifications
     """
     return {
+        "atac_status": status.atac_status or "NA",
         "created_at": 0,  # NA
         "cxg_status": status.cxg_status or "NA",
         "dataset_id": dataset_id,
@@ -800,6 +801,7 @@ def get_status(dataset_id: str, token_info: dict):
     version, _ = _assert_dataset_has_right_owner(DatasetVersionId(dataset_id), UserInfo(token_info))
 
     response = {
+        "atac_status": version.status.atac_status or "NA",
         "cxg_status": version.status.cxg_status or "NA",
         "rds_status": version.status.rds_status or "NA",
         "h5ad_status": version.status.h5ad_status or "NA",

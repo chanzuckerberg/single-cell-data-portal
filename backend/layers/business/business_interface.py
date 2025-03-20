@@ -24,6 +24,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     PublishedDatasetVersion,
 )
+from backend.layers.common.ingestion_manifest import IngestionManifest
 
 
 class BusinessLogicInterface:
@@ -70,10 +71,16 @@ class BusinessLogicInterface:
     ) -> CollectionVersion:
         pass
 
+    def get_atac_fragment_uris_from_dataset_version(self, dataset_version: DatasetVersion) -> List[str]:
+        """
+        get all atac fragment files associated with a dataset version from the public bucket
+        """
+        pass
+
     def delete_artifacts(self, artifacts: List[DatasetArtifact]) -> None:
         pass
 
-    def delete_dataset_versions_from_public_bucket(self, dataset_version_ids: List[str]) -> List[str]:
+    def delete_dataset_versions_from_public_bucket(self, dataset_versions: List[DatasetVersion]) -> List[str]:
         pass
 
     def delete_all_dataset_versions_from_public_bucket_for_collection(self, collection_id: CollectionId) -> List[str]:
@@ -105,6 +112,9 @@ class BusinessLogicInterface:
         pass
 
     def publish_collection_version(self, version_id: CollectionVersionId, data_submission_policy_version: str) -> None:
+        pass
+
+    def get_ingestion_manifest(self, dataset_version_id: DatasetVersionId) -> IngestionManifest:
         pass
 
     def ingest_dataset(
@@ -157,8 +167,15 @@ class BusinessLogicInterface:
         pass
 
     def add_dataset_artifact(
-        self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
+        self,
+        dataset_version_id: DatasetVersionId,
+        artifact_type: str,
+        artifact_uri: str,
+        artifact_id: Optional[DatasetArtifactId] = None,
     ) -> DatasetArtifactId:
+        pass
+
+    def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
         pass
 
     def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:
