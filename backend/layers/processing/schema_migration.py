@@ -106,7 +106,7 @@ class SchemaMigrate(ProcessingLogic):
         key_prefix = self.get_key_prefix(dataset_version_id)
         key = "/".join([key_prefix, "migrated.h5ad"])
         uri = self.upload_artifact(migrated_file, key, self.artifact_bucket)
-        manifest.anndata = S3Url(url=uri)
+        manifest.anndata = S3Url(uri, scheme="s3")
         manifest_dict = manifest.model_dump()
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             CollectionVersionId(collection_version_id),
