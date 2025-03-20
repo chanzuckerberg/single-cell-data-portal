@@ -28,12 +28,12 @@ logger.configure_logging(level=logging.INFO)
 
 class SchemaMigrate(ProcessingLogic):
     def __init__(self, business_logic: BusinessLogic, schema_validator: SchemaValidatorProvider):
+        super().__init__()
         self.schema_validator = schema_validator
         self.business_logic = business_logic
         self.s3_provider = business_logic.s3_provider  # For compatiblity with ProcessingLogic
         self.artifact_bucket = os.environ.get("ARTIFACT_BUCKET", "artifact-bucket")
         self.execution_id = os.environ.get("EXECUTION_ID", "test-execution-arn")
-        self.logger = logging.getLogger("processing")
         self.local_path: str = "."  # Used for testing
         self.limit_migration = os.environ.get("LIMIT_MIGRATION", 0)  # Run a small migration for testing
         self._schema_version = None
@@ -93,11 +93,10 @@ class SchemaMigrate(ProcessingLogic):
     ) -> Dict[str, str]:
         manifest = self.business_logic.get_ingestion_manifest(DatasetVersionId(dataset_version_id))
         source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(str(manifest.anndata))
-        self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
-        migrated_file = "migrated.h5ad"
-        reported_changes = self.schema_validator.migrate(
-            "previous_schema.h5ad", migrated_file, collection_id, dataset_id
-        )
+        previous_file = self.get_file_path("previous_schema.h5ad")
+        self.s3_provider.download_file(source_bucket_name, source_object_key, previous_file)
+        migrated_file = self.get_file_path("migrated.h5ad")
+        reported_changes = self.schema_validator.migrate(previous_file, migrated_file, collection_id, dataset_id)
         if reported_changes:
             self._store_sfn_response(
                 "report/migrate_changes",

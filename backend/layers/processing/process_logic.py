@@ -1,5 +1,6 @@
 import logging
 import os
+import tempfile
 from datetime import datetime
 from os.path import basename
 from typing import Callable, List, Optional
@@ -34,6 +35,11 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
 
     def __init__(self) -> None:
         self.logger = logging.getLogger("processing")
+        # Store all artifacts in the temp directory so they are cleanup up automatically
+        self.path = tempfile.TemporaryDirectory()
+
+    def get_file_path(self, *args) -> str:
+        return os.path.join(self.path.name, *args)
 
     def update_processing_status(
         self,

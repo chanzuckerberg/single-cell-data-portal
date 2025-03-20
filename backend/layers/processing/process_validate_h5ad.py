@@ -61,8 +61,7 @@ class ProcessValidateH5AD(ProcessingLogic):
 
         # Download the original dataset from Dropbox
         local_filename = self.download_from_source_uri(
-            source_uri=anndata_uri,
-            local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
+            source_uri=anndata_uri, local_path=self.get_file_path(CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME)
         )
 
         # Upload the original dataset to the artifact bucket

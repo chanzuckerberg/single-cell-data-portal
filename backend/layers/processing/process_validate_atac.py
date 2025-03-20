@@ -152,7 +152,7 @@ class ProcessValidateATAC(ProcessingLogic):
         # Download the original dataset files from URI
         local_anndata_filename = self.download_from_source_uri(
             source_uri=str(manifest.anndata),
-            local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
+            local_path=self.get_file_path(CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME),
         )
 
         if self.skip_atac_validation(local_anndata_filename, manifest, dataset_version_id):
@@ -160,7 +160,8 @@ class ProcessValidateATAC(ProcessingLogic):
 
         # Download the original fragment file from URI
         local_fragment_filename = self.download_from_source_uri(
-            source_uri=str(manifest.atac_fragment), local_path=CorporaConstants.ORIGINAL_ATAC_FRAGMENT_FILENAME
+            source_uri=str(manifest.atac_fragment),
+            local_path=self.get_file_path(CorporaConstants.ORIGINAL_ATAC_FRAGMENT_FILENAME),
         )
 
         # Validate the fragment with anndata file
