@@ -23,7 +23,7 @@ permissions:
 jobs:
   lint:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -35,13 +35,13 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - uses: actions/setup-python@v5
 
       - name: check backend
-        uses: pre-commit/action@v3.0.0
+        uses: pre-commit/action@v3.0.1
       - uses: actions/setup-node@v4
         with:
           node-version-file: "frontend/.nvmrc"
@@ -64,7 +64,7 @@ jobs:
 
   backend-unit-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -77,12 +77,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v46.0.1
         with:
           files: |
             Dockerfile*
@@ -115,7 +115,7 @@ jobs:
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
 
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -126,7 +126,7 @@ jobs:
 
   backend-wmg-unit-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -139,12 +139,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v46.0.1
         with:
           files: |
             Dockerfile*
@@ -177,7 +177,7 @@ jobs:
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
 
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -188,7 +188,7 @@ jobs:
 
   backend-de-unit-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -201,12 +201,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v46.0.1
         with:
           files: |
             Dockerfile*
@@ -239,7 +239,7 @@ jobs:
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
 
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -250,7 +250,7 @@ jobs:
 
   processing-unit-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -263,12 +263,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v46.0.1
         with:
           files: |
             Dockerfile*
@@ -302,7 +302,7 @@ jobs:
           retention-days: 20
           include-hidden-files: true
 
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -313,7 +313,7 @@ jobs:
 
   wmg-processing-unit-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -326,12 +326,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v46.0.1
         with:
           files: |
             Dockerfile*
@@ -361,7 +361,7 @@ jobs:
           name: allure-results-wmg-processing
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -372,7 +372,7 @@ jobs:
 
   cellguide-pipeline-unit-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -385,12 +385,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v46.0.1
         with:
           files: |
             Dockerfile*
@@ -420,7 +420,7 @@ jobs:
           name: allure-results-cellguide-pipeline
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -431,7 +431,7 @@ jobs:
 
   cxg-admin-unit-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -444,12 +444,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v46.0.1
         with:
           files: |
             Dockerfile*
@@ -482,7 +482,7 @@ jobs:
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
 
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -493,7 +493,7 @@ jobs:
 
   backend-integration-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -506,12 +506,12 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44.3.0
+        uses: tj-actions/changed-files@v46.0.1
         with:
           files: |
             Dockerfile*
@@ -542,7 +542,7 @@ jobs:
           name: allure-results-backend-integration
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
-      - uses: 8398a7/action-slack@v3.15.0
+      - uses: 8398a7/action-slack@v3.16.2
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -560,7 +560,7 @@ jobs:
       - wmg-processing-unit-test
       - processing-unit-test
       - cellguide-pipeline-unit-test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -572,7 +572,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - uses: actions/download-artifact@v4
@@ -585,7 +585,7 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make coverage/report-xml
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           env_vars: OS,PYTHON
@@ -602,7 +602,7 @@ jobs:
       - wmg-processing-unit-test
       - processing-unit-test
       - cellguide-pipeline-unit-test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
@@ -614,7 +614,7 @@ jobs:
 
       # Checkout gh-pages branch and get Allure result history
       - name: Get Allure history
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         if: always()
         continue-on-error: true
         with:
@@ -636,7 +636,7 @@ jobs:
       # Deploy Allure report to github pages
       - name: Deploy report to Github Pages
         if: always()
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
