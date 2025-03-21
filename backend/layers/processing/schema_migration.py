@@ -14,14 +14,10 @@ from backend.layers.common.entities import (
     CollectionId,
     CollectionVersion,
     CollectionVersionId,
-    DatasetArtifactType,
-    DatasetConversionStatus,
     DatasetProcessingStatus,
-    DatasetStatusKey,
-    DatasetUploadStatus,
-    DatasetValidationStatus,
     DatasetVersionId,
 )
+from backend.layers.common.ingestion_manifest import S3Url
 from backend.layers.processing import logger
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
@@ -95,12 +91,8 @@ class SchemaMigrate(ProcessingLogic):
     def dataset_migrate(
         self, collection_version_id: str, collection_id: str, dataset_id: str, dataset_version_id: str
     ) -> Dict[str, str]:
-        raw_h5ad_uri = [
-            artifact.uri
-            for artifact in self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset_version_id))
-            if artifact.type == DatasetArtifactType.RAW_H5AD
-        ][0]
-        source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(raw_h5ad_uri)
+        manifest = self.business_logic.get_ingestion_manifest(DatasetVersionId(dataset_version_id))
+        source_bucket_name, source_object_key = self.s3_provider.parse_s3_uri(str(manifest.anndata))
         self.s3_provider.download_file(source_bucket_name, source_object_key, "previous_schema.h5ad")
         migrated_file = "migrated.h5ad"
         reported_changes = self.schema_validator.migrate(
@@ -113,10 +105,13 @@ class SchemaMigrate(ProcessingLogic):
                 {f"{collection_id}_{dataset_id}": reported_changes},
             )
         key_prefix = self.get_key_prefix(dataset_version_id)
-        uri = self.upload_artifact(migrated_file, key_prefix, self.artifact_bucket)
+        key = "/".join([key_prefix, migrated_file])
+        uri = self.upload_artifact(migrated_file, key, self.artifact_bucket)
+        manifest.anndata = S3Url(uri)
+        manifest_dict = manifest.model_dump()
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             CollectionVersionId(collection_version_id),
-            uri,
+            manifest_dict,
             file_size=0,  # TODO: this shouldn't be needed but it gets around a 404 for HeadObject
             current_dataset_version_id=DatasetVersionId(dataset_version_id),
             start_step_function=False,  # The schema_migration sfn will start the ingest sfn
@@ -125,7 +120,7 @@ class SchemaMigrate(ProcessingLogic):
         return {
             "collection_version_id": collection_version_id,
             "dataset_version_id": new_dataset_version_id.id,
-            "uri": uri,
+            "manifest": manifest.model_dump_json(),
             "sfn_name": sfn_name,
             "execution_id": self.execution_id,
         }
@@ -150,6 +145,7 @@ class SchemaMigrate(ProcessingLogic):
 
         # Generate canonical collection url
         collection_url = self.business_logic.get_collection_url(version.collection_id.id)
+        private_collection_version_id = collection_version_id
 
         if not datasets:
             # Handles the case were the collection has no datasets or all datasets are already migrated.
@@ -171,8 +167,6 @@ class SchemaMigrate(ProcessingLogic):
                     CollectionId(collection_id),
                     is_auto_version=True,
                 ).version_id.id
-            else:
-                private_collection_version_id = collection_version_id
             response_for_dataset_migrate = [
                 {
                     "collection_id": collection_id,
@@ -196,11 +190,13 @@ class SchemaMigrate(ProcessingLogic):
         response_for_sfn["execution_id"] = self.execution_id
 
         self._store_sfn_response(
-            "log_errors_and_cleanup", version.collection_id.id, response_for_log_errors_and_cleanup
+            "log_errors_and_cleanup", private_collection_version_id, response_for_log_errors_and_cleanup
         )
 
         if response_for_dataset_migrate:
-            key_name = self._store_sfn_response("span_datasets", version.collection_id.id, response_for_dataset_migrate)
+            key_name = self._store_sfn_response(
+                "span_datasets", private_collection_version_id, response_for_dataset_migrate
+            )
             response_for_sfn["key_name"] = key_name
         return (response_for_sfn, response_for_log_errors_and_cleanup, response_for_dataset_migrate)
 
@@ -211,7 +207,7 @@ class SchemaMigrate(ProcessingLogic):
         object_keys_to_delete = []
 
         # Get the datasets that were processed
-        extra_info = self._retrieve_sfn_response("log_errors_and_cleanup", collection_version.collection_id.id)
+        extra_info = self._retrieve_sfn_response("log_errors_and_cleanup", collection_version_id)
         processed_datasets = {d["dataset_id"]: d["dataset_version_id"] for d in extra_info["datasets"]}
 
         # Process datasets errors
@@ -232,25 +228,6 @@ class SchemaMigrate(ProcessingLogic):
             key_prefix = self.get_key_prefix(previous_dataset_version_id)
             object_keys_to_delete.append(f"{key_prefix}/migrated.h5ad")
             if dataset.status.processing_status != DatasetProcessingStatus.SUCCESS:
-                # If only rds failure, set rds status to skipped + processing status to successful and do not rollback
-                if (
-                    dataset.status.rds_status == DatasetConversionStatus.FAILED
-                    and dataset.status.upload_status == DatasetUploadStatus.UPLOADED
-                    and dataset.status.validation_status == DatasetValidationStatus.VALID
-                    and dataset.status.cxg_status == DatasetConversionStatus.UPLOADED
-                    and dataset.status.h5ad_status == DatasetConversionStatus.UPLOADED
-                ):
-                    self.business_logic.update_dataset_version_status(
-                        dataset.version_id,
-                        DatasetStatusKey.RDS,
-                        DatasetConversionStatus.SKIPPED,
-                    )
-                    self.business_logic.update_dataset_version_status(
-                        dataset.version_id,
-                        DatasetStatusKey.PROCESSING,
-                        DatasetProcessingStatus.SUCCESS,
-                    )
-                    continue
                 error = {
                     "message": dataset.status.validation_message,
                     "dataset_status": dataset.status.to_dict(),

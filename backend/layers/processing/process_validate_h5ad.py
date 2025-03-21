@@ -1,0 +1,134 @@
+from backend.common.utils.corpora_constants import CorporaConstants
+from backend.layers.business.business_interface import BusinessLogicInterface
+from backend.layers.common.entities import (
+    DatasetArtifactType,
+    DatasetConversionStatus,
+    DatasetProcessingStatus,
+    DatasetStatusKey,
+    DatasetUploadStatus,
+    DatasetValidationStatus,
+    DatasetVersionId,
+)
+from backend.layers.common.ingestion_manifest import IngestionManifest
+from backend.layers.processing.exceptions import ValidationAnndataFailed
+from backend.layers.processing.logger import logit
+from backend.layers.processing.process_logic import ProcessingLogic
+from backend.layers.thirdparty.s3_provider import S3ProviderInterface
+from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
+from backend.layers.thirdparty.uri_provider import UriProviderInterface
+
+
+class ProcessValidateH5AD(ProcessingLogic):
+    """
+    Base class for handling the `Validate` step of the step function.
+    This will:
+        1. Download the h5ad artifact
+        2. upload the original file to S3
+        3. Set DatasetStatusKey.H5AD DatasetValidationStatus.VALIDATING
+        4. Validate the h5ad
+        5. Set DatasetStatusKey.H5AD DatasetValidationStatus.VALID
+        6. Set the DatasetStatusKey.RDS DatasetConversionStatus.SKIPPED
+    """
+
+    schema_validator: SchemaValidatorProviderInterface
+
+    def __init__(
+        self,
+        business_logic: BusinessLogicInterface,
+        uri_provider: UriProviderInterface,
+        s3_provider: S3ProviderInterface,
+        schema_validator: SchemaValidatorProviderInterface,
+    ) -> None:
+        super().__init__()
+        self.business_logic = business_logic
+        self.uri_provider = uri_provider
+        self.s3_provider = s3_provider
+        self.schema_validator = schema_validator
+
+    def upload_raw_h5ad(
+        self, dataset_version_id: DatasetVersionId, anndata_uri: str, artifact_bucket: str, key_prefix: str
+    ) -> str:
+        """
+        Upload raw h5ad from dataset_uri to artifact bucket
+
+        :param dataset_version_id:
+        :param anndata_uri:
+        :param artifact_bucket:
+        :param key_prefix:
+        :return: local_filename: Local filepath to raw h5ad
+        """
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.PENDING)
+
+        # Download the original dataset from Dropbox
+        local_filename = self.download_from_source_uri(
+            source_uri=anndata_uri,
+            local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
+        )
+
+        # Upload the original dataset to the artifact bucket
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)
+        self.create_artifact(
+            local_filename,
+            DatasetArtifactType.RAW_H5AD,
+            key_prefix,
+            dataset_version_id,
+            DatasetStatusKey.H5AD,
+            artifact_bucket,
+        )
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
+
+        return local_filename
+
+    @logit
+    def validate_h5ad_file(self, dataset_version_id: DatasetVersionId, local_filename: str) -> None:
+        """
+        Validates the specified dataset file and updates the processing status in the database
+        :param dataset_version_id: version ID of the dataset to update
+        :param local_filename: file name of the dataset to validate and label
+        :return: boolean indicating if seurat conversion is possible
+        """
+        self.update_processing_status(
+            dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALIDATING
+        )
+
+        try:
+            is_valid, errors, can_convert_to_seurat = self.schema_validator.validate_anndata(local_filename)
+        except Exception as e:
+            self.logger.exception("validation failed")
+            self.update_processing_status(
+                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
+            )
+            raise ValidationAnndataFailed([str(e)]) from None
+
+        if not is_valid:
+            self.update_processing_status(
+                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID
+            )
+            raise ValidationAnndataFailed(errors)
+        else:
+            # Skip seurat conversion
+            self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
+            self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTING)
+
+    def process(
+        self,
+        dataset_version_id: DatasetVersionId,
+        manifest: IngestionManifest,
+        artifact_bucket: str,
+    ):
+        """
+        1. Download the original dataset from URI
+        2. Validate
+
+        :param manifest:
+        :param dataset_version_id:
+        :param artifact_bucket:
+        :return:
+        """
+        anndata_uri = str(manifest.anndata)
+        # validate and upload raw h5ad file to s3
+        key_prefix = self.get_key_prefix(dataset_version_id.id)
+        local_filename = self.upload_raw_h5ad(dataset_version_id, anndata_uri, artifact_bucket, key_prefix)
+
+        # Validate and label the dataset
+        self.validate_h5ad_file(dataset_version_id, local_filename)

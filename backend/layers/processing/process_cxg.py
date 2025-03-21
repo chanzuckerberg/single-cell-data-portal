@@ -19,7 +19,7 @@ class ProcessCxg(ProcessingLogic):
     1. Download the labeled h5ad artifact from S3 (uploaded by DownloadAndValidate)
     2. Convert to cxg
     3. Upload the cxg artifact (a directory) to S3
-    If this step completes successfully, and ProcessSeurat is completed, the handle_success lambda will be invoked
+    If this step completes successfully, the handle_success lambda will be invoked
     If this step fails, the handle_failures lambda will be invoked
     """
 
@@ -91,9 +91,7 @@ class ProcessCxg(ProcessingLogic):
         self.s3_provider.upload_directory(cxg_dir, s3_uri)
 
     def process_cxg(self, local_filename, dataset_version_id, cellxgene_bucket, current_artifacts=None):
-        cxg_dir = self.convert_file(
-            self.make_cxg, local_filename, "Issue creating cxg.", dataset_version_id, DatasetStatusKey.CXG
-        )
+        cxg_dir = self.convert_file(self.make_cxg, local_filename, dataset_version_id, DatasetStatusKey.CXG)
         s3_uri = None
         if current_artifacts:
             existing_cxg = [artifact for artifact in current_artifacts if artifact.type == DatasetArtifactType.CXG][0]

@@ -25,10 +25,10 @@ class TestCollectionMigrate:
             published.version_id.id,
         )
         schema_migrate._store_sfn_response.assert_any_call(
-            "log_errors_and_cleanup", published.collection_id.id, response_for_log_errors_and_cleanup
+            "log_errors_and_cleanup", collection_version_id.id, response_for_log_errors_and_cleanup
         )
         schema_migrate._store_sfn_response.assert_any_call(
-            "span_datasets", published.collection_id.id, response_for_span_datasets
+            "span_datasets", collection_version_id.id, response_for_span_datasets
         )
         assert response_for_log_errors_and_cleanup["collection_version_id"] == collection_version_id.id
         assert (
@@ -60,10 +60,10 @@ class TestCollectionMigrate:
             private.version_id.id,
         )
         schema_migrate._store_sfn_response.assert_any_call(
-            "log_errors_and_cleanup", private.collection_id.id, response_for_log_errors_and_cleanup
+            "log_errors_and_cleanup", private.version_id.id, response_for_log_errors_and_cleanup
         )
         schema_migrate._store_sfn_response.assert_any_call(
-            "span_datasets", private.collection_id.id, response_for_span_datasets
+            "span_datasets", private.version_id.id, response_for_span_datasets
         )
 
         # verify response_for_log_errors_and_cleanup
@@ -94,7 +94,7 @@ class TestCollectionMigrate:
             published.version_id.id,
         )
         schema_migrate._store_sfn_response.assert_called_once_with(
-            "log_errors_and_cleanup", published.collection_id.id, response_for_log_errors_and_cleanup
+            "log_errors_and_cleanup", published.version_id.id, response_for_log_errors_and_cleanup
         )
 
         # verify response_for_log_errors_and_cleanup
@@ -124,7 +124,7 @@ class TestCollectionMigrate:
             published.version_id.id,
         )
         schema_migrate._store_sfn_response.assert_called_once_with(
-            "log_errors_and_cleanup", published.collection_id.id, response_for_log_errors_and_cleanup
+            "log_errors_and_cleanup", published.version_id.id, response_for_log_errors_and_cleanup
         )
 
         # verify response_for_log_errors_and_cleanup
