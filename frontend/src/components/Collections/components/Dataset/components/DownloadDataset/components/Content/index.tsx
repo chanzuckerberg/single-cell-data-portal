@@ -1,5 +1,3 @@
-// // TODO: (smccanny) delete this before merging
-/* eslint-disable sonarjs/no-duplicate-string */
 import React, { FC, useEffect, useMemo, useState } from "react";
 import { Dataset, DATASET_ASSET_FORMAT } from "src/common/entities";
 import DownloadLink from "./components/DownloadLink";
@@ -13,73 +11,6 @@ import { DialogLoader as Loader } from "src/components/Datasets/components/Downl
 import { Button } from "src/components/common/Button";
 import { POSSIBLE_DOWNLOAD_FORMATS } from "./components/DataFormat/constants";
 import { downloadMultipleFiles, getDownloadLink } from "./utils";
-
-// // TODO: (smccanny) delete this hard coded test array before merging
-// const dataAssets = [
-//   {
-//     created_at: 0,
-//     dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
-//     filename: "raw.h5ad",
-//     filetype: "RAW_H5AD",
-//     id: "14aa6934-b111-4738-90f4-feadc3584e2e",
-//     s3_uri:
-//       "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/raw.h5ad",
-//     updated_at: 0,
-//     user_submitted: true,
-//   },
-//   {
-//     created_at: 0,
-//     dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
-//     filename: "local.h5ad",
-//     filetype: "H5AD",
-//     id: "8a7f782f-0ab3-4118-bea3-0706eca08f12",
-//     s3_uri:
-//       "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.h5ad",
-//     updated_at: 0,
-//     user_submitted: true,
-//   },
-//   {
-//     created_at: 0,
-//     dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
-//     filename: "",
-//     filetype: "CXG",
-//     id: "1ec622f0-f0ef-4a50-983b-bc7774b66dcc",
-//     s3_uri:
-//       "s3://hosted-cellxgene-staging/30a7b283-82db-408f-92fa-238998378eb5.cxg/",
-//     updated_at: 0,
-//     user_submitted: true,
-//   },
-//   {
-//     created_at: 0,
-//     dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
-//     filename: "local.rds",
-//     filetype: "RDS",
-//     id: "4dd72160-f924-447f-93f4-ac5253ce4606",
-//     s3_uri:
-//       "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
-//     updated_at: 0,
-//     user_submitted: true,
-//   },
-//   {
-//     created_at: 0,
-//     dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
-//     filename: "tsv.gz",
-//     filetype: "ATAC_INDEX",
-//     id: "4dd72160-f924-447f-93f4-ac5253ce4606",
-//     s3_uri:
-//       "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
-//     updated_at: 0,
-//     user_submitted: true,
-//   },
-//   {
-//     dataset_id: "30a7b283-82db-408f-92fa-238998378eb5",
-//     filename: "fragment",
-//     filetype: "ATAC_FRAGMENT",
-//     id: "4dd72160-f924-447f-93f4-ac5253ce4606",
-//     s3_uri:
-//       "s3://corpora-data-staging/30a7b283-82db-408f-92fa-238998378eb5/local.rds",
-//   },
-// ] as Dataset["dataset_assets"];
 
 interface Props {
   isError?: boolean;
