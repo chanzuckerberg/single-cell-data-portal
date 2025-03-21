@@ -48,7 +48,7 @@ class ProcessCxg(ProcessingLogic):
         :return:
         """
 
-        labeled_h5ad_filename = "local.h5ad"
+        labeled_h5ad_filename = self.get_file_path("local.h5ad")
 
         # Download the labeled dataset from the artifact bucket
         object_key = None

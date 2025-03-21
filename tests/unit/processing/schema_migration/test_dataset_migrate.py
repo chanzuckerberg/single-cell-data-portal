@@ -30,7 +30,10 @@ class TestDatasetMigrate:
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]
         schema_migrate.schema_validator.migrate.assert_called_once_with(
-            "previous_schema.h5ad", "migrated.h5ad", private.collection_id.id, private.datasets[0].dataset_id.id
+            schema_migrate.get_file_path("previous_schema.h5ad"),
+            schema_migrate.get_file_path("migrated.h5ad"),
+            private.collection_id.id,
+            private.datasets[0].dataset_id.id,
         )
 
     def test_dataset_migrate_published(self, schema_migrate_and_collections):
@@ -59,7 +62,10 @@ class TestDatasetMigrate:
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]
         schema_migrate.schema_validator.migrate.assert_called_once_with(
-            "previous_schema.h5ad", "migrated.h5ad", published.collection_id.id, published.datasets[0].dataset_id.id
+            schema_migrate.get_file_path("previous_schema.h5ad"),
+            schema_migrate.get_file_path("migrated.h5ad"),
+            published.collection_id.id,
+            published.datasets[0].dataset_id.id,
         )
 
     def test_dataset_migrate_revision(self, schema_migrate_and_collections):
@@ -88,5 +94,8 @@ class TestDatasetMigrate:
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]
         schema_migrate.schema_validator.migrate.assert_called_once_with(
-            "previous_schema.h5ad", "migrated.h5ad", revision.collection_id.id, revision.datasets[0].dataset_id.id
+            schema_migrate.get_file_path("previous_schema.h5ad"),
+            schema_migrate.get_file_path("migrated.h5ad"),
+            revision.collection_id.id,
+            revision.datasets[0].dataset_id.id,
         )

@@ -67,7 +67,7 @@ class ProcessAddLabels(ProcessingLogic):
         :param local_filename: file name of the dataset to validate and label
         :return: file name of labeled dataset, boolean indicating if seurat conversion is possible
         """
-        output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
+        output_filename = self.get_file_path(CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME)
         self.schema_validator.add_labels(local_filename, output_filename)
         self.populate_dataset_citation(collection_version_id, dataset_version_id, output_filename)
         self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
@@ -205,8 +205,8 @@ class ProcessAddLabels(ProcessingLogic):
         self.update_processing_status(dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID)
         # Download the original dataset from S3
         key_prefix = self.get_key_prefix(dataset_version_id.id)
-        original_h5ad_artifact_file_name = CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME
-        object_key = f"{key_prefix}/{original_h5ad_artifact_file_name}"
+        original_h5ad_artifact_file_name = self.get_file_path(CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME)
+        object_key = f"{key_prefix}/{CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME}"
         self.download_from_s3(artifact_bucket, object_key, original_h5ad_artifact_file_name)
 
         # label the dataset

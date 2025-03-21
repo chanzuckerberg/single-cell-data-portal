@@ -30,6 +30,9 @@ class TestH5ADDataFile(unittest.TestCase):
         if self.sample_h5ad_filename:
             remove(self.sample_h5ad_filename)
 
+        if self.sample_sparse_h5ad_filename:
+            remove(self.sample_sparse_h5ad_filename)
+
         if path.isdir(self.sample_output_directory):
             rmtree(self.sample_output_directory)
 
