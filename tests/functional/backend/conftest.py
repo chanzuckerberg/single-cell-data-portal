@@ -7,6 +7,7 @@ from tests.functional.backend.constants import API_URL
 from tests.functional.backend.distributed import distributed_singleton
 from tests.functional.backend.utils import (
     get_auth_token,
+    get_curation_api_access_token,
     make_cookie,
     make_proxy_auth_token,
     make_session,
@@ -68,12 +69,7 @@ def api_url(deployment_stage):
 @pytest.fixture(scope="session")
 def curation_api_access_token(session, api_url, config, tmp_path_factory, worker_id):
     def _curation_api_access_token() -> str:
-        response = session.post(
-            f"{api_url}/curation/v1/auth/token",
-            headers={"x-api-key": config.super_curator_api_key},
-        )
-        response.raise_for_status()
-        return response.json()["access_token"]
+        return get_curation_api_access_token(session, api_url, config)
 
     return distributed_singleton(tmp_path_factory, worker_id, _curation_api_access_token)
 
