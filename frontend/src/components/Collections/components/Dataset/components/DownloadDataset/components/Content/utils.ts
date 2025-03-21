@@ -35,7 +35,7 @@ export const getDownloadLink = async (
       ...DEFAULT_FETCH_OPTIONS,
       method: "GET",
     }).then((res) => res.json());
-
+    console.log("result", result);
     return {
       filetype: asset.filetype,
       fileSize: result.file_size,
