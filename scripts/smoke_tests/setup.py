@@ -36,13 +36,15 @@ class SmokeTestsInitializer:
         self.curation_api_access_token = get_curation_api_access_token(self.session, self.api, self.config)
         self.manifests = [DATASET_MANIFEST, VISIUM_DATASET_MANIFEST, ATAC_SEQ_MANIFEST]
         self.headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
+        self.cached_get_collections_response = None
 
-    def get_collection_count(self, contact_name=TEST_ACCT_CONTACT_NAME, expected_count=NUM_TEST_COLLECTIONS):
-        res = self.session.get(f"{self.api}/curation/v1/collections?visiblity=PUBLIC", headers=self.headers)
-        res.raise_for_status()
-        data = json.loads(res.content)
+    def get_collection_count(self, contact_name: str, expected_count: int) -> int:
+        if self.cached_get_collections_response is None:
+            res = self.session.get(f"{self.api}/curation/v1/collections?visiblity=PUBLIC", headers=self.headers)
+            res.raise_for_status()
+            self.cached_get_collections_response = json.loads(res.content)
         num_collections = 0
-        for collection in data:
+        for collection in self.cached_get_collections_response:
             if collection["contact_name"] == contact_name:
                 num_collections += 1
             if num_collections == expected_count:
@@ -106,7 +108,7 @@ class SmokeTestsInitializer:
 if __name__ == "__main__":
     smoke_test_init = SmokeTestsInitializer()
     # check whether we need to create collections
-    test_collection_count = smoke_test_init.get_collection_count()
+    test_collection_count = smoke_test_init.get_collection_count(TEST_ACCT_CONTACT_NAME, NUM_TEST_COLLECTIONS)
     visium_collection_count = smoke_test_init.get_collection_count(VISIUM_ACCT_CONTACT_NAME, 1)
     atac_seq_collection_count = smoke_test_init.get_collection_count(ATAC_SEQ_ACCT_CONTACT_NAME, 1)
 
