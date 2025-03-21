@@ -141,27 +141,27 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
     },
     {
       label: "Larval",
-      ontology_term_id: "WBls:0000816", // TODO(smccanny): what is the correct term?
+      ontology_term_id: "WBls:0000804",
       children: [
         {
           label: "L1 Larva",
-          ontology_term_id: "WBls:0000804",
+          ontology_term_id: "WBls:0000818",
         },
         {
           label: "L2 Larva",
-          ontology_term_id: "WBls:0000025",
+          ontology_term_id: "WBls:0000819",
         },
         {
           label: "Dauer Larva",
-          ontology_term_id: "WBls:0000031",
+          ontology_term_id: "WBls:0000032",
         },
         {
           label: "L3 Larva",
-          ontology_term_id: "WBls:0000027",
+          ontology_term_id: "WBls:0000820",
         },
         {
           label: "L4 Larva",
-          ontology_term_id: "WBls:0000029",
+          ontology_term_id: "WBls:0000821",
         },
       ],
     },
