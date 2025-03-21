@@ -130,6 +130,9 @@ const Collection: FC = () => {
     <>
       <Head>
         <title>{collection.name} - CZ CELLxGENE Discover</title>
+        {collection.visibility === "PRIVATE" && (
+          <meta name="robots" content="noindex" />
+        )}
       </Head>
       <CollectionView>
         {/* Notification */}
