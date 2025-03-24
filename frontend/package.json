@@ -155,6 +155,7 @@
     "type-check": "tsc --noEmit",
     "lint": "concurrently \"node_modules/.bin/next lint\" \"node_modules/.bin/stylelint '**/*.{js,ts,tsx,css}'\"  \"npm run type-check\"",
     "prettier-check": "npx prettier --check .",
+    "prettier-fix": "npx prettier --write .",
     "build-and-start-prod": "npm run build && npm run serve",
     "postbuild": "next-sitemap",
     "e2e-trace": "npx playwright show-trace"
