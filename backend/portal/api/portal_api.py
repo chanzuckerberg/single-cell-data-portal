@@ -1,5 +1,6 @@
 import dataclasses
 import itertools
+import logging
 from datetime import datetime
 from typing import Iterable, List, Optional, Tuple
 from urllib.parse import urlparse
@@ -739,7 +740,7 @@ def get_dataset_asset(dataset_id: str, asset_id: str):
         )
     except ArtifactNotFoundException:
         raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}/asset/{asset_id}' not found.") from None
-
+    logging.info(f"Download data: {download_data}")
     if download_data.file_size is None:
         raise ServerErrorHTTPException() from None
 
