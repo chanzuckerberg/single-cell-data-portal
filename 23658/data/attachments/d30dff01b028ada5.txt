@@ -1,0 +1,3 @@
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [a29fd8b3-aaae-4569-91a8-7754d6b48282/atac_index] to s3://datasets/deadbeef-36da-4643-b3d5-ee20853084ba-fragment.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:67 Updated database with atac_index.

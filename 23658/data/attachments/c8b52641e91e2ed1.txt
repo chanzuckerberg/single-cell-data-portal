@@ -1,0 +1,1 @@
+INFO     root:portal_api.py:743 Download data: DatasetArtifactDownloadData(file_size=None, url='http://domain/3ed8bbc7-3809-4631-bed9-e47e05926fc8.h5ad')
