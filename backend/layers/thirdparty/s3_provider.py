@@ -57,6 +57,13 @@ class S3Provider(S3ProviderInterface):
         Returns the file size of an S3 object located at `path`
         """
         bucket, key = self.parse_s3_uri(path)
+        logger.info(
+            {
+                "message": "Getting file size",
+                "bucket": bucket,
+                "key": key,
+            }
+        )
         try:
             response = self.client.head_object(Bucket=bucket, Key=key)
         except Exception:
