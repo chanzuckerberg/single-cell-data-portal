@@ -12,6 +12,7 @@
     "cellguide_pipeline",
     "processing",
     "dataset_submissions",
+    "dataset_version_cleanup",
     "upload_failures",
     "upload_success",
     "wmg_processing"
@@ -46,6 +47,9 @@
     },
     "upload_success": {
       "profile": "upload_success"
+    },
+    "dataset_version_cleanup": {
+      "profile": "dataset_version_cleanup"
     }
   },
   "environments": {
