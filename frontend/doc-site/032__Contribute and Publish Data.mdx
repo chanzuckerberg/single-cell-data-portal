@@ -20,12 +20,12 @@ CELLxGENE supports most single-cell RNA-seq and ATAC-seq data, but there are a f
 - drug screens
 - cell lines
 - species not on the [supported list](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#organism_ontology_term_id)
-  - CELLxGENE continues to expand support so please [contact us] to discuss possible inclusion of additional organisms
 - assays not on the [supported list](https://github.com/chanzuckerberg/cellxgene-census/blob/main/docs/census_accepted_assays.csv)
   - these additional assays are pending Census acceptance and will be accepted:
     - expression measurements from multi-modal assays (e.g. 10x multiome, mCT-seq)
     - unpaired ATAC-seq measurements
-  - CELLxGENE continues to expand support so please [contact us] to discuss possible inclusion of additional assays
+
+CELLxGENE continues to expand support for additional species and assays so please [contact us] if you are interested in submitting data not currently covered by the supported lists.
 
 ### Scale Constraints
 
@@ -33,7 +33,7 @@ CELLxGENE Discover sets the maximum per dataset file size for submissions to 50 
 
 ### Formatting Requirements
 
-Include the following Collection metadata in your emails to describe your publication or study, all of which can be edited as titles, abstracts, etc. change
+Include the following Collection metadata in your emails to describe your publication or study, all of which can be edited as titles, abstracts, etc. change:
 
 - **Collection information**:
   - Title
@@ -101,7 +101,7 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
   - one or more two-dimensional embeddings, prefixed with 'X\_'
 - **Features in var & raw.var (if present)**:
   - index is Ensembl gene ID
-  - preference is that gene have not been filtered in order to maximize future data integration efforts
+  - preference is that genes have not been filtered in order to maximize future data integration efforts
 - **Additional standards for single-capture area Visium datasets** (largely aligns with [scanpy’s model](https://scanpy.readthedocs.io/en/stable/generated/scanpy.read_visium.html), [this notebook](https://github.com/Lattice-Data/lattice-tools/blob/main/cellxgene_resources/curation_visium.ipynb) may be helpful to curate from Space Ranger outputs):
   - empty spots must be included
     - 4992 total observations for 6.5 mm capture areas
