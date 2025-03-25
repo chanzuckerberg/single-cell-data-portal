@@ -67,6 +67,7 @@ class S3Provider(S3ProviderInterface):
         try:
             response = self.client.head_object(Bucket=bucket, Key=key)
         except Exception:
+            logger.exception("Failed to get file size")
             return None
         return response["ContentLength"]
 
