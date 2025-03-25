@@ -59,7 +59,7 @@ resource aws_batch_job_definition cxg_job_def {
   container_properties = jsonencode({
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
-  "memory": 32000,
+  "memory": 48000,
   "environment": [
     {
       "name": "ARTIFACT_BUCKET",
@@ -90,7 +90,7 @@ resource aws_batch_job_definition cxg_job_def {
       "value": "${var.frontend_url}"
     }
   ],
-  "vcpus": 4,
+  "vcpus": 7,
   "logConfiguration": {
     "logDriver": "awslogs",
     "options": {
