@@ -5,13 +5,13 @@ export const POSSIBLE_DOWNLOAD_FORMATS = [
     label: ".h5ad (AnnData v0.10)",
     type: "RNA",
     description:
-      "Lorem ipsum odor amet, consectetuer adipiscing elit. Augue nulla etiam dolor orci praesent.",
+      "Hierarchical data format used to store annotated data matrices, typically for single-cell omics data, including gene expression, metadata, and embeddings.",
   },
   {
     format: DATASET_ASSET_FORMAT.ATAC_INDEX,
     label: ".tsv (Fragments w/ index)",
     type: "DNA ACCESSIBILITY",
     description:
-      "Turpis habitasse potenti dapibus tincidunt fames metus vulputate feugiat.",
+      "Tab-separated values file listing sequencing ATAC-seq fragments with an accompanying index for fast genomic range queries.",
   },
 ];
