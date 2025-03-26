@@ -8,6 +8,11 @@ variable cxg_definition_arn {
   description = "ARN of the cxg batch job definition"
 }
 
+variable atac_definition_arn {
+  type        = string
+  description = "ARN of the atac batch job definition"
+}
+
 variable job_queue_arn {
   type        = string
   description = "ARN of the batch job queue"

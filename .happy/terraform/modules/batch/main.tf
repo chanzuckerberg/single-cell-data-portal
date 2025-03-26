@@ -101,6 +101,54 @@ resource aws_batch_job_definition cxg_job_def {
 })
 }
 
+resource aws_batch_job_definition atac_job_def {
+  type = "container"
+  name = "dp-${var.deployment_stage}-${var.custom_stack_name}-atac"
+  container_properties = jsonencode({
+  "jobRoleArn": "${var.batch_role_arn}",
+  "image": "${var.image}",
+  "memory": 64000,
+  "environment": [
+    {
+      "name": "ARTIFACT_BUCKET",
+      "value": "${var.artifact_bucket}"
+    },
+    {
+      "name": "CELLXGENE_BUCKET",
+      "value": "${var.cellxgene_bucket}"
+    },
+    {
+      "name": "DATASETS_BUCKET",
+      "value": "${var.datasets_bucket}"
+    },
+    {
+      "name": "DEPLOYMENT_STAGE",
+      "value": "${var.deployment_stage}"
+    },
+    {
+      "name": "AWS_DEFAULT_REGION",
+      "value": "${data.aws_region.current.name}"
+    },
+    {
+      "name": "REMOTE_DEV_PREFIX",
+      "value": "${var.remote_dev_prefix}"
+    },
+    {
+      "name": "FRONTEND_URL",
+      "value": "${var.frontend_url}"
+    }
+  ],
+  "vcpus": 8,
+  "logConfiguration": {
+    "logDriver": "awslogs",
+    "options": {
+      "awslogs-group": "${aws_cloudwatch_log_group.cloud_watch_logs_group.id}",
+      "awslogs-region": "${data.aws_region.current.name}"
+    }
+  }
+})
+}
+
 resource aws_batch_job_definition dataset_metadata_update {
   type = "container"
   name = "dp-${var.deployment_stage}-${var.custom_stack_name}-dataset-metadata-update"

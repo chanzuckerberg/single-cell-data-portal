@@ -92,7 +92,7 @@ resource "aws_sfn_state_machine" "state_machine" {
               "Type": "Task",
               "Resource": "arn:aws:states:::batch:submitJob.sync",
               "Parameters": {
-                "JobDefinition": "${var.cxg_definition_arn}",
+                "JobDefinition": "${var.atac_job_definition}",
                 "JobName": "validate_atac",
                 "JobQueue.$": "$.job_queue",
                 "ContainerOverrides": {
