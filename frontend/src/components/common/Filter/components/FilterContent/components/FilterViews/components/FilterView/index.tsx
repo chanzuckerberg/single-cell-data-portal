@@ -50,6 +50,7 @@ export default function FilterView({
 
   // Calculate and set a min width on view panel to prevent width resizing
   // (derived from a change in list item selected state font weight).
+  // The panel width should be at least 340px so the panel has enough whitespace.
   useEffect(() => {
     if (panelRef.current) {
       const minWidth =

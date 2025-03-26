@@ -37,6 +37,7 @@ export const TooltipContent = styled("div")`
 `;
 
 export const TooltipLink = styled("a")`
+  cursor: pointer;
   line-height: 20px;
 `;
 
@@ -44,6 +45,8 @@ export const TooltipTrigger = styled("span")`
   color: inherit;
   border-bottom: 1px dotted;
   transition: all 0.3s ease;
+  white-space: nowrap;
+  cursor: pointer;
   &:hover {
     color: black;
     border-bottom: 1px solid;
@@ -57,6 +60,9 @@ export const FooterContent = styled("div")`
   ${fontBodyXs}
   color: ${gray500};
   background: white;
+  .italic {
+    font-style: italic;
+  }
 `;
 
 export const LinkButton = styled("button")`

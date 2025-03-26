@@ -32,6 +32,7 @@ export default function BasicFilter({
 
   const anchorElRef = useRef<HTMLDivElement | null>(null);
 
+  //  Gives us the ability to programmatically close/open specific filters
   useEffect(() => {
     if (openSpecificFilter && label !== openSpecificFilter) {
       setAnchorEl(null);

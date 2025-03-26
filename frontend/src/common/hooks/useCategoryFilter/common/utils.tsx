@@ -79,7 +79,7 @@ export function buildCategoryValueLabel(
 }
 
 /**
- * Returns the values need for displaying an explanatory tooltip for cell type or tissue in the
+ * Returns the values needed for displaying an explanatory tooltip for cell type or tissue in the
  * multi-panel ontology filter.
  * @param config - Config model of category to build category value views for.
  * @param categoryValueId - Category value to display (e.g. "E:WBbt:0004025").

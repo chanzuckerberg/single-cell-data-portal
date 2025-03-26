@@ -7,7 +7,8 @@ import { LINKS } from "src/common/constants/links";
 export function DevelopmentStageFooter() {
   return (
     <FooterContent>
-      By default, this filter shows Homo sapiens and Mus musculus.{" "}
+      By default, this filter shows <span className="italic">Homo sapiens</span>{" "}
+      and <span className="italic">Mus musculus</span>.{" "}
       <OpenFilterButton>Filter by organism</OpenFilterButton> to show other{" "}
       <FilterFooterTooltip
         content={
