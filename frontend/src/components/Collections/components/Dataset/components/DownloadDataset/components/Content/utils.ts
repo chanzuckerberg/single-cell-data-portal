@@ -13,7 +13,8 @@ export const downloadMultipleFiles = (
   downloadLinks.forEach((download) => {
     if (formatsToDownload.includes(download.filetype) && download.downloadURL) {
       const a = document.createElement("a");
-      a.href = download.downloadURL;
+      a.href =
+        "https://datasets.cellxgene.staging.single-cell.czi.technology/542d0a93-9f13-4a77-8d3f-65172615bce8.h5ad";
       a.download = download.downloadURL.split("/").pop() || "";
       document.body.appendChild(a);
       a.click();
