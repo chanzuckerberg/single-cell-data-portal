@@ -103,7 +103,7 @@ export const newWormDataset = {
   is_primary_data: IS_PRIMARY_DATA.SECONDARY,
   is_valid: true,
   mean_genes_per_cell: 2165.4574264530015,
-  name: "FAKE FAKE FAKE - Worm HOso Cell",
+  name: "For Demonstration - Worm HOso Cell",
   organism: [
     {
       label: "Caenorhabditis elegans",
@@ -245,7 +245,7 @@ export const newFruitFlyDataset = {
   is_primary_data: IS_PRIMARY_DATA.SECONDARY,
   is_valid: true,
   mean_genes_per_cell: 2165.4574264530015,
-  name: "FAKE FAKE FAKE - new Fruit Fly - Drosophila melanogaster",
+  name: "For Demonstration - Fruit Fly - Drosophila melanogaster",
   organism: [
     {
       label: "Drosophila melanogaster",
@@ -387,7 +387,7 @@ export const newZebraFishDataset = {
   is_primary_data: IS_PRIMARY_DATA.SECONDARY,
   is_valid: true,
   mean_genes_per_cell: 2165.4574264530015,
-  name: "FAKE FAKE FAKE - Zebrafish - Danio rerio",
+  name: "For Demonstration - Zebrafish - Danio rerio",
   organism: [
     {
       label: "Danio rerio",
@@ -525,7 +525,7 @@ export const newFruitFlyDataset2 = {
   is_primary_data: IS_PRIMARY_DATA.SECONDARY,
   is_valid: true,
   mean_genes_per_cell: 2165.4574264530015,
-  name: "FAKE - new Fruit Fly 2  - Drosophila melanogaster",
+  name: "For Demonstration - Fruit Fly Somatic Cell - Drosophila melanogaster",
   organism: [
     {
       label: "Drosophila melanogaster",
@@ -663,7 +663,7 @@ export const newFruitFlyDataset3 = {
   is_primary_data: IS_PRIMARY_DATA.SECONDARY,
   is_valid: true,
   mean_genes_per_cell: 2165.4574264530015,
-  name: "FAKE - new Fruit Fly 3  - Drosophila melanogaster",
+  name: "For Demonstration - Fruit Fly Larval Fat Cell - Drosophila melanogaster",
   organism: [
     {
       label: "Drosophila melanogaster",
@@ -801,7 +801,7 @@ export const newFruitFlyDataset4 = {
   is_primary_data: IS_PRIMARY_DATA.SECONDARY,
   is_valid: true,
   mean_genes_per_cell: 2165.4574264530015,
-  name: "FAKE - new Fruit Fly 4  - Drosophila melanogaster - header level development stage",
+  name: "For Demonstration - Fruit Fly  - Drosophila melanogaster - different development stage",
   organism: [
     {
       label: "Drosophila melanogaster",
