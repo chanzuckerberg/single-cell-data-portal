@@ -14,11 +14,13 @@ import {
 import FilterSinglePanelCategoryView from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterSinglePanelCategoryView";
 import { MAX_DISPLAYABLE_LIST_ITEMS } from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterView";
 import {
-  ViewDivider,
   VIEW_LIST_ITEM_HEIGHT,
   VIEW_LIST_SUBHEADER_HEIGHT,
 } from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterView/style";
-import { ViewsMenu } from "src/components/common/Filter/components/FilterContent/components/FilterViews/style";
+import {
+  ViewsMenu,
+  ViewsMenuOptions,
+} from "src/components/common/Filter/components/FilterContent/components/FilterViews/style";
 import {
   ClearSearchValueFn,
   SetSearchValueFn,
@@ -47,7 +49,7 @@ function calculateViewListMaxHeight(
     return Math.max(acc, listMaxHeight);
   }, 0);
 }
-
+// (ie. cell type and tissue filters)
 export default function FilterMultiPanelCategoryView({
   categoryView,
   clearSearchValueFn,
@@ -69,25 +71,26 @@ export default function FilterMultiPanelCategoryView({
   return (
     <Views>
       <FilterSearch searchValue={searchValue} setSearchValue={setSearchValue} />
-      <ViewsMenu>
-        {panels.map((ontologyCategoryView, i) => {
-          const { isSearchMultiselect } = ontologyCategoryView;
-          const onFilterFn = isSearchMultiselect
-            ? onFilter
-            : onFilterWithClearSearch;
-          return (
-            <Fragment key={`${ontologyCategoryView.label}${i}`}>
-              {i !== 0 && <ViewDivider orientation="vertical" />}
-              <FilterSinglePanelCategoryView
-                categoryFilterId={categoryFilterId}
-                categoryView={ontologyCategoryView}
-                onFilter={onFilterFn}
-                searchValue={searchValue}
-                viewListMaxHeight={viewListMaxHeight}
-              />
-            </Fragment>
-          );
-        })}
+      <ViewsMenu viewsToDisplay={panels.length}>
+        <ViewsMenuOptions>
+          {panels.map((ontologyCategoryView, i) => {
+            const { isSearchMultiselect } = ontologyCategoryView;
+            const onFilterFn = isSearchMultiselect
+              ? onFilter
+              : onFilterWithClearSearch;
+            return (
+              <Fragment key={`${ontologyCategoryView.label}${i}`}>
+                <FilterSinglePanelCategoryView
+                  categoryFilterId={categoryFilterId}
+                  categoryView={ontologyCategoryView}
+                  onFilter={onFilterFn}
+                  searchValue={searchValue}
+                  viewListMaxHeight={viewListMaxHeight}
+                />
+              </Fragment>
+            );
+          })}
+        </ViewsMenuOptions>
       </ViewsMenu>
     </Views>
   );

@@ -7,7 +7,6 @@ import {
   OntologyCategoryTreeNodeView,
 } from "src/components/common/Filter/common/entities";
 import {
-  ViewDivider,
   ViewPanel,
   ViewPanelScroll,
 } from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterView/style";
@@ -27,7 +26,6 @@ interface Props {
   isSearchable: boolean;
   isZerosVisible: boolean;
   onFilter: OnFilterFn;
-  showViewDivider: boolean;
   values: OntologyCategoryTreeNodeView[];
   viewListMaxHeight: number;
 }
@@ -38,7 +36,6 @@ export default function FilterView({
   isSearchable,
   isZerosVisible,
   onFilter,
-  showViewDivider,
   values,
   viewListMaxHeight,
 }: Props): JSX.Element {
@@ -53,9 +50,14 @@ export default function FilterView({
 
   // Calculate and set a min width on view panel to prevent width resizing
   // (derived from a change in list item selected state font weight).
+  // The panel width should be at least 340px so the panel has enough whitespace.
   useEffect(() => {
     if (panelRef.current) {
-      setPanelWidth(panelRef.current?.clientWidth + ADDITIONAL_MENU_WIDTH);
+      const minWidth =
+        panelRef.current?.clientWidth + ADDITIONAL_MENU_WIDTH < 340
+          ? 340
+          : panelRef.current?.clientWidth + ADDITIONAL_MENU_WIDTH;
+      setPanelWidth(minWidth);
     }
   }, []);
 
@@ -68,7 +70,6 @@ export default function FilterView({
 
   return (
     <>
-      {showViewDivider && <ViewDivider orientation="vertical" />}
       <ViewPanel panelWidth={panelWidth} ref={panelRef}>
         {/* Optional search bar */}
         {isSearchable && (

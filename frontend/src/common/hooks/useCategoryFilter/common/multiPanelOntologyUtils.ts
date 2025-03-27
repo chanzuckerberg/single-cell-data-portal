@@ -110,15 +110,16 @@ export function buildMultiPanelCategoryView(
   multiPanelUIState: MultiPanelUIState,
   ontologyTermLabelsById: Map<string, string>
 ): MultiPanelOntologyCategoryView {
-  const { categoryFilterId } = config;
+  const { categoryFilterId, footerComponentId, label } = config;
   const categoryFilterUIState = multiPanelUIState.get(categoryFilterId);
   if (!categoryFilterUIState) {
     console.log(
       `Multi-panel category filter state not found for category ${categoryFilterId}`
     );
     return {
-      categoryFilterId: categoryFilterId,
-      label: config.label,
+      categoryFilterId,
+      label,
+      footerComponentId,
       panels: EMPTY_ARRAY,
       selectedViews: EMPTY_ARRAY,
     };
@@ -146,10 +147,11 @@ export function buildMultiPanelCategoryView(
 
   // Build view model of multi-panel category.
   return {
-    categoryFilterId: categoryFilterId,
-    label: config.label,
+    categoryFilterId,
+    label,
+    selectedViews,
+    footerComponentId,
     panels: ontologyPanelCategoryViews,
-    selectedViews: selectedViews,
   };
 }
 
