@@ -700,6 +700,18 @@ paths:
                     enum: [VALIDATING, VALID, INVALID, NA]
                   validation_message:
                     type: string
+                  atac_status:
+                    type: string
+                    enum:
+                      [
+                        CONVERTING,
+                        CONVERTED,
+                        UPLOADING,
+                        UPLOADED,
+                        SKIPPED,
+                        FAILED,
+                        NA,
+                      ]
                   h5ad_status:
                     type: string
                     enum:
@@ -1279,7 +1291,7 @@ components:
           type: string
         filetype:
           type: string
-          enum: [RAW_H5AD, H5AD, RDS, CXG]
+          enum: [RAW_H5AD, H5AD, RDS, CXG, ATAC_FRAGMENT, ATAC_INDEX]
         filename:
           type: string
         s3_uri:

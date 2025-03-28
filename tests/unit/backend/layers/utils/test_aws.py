@@ -15,12 +15,10 @@ class TestDeleteManyFromS3(TestCase):
         super().setUp()
         self.tmp_dir = tempfile.mkdtemp()
         self.h5ad_filename = pathlib.Path(self.tmp_dir, "test.h5ad")
-        self.seurat_filename = pathlib.Path(self.tmp_dir, "test.rds")
         self.cxg_filename = pathlib.Path(self.tmp_dir, "test.cxg")
 
         self.h5ad_filename.touch()
         self.cxg_filename.touch()
-        self.seurat_filename.touch()
 
         # Mock S3 service if we don't have a mock api already running
         if os.getenv("BOTO_ENDPOINT_URL"):

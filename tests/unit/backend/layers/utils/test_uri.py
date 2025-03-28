@@ -1,12 +1,12 @@
 import os
 import unittest
 from tempfile import TemporaryDirectory
-from unittest import TestCase
+from unittest import TestCase, mock
 
 import boto3
 from moto import mock_aws
 
-from backend.common.utils.dl_sources.uri import S3URI, S3URL, DropBoxURL, RegisteredSources, from_uri
+from backend.common.utils.dl_sources.uri import S3URI, S3URL, CXGPublicURL, DropBoxURL, RegisteredSources, from_uri
 
 
 class TestRegisteredSources(unittest.TestCase):
@@ -92,3 +92,68 @@ class TestS3URI(TestCase):
                 data = f.read()
             # assert the contents are correct
             self.assertEqual(data, content)
+
+
+class TestS3URL(TestCase):
+
+    def create_s3_url(self, bucket_name, key, content):
+        s3 = boto3.client("s3")
+        s3.create_bucket(
+            Bucket=bucket_name, CreateBucketConfiguration={"LocationConstraint": os.environ["AWS_DEFAULT_REGION"]}
+        )
+        s3.put_object(Bucket=bucket_name, Key=key, Body=content)
+
+        return s3.generate_presigned_url("get_object", Params={"Bucket": bucket_name, "Key": key}, ExpiresIn=3600)
+
+    @mock_aws
+    def test__validate_with_valid_s3_url__ok(self):
+        url = self.create_s3_url("bucket", "key/file.txt", content="stuff")
+        s3_url = S3URL.validate(url)
+
+        self.assertEqual("https", s3_url.scheme)
+        self.assertEqual("bucket.s3.amazonaws.com", s3_url.netloc)
+        self.assertEqual("/key/file.txt", s3_url.path)
+
+    @mock_aws
+    def test__validate_with_invalid_s3_url__returns_none(self):
+        s3_url = S3URL.validate("http://somebucket.s3.amazonaws.com/key")
+        self.assertIsNone(s3_url)
+
+        s3_url = S3URL.validate("https://somebucket/key")
+        self.assertIsNone(s3_url)
+
+    @mock_aws
+    def test_get_file_info(self):
+        url = self.create_s3_url("bucket", "key/file.txt", content="stuff")
+        s3_url = S3URL.validate(url)
+        info = s3_url.file_info()
+        self.assertEqual("/key/file.txt", info["name"])
+        self.assertEqual(5, info["size"])
+
+
+class TestCXGPubURL(TestCase):
+
+    @mock.patch("backend.common.utils.dl_sources.uri.CorporaConfig")
+    def test__validate_with_valid_url__ok(self, config_mock):
+        config = mock.Mock()
+        config.dataset_assets_base_url = "https://datasets.test.technology"
+        config_mock.return_value = config
+
+        url = "https://datasets.test.technology/key/file.txt"
+        url = CXGPublicURL.validate(url)
+
+        self.assertEqual("https", url.scheme)
+        self.assertEqual("datasets.test.technology", url.netloc)
+        self.assertEqual("/key/file.txt", url.path)
+
+    @mock.patch("backend.common.utils.dl_sources.uri.CorporaConfig")
+    def test__validate_with_invalid_url__returns_none(self, config_mock):
+        config = mock.Mock()
+        config.dataset_assets_base_url = "https://datasets.test.technology"
+        config_mock.return_value = config
+
+        url = CXGPublicURL.validate("http://somebucket.s3.amazonaws.com/key")
+        self.assertIsNone(url)
+
+        url = CXGPublicURL.validate("https://somebucket/key")
+        self.assertIsNone(url)

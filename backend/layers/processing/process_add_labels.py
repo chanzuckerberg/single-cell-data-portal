@@ -1,7 +1,8 @@
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from typing import Any, Dict, List, Literal, Optional
 
+import h5py
 import numpy
-import scanpy
+from cellxgene_schema.utils import read_h5ad
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
@@ -17,7 +18,7 @@ from backend.layers.common.entities import (
     SpatialMetadata,
     TissueOntologyTermId,
 )
-from backend.layers.processing.exceptions import ValidationFailed
+from backend.layers.processing.exceptions import AddLabelsFailed
 from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
@@ -25,15 +26,17 @@ from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorP
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 
-class ProcessValidate(ProcessingLogic):
+class ProcessAddLabels(ProcessingLogic):
     """
-    Base class for handling the `Validate` step of the step function.
+    Base class for handling the `add label` step of the step function.
     This will:
-    1. Download the original artifact from the provided URI
-    2. Run the cellxgene-schema validator
-    3. Save and upload a labeled copy of the original artifact (local.h5ad)
-    5. Persist the dataset metadata on the database
-    6. Determine if a Seurat conversion is possible (it is not if the X matrix has more than 2**32-1 nonzero values)
+        1. Download the h5ad artifact
+        2. Add labels to h5ad using cellxgene-schema
+        3. Persist the dataset metadata on the database
+        4. upload the labeled file to S3
+        5. set DatasetStatusKey.H5AD status to DatasetUploadStatus.UPLOADED
+
+
     If this step completes successfully, ProcessCxg and ProcessSeurat will start in parallel.
     If this step fails, the handle_failures lambda will be invoked.
     """
@@ -54,42 +57,21 @@ class ProcessValidate(ProcessingLogic):
         self.schema_validator = schema_validator
 
     @logit
-    def validate_h5ad_file_and_add_labels(
+    def add_labels(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, local_filename: str
-    ) -> Tuple[str, bool]:
+    ) -> str:
         """
-        Validates and labels the specified dataset file and updates the processing status in the database
+        labels the specified dataset file and updates the processing status in the database
         :param dataset_version_id: version ID of the dataset to update
         :param collection_version_id: version ID of the collection dataset is being uploaded to
         :param local_filename: file name of the dataset to validate and label
         :return: file name of labeled dataset, boolean indicating if seurat conversion is possible
         """
-        # TODO: use a provider here
-
-        self.update_processing_status(
-            dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALIDATING
-        )
-
         output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
-        try:
-            is_valid, errors, can_convert_to_seurat = self.schema_validator.validate_and_save_labels(
-                local_filename, output_filename
-            )
-        except Exception as e:
-            self.logger.exception("validation failed")
-            raise ValidationFailed([str(e)]) from None
-
-        if not is_valid:
-            raise ValidationFailed(errors)
-        else:
-            self.populate_dataset_citation(collection_version_id, dataset_version_id, output_filename)
-
-            # TODO: optionally, these could be batched into one
-            self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
-            self.update_processing_status(
-                dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID
-            )
-            return output_filename, can_convert_to_seurat
+        self.schema_validator.add_labels(local_filename, output_filename)
+        self.populate_dataset_citation(collection_version_id, dataset_version_id, output_filename)
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
+        return output_filename
 
     def populate_dataset_citation(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, adata_path: str
@@ -104,9 +86,8 @@ class ProcessValidate(ProcessingLogic):
         collection = self.business_logic.get_collection_version(collection_version_id, get_tombstoned=False)
         doi = next((link.uri for link in collection.metadata.links if link.type == "DOI"), None)
         citation = self.business_logic.generate_dataset_citation(collection.collection_id, dataset_version_id, doi)
-        adata = scanpy.read_h5ad(adata_path)
-        adata.uns["citation"] = citation
-        adata.write(adata_path, compression="gzip")
+        with h5py.File(adata_path, "r+") as f:
+            f["uns"].create_dataset("citation", data=citation)
 
     def get_spatial_metadata(self, spatial_dict: Dict[str, Any]) -> Optional[SpatialMetadata]:
         """
@@ -128,28 +109,17 @@ class ProcessValidate(ProcessingLogic):
     def extract_metadata(self, filename) -> DatasetMetadata:
         """Pull metadata out of the AnnData file to insert into the dataset table."""
 
-        adata = scanpy.read_h5ad(filename, backed="r")
+        adata = read_h5ad(filename)
 
-        # TODO: Concern with respect to previous use of raising error when there is no raw layer.
-        # This new way defaults to adata.X.
         layer_for_mean_genes_per_cell = adata.raw.X if adata.raw is not None and adata.raw.X is not None else adata.X
 
         # For mean_genes_per_cell, we only want the columns (genes) that have a feature_biotype of `gene`,
         # as opposed to `spike-in`
         filter_gene_vars = numpy.where(adata.var.feature_biotype == "gene")[0]
-
-        # Calling np.count_nonzero on and h5py.Dataset appears to read the entire thing
-        # into memory, so we need to chunk it to be safe.
-        stride = 50000
-        numerator, denominator = 0, 0
-        for bounds in zip(
-            range(0, layer_for_mean_genes_per_cell.shape[0], stride),
-            range(stride, layer_for_mean_genes_per_cell.shape[0] + stride, stride),
-            strict=False,
-        ):
-            chunk = layer_for_mean_genes_per_cell[bounds[0] : bounds[1], :][:, filter_gene_vars]
-            numerator += chunk.nnz if hasattr(chunk, "nnz") else numpy.count_nonzero(chunk)
-            denominator += chunk.shape[0]
+        filtered_matrix = layer_for_mean_genes_per_cell[:, filter_gene_vars]
+        nnz_gene_exp = self.schema_validator.count_matrix_nonzero(filtered_matrix)
+        total_cells = layer_for_mean_genes_per_cell.shape[0]
+        mean_genes_per_cell = nnz_gene_exp / total_cells
 
         def _get_term_pairs(base_term) -> List[OntologyTermId]:
             base_term_id = base_term + "_ontology_term_id"
@@ -196,7 +166,7 @@ class ProcessValidate(ProcessingLogic):
             development_stage=_get_term_pairs("development_stage"),
             cell_count=adata.shape[0],
             primary_cell_count=int(adata.obs["is_primary_data"].astype("int").sum()),
-            mean_genes_per_cell=numerator / denominator,
+            mean_genes_per_cell=mean_genes_per_cell,
             is_primary_data=_get_is_primary_data(),
             cell_type=_get_term_pairs("cell_type"),
             x_approximate_distribution=_get_x_approximate_distribution(),
@@ -232,31 +202,31 @@ class ProcessValidate(ProcessingLogic):
         :param datasets_bucket:
         :return:
         """
+        self.update_processing_status(dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID)
         # Download the original dataset from S3
         key_prefix = self.get_key_prefix(dataset_version_id.id)
         original_h5ad_artifact_file_name = CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME
         object_key = f"{key_prefix}/{original_h5ad_artifact_file_name}"
         self.download_from_s3(artifact_bucket, object_key, original_h5ad_artifact_file_name)
 
-        # Validate and label the dataset
-        file_with_labels, can_convert_to_seurat = self.validate_h5ad_file_and_add_labels(
-            collection_version_id, dataset_version_id, original_h5ad_artifact_file_name
-        )
+        # label the dataset
+        try:
+            file_with_labels = self.add_labels(
+                collection_version_id, dataset_version_id, original_h5ad_artifact_file_name
+            )
+        except Exception as e:
+            self.logger.exception(f"An unexpected error occurred while adding labels to the data set: {e}")
+            raise AddLabelsFailed() from e
         # Process metadata
         metadata = self.extract_metadata(file_with_labels)
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
-
-        if not can_convert_to_seurat:
-            self.update_processing_status(dataset_version_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
-            self.logger.info(f"Skipping Seurat conversion for dataset {dataset_version_id}")
-
         # Upload the labeled dataset to the artifact bucket
         self.create_artifact(
             file_with_labels,
             DatasetArtifactType.H5AD,
             key_prefix,
             dataset_version_id,
-            artifact_bucket,
             DatasetStatusKey.H5AD,
+            artifact_bucket,
             datasets_bucket=datasets_bucket,
         )
