@@ -71,3 +71,4 @@ EOF
 )
 fi
 
+make db/connect ARGS="${DB_UPDATE_CMDS}"
