@@ -43,11 +43,11 @@ resource aws_batch_job_definition schema_migrations {
     resourceRequirements = [
         {
           type= "VCPU",
-          Value="1"
+          Value="2"
         },
         {
           Type="MEMORY",
-          Value = "8000"
+          Value = "16000"
         }
     ]
     logConfiguration= {
@@ -465,7 +465,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
           "Key.$": "$.key_name"
         }
       },
-      "MaxConcurrency": 30,
+      "MaxConcurrency": 10,
       "Next": "report",
       "Catch": [
         {
