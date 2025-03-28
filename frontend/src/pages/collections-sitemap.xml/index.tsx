@@ -7,6 +7,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     "https://api.cellxgene.cziscience.com/dp/v1/collections/index"
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const collections: any[] = await response.json();
 
   const fields: ISitemapField[] = collections.map((collection) => ({
