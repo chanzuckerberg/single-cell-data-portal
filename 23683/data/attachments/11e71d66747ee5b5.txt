@@ -1,2 +1,0 @@
-INFO     backend.layers.business.business:business.py:1442 {'message': 'Restoring previous dataset version', 'dataset_id': '3c147fa4-7516-4626-9d75-2c297ea132e7', 'replace_version_id': '5441c59c-6b41-4d24-a346-0d34e2a53131', 'restored_version_id': '58ac434c-d61d-4b52-849b-fd268f319530'}
-INFO     backend.layers.business.business:business.py:1442 {'message': 'Restoring previous dataset version', 'dataset_id': '94edd7d4-058f-47e3-bc4e-862d63d84526', 'replace_version_id': 'bcf3448a-de45-477a-8c22-167c5fc38901', 'restored_version_id': 'e815b093-674f-4752-9f79-a2ba58c95130'}

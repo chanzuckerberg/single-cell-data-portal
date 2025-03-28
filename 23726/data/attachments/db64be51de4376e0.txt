@@ -1,0 +1,16 @@
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': f33130eb-7774-4dbc-8747-eeb98a586af8, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': f33130eb-7774-4dbc-8747-eeb98a586af8, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [e73d2ac7-f2da-4bd3-a5a9-c99640fc21b2/atac_fragment] to s3://datasets/17472237-6142-4788-8928-6734f5a0422b-fragment.tsv.bgz
+INFO     processing:process_validate_atac.py:67 Updated database with atac_fragment.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [e73d2ac7-f2da-4bd3-a5a9-c99640fc21b2/atac_index] to s3://datasets/17472237-6142-4788-8928-6734f5a0422b-fragment.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:67 Updated database with atac_index.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [c42f8ec2-5ac4-4ccb-a9ec-1e2a3920a7ee/atac_fragment] to s3://datasets/04c72d39-ab6a-462e-86aa-297309ae9237-fragment.tsv.bgz
+INFO     processing:process_validate_atac.py:67 Updated database with atac_fragment.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [c42f8ec2-5ac4-4ccb-a9ec-1e2a3920a7ee/atac_index] to s3://datasets/04c72d39-ab6a-462e-86aa-297309ae9237-fragment.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:67 Updated database with atac_index.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:216 Processing completed successfully
