@@ -5,64 +5,11 @@ data aws_caller_identity current {}
 locals {
   name = "schema-migration"
   job_definition_arn = "arn:aws:batch:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:job-definition/dp-${var.deployment_stage}-${var.custom_stack_name}-schema-migration"
-  swap_job_definition_arn = "${local.job_definition_arn}-swap"
 }
 
 resource aws_cloudwatch_log_group batch_cloud_watch_logs_group {
   retention_in_days = 365
   name              = "/dp/${var.deployment_stage}/${var.custom_stack_name}/${local.name}-batch"
-}
-
-resource aws_batch_job_definition schema_migrations_swap {
-  type = "container"
-  name = "dp-${var.deployment_stage}-${var.custom_stack_name}-${local.name}-swap"
-  container_properties = jsonencode({
-    jobRoleArn= var.batch_role_arn,
-    image= var.image,
-    environment= [
-      {
-        name= "ARTIFACT_BUCKET",
-        value= var.artifact_bucket
-      },
-      {
-        name= "DEPLOYMENT_STAGE",
-        value= var.deployment_stage
-      },
-      {
-        name= "AWS_DEFAULT_REGION",
-        value= data.aws_region.current.name
-      },
-      {
-        name= "REMOTE_DEV_PREFIX",
-        value= var.remote_dev_prefix
-      },
-      {
-        name= "DATASETS_BUCKET",
-        value= var.datasets_bucket
-      },
-    ],
-    resourceRequirements = [
-      {
-        type= "VCPU",
-        Value="32"
-      },
-      {
-        Type="MEMORY",
-        Value = "256000"
-      }
-    ]
-    linuxParameters= {
-     maxSwap= 0,
-     swappiness= 60
-    },
-    logConfiguration= {
-      logDriver= "awslogs",
-      options= {
-        awslogs-group= aws_cloudwatch_log_group.batch_cloud_watch_logs_group.id,
-        awslogs-region= data.aws_region.current.name
-      }
-    }
-  })
 }
 
 resource aws_batch_job_definition schema_migrations {
@@ -94,14 +41,14 @@ resource aws_batch_job_definition schema_migrations {
       },
     ],
     resourceRequirements = [
-                  {
-              type= "VCPU",
-              Value="2"
-            },
-            {
-              Type="MEMORY",
-              Value = "2048"
-            }
+        {
+          type= "VCPU",
+          Value="2"
+        },
+        {
+          Type="MEMORY",
+          Value = "16000"
+        }
     ]
     logConfiguration= {
       logDriver= "awslogs",
@@ -385,7 +332,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "Type": "Task",
                   "Resource": "arn:aws:states:::batch:submitJob.sync",
                   "Parameters": {
-                    "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations_swap.arn}",
+                    "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
                     "JobName": "dataset_migration",
                     "JobQueue": "${var.job_queue_arn}",
                     "Timeout": {
@@ -458,7 +405,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                     "Name.$": "$.result.sfn_name",
                     "Input": {
                       "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id",
-                      "url.$": "$.result.uri",
+                      "manifest.$": "$.result.manifest",
                       "dataset_version_id.$": "$.result.dataset_version_id",
                       "collection_version_id.$": "$.result.collection_version_id",
                       "job_queue": "${var.job_queue_arn}"

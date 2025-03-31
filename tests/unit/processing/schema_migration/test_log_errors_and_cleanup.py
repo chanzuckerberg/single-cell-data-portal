@@ -57,7 +57,7 @@ class TestLogErrorsAndCleanup:
         errors = schema_migrate.log_errors_and_cleanup(collection_version.version_id.id)
         assert errors == []
         schema_migrate.s3_provider.delete_files.assert_any_call(
-            "artifact-bucket", ["schema_migration/test-execution-arn/log_errors_and_cleanup/collection_id.json"]
+            "artifact-bucket", ["schema_migration/test-execution-arn/log_errors_and_cleanup/collection_version_id.json"]
         )
         schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket",
@@ -110,7 +110,7 @@ class TestLogErrorsAndCleanup:
         assert schema_migrate.business_logic.restore_previous_dataset_version.call_count == 1
         assert schema_migrate.business_logic.delete_dataset_versions.call_count == 1
         schema_migrate.s3_provider.delete_files.assert_any_call(
-            "artifact-bucket", ["schema_migration/test-execution-arn/log_errors_and_cleanup/collection_id.json"]
+            "artifact-bucket", ["schema_migration/test-execution-arn/log_errors_and_cleanup/collection_version_id.json"]
         )
         schema_migrate.s3_provider.delete_files.assert_any_call(
             "artifact-bucket",
@@ -133,6 +133,6 @@ class TestLogErrorsAndCleanup:
         assert errors == []
         schema_migrate.check_dataset_is_latest_schema_version.assert_not_called()
         schema_migrate.s3_provider.delete_files.assert_any_call(
-            "artifact-bucket", ["schema_migration/test-execution-arn/log_errors_and_cleanup/collection_id.json"]
+            "artifact-bucket", ["schema_migration/test-execution-arn/log_errors_and_cleanup/collection_version_id.json"]
         )
         schema_migrate.s3_provider.delete_files.assert_any_call("artifact-bucket", [])
