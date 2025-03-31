@@ -16,6 +16,8 @@ import {
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
 import { MENU_ITEM_COLOR } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/types";
 import IconSort from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/components/IconSort";
+import { useState } from "react";
+// import { Edit } from "@blueprintjs/icons/lib/esm/generated/16px/paths";
 
 interface MenuProps extends Partial<Omit<SDSMenuProps, "onClose">> {
   onClose: () => void;
@@ -68,28 +70,43 @@ const Menu = ({
   menuProps,
   reorder,
 }: Props) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  console.log("menuProps", menuProps);
+  console.log("isModalOpen", isModalOpen);
   return (
-    <StyledMenu {...MENU_PROPS} {...menuProps} open={Boolean(menuProps.open)}>
-      <CreateCollection id={collection.id} Button={EditButton} />
-      <StyledMenuItem
-        color={MENU_ITEM_COLOR.GRAY} // Targets menu item custom icon color.
-        data-testid="dropdown-reorder-datasets"
-        disabled={reorder.disabled}
-        icon={<IconSort />}
-        onClick={() => {
-          menuProps.onClose();
-          reorder.startReorder();
-        }}
-      >
-        Reorder Datasets
-      </StyledMenuItem>
-      <DeleteCollection
-        Button={DeleteButton}
-        handleDeleteCollection={handleDeleteCollection}
-        isDeleting={isDeleting}
-        isRevision={isRevision}
+    <>
+      <CreateCollection
+        id={collection.id}
+        isOpen={isModalOpen}
+        setIsOpen={setIsModalOpen}
       />
-    </StyledMenu>
+      <StyledMenu {...MENU_PROPS} {...menuProps} open={Boolean(menuProps.open)}>
+        <EditButton
+          onClick={() => {
+            setIsModalOpen(true); // open modal
+            menuProps.onClose(); // close menu
+          }}
+        />
+        <StyledMenuItem
+          color={MENU_ITEM_COLOR.GRAY} // Targets menu item custom icon color.
+          data-testid="dropdown-reorder-datasets"
+          disabled={reorder.disabled}
+          icon={<IconSort />}
+          onClick={() => {
+            menuProps.onClose();
+            reorder.startReorder();
+          }}
+        >
+          Reorder Datasets
+        </StyledMenuItem>
+        <DeleteCollection
+          Button={DeleteButton}
+          handleDeleteCollection={handleDeleteCollection}
+          isDeleting={isDeleting}
+          isRevision={isRevision}
+        />
+      </StyledMenu>
+    </>
   );
 };
 
