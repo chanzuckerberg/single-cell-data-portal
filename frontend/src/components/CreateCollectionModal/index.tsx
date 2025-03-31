@@ -49,7 +49,6 @@ const CreateCollection: FC<{
 
   const shouldModuleOpen = param?.toLowerCase() === BOOLEAN.TRUE;
 
-  // const [isOpen, setIsOpen] = useState(shouldModuleOpen);
   const { data: userInfo, isLoading } = useUserInfo(isCurator);
 
   if (!isCurator || isLoading) {
@@ -70,12 +69,10 @@ const CreateCollection: FC<{
         title: "Create an account or sign-in to get started",
       };
 
-  const OpenDialogButton = CreateCollectionButton;
-
   return (
     <>
       {isCreate && (
-        <OpenDialogButton
+        <CreateCollectionButton
           onMouseOver={() => config.content.preload()}
           onClick={toggleOpen}
           {...{ className }}

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Collection } from "src/common/entities";
 import DeleteCollection from "src/components/Collections/components/DeleteCollection";
 import CreateCollection from "src/components/CreateCollectionModal";
@@ -16,8 +17,6 @@ import {
 import { Reorder } from "src/views/Collection/hooks/useReorder/common/entities";
 import { MENU_ITEM_COLOR } from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/types";
 import IconSort from "src/views/Collection/components/CollectionActions/components/MoreDropdown/components/Menu/components/IconSort";
-import { useState } from "react";
-// import { Edit } from "@blueprintjs/icons/lib/esm/generated/16px/paths";
 
 interface MenuProps extends Partial<Omit<SDSMenuProps, "onClose">> {
   onClose: () => void;
