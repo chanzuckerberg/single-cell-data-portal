@@ -1,7 +1,7 @@
 anndata==0.11.2
 awscli
 boto3>=1.11.17
-git+https://github.com/chanzuckerberg/single-cell-curation/@a9c4a2eb320d309e030c15c7caca83070a778e11#subdirectory=cellxgene_schema_cli
+git+https://github.com/chanzuckerberg/single-cell-curation/@2e413c4624605ad148b516bcdbe21f626ff7b3d7#subdirectory=cellxgene_schema_cli
 dask==2024.12.0
 dataclasses-json
 ddtrace==2.1.4
