@@ -9,9 +9,9 @@ import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { removeParams } from "src/common/utils/removeParams";
-// import { StyledButton } from "./style";
+import { StyledButton } from "./style";
 import { useRouter } from "next/router";
-// import { ButtonProps } from "@czi-sds/components";
+import { ButtonProps } from "@czi-sds/components";
 
 const AsyncContent = loadable(
   () =>
@@ -25,14 +25,14 @@ const AsyncCTA = loadable(
     /*webpackChunkName: 'CreateCollectionModalCTA' */ import("./components/CTA")
 );
 
-// const CreateCollectionButton = (
-//   // Omit is a temporary workaround until SDS fixes button typing
-//   props: Omit<ButtonProps, "sdsStyle" | "sdsType">
-// ) => (
-//   <StyledButton sdsStyle="square" sdsType="primary" {...props}>
-//     Create Collection
-//   </StyledButton>
-// );
+const CreateCollectionButton = (
+  // Omit is a temporary workaround until SDS fixes button typing
+  props: Omit<ButtonProps, "sdsStyle" | "sdsType">
+) => (
+  <StyledButton sdsStyle="square" sdsType="primary" {...props}>
+    Create Collection
+  </StyledButton>
+);
 
 const CreateCollection: FC<{
   className?: string;
@@ -40,7 +40,7 @@ const CreateCollection: FC<{
   isOpen: boolean;
   setIsOpen: (v: boolean) => void;
   Button?: React.ElementType;
-}> = ({ id, isOpen, setIsOpen }) => {
+}> = ({ className, id, isOpen, setIsOpen, Button }) => {
   const router = useRouter();
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -69,11 +69,15 @@ const CreateCollection: FC<{
         isCloseButtonShown: true,
         title: "Create an account or sign-in to get started",
       };
-
-  // const OpenDialogButton = Button || CreateCollectionButton;
+  const OpenDialogButton = Button || CreateCollectionButton;
 
   return (
     <>
+      <OpenDialogButton
+        onMouseOver={() => config.content.preload()}
+        onClick={toggleOpen}
+        {...{ className }}
+      />
       <Dialog
         isCloseButtonShown={config.isCloseButtonShown}
         title={config.title}

@@ -71,8 +71,6 @@ const Menu = ({
   reorder,
 }: Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  console.log("menuProps", menuProps);
-  console.log("isModalOpen", isModalOpen);
   return (
     <>
       <CreateCollection
