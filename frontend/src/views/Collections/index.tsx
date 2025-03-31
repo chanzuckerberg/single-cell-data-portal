@@ -373,6 +373,7 @@ export default function Collections(): JSX.Element {
                 <CreateCollection
                   isOpen={isModalOpen}
                   setIsOpen={setIsModalOpen}
+                  isCreate={true}
                 />
               )}
               {!rows || rows.length === 0 ? (

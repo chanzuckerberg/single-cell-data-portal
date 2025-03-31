@@ -39,8 +39,8 @@ const CreateCollection: FC<{
   id?: Collection["id"];
   isOpen: boolean;
   setIsOpen: (v: boolean) => void;
-  Button?: React.ElementType;
-}> = ({ className, id, isOpen, setIsOpen, Button }) => {
+  isCreate?: boolean;
+}> = ({ className, id, isOpen, setIsOpen, isCreate }) => {
   const router = useRouter();
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -69,15 +69,18 @@ const CreateCollection: FC<{
         isCloseButtonShown: true,
         title: "Create an account or sign-in to get started",
       };
-  const OpenDialogButton = Button || CreateCollectionButton;
+
+  const OpenDialogButton = CreateCollectionButton;
 
   return (
     <>
-      <OpenDialogButton
-        onMouseOver={() => config.content.preload()}
-        onClick={toggleOpen}
-        {...{ className }}
-      />
+      {isCreate && (
+        <OpenDialogButton
+          onMouseOver={() => config.content.preload()}
+          onClick={toggleOpen}
+          {...{ className }}
+        />
+      )}
       <Dialog
         isCloseButtonShown={config.isCloseButtonShown}
         title={config.title}
