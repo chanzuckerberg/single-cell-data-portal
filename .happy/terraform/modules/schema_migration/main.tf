@@ -43,11 +43,11 @@ resource aws_batch_job_definition schema_migrations {
     resourceRequirements = [
         {
           type= "VCPU",
-          Value="2"
+          Value="1"
         },
         {
           Type="MEMORY",
-          Value = "16000"
+          Value = "8000"
         }
     ]
     logConfiguration= {
