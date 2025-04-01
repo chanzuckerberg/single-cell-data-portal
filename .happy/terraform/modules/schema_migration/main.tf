@@ -43,6 +43,54 @@ resource aws_batch_job_definition schema_migrations {
     resourceRequirements = [
         {
           type= "VCPU",
+          Value="1"
+        },
+        {
+          Type="MEMORY",
+          Value = "8000"
+        }
+    ]
+    logConfiguration= {
+      logDriver= "awslogs",
+      options= {
+        awslogs-group= aws_cloudwatch_log_group.batch_cloud_watch_logs_group.id,
+        awslogs-region= data.aws_region.current.name
+      }
+    }
+  })
+}
+
+resource aws_batch_job_definition dataset_migrations {
+  type = "container"
+  name = "dp-${var.deployment_stage}-${var.custom_stack_name}-dataset_migrations-${local.name}"
+  container_properties = jsonencode({
+    jobRoleArn= var.batch_role_arn,
+    image= var.image,
+    environment= [
+      {
+        name= "ARTIFACT_BUCKET",
+        value= var.artifact_bucket
+      },
+      {
+        name= "DEPLOYMENT_STAGE",
+        value= var.deployment_stage
+      },
+      {
+        name= "AWS_DEFAULT_REGION",
+        value= data.aws_region.current.name
+      },
+      {
+        name= "REMOTE_DEV_PREFIX",
+        value= var.remote_dev_prefix
+      },
+      {
+        name= "DATASETS_BUCKET",
+        value= var.datasets_bucket
+      },
+    ],
+    resourceRequirements = [
+        {
+          type= "VCPU",
           Value="2"
         },
         {
@@ -332,7 +380,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "Type": "Task",
                   "Resource": "arn:aws:states:::batch:submitJob.sync",
                   "Parameters": {
-                    "JobDefinition": "${resource.aws_batch_job_definition.schema_migrations.arn}",
+                    "JobDefinition": "${resource.aws_batch_job_definition.dataset_migrations.arn}",
                     "JobName": "dataset_migration",
                     "JobQueue": "${var.job_queue_arn}",
                     "Timeout": {
