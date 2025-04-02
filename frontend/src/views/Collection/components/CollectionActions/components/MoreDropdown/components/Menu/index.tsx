@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Collection } from "src/common/entities";
 import DeleteCollection from "src/components/Collections/components/DeleteCollection";
 import CreateCollection from "src/components/CreateCollectionModal";
@@ -68,28 +69,41 @@ const Menu = ({
   menuProps,
   reorder,
 }: Props) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   return (
-    <StyledMenu {...MENU_PROPS} {...menuProps} open={Boolean(menuProps.open)}>
-      <CreateCollection id={collection.id} Button={EditButton} />
-      <StyledMenuItem
-        color={MENU_ITEM_COLOR.GRAY} // Targets menu item custom icon color.
-        data-testid="dropdown-reorder-datasets"
-        disabled={reorder.disabled}
-        icon={<IconSort />}
-        onClick={() => {
-          menuProps.onClose();
-          reorder.startReorder();
-        }}
-      >
-        Reorder Datasets
-      </StyledMenuItem>
-      <DeleteCollection
-        Button={DeleteButton}
-        handleDeleteCollection={handleDeleteCollection}
-        isDeleting={isDeleting}
-        isRevision={isRevision}
+    <>
+      <CreateCollection
+        id={collection.id}
+        isOpen={isModalOpen}
+        setIsOpen={setIsModalOpen}
       />
-    </StyledMenu>
+      <StyledMenu {...MENU_PROPS} {...menuProps} open={Boolean(menuProps.open)}>
+        <EditButton
+          onClick={() => {
+            setIsModalOpen(true); // open modal
+            menuProps.onClose(); // close menu
+          }}
+        />
+        <StyledMenuItem
+          color={MENU_ITEM_COLOR.GRAY} // Targets menu item custom icon color.
+          data-testid="dropdown-reorder-datasets"
+          disabled={reorder.disabled}
+          icon={<IconSort />}
+          onClick={() => {
+            menuProps.onClose();
+            reorder.startReorder();
+          }}
+        >
+          Reorder Datasets
+        </StyledMenuItem>
+        <DeleteCollection
+          Button={DeleteButton}
+          handleDeleteCollection={handleDeleteCollection}
+          isDeleting={isDeleting}
+          isRevision={isRevision}
+        />
+      </StyledMenu>
+    </>
   );
 };
 
