@@ -1,7 +1,7 @@
 import { Dialog } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import * as React from "react";
-import { FC, useState } from "react";
+import { FC } from "react";
 import { QUERY_PARAMETERS } from "src/common/constants/queryParameters";
 import { Collection } from "src/common/entities";
 import { get } from "src/common/featureFlags";
@@ -37,8 +37,10 @@ const CreateCollectionButton = (
 const CreateCollection: FC<{
   className?: string;
   id?: Collection["id"];
-  Button?: React.ElementType;
-}> = ({ className, id, Button }) => {
+  isOpen: boolean;
+  setIsOpen: (v: boolean) => void;
+  isCreate?: boolean;
+}> = ({ className, id, isOpen, setIsOpen, isCreate }) => {
   const router = useRouter();
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -47,7 +49,6 @@ const CreateCollection: FC<{
 
   const shouldModuleOpen = param?.toLowerCase() === BOOLEAN.TRUE;
 
-  const [isOpen, setIsOpen] = useState(shouldModuleOpen);
   const { data: userInfo, isLoading } = useUserInfo(isCurator);
 
   if (!isCurator || isLoading) {
@@ -67,15 +68,16 @@ const CreateCollection: FC<{
         isCloseButtonShown: true,
         title: "Create an account or sign-in to get started",
       };
-  const OpenDialogButton = Button || CreateCollectionButton;
 
   return (
     <>
-      <OpenDialogButton
-        onMouseOver={() => config.content.preload()}
-        onClick={toggleOpen}
-        {...{ className }}
-      />
+      {isCreate && (
+        <CreateCollectionButton
+          onMouseOver={() => config.content.preload()}
+          onClick={toggleOpen}
+          {...{ className }}
+        />
+      )}
       <Dialog
         isCloseButtonShown={config.isCloseButtonShown}
         title={config.title}
