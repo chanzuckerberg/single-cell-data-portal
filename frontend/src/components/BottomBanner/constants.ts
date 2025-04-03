@@ -18,6 +18,5 @@ export const NEWSLETTER_SIGNUP_BANNER_SUBSCRIBE_TEXT =
   "to our newsletter to receive updates about new features.";
 export const FAILED_EMAIL_VALIDATION_STRING =
   "Please provide a valid email address.";
-export const HIDDEN_NEWSLETTER_SUCCESS_MESSAGE =
-  "Thank you for joining our newsletter.";
+export const HIDDEN_NEWSLETTER_SUCCESS_CLASS = "submitted-message";
 export const HUBSPOT_URL = "https://js.hsforms.net/forms/v2.js";
