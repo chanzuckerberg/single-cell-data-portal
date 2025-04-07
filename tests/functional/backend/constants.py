@@ -16,8 +16,18 @@ AUDIENCE = {
 }
 
 DATASET_URI = (
-    "https://www.dropbox.com/scl/fi/y50umqlcrbz21a6jgu99z/5_0_0_example_valid.h5ad?rlkey"
-    "=s7p6ybyx082hswix26hbl11pm&dl=0"
+    "https://www.dropbox.com/scl/fi/8yizrdfcfl02dtk3ke4sg/example_5_3_valid.h5ad?rlkey"
+    "=i1qc5qai9w2o9l1fithyatxdf&st=uxgudiwz&dl=0"
 )
 
-VISIUM_DATASET_URI = "https://www.dropbox.com/scl/fi/lmhue0va6ihk50ivp26da/visium_small.h5ad?rlkey=n0fo4dyi1ah7ckg9kgzwlhm8s&st=59m7g97u&dl=0"
+VISIUM_DATASET_URI = (
+    "https://www.dropbox.com/scl/fi/3y22olsc70of8rbb1es77/visium_small.h5ad?rlkey"
+    "=cgwd59ouk340zlqh6fcnthizz&st=u2nyo3xp&dl=0"
+)
+
+DATASET_MANIFEST = {"anndata": DATASET_URI}
+VISIUM_DATASET_MANIFEST = {"anndata": VISIUM_DATASET_URI}
+ATAC_SEQ_MANIFEST = {
+    "anndata": "https://www.dropbox.com/scl/fi/rth5ol8dyn3qypmnr3w79/atac.h5ad?rlkey=lpor3wj4he2n4dkp6pq3v4c6t&st=dni608bw&dl=0",
+    "atac_fragment": "https://www.dropbox.com/scl/fi/p4kmriyki1xyvcc9bvwxc/fragments_sorted.tsv.gz?rlkey=hydxliidfy4yneaan2rrw2arp&dl=0",
+}
