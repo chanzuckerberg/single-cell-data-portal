@@ -1,4 +1,4 @@
-anndata
+anndata # uses the version supplied by cellxgene-schema
 awscli
 boto3>=1.11.17
 cellxgene-schema
