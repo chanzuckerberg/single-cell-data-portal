@@ -52,15 +52,20 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: npm-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            npm-
+          key: npm-cache${{ hashFiles('frontend/package-lock.json') }}
 
       - name: Check frontend
         run: |
           cd frontend
+
+          echo "Configuring npm to reduce server load"
+          npm config set maxsockets 3
+          npm config set fetch-retries 2
+          npm config set fetch-retry-mintimeout 30000
+          npm config set fetch-retry-maxtimeout 60000
+
           echo "Starting npm ci at $(date)"
-          npm ci --verbose
+          npm ci --prefer-offline --no-progress --verbose
           echo "Finished npm ci at $(date)"
 
           echo "Copying local config"
