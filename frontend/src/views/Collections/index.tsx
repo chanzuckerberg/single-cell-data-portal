@@ -1,5 +1,5 @@
 import Head from "next/head";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
@@ -345,6 +345,7 @@ export default function Collections(): JSX.Element {
     KEYS.SIDE_BAR_COLLECTIONS,
     true
   );
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <>
@@ -368,7 +369,13 @@ export default function Collections(): JSX.Element {
               />
             </SideBar>
             <View>
-              {mode === VIEW_MODE.CURATOR && <CreateCollection />}
+              {mode === VIEW_MODE.CURATOR && (
+                <CreateCollection
+                  isOpen={isModalOpen}
+                  setIsOpen={setIsModalOpen}
+                  isCreate={true}
+                />
+              )}
               {!rows || rows.length === 0 ? (
                 <GridHero>
                   <h3>No Results</h3>

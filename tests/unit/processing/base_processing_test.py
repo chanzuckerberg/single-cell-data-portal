@@ -13,4 +13,5 @@ class BaseProcessingTest(BaseTest):
         self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "local.h5ad"))
         self.s3_provider = MockS3Provider()
         self.schema_validator = Mock(spec=SchemaValidatorProviderInterface)
-        self.schema_validator.validate_and_save_labels = Mock(return_value=(True, [], True))
+        self.schema_validator.validate_anndata = Mock(return_value=(True, [], True))
+        self.schema_validator.validate_atac = Mock(return_value=([], "fragment.tsv.bgz.tbi", "fragment.tsv.bgz"))
