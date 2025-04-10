@@ -43,34 +43,29 @@ jobs:
       - name: Check backend
         uses: pre-commit/action@v3.0.0
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: frontend/.nvmrc
-
-      - name: Cache node_modules
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+    
+      - name: Cache Docker layers
         uses: actions/cache@v4
         with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('frontend/package-lock.json') }}
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-frontend-buildx-${{ hashFiles('frontend/package-lock.json') }}
           restore-keys: |
-            npm-
+            ${{ runner.os }}-frontend-buildx-
+      
+      - name: Build frontend image (cached)
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: false
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          tags: frontend:ci
 
-      - name: Check frontend
-        timeout-minutes: 20
-        run: |
-          cd frontend
-          echo "Starting npm ci at $(date)"
-          npm config set registry https://registry.npmjs.org
-          npm ci --no-audit --no-optional --prefer-offline
-          echo "Finished npm ci at $(date)"
-
-          echo "Copying local config"
-          [ -f src/configs/local.js ] && cp src/configs/local.js src/configs/configs.js
-
-          echo "Running lint at $(date)"
-          npm run lint
-          echo "Finished lint at $(date)"
+      - name: Run frontend lint inside container
+        run: docker run --rm frontend:ci npm run lint
 
       - uses: 8398a7/action-slack@v3
         with:
