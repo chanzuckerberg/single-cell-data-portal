@@ -1,0 +1,1 @@
+INFO     backend.layers.business.business:business.py:1478 {'message': 'Restoring previous collection version', 'collection_id': 'e75af8d6-70a4-4fe3-a102-8d11a6ead2d6', 'replace_version_id': '241a2997-e63d-4aad-b477-05aedfe6db70', 'restored_version_id': 'beae8f4f-bead-42b3-bfa2-c5e351408c6c'}
