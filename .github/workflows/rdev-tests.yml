@@ -106,6 +106,12 @@ jobs:
           SHARD: ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
         run: DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev-ci
 
+      - name: Find where the blob-report is written
+        if: always()
+        run: |
+          echo "Searching for blob-report directories..."
+          find /home/runner/work/single-cell-data-portal -type d -name "blob-report" | tee blob_report_paths.txt
+
       - name: Upload FE test results as an artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -159,7 +165,7 @@ jobs:
           fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: "20.10.0"
       - name: Install dependencies
         run: npm ci
 
