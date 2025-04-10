@@ -236,4 +236,4 @@ jobs:
           name: logged-in-test-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
           retention-days: 30
-          if-no-files-found: error
+          if-no-files-found: warn
