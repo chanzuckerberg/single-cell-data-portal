@@ -24,6 +24,7 @@ RUN mkdir -p src/components/common/Filter/descendant_mappings
 
 COPY Makefile ./
 COPY package*.json ./
+RUN npm config set registry https://registry.npmjs.org
 RUN npm ci --verbose --no-optional && npm cache clean --force
 
 ENV PATH /opt/node_app/node_modules/.bin:$PATH
