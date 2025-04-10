@@ -57,6 +57,7 @@ const Content: FC<Props> = ({
     );
   }, [selectedFormats]);
 
+  // Set selected formats based on available formats and ATAC index
   useEffect(() => {
     const isATACIncomplete = (format: DATASET_ASSET_FORMAT) => {
       if (format !== DATASET_ASSET_FORMAT.ATAC_INDEX) return false;
@@ -66,12 +67,18 @@ const Content: FC<Props> = ({
       );
       return !(hasIndex && hasFragment);
     };
-
-    const selectedFormats = POSSIBLE_DOWNLOAD_FORMATS.filter(
+    const allFormats = POSSIBLE_DOWNLOAD_FORMATS.filter(
       ({ format }) => availableFormats.has(format) && !isATACIncomplete(format)
     ).map(({ format }) => format);
 
-    setSelectedFormats(selectedFormats);
+    const selectedFormats: DATASET_ASSET_FORMAT[] = [];
+
+    // Default to just H5AD selected if available
+    allFormats.includes(DATASET_ASSET_FORMAT.H5AD)
+      ? selectedFormats.push(DATASET_ASSET_FORMAT.H5AD)
+      : selectedFormats.push(allFormats[0]);
+
+    setSelectedFormats(allFormats);
   }, [availableFormats, dataAssets]);
 
   useEffect(() => {
@@ -143,6 +150,7 @@ const Content: FC<Props> = ({
     }
     handleAnalytics(EVENTS.DOWNLOAD_DATA_FORMAT_CLICKED, format);
   };
+
   return (
     <>
       <DialogTitle title="Download Data" />
