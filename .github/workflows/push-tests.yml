@@ -23,7 +23,7 @@ permissions:
 jobs:
   lint:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: ubuntu-22.04
+    runs-on: x64-xl-privileged
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -39,20 +39,47 @@ jobs:
         with:
           fetch-depth: 2
       - uses: actions/setup-python@v5
-
-      - name: check backend
-        uses: pre-commit/action@v3.0.0
-      - uses: actions/setup-node@v4
         with:
-          node-version-file: "frontend/.nvmrc"
-          cache: "npm"
-          cache-dependency-path: "frontend/package-lock.json"
-      - name: check frontend
+          python-version: "3.11"
+
+      - name: Check backend
+        uses: pre-commit/action@v3.0.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: frontend/.nvmrc
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: node-modules-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            node-modules-${{ runner.os }}-
+
+      - name: Check frontend
         run: |
           cd frontend
-          npm ci
-          cp src/configs/local.js src/configs/configs.js
+
+          echo "Configuring npm to reduce server load"
+          npm config set maxsockets 3
+          npm config set fetch-retries 2
+          npm config set fetch-retry-mintimeout 30000
+          npm config set fetch-retry-maxtimeout 60000
+
+          echo "Starting npm ci at $(date)"
+          npm ci --prefer-offline --no-progress
+          echo "Finished npm ci at $(date)"
+
+          echo "Copying local config"
+          [ -f src/configs/local.js ] && cp src/configs/local.js src/configs/configs.js
+
+          echo "Running lint at $(date)"
           npm run lint
+          echo "Finished lint at $(date)"
+        timeout-minutes: 10
+
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}

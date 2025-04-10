@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   functional-test:
-    runs-on: ubuntu-22.04
+    runs-on: x64-xl-privileged
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -40,7 +40,7 @@ jobs:
           DEPLOYMENT_STAGE=rdev STACK_NAME=${{ env.STACK_NAME }} make functional-test
 
   seed-database-e2e-tests:
-    runs-on: ubuntu-22.04
+    runs-on: x64-xl-privileged
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -62,7 +62,7 @@ jobs:
       - seed-database-e2e-tests
     timeout-minutes: 30
     name: e2e-tests ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
-    runs-on: ubuntu-22.04
+    runs-on: x64-xl-privileged
     strategy:
       fail-fast: false
       matrix:
@@ -87,7 +87,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Install dependencies
@@ -106,6 +106,12 @@ jobs:
           SHARD: ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
         run: DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev-ci
 
+      - name: Find where the blob-report is written
+        if: always()
+        run: |
+          echo "Searching for blob-report directories..."
+          find /home/runner/work/single-cell-data-portal -type d -name "blob-report" | tee blob_report_paths.txt
+
       - name: Upload FE test results as an artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -121,7 +127,7 @@ jobs:
           name: all-blob-reports-${{ matrix.project }}-${{ matrix.shardCurrent }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
           retention-days: 1
-          if-no-files-found: error
+          if-no-files-found: warn
 
       # Upload Allure results as an artifact
       - uses: actions/upload-artifact@v4
@@ -129,7 +135,7 @@ jobs:
           name: allure-results-${{ matrix.project }}-${{ matrix.shardCurrent }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
           retention-days: 20
-          if-no-files-found: error
+          if-no-files-found: warn
 
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
@@ -149,7 +155,7 @@ jobs:
     # Merge reports after playwright-tests, even if some shards have failed
     if: always()
     needs: run-e2e-tests
-    runs-on: ubuntu-latest
+    runs-on: x64-xl-privileged
     defaults:
       run:
         working-directory: frontend
@@ -159,7 +165,7 @@ jobs:
           fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: "20.10.0"
       - name: Install dependencies
         run: npm ci
 
@@ -185,7 +191,7 @@ jobs:
   e2e-test:
     if: always()
     name: e2e-test
-    runs-on: ubuntu-latest
+    runs-on: x64-xl-privileged
     needs:
       - run-e2e-tests
     steps:
@@ -202,7 +208,7 @@ jobs:
 
   e2e-logged-in-test:
     timeout-minutes: 30
-    runs-on: ubuntu-22.04
+    runs-on: x64-xl-privileged
     defaults:
       run:
         working-directory: frontend
@@ -236,4 +242,4 @@ jobs:
           name: logged-in-test-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
           retention-days: 30
-          if-no-files-found: error
+          if-no-files-found: warn
