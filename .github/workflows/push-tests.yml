@@ -25,12 +25,6 @@ jobs:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
     runs-on: x64-xl-privileged
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Print system info
-        run: |
-          echo "OS: $(uname -a)"
-          cat /etc/os-release || true
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -97,7 +91,7 @@ jobs:
 
   backend-unit-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: x64-xl-privileged
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -159,7 +153,7 @@ jobs:
 
   backend-wmg-unit-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: x64-xl-privileged
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -221,7 +215,7 @@ jobs:
 
   backend-de-unit-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: x64-xl-privileged
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -283,7 +277,7 @@ jobs:
 
   processing-unit-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: x64-xl-privileged
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -346,7 +340,7 @@ jobs:
 
   wmg-processing-unit-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: x64-xl-privileged
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -405,7 +399,7 @@ jobs:
 
   cellguide-pipeline-unit-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: x64-xl-privileged
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -464,7 +458,7 @@ jobs:
 
   cxg-admin-unit-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: x64-xl-privileged
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -526,7 +520,7 @@ jobs:
 
   backend-integration-test:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: x64-xl-privileged
+    runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -593,7 +587,7 @@ jobs:
       - wmg-processing-unit-test
       - processing-unit-test
       - cellguide-pipeline-unit-test
-    runs-on: x64-xl-privileged
+    runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -635,7 +629,7 @@ jobs:
       - wmg-processing-unit-test
       - processing-unit-test
       - cellguide-pipeline-unit-test
-    runs-on: x64-xl-privileged
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
     steps:
