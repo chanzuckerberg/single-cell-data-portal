@@ -57,10 +57,12 @@ jobs:
             npm-
 
       - name: Check frontend
+        timeout-minutes: 20
         run: |
           cd frontend
           echo "Starting npm ci at $(date)"
-          npm ci --verbose
+          npm config set registry https://registry.npmjs.org
+          npm ci --no-audit --no-optional --prefer-offline
           echo "Finished npm ci at $(date)"
 
           echo "Copying local config"
@@ -69,7 +71,6 @@ jobs:
           echo "Running lint at $(date)"
           npm run lint
           echo "Finished lint at $(date)"
-        timeout-minutes: 10
 
       - uses: 8398a7/action-slack@v3
         with:
