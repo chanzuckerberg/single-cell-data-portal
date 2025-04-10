@@ -1,0 +1,20 @@
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': e2e8841e-7db4-4ae0-a709-0a8c0796608a, 'manifest': IngestionManifest(anndata=HttpUrl('https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     processing:process.py:109 Processing dataset version 8976d293-14ed-4842-b050-c67e9bc091e7
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:26 Start add_labels
+ERROR    processing:process_add_labels.py:218 An unexpected error occurred while adding labels to the data set: Add labels error
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/layers/processing/process_add_labels.py", line 214, in process
+    file_with_labels = self.add_labels(
+  File "/single-cell-data-portal/backend/layers/processing/logger.py", line 27, in wrapper
+    res = func(*arg, **kw)
+  File "/single-cell-data-portal/backend/layers/processing/process_add_labels.py", line 71, in add_labels
+    self.schema_validator.add_labels(local_filename, output_filename)
+  File "/usr/lib/python3.10/unittest/mock.py", line 1114, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/lib/python3.10/unittest/mock.py", line 1118, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/lib/python3.10/unittest/mock.py", line 1173, in _execute_mock_call
+    raise effect
+ValueError: Add labels error
+INFO     processing:process_logic.py:49 Updating processing status
