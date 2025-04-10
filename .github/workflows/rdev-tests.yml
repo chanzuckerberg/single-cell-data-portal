@@ -106,18 +106,28 @@ jobs:
           SHARD: ${{ matrix.shardCurrent }}/${{ matrix.shardTotal }}
         run: DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev-ci
 
-      - name: Find where the blob-report is written
+      - name: List all report directories
         if: always()
         run: |
-          echo "Searching for blob-report directories..."
-          find /home/runner/work/single-cell-data-portal -type d -name "blob-report" | tee blob_report_paths.txt
+          echo "Working directory:"
+          pwd
+          echo "--- Repo root contents ---"
+          ls -la
+          echo "--- Frontend contents ---"
+          ls -la frontend
+          echo "--- playwright-report contents ---"
+          ls -la frontend/playwright-report || echo "Missing playwright-report"
+          echo "--- blob-report contents ---"
+          ls -la frontend/blob-report || echo "Missing blob-report"
+          echo "--- allure-results contents ---"
+          ls -la frontend/allure-results || echo "Missing allure-results"
 
       - name: Upload FE test results as an artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
+          path: frontend/playwright-report
           retention-days: 14
 
       - name: Upload blob report to GitHub Actions Artifacts
@@ -125,7 +135,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: all-blob-reports-${{ matrix.project }}-${{ matrix.shardCurrent }}
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
+          path: frontend/blob-report
           retention-days: 1
           if-no-files-found: warn
 
@@ -133,7 +143,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: allure-results-${{ matrix.project }}-${{ matrix.shardCurrent }}
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
+          path: frontend/allure-results
           retention-days: 20
           if-no-files-found: warn
 
