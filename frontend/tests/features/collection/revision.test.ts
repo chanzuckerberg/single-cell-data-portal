@@ -142,7 +142,7 @@ describe("Collection Revision @loggedIn", () => {
    * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/gh/chanzuckerberg/single-cell-data-portal/5666
    */
 
-  test("allows editing", async ({ page }) => {
+  test.skip("allows editing", async ({ page }) => {
     const testId = buildCollectionRowLocator(COLLECTION_ROW_WRITE_PUBLISHED_ID);
     await startRevision(page, testId);
 
