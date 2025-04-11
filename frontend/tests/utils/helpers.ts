@@ -138,7 +138,7 @@ interface TryUntilConfigs {
   timeoutMs?: number;
 }
 
-const RETRY_TIMEOUT_MS = 3 * 60 * 1000;
+const RETRY_TIMEOUT_MS = 3 * 120 * 1000;
 
 export async function tryUntil(
   assert: () => void,
