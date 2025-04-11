@@ -259,7 +259,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
+          path: frontend/playwright-report
           retention-days: 14
 
       - name: Upload blob report to GitHub Actions Artifacts
@@ -267,7 +267,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: all-blob-reports-${{ matrix.project }}-${{ matrix.shardCurrent }}
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
+          path: frontend/blob-report
           retention-days: 1
           if-no-files-found: warn
 
