@@ -185,7 +185,7 @@ jobs:
           name: html-report--attempt-${{ github.run_attempt }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
           retention-days: 30
-          if-no-files-found: error
+          if-no-files-found: warn
 
   # https://github.com/myieye/web-languageforge/blob/develop/.github/workflows/e2e-tests.yml
   e2e-test:
