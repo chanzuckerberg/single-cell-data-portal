@@ -111,7 +111,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-${{ matrix.project }}-${{ matrix.shardCurrent }}-${{ matrix.shardTotal }}
-          path: playwright-report
+          path: ./frontend/playwright-report
           retention-days: 14
           if-no-files-found: error
 
@@ -120,7 +120,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: all-blob-reports-${{ matrix.project }}-${{ matrix.shardCurrent }}
-          path: frontend/blob-report
+          path: ./frontend/blob-report
           retention-days: 1
           if-no-files-found: error
 
@@ -128,7 +128,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: allure-results-${{ matrix.project }}-${{ matrix.shardCurrent }}
-          path: frontend/allure-results
+          path: ./frontend/allure-results
           retention-days: 20
           if-no-files-found: error
 
@@ -168,7 +168,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: all-blob-reports-*
-          path: frontend/blob-report
+          path: ./frontend/blob-report
           merge-multiple: true
 
       - name: Merge into HTML Report
@@ -178,7 +178,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: html-report--attempt-${{ github.run_attempt }}
-          path: frontend/playwright-report
+          path: ./frontend/playwright-report
           retention-days: 30
           if-no-files-found: warn
 
