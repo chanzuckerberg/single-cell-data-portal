@@ -133,7 +133,7 @@ jobs:
 
   e2e-logged-in-test:
     timeout-minutes: 30
-    runs-on: x64-xl-privileged
+    runs-on: xl-amd64-privileged
     needs:
       - upgrade
     steps:
@@ -203,7 +203,7 @@ jobs:
   run-e2e-tests:
     timeout-minutes: 30
     name: e2e-tests ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
-    runs-on: x64-xl-privileged
+    runs-on: xl-amd64-privileged
     needs:
       - upgrade
     strategy:
