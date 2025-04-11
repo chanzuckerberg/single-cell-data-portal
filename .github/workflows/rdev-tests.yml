@@ -113,7 +113,6 @@ jobs:
           name: playwright-report-${{ matrix.project }}-${{ matrix.shardCurrent }}-${{ matrix.shardTotal }}
           path: frontend/playwright-report
           retention-days: 14
-          
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: always()
