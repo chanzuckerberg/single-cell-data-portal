@@ -29,7 +29,7 @@ jobs:
   create_deployment:
     needs:
       - build_images
-    runs-on: xl-amd64-privileged
+    runs-on: ubuntu-22.04
     steps:
       - name: Generate payload
         run: |
