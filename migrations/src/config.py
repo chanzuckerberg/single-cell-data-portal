@@ -7,9 +7,11 @@ class STAGE(Enum):
     prod = 'prod'
     dev = 'dev'
 
-
-_BATCH_CLIENT = None,  
+# global variables
+_STAGE: STAGE = None
+_BATCH_CLIENT = None
 _LOGS_CLIENT = None
+_SFN_CLIENT = None
 _JOB_QUEUE = None
 
 def _get_profile(stage:STAGE) -> str:
@@ -29,25 +31,37 @@ def set_stage(stage: Union[STAGE, str]=STAGE.dev) -> None:
         except:
             raise ValueError(f"The provided stage '{stage}' is not a valid stage.")
     
-    # set the environment variable
+    # set the environment variable (and global variable)
     os.environ['MIGRATION_MONITOR_STAGE'] = stage.value
+    global _STAGE
+    _STAGE = stage
 
     # get aws session
     _session = _get_session(stage)
 
     # set global constants based on stage 
-    global _BATCH_CLIENT, _LOGS_CLIENT, _JOB_QUEUE
+    global _BATCH_CLIENT, _LOGS_CLIENT, _JOB_QUEUE, _SFN_CLIENT
     _BATCH_CLIENT = _session.client('batch')
     _LOGS_CLIENT = _session.client("logs")
+    _SFN_CLIENT = _session.client("stepfunctions")
     
     # set other constants
     _JOB_QUEUE = f"schema_migration-{stage.value}"
 
 def get_batch_client():
+    global _BATCH_CLIENT
     return _BATCH_CLIENT
 
 def get_logs_client():
+    global _LOGS_CLIENT
     return _LOGS_CLIENT
 
 def get_job_queue():
+    global _JOB_QUEUE
     return _JOB_QUEUE
+
+def get_sfn_client():
+    global _SFN_CLIENT
+    return _SFN_CLIENT
+
+

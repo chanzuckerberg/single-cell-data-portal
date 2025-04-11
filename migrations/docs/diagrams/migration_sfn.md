@@ -3,7 +3,7 @@
 title: Migration Procedure
 ---
 flowchart LR
-    subgraph migration
+    subgraph Migration
         direction TB
         stp-span-col("Span Collections") --> stp-migrate-col@{shape: procs, label: "CollectionMigration"}
         stp-migrate-col --> stp-span-ds("Span Datasets")
@@ -11,7 +11,7 @@ flowchart LR
         stp-migrate-ds --> stp-ingest-ds("IngestDataset")
     end
 
-    subgraph ingestion
+    subgraph IngestDataset
         direction TB
         stp-enter("Enter") --> parallel_validation
         subgraph parallel_validation
@@ -24,6 +24,6 @@ flowchart LR
         stp-addlabels --> stp-cxg("CXG")
         stp-cxg --> stp-register("Register")
     end
-    stp-ingest-ds --> ingestion
 
+    Migration --IngestDataset--> IngestDataset
 ```

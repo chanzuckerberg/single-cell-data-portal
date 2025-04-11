@@ -7,13 +7,7 @@ from plotly import express as px
 from config import get_job_queue
 from jobs.jobs import get_all_jobs, STATUS_ENUM
 from jobs.details import get_structured_job_details
-
-
-def ms_to_minutes(time):
-    return time/(1000*60)
-
-def ms_to_hours(time):
-    return ms_to_minutes(time)/60
+from utils import ms_to_hours
 
 # return job data as a dataframe
 def describe_migration_jobs(start_time:datetime, end_time: datetime) -> pd.DataFrame:
