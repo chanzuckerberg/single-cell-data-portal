@@ -62,12 +62,6 @@ jobs:
         run: |
           cd frontend
 
-          echo "Configuring npm to reduce server load"
-          npm config set maxsockets 3
-          npm config set fetch-retries 2
-          npm config set fetch-retry-mintimeout 30000
-          npm config set fetch-retry-maxtimeout 60000
-
           echo "Starting npm ci at $(date)"
           npm ci --prefer-offline --no-progress
           echo "Finished npm ci at $(date)"
