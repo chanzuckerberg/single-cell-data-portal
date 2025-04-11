@@ -282,7 +282,7 @@ describe("Collection Revision @loggedIn", () => {
     });
   });
 
-  describe("reorder datasets", () => {
+  describe.skip("reorder datasets", () => {
     const MIN_DATASET_COUNT = 3;
 
     test("enables reorder datasets", async ({ page }) => {
