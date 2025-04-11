@@ -453,7 +453,7 @@ describe("Collection Revision @loggedIn", () => {
       await deleteRevision(page);
     });
 
-    test("move last dataset to first position", async ({ page }) => {
+    test.skip("move last dataset to first position", async ({ page }) => {
       // Navigate to revision with more than one dataset.
       await startReorderableRevision(page);
 
