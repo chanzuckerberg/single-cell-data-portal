@@ -113,6 +113,7 @@ jobs:
           name: playwright-report-${{ matrix.project }}-${{ matrix.shardCurrent }}-${{ matrix.shardTotal }}
           path: frontend/playwright-report
           retention-days: 14
+          if-no-files-found: error
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: always()
@@ -121,7 +122,7 @@ jobs:
           name: all-blob-reports-${{ matrix.project }}-${{ matrix.shardCurrent }}
           path: frontend/blob-report
           retention-days: 1
-          if-no-files-found: warn
+          if-no-files-found: error
 
       # Upload Allure results as an artifact
       - uses: actions/upload-artifact@v4
@@ -129,7 +130,7 @@ jobs:
           name: allure-results-${{ matrix.project }}-${{ matrix.shardCurrent }}
           path: frontend/allure-results
           retention-days: 20
-          if-no-files-found: warn
+          if-no-files-found: error
 
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2

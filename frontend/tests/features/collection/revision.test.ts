@@ -83,7 +83,7 @@ describe("Collection Revision @loggedIn", () => {
     await tryUntil(
       async () => {
         const publishButton = await page.$(
-          getTestID("publish-collection-button")
+          getTestID(TEST_ID_PUBLISH_COLLECTION)
         );
         await expect(publishButton).toBeEnabled();
       },
@@ -101,7 +101,7 @@ describe("Collection Revision @loggedIn", () => {
     const testId = buildCollectionRowLocator(COLLECTION_ROW_WRITE_PUBLISHED_ID);
     const collectionName = await startRevision(page, testId);
 
-    const publishButton = await page.$(getTestID("publish-collection-button"));
+    const publishButton = await page.$(getTestID(TEST_ID_PUBLISH_COLLECTION));
 
     await expect(publishButton).toBeDisabled();
 
@@ -117,7 +117,7 @@ describe("Collection Revision @loggedIn", () => {
 
     // (thuang): Staging is slow due to the amount of collections we fetch,
     // so upping this for avoid flakiness
-    const RETRY_TIMES = 100;
+    const RETRY_TIMES = 150;
 
     await tryUntil(
       async () => {
@@ -218,7 +218,7 @@ describe("Collection Revision @loggedIn", () => {
       )?.replace(/^mailto:/, "")
     ).toBe(collectionContactEmail);
 
-    const publishButton = await page.$(getTestID("publish-collection-button"));
+    const publishButton = await page.$(getTestID(TEST_ID_PUBLISH_COLLECTION));
 
     await expect(publishButton).toBeEnabled();
 
