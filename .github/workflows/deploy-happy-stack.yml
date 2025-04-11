@@ -269,7 +269,7 @@ jobs:
           name: all-blob-reports-${{ matrix.project }}-${{ matrix.shardCurrent }}
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
           retention-days: 1
-          if-no-files-found: error
+          if-no-files-found: warn
 
   e2e-test:
     if: always()
