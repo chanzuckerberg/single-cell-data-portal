@@ -1,1 +1,0 @@
-{"levelname": "WARNING", "asctime": "2025-04-10T18:54:22.010Z", "name": "matrix_utils", "message": "noncanonical data found in X; converting to canonical format using sum_duplicates.", "lineno": 33, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/matrix_utils.py"}
