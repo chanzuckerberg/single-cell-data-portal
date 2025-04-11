@@ -149,7 +149,7 @@ jobs:
     # Merge reports after playwright-tests, even if some shards have failed
     if: always()
     needs: run-e2e-tests
-    runs-on: ubuntu-22.04
+    runs-on: xl-amd64-privileged
     defaults:
       run:
         working-directory: frontend
@@ -167,7 +167,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: all-blob-reports-*
-          path: frontend/blob-report
+          path: frontend/blob-reports
           merge-multiple: true
 
       - name: Merge into HTML Report
@@ -177,7 +177,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: html-report--attempt-${{ github.run_attempt }}
-          path: frontend/playwright-report
+          path: frontend/html-reports
           retention-days: 30
           if-no-files-found: warn
 
