@@ -26,7 +26,7 @@ permissions:
 jobs:
   get_previous_image_digests:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: xl-amd64-privileged
+    runs-on: ubuntu-22.04
     outputs:
       ecr_repos: ${{ steps.get_digests.outputs.ecr_repos }}
       image_digests: ${{ steps.get_digests.outputs.image_digests }}
@@ -63,7 +63,7 @@ jobs:
 
   seed-wmg-cellguide-rdev:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: xl-amd64-privileged
+    runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -87,7 +87,7 @@ jobs:
 
   deploy-rdev:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: xl-amd64-privileged
+    runs-on: ubuntu-22.04
     concurrency:
       group: pr-${{ github.event.number }}-happy
       cancel-in-progress: false
@@ -119,7 +119,7 @@ jobs:
 
   delete-previous-images:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: xl-amd64-privileged
+    runs-on: ubuntu-22.04
     needs:
       - get_previous_image_digests
       - deploy-rdev
@@ -147,7 +147,7 @@ jobs:
 
   summarize:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') && github.event.action == 'opened' }}
-    runs-on: xl-amd64-privileged
+    runs-on: ubuntu-22.04
     steps:
       - name: Summerize deployment
         id: summary
