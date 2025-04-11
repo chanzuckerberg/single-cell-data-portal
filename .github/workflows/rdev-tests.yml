@@ -149,7 +149,7 @@ jobs:
     # Merge reports after playwright-tests, even if some shards have failed
     if: always()
     needs: run-e2e-tests
-    runs-on: xl-amd64-privileged
+    runs-on: ubuntu-22.04
     defaults:
       run:
         working-directory: frontend

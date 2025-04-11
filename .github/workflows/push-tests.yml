@@ -581,7 +581,7 @@ jobs:
       - wmg-processing-unit-test
       - processing-unit-test
       - cellguide-pipeline-unit-test
-    runs-on: xl-amd64-privileged
+    runs-on: ubuntu-22.04
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
