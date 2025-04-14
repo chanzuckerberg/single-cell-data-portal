@@ -198,7 +198,7 @@ def create_comparison_dataset(left:pd.DataFrame, right:pd.DataFrame, left_label:
 
 
 # COMPARISON: plot waterfall of duration differences for a single job (in two different environments)
-def plot_job_duration_differences(left: pd.DataFrame, right: pd.DataFrame, left_label: str, right_label:str, job_name:str, count:int=50) -> px.Figure:
+def plot_job_duration_differences(left: pd.DataFrame, right: pd.DataFrame, left_label: str, right_label:str, job_name:str, count:int=50):
     '''
     Waterfall plot of duration differences.
     df: must be pre-joined on CURRENT_DATASET_VERSION_ID
