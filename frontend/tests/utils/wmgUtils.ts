@@ -283,7 +283,7 @@ export const checkSourceData = async (page: Page) => {
       try {
         expect(await sourceDataList.isVisible()).toBeFalsy();
       } catch {
-        await sourceDataButton.click({ force: true });
+        await page.keyboard.press("Escape");
         await sourceDataList.waitFor({ state: "hidden" });
         throw Error("Source data panel is still visible");
       }
