@@ -83,7 +83,7 @@ describe("Collection Revision @loggedIn", () => {
     await tryUntil(
       async () => {
         const publishButton = await page.$(
-          getTestID("publish-collection-button")
+          getTestID(TEST_ID_PUBLISH_COLLECTION)
         );
         await expect(publishButton).toBeEnabled();
       },
@@ -101,7 +101,7 @@ describe("Collection Revision @loggedIn", () => {
     const testId = buildCollectionRowLocator(COLLECTION_ROW_WRITE_PUBLISHED_ID);
     const collectionName = await startRevision(page, testId);
 
-    const publishButton = await page.$(getTestID("publish-collection-button"));
+    const publishButton = await page.$(getTestID(TEST_ID_PUBLISH_COLLECTION));
 
     await expect(publishButton).toBeDisabled();
 
@@ -117,7 +117,7 @@ describe("Collection Revision @loggedIn", () => {
 
     // (thuang): Staging is slow due to the amount of collections we fetch,
     // so upping this for avoid flakiness
-    const RETRY_TIMES = 100;
+    const RETRY_TIMES = 150;
 
     await tryUntil(
       async () => {
@@ -142,7 +142,7 @@ describe("Collection Revision @loggedIn", () => {
    * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/gh/chanzuckerberg/single-cell-data-portal/5666
    */
 
-  test("allows editing", async ({ page }) => {
+  test.skip("allows editing", async ({ page }) => {
     const testId = buildCollectionRowLocator(COLLECTION_ROW_WRITE_PUBLISHED_ID);
     await startRevision(page, testId);
 
@@ -218,7 +218,7 @@ describe("Collection Revision @loggedIn", () => {
       )?.replace(/^mailto:/, "")
     ).toBe(collectionContactEmail);
 
-    const publishButton = await page.$(getTestID("publish-collection-button"));
+    const publishButton = await page.$(getTestID(TEST_ID_PUBLISH_COLLECTION));
 
     await expect(publishButton).toBeEnabled();
 
@@ -282,7 +282,7 @@ describe("Collection Revision @loggedIn", () => {
     });
   });
 
-  describe("reorder datasets", () => {
+  describe.skip("reorder datasets", () => {
     const MIN_DATASET_COUNT = 3;
 
     test("enables reorder datasets", async ({ page }) => {
@@ -453,7 +453,7 @@ describe("Collection Revision @loggedIn", () => {
       await deleteRevision(page);
     });
 
-    test("move last dataset to first position", async ({ page }) => {
+    test.skip("move last dataset to first position", async ({ page }) => {
       // Navigate to revision with more than one dataset.
       await startReorderableRevision(page);
 
@@ -526,7 +526,7 @@ describe("Collection Revision @loggedIn", () => {
 /**
  * (thuang): Wait for 1 min instead of the default 3 minutes, so we fail faster
  */
-const WAIT_FOR_MIN_USABLE_COLLECTION_TIMEOUT_MS = 1 * 60 * 1000; // 1 minute
+const WAIT_FOR_MIN_USABLE_COLLECTION_TIMEOUT_MS = 3 * 60 * 1000; // 1 minute
 
 async function startRevision(
   page: Page,

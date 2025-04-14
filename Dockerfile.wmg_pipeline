@@ -5,14 +5,18 @@ FROM python:3.10
 # Update AWS root Certificates
 ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem
 
-RUN /usr/local/bin/python -m pip install --upgrade pip && \
-    apt update && apt -y install graphviz graphviz-dev && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get install unzip && \
-    apt-get install curl && \
+RUN /usr/local/bin/python -m pip install --upgrade pip setuptools wheel && \
+    apt update && apt -y install \
+        graphviz \
+        libgraphviz-dev \
+        pkg-config \
+        unzip \
+        curl \
+    && rm -rf /var/lib/apt/lists/* && \
     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
     unzip awscliv2.zip && \
-    ./aws/install
+    ./aws/install && \
+    rm -rf awscliv2.zip aws
 
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
@@ -22,6 +26,10 @@ WORKDIR /
 COPY /python_dependencies/wmg_processing/ .
 COPY /python_dependencies/common/ .
 ARG INSTALL_DEV=false
+
+# Install pygraphviz separately to avoid issues
+RUN pip install pygraphviz==1.11
+
 RUN pip3 install -r requirements.txt
 RUN if [ "$INSTALL_DEV" = "true" ]; then python3 -m pip install -r requirements-dev.txt; fi
 

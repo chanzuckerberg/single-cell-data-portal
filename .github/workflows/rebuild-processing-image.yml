@@ -24,7 +24,7 @@ jobs:
     strategy:
       matrix:
         branch: [main, staging, prod]
-    runs-on: ubuntu-22.04
+    runs-on: xl-amd64-privileged
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4

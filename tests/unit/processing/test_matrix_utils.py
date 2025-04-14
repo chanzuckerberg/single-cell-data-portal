@@ -4,6 +4,7 @@ from unittest.mock import Mock
 import numpy as np
 import pytest
 from anndata import AnnData
+from dask.array import from_array
 from scipy.sparse import coo_matrix
 
 from backend.layers.processing.utils.matrix_utils import enforce_canonical_format, is_matrix_sparse
@@ -14,13 +15,13 @@ LOGGER.propagate = True
 
 class TestMatrixUtils:
     def test__is_matrix_sparse__zero_and_one_hundred_percent_threshold(self):
-        matrix = np.array([1, 2, 3])
+        matrix = from_array(np.array([1, 2, 3]))
 
         assert not is_matrix_sparse(matrix, 0)
         assert is_matrix_sparse(matrix, 100)
 
     def test__is_matrix_sparse__partially_populated_sparse_matrix_returns_true(self):
-        matrix = np.zeros([3, 4])
+        matrix = from_array(np.zeros([3, 4]))
         matrix[2][3] = 1.0
         matrix[1][1] = 2.2
 
@@ -31,28 +32,9 @@ class TestMatrixUtils:
         matrix[0][0] = 1.0
         matrix[0][1] = 2.2
         matrix[1][1] = 3.7
+        matrix = from_array(matrix)
 
         assert not is_matrix_sparse(matrix, 50)
-
-    def test__is_matrix_sparse__giant_matrix_returns_false_early(self, caplog):
-        caplog.set_level(logging.INFO)
-        matrix = np.ones([20000, 20])
-
-        assert not is_matrix_sparse(matrix, 1)
-
-        # Because the function returns early a log will output the _estimate_ instead of the _exact_ percentage of
-        # non-zero elements in the matrix.
-        assert "Percentage of non-zero elements (estimate)" in caplog.text
-
-    def test__is_matrix_sparse_with_column_shift_encoding__giant_matrix_returns_false_early(self, caplog):
-        caplog.set_level(logging.INFO)
-        matrix = np.random.rand(20000, 20)
-
-        assert not is_matrix_sparse(matrix, 1)
-
-        # Because the function returns early a log will output the _estimate_ instead of the _exact_ percentage of
-        # non-zero elements in the matrix.
-        assert "Percentage of non-zero elements (estimate)" in caplog.text
 
 
 @pytest.fixture

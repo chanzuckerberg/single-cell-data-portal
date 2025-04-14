@@ -1,7 +1,6 @@
 import os
 
-ASCTB_MASTER_URL = "https://purl.humanatlas.io/collection/hra"
-ASCTB_MASTER_SHEET_URL = "https://purl.humanatlas.io/asct-b/"
+ASCTB_MASTER_SHEET_URL = "https://cdn.humanatlas.io/hra-asctb-json-releases/hra-asctb-all.v2.2.json"
 
 HOMO_SAPIENS_ORGANISM_ONTOLOGY_TERM_ID = "NCBITaxon:9606"
 

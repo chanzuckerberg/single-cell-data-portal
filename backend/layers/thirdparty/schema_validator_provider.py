@@ -1,12 +1,14 @@
-from typing import List, Protocol, Tuple
+from typing import List, Optional, Protocol, Tuple
 
 from cellxgene_schema import validate
 from cellxgene_schema.migrate import migrate
 from cellxgene_schema.schema import get_current_schema_version
 
+from backend.layers.processing.exceptions import AddLabelsFailed
+
 
 class SchemaValidatorProviderInterface(Protocol):
-    def validate_and_save_labels(self, input_file: str, output_file: str) -> Tuple[bool, list, bool]:
+    def validate_anndata(self, input_file: str) -> Tuple[bool, list, bool]:
         pass
 
     def migrate(self, input_file: str, output_file: str, collection_id: str, dataset_id: str) -> List[str]:
@@ -21,19 +23,41 @@ class SchemaValidatorProviderInterface(Protocol):
         """
         pass
 
+    def add_labels(self, input_file: str, output_file: str) -> None:
+        """
+        Adds labels to the provided `input_file` and writes the result to `output_file`.
+        """
+        pass
+
+    def validate_atac(self, fragment_file, anndata_file, output_file) -> Tuple[Optional[List[str]], str, str]:
+        """
+        Validates an ATAC fragment file against an anndata file.
+
+        Returns a tuple that contains, in order:
+        1. A List[str] with the validation errors. This is only defined if the first boolean is false
+        2. The path to the index file
+        3. The path to the fragment file
+        """
+        pass
+
+    def check_anndata_requires_fragment(self, anndata_file) -> bool:
+        """
+        Check if an anndata file requires a fragment file
+        """
+        pass
+
 
 class SchemaValidatorProvider(SchemaValidatorProviderInterface):
-    def validate_and_save_labels(self, input_file: str, output_file: str) -> Tuple[bool, list, bool]:
+    def validate_anndata(self, input_file: str) -> Tuple[bool, list, bool]:
         """
-        Runs `cellxgene-schema validate` on the provided `input_file`. This also saves a labeled copy
-        of the artifact to `output_file`.
+        Runs `cellxgene-schema validate` on the provided `input_file`.
         Returns a tuple that contains, in order:
         1. A boolean that indicates whether the artifact is valid
         2. A List[str] with the validation errors. This is only defined if the first boolean is false
         3. A boolean that indicates whether the artifact is Seurat convertible
         """
 
-        return validate.validate(input_file, output_file)
+        return validate.validate(input_file)
 
     def migrate(self, input_file, output_file, collection_id, dataset_id) -> List[str]:
         """
@@ -43,3 +67,41 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
 
     def get_current_schema_version(self) -> str:
         return get_current_schema_version()
+
+    def add_labels(self, input_file: str, output_file: str) -> None:
+        """
+        Adds labels to the provided `input_file` and writes the result to `output_file`.
+        """
+        from cellxgene_schema.utils import read_h5ad
+        from cellxgene_schema.write_labels import AnnDataLabelAppender
+
+        adata = read_h5ad(input_file)
+        anndata_label_adder = AnnDataLabelAppender(adata)
+        if not anndata_label_adder.write_labels(output_file):
+            raise AddLabelsFailed(anndata_label_adder.errors)
+
+    def count_matrix_nonzero(self, matrix):
+        return validate.Validator.count_matrix_nonzero(matrix)
+
+    def validate_atac(self, fragment_file, anndata_file, output_file) -> Tuple[Optional[List[str]], str, str]:
+        """
+        Validates an ATAC fragment file against an anndata file.
+
+        Returns a tuple that contains, in order:
+        1. A List[str] with the validation errors. This is only defined if the first boolean is false
+        2. The path to the index file
+        3. The path to the fragment file
+        """
+        import cellxgene_schema.atac_seq as atac_seq
+
+        index_file = output_file + ".tbi"
+        return (
+            atac_seq.process_fragment(fragment_file, anndata_file, True, output_file=output_file),
+            index_file,
+            output_file,
+        )
+
+    def check_anndata_requires_fragment(self, anndata_file) -> bool:
+        import cellxgene_schema.atac_seq as atac_seq
+
+        return atac_seq.check_anndata_requires_fragment(anndata_file)

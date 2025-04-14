@@ -2,7 +2,7 @@ anndata>=0.10.1
 awscli==1.29.34
 boto3==1.28.7
 cellxgene-census>=1.16.2
-cellxgene-ontology-guide~=1.0.0
+cellxgene-ontology-guide~=1.4.2
 ddtrace==2.1.4
 numba>=0.58.0
 numpy>=1.24.0,<2.1.0
