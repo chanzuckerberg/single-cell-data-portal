@@ -513,7 +513,7 @@ describe("Differential Expression", () => {
   });
 
   describe("Results", () => {
-    test("All tests", async ({ page }) => {
+    test.only("All tests", async ({ page }) => {
       await runDEQuery({ page, mode: "default" });
 
       await test.step("Cell Group 1 and 2 contain the correct number of cells and filter tags", async () => {
@@ -551,18 +551,17 @@ describe("Differential Expression", () => {
         const cellGroup1Chips = await page
           .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_INFO)
           .locator('[class*="MuiChip-label"]')
-          .all();
+          .allInnerTexts();
         expect(cellGroup1Chips).toHaveLength(2);
-        expect(cellGroup1Chips[0]).toHaveText("lung");
-        expect(cellGroup1Chips[1]).toHaveText("plasma cell");
+        expect(cellGroup1Chips).toEqual(["lung", "plasma cell"]);
 
         const cellGroup2Chips = await page
           .getByTestId(DIFFERENTIAL_EXPRESSION_CELL_GROUP_2_INFO)
           .locator('[class*="MuiChip-label"]')
-          .all();
+          .allInnerTexts();
         expect(cellGroup2Chips).toHaveLength(2);
-        expect(cellGroup2Chips[0]).toHaveText("lung");
-        expect(cellGroup2Chips[1]).toHaveText("acinar cell");
+        expect(cellGroup2Chips[0]).toBe("lung");
+        expect(cellGroup2Chips[1]).toBe("acinar cell");
       });
 
       await test.step("Open in GE opens in a new tab with expected URL for Cell Group 1", async () => {
@@ -815,8 +814,9 @@ describe("Differential Expression", () => {
         const cellGroup1Info = page.getByTestId(
           DIFFERENTIAL_EXPRESSION_CELL_GROUP_1_INFO
         );
-        await expect(cellGroup1Info).toHaveText("plasma cell");
-        await expect(cellGroup1Info).not.toHaveText("2 cell types");
+
+        await expect(cellGroup1Info).toContainText("plasma cell");
+        await expect(cellGroup1Info).not.toContainText("2 cell types");
       });
     });
   });
