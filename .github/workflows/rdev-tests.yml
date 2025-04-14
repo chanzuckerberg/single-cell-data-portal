@@ -202,7 +202,7 @@ jobs:
 
   e2e-logged-in-test:
     timeout-minutes: 30
-    runs-on: xl-amd64-privileged
+    runs-on: arm64-playwright-16cpu
     defaults:
       run:
         working-directory: frontend

@@ -513,7 +513,7 @@ describe("Differential Expression", () => {
   });
 
   describe("Results", () => {
-    test.only("All tests", async ({ page }) => {
+    test("All tests", async ({ page }) => {
       await runDEQuery({ page, mode: "default" });
 
       await test.step("Cell Group 1 and 2 contain the correct number of cells and filter tags", async () => {
