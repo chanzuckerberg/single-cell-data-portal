@@ -31,12 +31,14 @@ from backend.layers.business.exceptions import (
     DatasetInWrongStatusException,
     DatasetIsTombstonedException,
     DatasetNotFoundException,
+    InvalidIngestionManifestException,
     InvalidMetadataException,
     InvalidURIException,
     NoPreviousCollectionVersionException,
     NoPreviousDatasetVersionException,
 )
 from backend.layers.common.entities import (
+    ARTIFACT_TO_EXTENSION,
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
@@ -49,6 +51,7 @@ from backend.layers.common.entities import (
     DatasetId,
     DatasetMetadata,
     DatasetProcessingStatus,
+    DatasetStatusKey,
     DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersionId,
@@ -57,6 +60,7 @@ from backend.layers.common.entities import (
     SpatialMetadata,
     TissueOntologyTermId,
 )
+from backend.layers.common.ingestion_manifest import IngestionManifest
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
@@ -304,22 +308,30 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         Test method that "completes" a dataset processing. This is necessary since dataset ingestion
         is a complex process which happens asynchronously, and cannot be easily mocked.
         """
-        for ext in ("h5ad", "rds"):
-            key = f"{dataset_version_id}.{ext}"
-            self.database_provider.add_dataset_artifact(
-                dataset_version_id, DatasetArtifactType.H5AD.value, f"s3://artifacts/{key}"
-            )
-            self.s3_provider.upload_file(None, "artifacts", key, None)
-            # At present, not keeping public dataset assets as rows in DatasetArtifact table
-            self.s3_provider.upload_file(None, "datasets", key, None)
-        self.database_provider.add_dataset_artifact(
-            dataset_version_id, DatasetArtifactType.CXG.value, f"s3://cellxgene/{dataset_version_id}.cxg/"
-        )
-        self.s3_provider.upload_file(None, "cellxgene", f"{dataset_version_id}.cxg/", None)
+
+        def _add_artifact(bucket, key, key_type):
+            ext = ARTIFACT_TO_EXTENSION[key_type]
+            key_name = f"{key}.{ext}/" if key_type == DatasetArtifactType.CXG else f"{key}.{ext}"
+            self.database_provider.create_dataset_artifact(dataset_version_id, key_type, f"s3://{bucket}/{key_name}")
+            self.s3_provider.upload_file(None, bucket, key_name, None)
+
+        _add_artifact("artifacts", f"{dataset_version_id}/raw", DatasetArtifactType.RAW_H5AD)
+        # At present, not keeping public dataset assets as rows in DatasetArtifact table
+        _add_artifact("datasets", f"{dataset_version_id}", DatasetArtifactType.H5AD)
+        _add_artifact("datasets", f"{dataset_version_id}", DatasetArtifactType.RDS)
+        _add_artifact("cellxgene", f"{dataset_version_id}", DatasetArtifactType.CXG)
+
+        # special case for atac artifacts
+        artifact_id = DatasetArtifactId()
+        bucket = "datasets"
+
+        key_name = f"{artifact_id}-fragment"
+        _add_artifact(bucket, key_name, DatasetArtifactType.ATAC_FRAGMENT)
+        _add_artifact(bucket, key_name, DatasetArtifactType.ATAC_INDEX)
+
         self.database_provider.update_dataset_upload_status(dataset_version_id, DatasetUploadStatus.UPLOADED)
         self.database_provider.update_dataset_validation_status(dataset_version_id, DatasetValidationStatus.VALID)
         self.database_provider.update_dataset_processing_status(dataset_version_id, DatasetProcessingStatus.SUCCESS)
-        # TODO: if required, set the conversion status as well
 
 
 class TestCreateCollection(BaseBusinessLogicTestCase):
@@ -856,6 +868,128 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 
         self.step_function_provider.start_step_function.assert_called_once()
 
+    def test_reingest_published_anndata_dataset(self):
+        """A cellxgene public dataset url can be used to ingest a new dataset version."""
+
+        collection, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        dataset_version = revision.datasets[0]
+        url = f"https://dataset_assets_domain/{dataset_version.version_id}.h5ad"
+
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            revision.version_id, url, None, dataset_version.version_id
+        )
+        new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
+        self.assertIsNotNone(new_dataset_version)
+        self.assertIsNone(new_dataset_version.metadata)
+        self.assertEqual(new_dataset_version.collection_id, revision.collection_id)
+        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
+        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
+        self.step_function_provider.start_step_function.assert_called_once_with(
+            revision.version_id,
+            new_dataset_version_id,
+            f'{{"anndata":"s3://artifacts/{dataset_version.version_id}/raw.h5ad","atac_fragment":null}}',
+        )
+
+    def test_reingest_published_anndata_dataset__not_h5ad(self):
+        """A cellxgene public dataset url used for reingesting an h5ad must be an h5ad"""
+        collection, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        dataset_version = revision.datasets[0]
+        url = f"https://dataset_assets_domain/{dataset_version.version_id}.rds"
+        with self.assertRaises(InvalidIngestionManifestException):
+            self.business_logic.ingest_dataset(revision.version_id, url, None, dataset_version.version_id)
+
+    def test_reingest_published_anndata_dataset__not_in_found(self):
+        """A cellxgene public dataset url must already be uploaded"""
+        collection, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        dataset_version_id = DatasetVersionId()
+        url = f"https://dataset_assets_domain/{dataset_version_id.id}.h5ad"
+        with self.assertRaises(InvalidIngestionManifestException):
+            self.business_logic.ingest_dataset(revision.version_id, url, None, dataset_version_id)
+
+    def test_reginest_published_anndata_dataset__not_part_of_canonical_dataset(self):
+        """A cellxgene public dataset url must be part of a version of the canonical dataset"""
+        collection, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=2)
+        dataset_version = revision.datasets[0]
+        other_dataset_version = revision.datasets[1]
+        url = f"https://dataset_assets_domain/{other_dataset_version.version_id}.h5ad"
+        with self.assertRaises(InvalidIngestionManifestException):
+            self.business_logic.ingest_dataset(revision.version_id, url, None, dataset_version.version_id)
+
+    def test_ingest_published_anndata_dataset_in_new_dataset__not_allowed(self):
+        """A cellxgene public dataset url cannot be used to create a new canonical dataset."""
+        published_dataset = self.initialize_published_collection().datasets[0]
+        unpublished_collection = self.initialize_empty_unpublished_collection()
+        url = f"https://dataset_assets_domain/{published_dataset.version_id.id}.h5ad"
+        with self.assertRaises(InvalidIngestionManifestException):
+            self.business_logic.ingest_dataset(unpublished_collection.version_id, url, None, None)
+
+    def test_reingest_published_atac_dataset(self):
+        """A cellxgene public dataset url can be used to ingest a new dataset version."""
+
+        collection, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        dataset_version = revision.datasets[0]
+        artifact_id = [a.id for a in dataset_version.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0]
+        anndata_url = f"https://dataset_assets_domain/{dataset_version.version_id}.h5ad"
+        fragment_url = f"https://dataset_assets_domain/{artifact_id}-fragment.tsv.bgz"
+        manifest = {"anndata": anndata_url, "atac_fragment": fragment_url}
+
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            revision.version_id, manifest, None, dataset_version.version_id
+        )
+        new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
+        self.assertIsNotNone(new_dataset_version)
+        self.assertIsNone(new_dataset_version.metadata)
+        self.assertEqual(new_dataset_version.collection_id, revision.collection_id)
+        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
+        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
+        self.step_function_provider.start_step_function.assert_called_once_with(
+            revision.version_id,
+            new_dataset_version_id,
+            f'{{"anndata":"s3://artifacts/{dataset_version.version_id}/raw.h5ad","atac_fragment":"{fragment_url}"}}',
+        )
+
+    def test_reingest_published_atac_dataset__not_atac(self):
+        """A cellxgene public dataset url used for reingesting an h5ad must be an h5ad"""
+        collection, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        dataset_version = revision.datasets[0]
+        anndata_url = f"https://dataset_assets_domain/{dataset_version.version_id}.h5ad"
+        fragment_url = f"https://dataset_assets_domain/{dataset_version.version_id}.tsv"
+        manifest = {"anndata": anndata_url, "atac_fragment": fragment_url}
+        with self.assertRaises(InvalidIngestionManifestException):
+            self.business_logic.ingest_dataset(revision.version_id, manifest, None, dataset_version.version_id)
+
+    def test_reingest_published_atac_dataset__not_in_found(self):
+        """A cellxgene public dataset url must already be uploaded"""
+        collection, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=1)
+        dataset_version = revision.datasets[0]
+        anndata_url = f"https://dataset_assets_domain/{dataset_version.version_id}.h5ad"
+        missing_dataset_version_id = DatasetVersionId()
+        fragment_url = f"https://dataset_assets_domain/{revision.datasets[0].version_id}-fragment.tsv.bgz"
+        manifest = {"anndata": anndata_url, "atac_fragment": fragment_url}
+        with self.assertRaises(InvalidIngestionManifestException):
+            self.business_logic.ingest_dataset(revision.version_id, manifest, None, missing_dataset_version_id)
+
+    def test_reginest_published_atac_dataset__not_part_of_canonical_dataset(self):
+        """A cellxgene public dataset url must be part of a version of the canonical dataset"""
+        collection, revision = self.initialize_collection_with_an_unpublished_revision(num_datasets=2)
+        dataset_version = revision.datasets[0]
+        anndata_url = f"https://dataset_assets_domain/{dataset_version.version_id}.h5ad"
+        other_dataset_version = revision.datasets[1]
+        fragment_url = f"https://dataset_assets_domain/{other_dataset_version.version_id}-fragment.tsv.bgz"
+        manifest = {"anndata": anndata_url, "atac_fragment": fragment_url}
+        with self.assertRaises(InvalidIngestionManifestException):
+            self.business_logic.ingest_dataset(revision.version_id, manifest, None, dataset_version.version_id)
+
+    def test_ingest_published_atac_dataset_in_new_dataset__not_allowed(self):
+        """A cellxgene public dataset url cannot be used to create a new canonical dataset."""
+        published_dataset = self.initialize_published_collection().datasets[0]
+        unpublished_dataset = self.initialize_unpublished_collection().datasets[0]
+        anndata_url = f"https://dataset_assets_domain/{unpublished_dataset.version_id}.h5ad"
+        fragment_url = f"https://dataset_assets_domain/{published_dataset.version_id}-fragment.tsv.bgz"
+        manifest = {"anndata": anndata_url, "atac_fragment": fragment_url}
+        with self.assertRaises(InvalidIngestionManifestException):
+            self.business_logic.ingest_dataset(unpublished_dataset.version_id, manifest, None, None)
+
     def test_add_dataset_to_non_existing_collection_fail(self):
         """
         Calling `ingest_dataset` on a collection that does not exist should fail
@@ -893,7 +1027,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 
         with self.assertRaises(DatasetIngestException) as ex:
             self.business_logic.ingest_dataset(version.version_id, url, None, None)
-        self.assertEqual(str(ex.exception), "Trying to upload invalid URI: http://bad.url")
+        self.assertEqual(str(ex.exception), "Trying to upload invalid URI: http://bad.url/")
 
         self.step_function_provider.start_step_function.assert_not_called()
 
@@ -1562,13 +1696,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         dataset_version_id = published_version.datasets[0].version_id
 
         artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
-        self.assertEqual(3, len(artifacts))
-        expected = [
-            f"s3://artifacts/{dataset_version_id}.h5ad",
-            f"s3://artifacts/{dataset_version_id}.rds",
-            f"s3://cellxgene/{dataset_version_id}.cxg/",
-        ]
-        self.assertEqual(set(expected), {a.uri for a in artifacts})
+        self.assertEqual(len(published_version.datasets[0].artifacts), len(artifacts))
 
     def test_get_dataset_artifact_download_data_ok(self):
         """
@@ -1601,11 +1729,26 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
         self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
 
+    def test_get_ingest_manifest(self):
+        published_version = self.initialize_published_collection()
+        dataset = published_version.datasets[0]
+        expected_manifest = IngestionManifest(
+            anndata=[artifact.uri for artifact in dataset.artifacts if artifact.type == DatasetArtifactType.RAW_H5AD][
+                0
+            ],
+            atac_fragment=[
+                artifact.uri for artifact in dataset.artifacts if artifact.type == DatasetArtifactType.ATAC_FRAGMENT
+            ][0],
+        )
+        manifest = self.business_logic.get_ingestion_manifest(dataset.version_id)
+        self.assertEqual(expected_manifest, manifest)
+
 
 class TestGetAllDatasets(BaseBusinessLogicTestCase):
     def test_get_all_private_datasets_ok(self):
         """
-        Private datasets the user is authorized to view can be retrieved with `get_all_private_collection_versions_with_datasets`.
+        Private datasets the user is authorized to view can be retrieved with
+        `get_all_private_collection_versions_with_datasets`.
         """
         # test_user_1:
         # - private collection (2 datasets)
@@ -1660,7 +1803,8 @@ class TestGetAllDatasets(BaseBusinessLogicTestCase):
                     [d.version_id for d in datasets],
                 )
 
-        # Create the expected shape of revision_1_updated: datasets should only include the replacement dataset as well as the new dataset.
+        # Create the expected shape of revision_1_updated: datasets should only include the replacement dataset as
+        # well as the new dataset.
         revision_1_updated_expected = deepcopy(revision_1_updated)
         revision_1_updated_expected.datasets = [
             self.database_provider.get_dataset_version(updated_dataset_version_id),
@@ -1708,6 +1852,20 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
             self.assertEqual(version_from_db.status.validation_status, DatasetValidationStatus.INVALID)
             self.assertEqual(version_from_db.status.validation_message, "Validation error!")
 
+    def test_update_dataset_status_validate_message_with_appending(self):
+        """New messages are appended to the existing ones"""
+        unpublished_collection = self.initialize_unpublished_collection(complete_dataset_ingestion=False)
+        dataset = unpublished_collection.datasets[0]
+        error_message = "Validation error!"
+
+        for _ in range(2):
+            self.business_logic.update_dataset_version_status(
+                dataset.version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID, error_message
+            )
+        version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
+        validation_message = version_from_db.status.validation_message.split("\n")
+        self.assertEqual([error_message] * 2, validation_message)
+
     def test_add_dataset_artifact_ok(self):
         """
         A dataset artifact can be added using `add_dataset_artifact`
@@ -1716,7 +1874,9 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
         self.assertEqual(2, len(unpublished_collection.datasets))
         for dataset in unpublished_collection.datasets:
             self.assertEqual(dataset.artifacts, [])
-            self.business_logic.add_dataset_artifact(dataset.version_id, "h5ad", "http://fake.uri/artifact.h5ad")
+            self.business_logic.add_dataset_artifact(
+                dataset.version_id, DatasetArtifactType.H5AD, "http://fake.uri/artifact.h5ad"
+            )
 
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             self.assertEqual(1, len(version_from_db.artifacts))
@@ -2878,19 +3038,20 @@ class TestCollectionUtilities(BaseBusinessLogicTestCase):
 
         self.complete_dataset_processing_with_success(replaced_dataset_version_id)
 
-        dataset_version_ids = [d_v.version_id.id for d_v in published_collection.datasets] + [
-            replaced_dataset_version_id
+        dataset_versions = published_collection.datasets + [
+            self.business_logic.get_dataset_version(replaced_dataset_version_id)
         ]
         expected_delete_keys = set()
         fake_public_bucket = "datasets"
-        for d_v_id in dataset_version_ids:
+        for d_v in dataset_versions:
             for file_type in ("h5ad", "rds"):
-                key = f"{d_v_id}.{file_type}"
+                key = f"{d_v.version_id}.{file_type}"
                 self.s3_provider.upload_file(None, fake_public_bucket, key, None)  # Populate s3 mock with assets
                 self.assertTrue(self.s3_provider.uri_exists(f"s3://{fake_public_bucket}/{key}"))
-                expected_delete_keys.add(f"{d_v_id}.{file_type}")
+                expected_delete_keys.add(f"{d_v.version_id}.{file_type}")
+            expected_delete_keys.update(self.business_logic.get_atac_fragment_uris_from_dataset_version(d_v))
         self.assertTrue(len(expected_delete_keys) > 0)
-        [self.assertTrue(self.s3_provider.file_exists(fake_public_bucket, key)) for key in expected_delete_keys]
+        self.assertTrue(all(self.s3_provider.file_exists(fake_public_bucket, key) for key in expected_delete_keys))
         actual_delete_keys = set(
             self.business_logic.delete_all_dataset_versions_from_public_bucket_for_collection(
                 published_collection.collection_id
@@ -3073,9 +3234,9 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         dataset = collection.datasets[0]
 
         def add_artifact():
-            self.database_provider.add_dataset_artifact(dataset.version_id, DatasetArtifactType.H5AD, "fake_uri")
+            self.database_provider.create_dataset_artifact(dataset.version_id, DatasetArtifactType.H5AD, "fake_uri")
 
-        self.assertEqual(len(dataset.artifacts), 3)
+        self.assertEqual(len(dataset.artifacts), 6)
 
         from concurrent.futures import ThreadPoolExecutor
 
@@ -3086,7 +3247,7 @@ class TestConcurrentUpdates(BaseBusinessLogicTestCase):
         dv = self.business_logic.get_dataset_version(dataset.version_id)
         self.assertIsNotNone(dv)
         if dv is not None:
-            self.assertEqual(len(dv.artifacts), 13)
+            self.assertEqual(len(dv.artifacts), 16)
 
 
 class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
@@ -3141,7 +3302,7 @@ class TestDatasetArtifactMetadataUpdates(BaseBusinessLogicTestCase):
         current_dataset_version_id = revision.datasets[0].version_id
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             revision.version_id,
-            None,
+            "http://fake.url",
             None,
             current_dataset_version_id=current_dataset_version_id,
             start_step_function=False,

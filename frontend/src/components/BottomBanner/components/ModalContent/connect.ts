@@ -4,7 +4,7 @@ import { EVENTS } from "src/common/analytics/events";
 import {
   FAILED_EMAIL_VALIDATION_STRING,
   FORM_CONTAINER_ID_QUERY,
-  HIDDEN_NEWSLETTER_SUCCESS_MESSAGE,
+  HIDDEN_NEWSLETTER_SUCCESS_CLASS,
 } from "../../constants";
 
 export const useConnect = ({
@@ -54,11 +54,14 @@ export const useConnect = ({
   };
 
   /**
-   * validate
-   * validates the email input field
-   * returns true if the email is valid, false otherwise
-   * sets the error state if the email is invalid
-   * */
+   * Validates the email input field by checking its validity state.
+   *
+   * - If the email field is missing a value or contains an invalid email format,
+   *   an error message is set, and a failure event is tracked.
+   * - If the email is valid, the error message is cleared.
+   *
+   * @returns {boolean} `true` if the email input is valid, otherwise `false`.
+   */
   const validate = () => {
     const validityState = emailRef.current?.validity;
 
@@ -100,7 +103,10 @@ export const useConnect = ({
           /**
            *  Submission success flow
            */
-          if (node?.textContent?.includes(HIDDEN_NEWSLETTER_SUCCESS_MESSAGE)) {
+          if (
+            node instanceof Element &&
+            node.classList.contains(HIDDEN_NEWSLETTER_SUCCESS_CLASS)
+          ) {
             setIsSubmitted(true);
             setError("");
             track(EVENTS.NEWSLETTER_SIGNUP_SUCCESS);
