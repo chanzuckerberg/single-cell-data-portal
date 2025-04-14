@@ -62,7 +62,7 @@ jobs:
       - seed-database-e2e-tests
     timeout-minutes: 30
     name: e2e-tests ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
-    runs-on: xl-amd64-privileged
+    runs-on: arm64-playwright-16cpu
     strategy:
       fail-fast: false
       matrix:
