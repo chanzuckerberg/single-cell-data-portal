@@ -170,7 +170,7 @@ def _wait_for_dataset_status(session, api_url, dataset_id, headers):
                 errors.append(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
             if any(
                 [
-                    cxg_status == h5ad_status == "UPLOADED"
+                    (cxg_status == h5ad_status == "UPLOADED" or cxg_status == h5ad_status == "CONVERTED")
                     and rds_status == "SKIPPED"
                     and atac_status in ["SKIPPED", "UPLOADED", "NA", "COPIED"],
                     errors,
