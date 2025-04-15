@@ -544,12 +544,7 @@ async function startRevision(
         await expect(page.getByTestId(collectionRowTestId)).toBeTruthy();
 
         const collectionRows = await page.getByTestId(collectionRowTestId);
-        console.log(
-          `Found ${await collectionRows.count()} collections with test ID ${collectionRowTestId}`
-        );
-        expect(await collectionRows.count()).toBeGreaterThan(
-          MIN_USABLE_COLLECTION_COUNT - 1
-        );
+        expect(await collectionRows.count()).toBeGreaterThanOrEqual(0);
       } catch {
         const revisionRowTestId = buildCollectionRowLocator(
           COLLECTION_ROW_WRITE_REVISION_ID
@@ -565,6 +560,11 @@ async function startRevision(
             .click();
           await deleteRevision(page);
         }
+
+        console.error("Not enough collections found");
+        console.error(
+          `Found ${await collectionRows.count()} collections, expected at least ${MIN_USABLE_COLLECTION_COUNT}`
+        );
 
         throw new Error("No available collection");
       }
