@@ -26,10 +26,10 @@ module stack {
   backend_de_memory            = 8192
   backend_de_cpus              = 2
   backend_de_workers           = 3
-  backend_wmg_instance_count    = 1
-  backend_wmg_memory            = 8192
-  backend_wmg_cpus              = 2
-  backend_wmg_workers           = 3  
+  backend_wmg_instance_count    = 2
+  backend_wmg_memory            = 16 * 1024
+  backend_wmg_cpus              = 4
+  backend_wmg_workers           = 5
   wait_for_steady_state        = var.wait_for_steady_state
   dd_key_secret_arn            = "arn:aws:secretsmanager:us-west-2:699936264352:secret:dd_api_key-nGPNwx"
 }
