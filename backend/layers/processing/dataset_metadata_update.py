@@ -324,12 +324,10 @@ class DatasetMetadataUpdater(ProcessValidateH5AD):
                 artifact.id for artifact in current_dataset_version.artifacts if artifact.uri == fragment_uri
             ][0]
             self.business_logic.database_provider.add_artifact_to_dataset_version(new_dataset_version_id, fragment_id)
-            if DatasetArtifactType.ATAC_INDEX in artifact_uris:
-                index_uri = artifact_uris[DatasetArtifactType.ATAC_INDEX]
-                index_id = [artifact.id for artifact in current_dataset_version.artifacts if artifact.uri == index_uri][
-                    0
-                ]
-                self.business_logic.database_provider.add_artifact_to_dataset_version(new_dataset_version_id, index_id)
+            # an atac index file is always available if an atac fragment is available; copy that over as well
+            index_uri = artifact_uris[DatasetArtifactType.ATAC_INDEX]
+            index_id = [artifact.id for artifact in current_dataset_version.artifacts if artifact.uri == index_uri][0]
+            self.business_logic.database_provider.add_artifact_to_dataset_version(new_dataset_version_id, index_id)
             self.update_processing_status(new_dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.COPIED)
         else:
             self.logger.info("Main: No ATAC fragment found, copying status from current dataset version")
