@@ -148,11 +148,11 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         artifacts = [(artifact.uri, artifact.type) for artifact in new_dataset_version.artifacts]
         assert (f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad", DatasetArtifactType.RAW_H5AD) in artifacts
         assert (
-            f"s3://artifact_bucket/{new_dataset_version_id}/local.tsv.bgz",
+            f"s3://fake.bucket/{new_dataset_version_id}/local.tsv.bgz",
             DatasetArtifactType.ATAC_FRAGMENT,
         ) in artifacts
         assert (
-            f"s3://artifact_bucket/{new_dataset_version_id}/local.tsv.bgz.tbi",
+            f"s3://fake.bucket/{new_dataset_version_id}/local.tsv.bgz.tbi",
             DatasetArtifactType.ATAC_INDEX,
         ) in artifacts
 
