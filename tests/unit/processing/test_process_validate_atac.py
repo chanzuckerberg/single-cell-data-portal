@@ -333,7 +333,7 @@ class TestSkipATACValidation:
         # Assert
         dataset_status = setup.business_logic.get_dataset_status(dataset_version_id)
         assert setup.business_logic.get_dataset_status(dataset_version_id).atac_status == DatasetConversionStatus.NA
-        assert dataset_status.validation_message == "test"
+        assert dataset_status.validation_message is None
 
     def test_not_atac_and_fragment(self, process_validate_atac, unpublished_dataset, setup, manifest_with_fragment):
         """A manifest is provided with a fragment, and the anndata does not require one. This will fail
