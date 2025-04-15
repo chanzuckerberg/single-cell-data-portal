@@ -544,7 +544,9 @@ async function startRevision(
         await expect(page.getByTestId(collectionRowTestId)).toBeTruthy();
 
         const collectionRows = await page.getByTestId(collectionRowTestId);
-
+        console.log(
+          `Found ${await collectionRows.count()} collections with test ID ${collectionRowTestId}`
+        );
         expect(await collectionRows.count()).toBeGreaterThan(
           MIN_USABLE_COLLECTION_COUNT - 1
         );
