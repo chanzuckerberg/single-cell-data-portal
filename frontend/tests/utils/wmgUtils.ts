@@ -274,26 +274,19 @@ export const checkSourceData = async (page: Page) => {
   const n = await sourceDataList.locator("a").count();
 
   // close the pop-up
-  /**
-   * (thuang): Sometimes closing the panel just once doesn't work, so
-   * wrapping this to retry and assert the panel is indeed closed
-   */
   await tryUntil(
     async () => {
-      try {
-        expect(await sourceDataList.isVisible()).toBeFalsy();
-      } catch {
+      if (await sourceDataList.isVisible()) {
         await sourceDataButton.click({ force: true });
         await sourceDataList.waitFor({ state: "hidden" });
-        throw Error("Source data panel is still visible");
       }
+
+      // Final check after trying to close
+      const stillVisible = await sourceDataList.isVisible();
+      expect(stillVisible).toBeFalsy();
     },
     {
       page,
-      /**
-       * (thuang): we don't need to retry too many times, since the source data
-       * panel should close within 2s
-       */
       timeoutMs: 2 * 1000,
     }
   );

@@ -49,42 +49,37 @@ describe("Collection Revision @loggedIn", () => {
 
     // Fake unique datasets in get collection response.
     await page.route(
-      `*/**/dp/v1/collections/${collectionId}`,
+      `**/dp/v1/collections/${collectionId}`,
       async (route, request) => {
-        // Handle GET collection requests.
         if (request.method() === "GET") {
-          const response = await route.fetch();
-          const json: Collection = await response.json();
+          const originalResponse = await route.fetch();
+          const json: Collection = await originalResponse.json();
 
-          // Modify name of each dataset to fake diff between revision and
-          // published counterpart.
+          // Modify dataset names to simulate a difference
           json.datasets?.forEach((d) => {
-            d.name = `${Math.random()}`;
+            d.name = `fake-dataset-${Math.random()}`;
           });
 
-          await route.fulfill({ response, json });
+          await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify(json),
+          });
         } else {
-          // We're not expecting POST (create revision) or DELETE (delete
-          // revision) requests at this point; handling these cases for
-          // completion but they will result in a failing test.
           await route.continue();
         }
       },
       { times: 1 }
     );
 
-    // Reload page required to force re-fetch of collection and published
-    // counterpart (via the useCollection hook) rather than using the (React
-    // Query) cached values.
+    // Reload the page to force data refetch
     await page.reload();
     await page.waitForURL(url);
 
-    // We have faked changes in datasets; publish button should be enabled.
+    // Wait until the publish button becomes enabled
     await tryUntil(
       async () => {
-        const publishButton = await page.$(
-          getTestID(TEST_ID_PUBLISH_COLLECTION)
-        );
+        const publishButton = page.getByTestId(TEST_ID_PUBLISH_COLLECTION);
         await expect(publishButton).toBeEnabled();
       },
       { page }
@@ -93,16 +88,11 @@ describe("Collection Revision @loggedIn", () => {
     await deleteRevision(page);
   });
 
-  /**
-   * TODO(#5666): Enable this test once #5666 is resolved
-   * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/gh/chanzuckerberg/single-cell-data-portal/5666
-   */
   test("starts a revision", async ({ page }) => {
     const testId = buildCollectionRowLocator(COLLECTION_ROW_WRITE_PUBLISHED_ID);
     const collectionName = await startRevision(page, testId);
 
-    const publishButton = await page.$(getTestID(TEST_ID_PUBLISH_COLLECTION));
-
+    const publishButton = page.getByTestId(TEST_ID_PUBLISH_COLLECTION);
     await expect(publishButton).toBeDisabled();
 
     await page.getByTestId(COLLECTIONS_LINK_ID).click();
@@ -116,7 +106,7 @@ describe("Collection Revision @loggedIn", () => {
       .first();
 
     // (thuang): Staging is slow due to the amount of collections we fetch,
-    // so upping this for avoid flakiness
+    // so upping this to avoid flakiness
     const RETRY_TIMES = 150;
 
     await tryUntil(
@@ -126,23 +116,17 @@ describe("Collection Revision @loggedIn", () => {
       { maxRetry: RETRY_TIMES, page }
     );
 
-    const viewRevisionButton = await collectionRowContinueLocator.getByTestId(
+    const viewRevisionButton = collectionRowContinueLocator.getByTestId(
       COLLECTION_VIEW_REVISION
     );
-
     await expect(viewRevisionButton).toBeVisible();
 
-    await viewRevisionButton?.click();
+    await viewRevisionButton.click();
 
     await deleteRevision(page);
   });
 
-  /**
-   * TODO(#5666): Enable this test once #5666 is resolved
-   * https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/gh/chanzuckerberg/single-cell-data-portal/5666
-   */
-
-  test.skip("allows editing", async ({ page }) => {
+  test("allows editing", async ({ page }) => {
     const testId = buildCollectionRowLocator(COLLECTION_ROW_WRITE_PUBLISHED_ID);
     await startRevision(page, testId);
 
@@ -150,49 +134,55 @@ describe("Collection Revision @loggedIn", () => {
       getTestID("collection-name"),
       page
     );
-
     const collectionDescription = await getInnerText(
       getTestID("collection-description"),
       page
     );
 
     const COLLECTION_CONTACT_ID = "collection-contact";
-
     const collectionContactName = await getInnerText(
       getTestID(COLLECTION_CONTACT_ID),
       page
     );
 
-    const collectionContactEmail = (
-      await page.getAttribute(getTestID(COLLECTION_CONTACT_ID), "href")
-    )?.replace(/^mailto:/, "");
+    const rawEmail = await page.getAttribute(
+      getTestID(COLLECTION_CONTACT_ID),
+      "href"
+    );
+    const collectionContactEmail = rawEmail?.replace(/^mailto:/, "");
 
+    if (!collectionContactEmail) {
+      throw new Error("Expected collectionContactEmail to be defined");
+    }
+
+    // Open the edit details modal
     await getCollectionMoreButtonLocator(page).click();
-
     await page.getByTestId("dropdown-edit-details").click();
 
     const COLLECTION_CONTENT_ID = "collection-form-content";
 
-    // Assert that the edit form is visible with the right input values
-    await page.waitForSelector(getTestID(COLLECTION_CONTENT_ID));
+    // Ensure edit form is visible and fields are pre-filled correctly
+    await expect(page.getByTestId(COLLECTION_CONTENT_ID)).toBeVisible();
 
-    expect(await page.inputValue("input#name")).toBe(collectionName);
-    expect(await page.inputValue("textarea#description")).toBe(
+    await expect(page.locator("input#name")).toHaveValue(collectionName);
+    await expect(page.locator("textarea#description")).toHaveValue(
       collectionDescription
     );
-    expect(await page.inputValue("input#contact-name")).toBe(
+    await expect(page.locator("input#contact-name")).toHaveValue(
       collectionContactName
     );
-    expect(await page.inputValue("input#contact-email")).toBe(
+    await expect(page.locator("input#contact-email")).toHaveValue(
       collectionContactEmail
     );
 
+    // Update the collection name
     const newCollectionName = String(Date.now());
-
     await page.fill("input#name", newCollectionName);
 
+    // Save changes
     await page.getByTestId("create-button").click();
 
+    // Verify the form closes and the new data appears on the page
     await tryUntil(
       async () => {
         await expect(page.getByTestId(COLLECTION_CONTENT_ID)).not.toBeVisible();
@@ -200,11 +190,9 @@ describe("Collection Revision @loggedIn", () => {
         await expect(
           page.getByText(new RegExp(newCollectionName))
         ).toBeVisible();
-
         await expect(
           page.getByText(new RegExp(collectionDescription))
         ).toBeVisible();
-
         await expect(
           page.getByText(new RegExp(collectionContactName))
         ).toBeVisible();
@@ -212,14 +200,15 @@ describe("Collection Revision @loggedIn", () => {
       { page }
     );
 
-    expect(
-      (
-        await page.getAttribute(getTestID(COLLECTION_CONTACT_ID), "href")
-      )?.replace(/^mailto:/, "")
-    ).toBe(collectionContactEmail);
+    // Verify email is unchanged
+    const updatedEmail = (
+      await page.getAttribute(getTestID(COLLECTION_CONTACT_ID), "href")
+    )?.replace(/^mailto:/, "");
 
-    const publishButton = await page.$(getTestID(TEST_ID_PUBLISH_COLLECTION));
+    expect(updatedEmail).toBe(collectionContactEmail);
 
+    // Confirm publish is now enabled
+    const publishButton = page.getByTestId(TEST_ID_PUBLISH_COLLECTION);
     await expect(publishButton).toBeEnabled();
 
     await deleteRevision(page);
@@ -227,298 +216,311 @@ describe("Collection Revision @loggedIn", () => {
 
   describe("edit dataset", () => {
     test("allows rename dataset", async ({ page }) => {
-      // Create and navigate to revision.
+      // Create and navigate to revision
       const testId = buildCollectionRowLocator(
         COLLECTION_ROW_WRITE_PUBLISHED_ID
       );
       await startRevision(page, testId);
 
-      // Get first dataset row in collection.
-      const datasetRows = await locateDatasets(page);
-      expect(datasetRows.length).toBeGreaterThanOrEqual(1);
-      const datasetRow = datasetRows[0];
+      try {
+        // Get first dataset row in collection
+        const datasetRows = await locateDatasets(page);
+        expect(datasetRows.length).toBeGreaterThanOrEqual(1);
+        const datasetRow = datasetRows[0];
 
-      // Show the dataset more menu.
-      const datasetMoreButton = datasetRow.getByTestId(DATASET_MORE_BUTTON);
-      await expect(datasetMoreButton).toBeVisible();
-      await datasetMoreButton.click();
+        // Show the dataset more menu
+        const datasetMoreButton = datasetRow.getByTestId(DATASET_MORE_BUTTON);
+        await expect(datasetMoreButton).toBeVisible();
+        await datasetMoreButton.click();
 
-      // Show the edit dataset modal.
-      const editDatasetButton = page.getByTestId(DROPDOWN_EDIT_DATASET);
-      await expect(editDatasetButton).toBeVisible();
-      await editDatasetButton.click();
+        // Show the edit dataset modal
+        const editDatasetButton = page.getByTestId(DROPDOWN_EDIT_DATASET);
+        await expect(editDatasetButton).toBeVisible();
+        await editDatasetButton.click();
 
-      // Confirm modal is visible.
-      await page.waitForSelector(getTestID(DATASET_EDIT_FORM));
+        // Confirm modal is visible
+        const editForm = page.getByTestId(DATASET_EDIT_FORM);
+        await expect(editForm).toBeVisible();
 
-      // Confirm input is visible and displays current dataset name.
-      const datasetName = await getInnerText(
-        `css=[data-testid^="${DATASET_TITLE}"]`,
-        page
-      );
-      expect(await page.inputValue("input#title")).toBe(datasetName);
+        // Confirm input shows current dataset name
+        const datasetName = await getInnerText(
+          `css=[data-testid^="${DATASET_TITLE}"]`,
+          page
+        );
+        await expect(page.locator("input#title")).toHaveValue(datasetName);
 
-      // Enter new title.
-      const newDatasetTitle = String(Date.now());
-      await page.fill("input#title", newDatasetTitle);
+        // Enter new title
+        const newDatasetTitle = String(Date.now());
+        await page.fill("input#title", newDatasetTitle);
 
-      // Save.
-      await page.getByTestId(DATASET_EDIT_SAVE).click();
+        // Save
+        await page.getByTestId(DATASET_EDIT_SAVE).click();
 
-      // Confirm dataset is updating.
-      await tryUntil(
-        async () => {
-          // Confirm modal is closed.
-          await expect(page.getByTestId(DATASET_EDIT_FORM)).not.toBeVisible();
-
-          // Confirm at least one dataset row is updating.
-          await expect(page.getByRole("progressbar")).toBeVisible();
-        },
-        { page }
-      );
-
-      // Tear down.
-      await deleteRevision(page);
+        // Confirm modal closes and progress bar appears
+        await tryUntil(
+          async () => {
+            await expect(page.getByTestId(DATASET_EDIT_FORM)).toBeHidden();
+            await expect(page.getByRole("progressbar")).toBeVisible();
+          },
+          { page }
+        );
+      } finally {
+        // Always clean up
+        await deleteRevision(page);
+      }
     });
   });
 
-  describe.skip("reorder datasets", () => {
+  describe("reorder datasets", () => {
     const MIN_DATASET_COUNT = 3;
 
     test("enables reorder datasets", async ({ page }) => {
-      // Navigate to revision with more than one dataset.
+      // Navigate to a revision with multiple datasets
       await startReorderableRevision(page);
 
-      // Confirm reorder menu option is available.
-      await getCollectionMoreButtonLocator(page).click();
-      await expect(
-        page.getByTestId(TEST_ID_DROPDOWN_REORDER_DATASETS)
-      ).toBeVisible();
+      try {
+        // Open collection actions menu
+        await getCollectionMoreButtonLocator(page).click();
 
-      // Tear down.
-      await deleteRevision(page);
+        // Confirm reorder option is visible
+        const reorderOption = page.getByTestId(
+          TEST_ID_DROPDOWN_REORDER_DATASETS
+        );
+        await expect(reorderOption).toBeVisible();
+      } finally {
+        // Always clean up
+        await deleteRevision(page);
+      }
     });
 
     test("cancels reorder", async ({ page }) => {
-      // Navigate to revision with more than one dataset.
+      // Navigate to revision with multiple datasets
       await startReorderableRevision(page);
 
-      // Enable reorder.
-      await enterReorderMode(page);
+      try {
+        // Enter reorder mode
+        await enterReorderMode(page);
 
-      // Confirm cancel is available.
-      await expect(
-        page.getByTestId(TEST_ID_REORDER_DATASETS_CANCEL)
-      ).toBeVisible();
+        // Confirm cancel button is visible
+        const cancelButton = page.getByTestId(TEST_ID_REORDER_DATASETS_CANCEL);
+        await expect(cancelButton).toBeVisible();
 
-      // Click cancel to return back to edit mode.
-      await cancelReorder(page);
+        // Click cancel to exit reorder mode
+        await cancelReorder(page);
 
-      // Confirm cancel button is no longer visible.
-      await expect(
-        page.getByTestId(TEST_ID_REORDER_DATASETS_CANCEL)
-      ).not.toBeVisible();
+        // Confirm cancel button is no longer visible
+        await expect(cancelButton).not.toBeVisible();
 
-      // Confirm publish button is visible.
-      await expect(page.getByTestId(TEST_ID_PUBLISH_COLLECTION)).toBeVisible();
-
-      // Tear down.
-      await deleteRevision(page);
+        // Confirm publish button is visible (and optionally enabled)
+        const publishButton = page.getByTestId(TEST_ID_PUBLISH_COLLECTION);
+        await expect(publishButton).toBeVisible();
+      } finally {
+        // Always clean up
+        await deleteRevision(page);
+      }
     });
 
     test("saves reorder", async ({ page }) => {
-      // Navigate to revision with more than one dataset.
       await startReorderableRevision(page);
 
-      // Enable reorder.
-      await enterReorderMode(page);
+      try {
+        await enterReorderMode(page);
 
-      // Grab the datasets - we need at least three datasets for this test.
-      const datasets = await locateDatasets(page);
-      expect(datasets.length).toBeGreaterThanOrEqual(MIN_DATASET_COUNT);
+        const datasets = await locateDatasets(page);
+        expect(datasets.length).toBeGreaterThanOrEqual(MIN_DATASET_COUNT);
 
-      // Get a reference to the current dataset order; we'll use this to assert reorder is successful.
-      const datasetIds = await listDatasetIds(datasets);
+        const datasetIds = await listDatasetIds(datasets);
 
-      // Drag first dataset and drop at second position.
-      const fromIndex = 0;
-      const toIndex = 1;
-      await moveDatasetTo(page, datasets, fromIndex, toIndex);
+        const fromIndex = 0;
+        const toIndex = 1;
+        await moveDatasetTo(page, datasets, fromIndex, toIndex);
 
-      // Confirm save is available.
-      await expect(
-        page.getByTestId(TEST_ID_REORDER_DATASETS_SAVE)
-      ).toBeVisible();
+        const reorderSaveButton = page.getByTestId(
+          TEST_ID_REORDER_DATASETS_SAVE
+        );
+        await expect(reorderSaveButton).toBeVisible();
 
-      // Click save to save order and to return back to edit mode.
-      await page.getByTestId(TEST_ID_REORDER_DATASETS_SAVE).click();
+        await reorderSaveButton.click();
 
-      // Confirm save button is no longer visible.
-      await tryUntil(
-        async () => {
-          await expect(
-            page.getByTestId(TEST_ID_REORDER_DATASETS_SAVE)
-          ).not.toBeVisible();
-        },
-        { page }
-      );
+        // Wait for save to disappear
+        await tryUntil(
+          async () => {
+            await expect(reorderSaveButton).not.toBeVisible();
+          },
+          { page }
+        );
 
-      // Confirm publish button is visible.
-      await tryUntil(
-        async () => {
-          await expect(
-            page.getByTestId(TEST_ID_PUBLISH_COLLECTION)
-          ).toBeVisible();
-        },
-        { page }
-      );
+        const publishButton = page.getByTestId(TEST_ID_PUBLISH_COLLECTION);
+        await tryUntil(
+          async () => {
+            await expect(publishButton).toBeVisible();
+          },
+          { page }
+        );
 
-      // Confirm post-drop order of datasets has been retained.
-      const reorderedDatasetIds = await listDatasetIds(datasets);
-      const expectedDatasetIds = reorderDatasetIds(
-        datasetIds,
-        fromIndex,
-        toIndex
-      );
-      expect(reorderedDatasetIds).toEqual(expectedDatasetIds);
+        // Re-fetch dataset rows after reorder to reflect updated DOM
+        const reorderedDatasets = await locateDatasets(page);
+        const reorderedDatasetIds = await listDatasetIds(reorderedDatasets);
+        const expectedDatasetIds = reorderDatasetIds(
+          datasetIds,
+          fromIndex,
+          toIndex
+        );
 
-      // Tear down.
-      await deleteRevision(page);
+        expect(reorderedDatasetIds).toEqual(expectedDatasetIds);
+      } finally {
+        await deleteRevision(page);
+      }
     });
 
     test("move first dataset to second position", async ({ page }) => {
-      // Navigate to revision with more than one dataset.
       await startReorderableRevision(page);
 
-      // Enable reorder.
-      await enterReorderMode(page);
+      try {
+        await enterReorderMode(page);
 
-      // Grab the datasets - we need at least three datasets for this test.
-      const datasets = await locateDatasets(page);
-      expect(datasets.length).toBeGreaterThanOrEqual(MIN_DATASET_COUNT);
+        const datasets = await locateDatasets(page);
+        expect(datasets.length).toBeGreaterThanOrEqual(MIN_DATASET_COUNT);
 
-      // Get a reference to the current dataset order; we'll use this to assert reorder is successful.
-      const datasetIds = await listDatasetIds(datasets);
+        const datasetIds = await listDatasetIds(datasets);
 
-      // Drag first dataset and drop at second position.
-      const fromIndex = 0;
-      const toIndex = 1;
-      await moveDatasetTo(page, datasets, fromIndex, toIndex);
+        const fromIndex = 0;
+        const toIndex = 1;
+        await moveDatasetTo(page, datasets, fromIndex, toIndex);
 
-      // Confirm post-drop order of datasets has been retained.
-      const reorderedDatasetIds = await listDatasetIds(datasets);
-      const expectedDatasetIds = reorderDatasetIds(
-        datasetIds,
-        fromIndex,
-        toIndex
-      );
-      expect(reorderedDatasetIds).toEqual(expectedDatasetIds);
+        // Re-fetch datasets in case DOM was updated after reordering
+        const updatedDatasets = await locateDatasets(page);
+        const reorderedDatasetIds = await listDatasetIds(updatedDatasets);
 
-      // Tear down.
-      await cancelReorder(page);
-      await deleteRevision(page);
+        const expectedDatasetIds = reorderDatasetIds(
+          datasetIds,
+          fromIndex,
+          toIndex
+        );
+        expect(reorderedDatasetIds).toEqual(expectedDatasetIds);
+      } finally {
+        await cancelReorder(page);
+        await deleteRevision(page);
+      }
     });
 
     test("move first dataset to last position", async ({ page }) => {
-      // Navigate to revision with more than one dataset.
+      // Navigate to a revision with more than one dataset
       await startReorderableRevision(page);
 
-      // Enable reorder.
-      await enterReorderMode(page);
+      try {
+        // Enable reorder mode
+        await enterReorderMode(page);
 
-      // Grab the datasets - we need at least three datasets for this test.
-      const datasets = await locateDatasets(page);
-      const datasetCount = datasets.length;
-      expect(datasetCount).toBeGreaterThanOrEqual(MIN_DATASET_COUNT);
+        // Grab the datasets — we need at least three datasets for this test
+        const initialDatasets = await locateDatasets(page);
+        const datasetCount = initialDatasets.length;
+        expect(datasetCount).toBeGreaterThanOrEqual(MIN_DATASET_COUNT);
 
-      // Get a reference to the current dataset order; we'll use this to assert reorder is successful.
-      const datasetIds = await listDatasetIds(datasets);
+        // Get a reference to the current dataset order;
+        // we'll use this to assert reorder was successful
+        const initialDatasetIds = await listDatasetIds(initialDatasets);
 
-      // Drag first dataset and drop at last position.
-      const fromIndex = 0;
-      const toIndex = datasetCount - 1;
-      await moveDatasetTo(page, datasets, fromIndex, toIndex);
+        // Drag the first dataset and drop it at the last position
+        const fromIndex = 0;
+        const toIndex = datasetCount - 1;
+        await moveDatasetTo(page, initialDatasets, fromIndex, toIndex);
 
-      // Confirm post-drop order of datasets has been retained.
-      const reorderedDatasetIds = await listDatasetIds(datasets);
-      const expectedDatasetIds = reorderDatasetIds(
-        datasetIds,
-        fromIndex,
-        toIndex
-      );
-      expect(reorderedDatasetIds).toEqual(expectedDatasetIds);
+        // Re-fetch dataset list to reflect any DOM updates after reorder
+        const updatedDatasets = await locateDatasets(page);
+        const reorderedDatasetIds = await listDatasetIds(updatedDatasets);
 
-      // Tear down.
-      await cancelReorder(page);
-      await deleteRevision(page);
+        // Compute the expected order and assert correctness
+        const expectedDatasetIds = reorderDatasetIds(
+          initialDatasetIds,
+          fromIndex,
+          toIndex
+        );
+        expect(reorderedDatasetIds).toEqual(expectedDatasetIds);
+      } finally {
+        // Exit reorder mode and clean up revision
+        await cancelReorder(page);
+        await deleteRevision(page);
+      }
     });
 
-    test.skip("move last dataset to first position", async ({ page }) => {
-      // Navigate to revision with more than one dataset.
+    test("move last dataset to first position", async ({ page }) => {
+      // Navigate to a revision with more than one dataset
       await startReorderableRevision(page);
 
-      // Enable reorder.
-      await enterReorderMode(page);
+      try {
+        // Enable reorder mode
+        await enterReorderMode(page);
 
-      // Grab the datasets - we need at least three datasets for this test.
-      const datasets = await locateDatasets(page);
-      const datasetCount = datasets.length;
-      expect(datasetCount).toBeGreaterThanOrEqual(MIN_DATASET_COUNT);
+        // Grab the datasets — we need at least three datasets for this test
+        const initialDatasets = await locateDatasets(page);
+        const datasetCount = initialDatasets.length;
+        expect(datasetCount).toBeGreaterThanOrEqual(MIN_DATASET_COUNT);
 
-      // Get a reference to the current dataset order; we'll use this to assert reorder is successful.
-      const datasetIds = await listDatasetIds(datasets);
+        // Get a reference to the current dataset order;
+        // we'll use this to assert reorder is successful
+        const initialDatasetIds = await listDatasetIds(initialDatasets);
 
-      // Drag last dataset and drop at fist position.
-      const fromIndex = datasetCount - 1;
-      const toIndex = 0;
-      await moveDatasetTo(page, datasets, fromIndex, toIndex);
+        // Drag the last dataset and drop it at the first position
+        const fromIndex = datasetCount - 1;
+        const toIndex = 0;
+        await moveDatasetTo(page, initialDatasets, fromIndex, toIndex);
 
-      // Confirm post-drop order of datasets has been retained.
-      const reorderedDatasetIds = await listDatasetIds(datasets);
-      const expectedDatasetIds = reorderDatasetIds(
-        datasetIds,
-        fromIndex,
-        toIndex
-      );
-      expect(reorderedDatasetIds).toEqual(expectedDatasetIds);
+        // Re-fetch datasets to avoid using stale DOM references
+        const updatedDatasets = await locateDatasets(page);
+        const reorderedDatasetIds = await listDatasetIds(updatedDatasets);
 
-      // Tear down.
-      await cancelReorder(page);
-      await deleteRevision(page);
+        // Generate expected order and confirm the reorder was successful
+        const expectedDatasetIds = reorderDatasetIds(
+          initialDatasetIds,
+          fromIndex,
+          toIndex
+        );
+        expect(reorderedDatasetIds).toEqual(expectedDatasetIds);
+      } finally {
+        // Exit reorder mode and clean up the revision
+        await cancelReorder(page);
+        await deleteRevision(page);
+      }
     });
 
     test("move last dataset to second position", async ({ page }) => {
-      // Navigate to revision with more than one dataset.
+      // Navigate to a revision with more than one dataset
       await startReorderableRevision(page);
 
-      // Enable reorder.
-      await enterReorderMode(page);
+      try {
+        // Enable reorder mode
+        await enterReorderMode(page);
 
-      // Grab the datasets - we need at least three datasets for this test.
-      const datasets = await locateDatasets(page);
-      const datasetCount = datasets.length;
-      expect(datasetCount).toBeGreaterThanOrEqual(MIN_DATASET_COUNT);
+        // Grab the datasets — we need at least three datasets for this test
+        const initialDatasets = await locateDatasets(page);
+        const datasetCount = initialDatasets.length;
+        expect(datasetCount).toBeGreaterThanOrEqual(MIN_DATASET_COUNT);
 
-      // Get a reference to the current dataset order; we'll use this to assert reorder is successful.
-      const datasetIds = await listDatasetIds(datasets);
+        // Get the current dataset order; we'll use this to assert the reorder result
+        const initialDatasetIds = await listDatasetIds(initialDatasets);
 
-      // Drag last dataset and drop at second position.
-      const fromIndex = datasetCount - 1;
-      const toIndex = 1;
-      await moveDatasetTo(page, datasets, fromIndex, toIndex);
+        // Drag the last dataset and drop it at the second position (index 1)
+        const fromIndex = datasetCount - 1;
+        const toIndex = 1;
+        await moveDatasetTo(page, initialDatasets, fromIndex, toIndex);
 
-      // Confirm post-drop order of datasets has been retained.
-      const reorderedDatasetIds = await listDatasetIds(datasets);
-      const expectedDatasetIds = reorderDatasetIds(
-        datasetIds,
-        fromIndex,
-        toIndex
-      );
-      expect(reorderedDatasetIds).toEqual(expectedDatasetIds);
+        // Re-fetch dataset rows to avoid stale references
+        const updatedDatasets = await locateDatasets(page);
+        const reorderedDatasetIds = await listDatasetIds(updatedDatasets);
 
-      // Tear down.
-      await cancelReorder(page);
-      await deleteRevision(page);
+        // Generate the expected order and assert correctness
+        const expectedDatasetIds = reorderDatasetIds(
+          initialDatasetIds,
+          fromIndex,
+          toIndex
+        );
+        expect(reorderedDatasetIds).toEqual(expectedDatasetIds);
+      } finally {
+        // Exit reorder mode and clean up the revision
+        await cancelReorder(page);
+        await deleteRevision(page);
+      }
     });
   });
 });
