@@ -49,42 +49,37 @@ describe("Collection Revision @loggedIn", () => {
 
     // Fake unique datasets in get collection response.
     await page.route(
-      `*/**/dp/v1/collections/${collectionId}`,
+      `**/dp/v1/collections/${collectionId}`,
       async (route, request) => {
-        // Handle GET collection requests.
         if (request.method() === "GET") {
-          const response = await route.fetch();
-          const json: Collection = await response.json();
+          const originalResponse = await route.fetch();
+          const json: Collection = await originalResponse.json();
 
-          // Modify name of each dataset to fake diff between revision and
-          // published counterpart.
+          // Modify dataset names to simulate a difference
           json.datasets?.forEach((d) => {
-            d.name = `${Math.random()}`;
+            d.name = `fake-dataset-${Math.random()}`;
           });
 
-          await route.fulfill({ response, json });
+          await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify(json),
+          });
         } else {
-          // We're not expecting POST (create revision) or DELETE (delete
-          // revision) requests at this point; handling these cases for
-          // completion but they will result in a failing test.
           await route.continue();
         }
       },
       { times: 1 }
     );
 
-    // Reload page required to force re-fetch of collection and published
-    // counterpart (via the useCollection hook) rather than using the (React
-    // Query) cached values.
+    // Reload the page to force data refetch
     await page.reload();
     await page.waitForURL(url);
 
-    // We have faked changes in datasets; publish button should be enabled.
+    // Wait until the publish button becomes enabled
     await tryUntil(
       async () => {
-        const publishButton = await page.$(
-          getTestID(TEST_ID_PUBLISH_COLLECTION)
-        );
+        const publishButton = page.getByTestId(TEST_ID_PUBLISH_COLLECTION);
         await expect(publishButton).toBeEnabled();
       },
       { page }
