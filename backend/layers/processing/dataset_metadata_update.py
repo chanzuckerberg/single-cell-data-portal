@@ -318,6 +318,25 @@ class DatasetMetadataUpdater(ProcessValidateH5AD):
             self.logger.error(f"Cannot find cxg artifact uri for {current_dataset_version_id}.")
             self.update_processing_status(new_dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED)
 
+        if DatasetArtifactType.ATAC_FRAGMENT in artifact_uris:
+            fragment_uri = artifact_uris[DatasetArtifactType.ATAC_FRAGMENT]
+            fragment_id = [
+                artifact.id for artifact in current_dataset_version.artifacts if artifact.uri == fragment_uri
+            ][0]
+            self.business_logic.database_provider.add_artifact_to_dataset_version(new_dataset_version_id, fragment_id)
+            if DatasetArtifactType.ATAC_INDEX in artifact_uris:
+                index_uri = artifact_uris[DatasetArtifactType.ATAC_INDEX]
+                index_id = [artifact.id for artifact in current_dataset_version.artifacts if artifact.uri == index_uri][
+                    0
+                ]
+                self.business_logic.database_provider.add_artifact_to_dataset_version(new_dataset_version_id, index_id)
+            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.COPIED)
+        else:
+            self.logger.info("Main: No ATAC fragment found, copying status from current dataset version")
+            self.update_processing_status(
+                new_dataset_version_id, DatasetStatusKey.ATAC, current_dataset_version.status.atac_status
+            )
+
         # blocking call on async functions before checking for valid artifact statuses
         [j.join() for j in artifact_jobs]
 
@@ -342,8 +361,9 @@ class DatasetMetadataUpdater(ProcessValidateH5AD):
                 or dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
             )
             and (
-                dataset_version.status.atac_status == DatasetConversionStatus.UPLOADED
-                or dataset_version.status.atac_status == DatasetConversionStatus.SKIPPED
+                dataset_version.status.atac_status == DatasetConversionStatus.SKIPPED
+                or dataset_version.status.atac_status == DatasetConversionStatus.COPIED
+                or dataset_version.status.atac_status == DatasetConversionStatus.NA
             )
         )
 
