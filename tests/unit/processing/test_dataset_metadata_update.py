@@ -148,11 +148,11 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
         artifacts = [(artifact.uri, artifact.type) for artifact in new_dataset_version.artifacts]
         assert (f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad", DatasetArtifactType.RAW_H5AD) in artifacts
         assert (
-            f"s3://fake.bucket/{new_dataset_version_id}/local.tsv.bgz",
+            "s3://fake.bucket/local.tsv.bgz",
             DatasetArtifactType.ATAC_FRAGMENT,
         ) in artifacts
         assert (
-            f"s3://fake.bucket/{new_dataset_version_id}/local.tsv.bgz.tbi",
+            "s3://fake.bucket/local.tsv.bgz.tbi",
             DatasetArtifactType.ATAC_INDEX,
         ) in artifacts
 
@@ -226,7 +226,6 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
-                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.SKIPPED),
             ]
         )
         collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
@@ -254,7 +253,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
 
         # RDS should be skipped
         assert new_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
-        assert new_dataset_version.status.atac_status == DatasetConversionStatus.SKIPPED
+        assert new_dataset_version.status.atac_status == DatasetConversionStatus.NA
 
         assert new_dataset_version.status.processing_status == DatasetProcessingStatus.SUCCESS
 

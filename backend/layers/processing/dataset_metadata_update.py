@@ -333,9 +333,13 @@ class DatasetMetadataUpdater(ProcessValidateH5AD):
             self.update_processing_status(new_dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.COPIED)
         else:
             self.logger.info("Main: No ATAC fragment found, copying status from current dataset version")
-            self.update_processing_status(
-                new_dataset_version_id, DatasetStatusKey.ATAC, current_dataset_version.status.atac_status
+            # account for edge case of status erroneously set to None
+            current_dataset_version_status = (
+                current_dataset_version.status.atac_status
+                if current_dataset_version.status.atac_status
+                else DatasetConversionStatus.NA
             )
+            self.update_processing_status(new_dataset_version_id, DatasetStatusKey.ATAC, current_dataset_version_status)
 
         # blocking call on async functions before checking for valid artifact statuses
         [j.join() for j in artifact_jobs]
