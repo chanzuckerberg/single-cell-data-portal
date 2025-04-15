@@ -94,11 +94,66 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
 
         assert new_dataset_version.status.upload_status == DatasetUploadStatus.UPLOADED
         assert new_dataset_version.status.processing_status == DatasetProcessingStatus.SUCCESS
+        assert new_dataset_version.status.atac_status == DatasetConversionStatus.NA
 
         # RDS should be skipped
         assert new_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
 
         assert self.updater.s3_provider.uri_exists(f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad")
+
+    @patch("backend.common.utils.dl_sources.uri.downloader")
+    @patch("scanpy.read_h5ad")
+    @patch("backend.layers.processing.dataset_metadata_update.S3Provider", Mock(side_effect=MockS3Provider))
+    @patch("backend.layers.processing.dataset_metadata_update.DatabaseProvider", Mock(side_effect=DatabaseProviderMock))
+    @patch("backend.layers.processing.dataset_metadata_update.DatasetMetadataUpdaterWorker")
+    def test_update_metadata__with_atac_fragment(self, mock_worker_factory, *args):
+        current_dataset_version = self.generate_dataset(
+            artifacts=[
+                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "s3://fake.bucket/raw.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "s3://fake.bucket/local.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.CXG, "s3://fake.bucket/local.cxg"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_FRAGMENT, "s3://fake.bucket/local.tsv.bgz"),
+                DatasetArtifactUpdate(DatasetArtifactType.ATAC_INDEX, "s3://fake.bucket/local.tsv.bgz.tbi"),
+            ],
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.UPLOADED),
+            ],
+        )
+        collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
+        current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            collection_version_id=collection_version_id,
+            url="http://fake.url",
+            file_size=0,
+            current_dataset_version_id=current_dataset_version_id,
+            start_step_function=False,
+        )
+        mock_worker = mock_worker_factory.return_value
+        self.updater.has_valid_artifact_statuses = Mock(return_value=True)
+        self.updater.update_metadata(
+            current_dataset_version_id, new_dataset_version_id, DatasetArtifactMetadataUpdate(citation="New Citation")
+        )
+
+        # skip raw_h5ad update since no updated fields are expected fields in raw H5AD
+        mock_worker.update_raw_h5ad.assert_not_called()
+        mock_worker.update_h5ad.assert_called_once()
+        mock_worker.update_cxg.assert_called_once()
+
+        # check that collection version maps to dataset version with updated metadata
+        collection_version = self.business_logic.get_collection_version(collection_version_id)
+        new_dataset_version = collection_version.datasets[0]
+        new_dataset_version_id = new_dataset_version.version_id
+        artifacts = [(artifact.uri, artifact.type) for artifact in new_dataset_version.artifacts]
+        assert (f"s3://artifact_bucket/{new_dataset_version_id}/raw.h5ad", DatasetArtifactType.RAW_H5AD) in artifacts
+
+        assert new_dataset_version.status.upload_status == DatasetUploadStatus.UPLOADED
+        assert new_dataset_version.status.processing_status == DatasetProcessingStatus.SUCCESS
+        assert new_dataset_version.status.atac_status == DatasetConversionStatus.COPIED
+
+        # RDS should be skipped
+        assert new_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
 
     @patch("backend.common.utils.dl_sources.uri.downloader")
     @patch("scanpy.read_h5ad")
@@ -146,6 +201,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
 
         assert new_dataset_version.status.upload_status == DatasetUploadStatus.UPLOADED
         assert new_dataset_version.status.processing_status == DatasetProcessingStatus.SUCCESS
+        assert new_dataset_version.status.atac_status == DatasetConversionStatus.SKIPPED
 
         # RDS should be skipped
         assert new_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
@@ -162,7 +218,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
-                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.NA),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.SKIPPED),
             ]
         )
         collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
@@ -190,6 +246,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
 
         # RDS should be skipped
         assert new_dataset_version.status.rds_status == DatasetConversionStatus.SKIPPED
+        assert new_dataset_version.status.atac_status == DatasetConversionStatus.SKIPPED
 
         assert new_dataset_version.status.processing_status == DatasetProcessingStatus.SUCCESS
 
