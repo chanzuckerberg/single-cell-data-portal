@@ -62,6 +62,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.NA),
             ]
         )
         collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
@@ -114,6 +115,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.SKIPPED),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.SKIPPED),
             ],
         )
         collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
@@ -160,6 +162,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.NA),
             ]
         )
         collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
@@ -195,6 +198,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.SKIPPED),
             ]
         )
         current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
@@ -208,6 +212,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.SKIPPED),
             ]
         )
         current_dataset_version_id = DatasetVersionId(current_dataset_version.dataset_version_id)
@@ -234,6 +239,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.NA),
             ],
         )
         collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
@@ -266,6 +272,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.SKIPPED),
             ],
         )
         collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
@@ -304,6 +311,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.NA),
             ],
         )
         collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
@@ -335,6 +343,7 @@ class TestUpdateMetadataHandler(BaseProcessingTest):
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.RDS, status=DatasetConversionStatus.CONVERTED),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.ATAC, status=DatasetConversionStatus.SKIPPED),
             ]
         )
         collection_version_id = CollectionVersionId(current_dataset_version.collection_version_id)
