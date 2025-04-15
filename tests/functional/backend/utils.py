@@ -67,6 +67,30 @@ def create_explorer_url(dataset_id: str, deployment_stage: str) -> str:
     return f"https://cellxgene.{deployment_stage}.single-cell.czi.technology/e/{dataset_id}.cxg/"
 
 
+def update_metadata_and_wait(session, api_url, curator_cookie, collection_id, metadata):
+    headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
+    res = session.put(f"{api_url}/dp/v1/collections/{collection_id}", data=json.dumps(metadata), headers=headers)
+    res.raise_for_status()
+    # ensure metadata update is queued for each dataset
+    collection = json.loads(res.content)
+    dataset_ids = [dataset["id"] for dataset in collection["datasets"]]
+    for dataset_id in dataset_ids:
+        res = session.get(f"{api_url}/dp/v1/datasets/{dataset_id}/status", headers=headers)
+        res.raise_for_status()
+        data = json.loads(res.content)
+        assert data["processing_status"] == "INITIALIZED"
+
+    collection_errors = {}
+    for dataset_id in dataset_ids:
+        result = _wait_for_dataset_status(session, api_url, dataset_id, headers)
+        dataset_id = result["dataset_id"]
+        dataset_errors = result["errors"]
+        if dataset_errors:
+            collection_errors[dataset_id] = dataset_errors
+
+    return collection_errors
+
+
 def upload_url_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id=None):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     body = {"url": dropbox_url}

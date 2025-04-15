@@ -152,24 +152,37 @@ def test_delete_private_collection(session, api_url, curator_cookie, collection_
 
 
 @skip_creation_on_prod
-def test_dataset_upload_flow_with_dataset(session, curator_cookie, api_url, upload_dataset, request, collection_data):
+def test_dataset_upload_flow_with_dataset(
+    session, curator_cookie, api_url, upload_dataset, upload_dataset_metadata, request, collection_data
+):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     collection_id = create_test_collection(headers, request, session, api_url, collection_data)
-    _verify_upload_and_delete_succeeded(collection_id, headers, DATASET_URI, session, api_url, upload_dataset)
+    _verify_upload_and_delete_succeeded(
+        collection_id, headers, DATASET_URI, session, api_url, upload_dataset, upload_dataset_metadata
+    )
 
 
 @skip_creation_on_prod
 def test_dataset_upload_flow_with_visium_dataset(
-    session, curator_cookie, api_url, upload_dataset, request, collection_data
+    session, curator_cookie, api_url, upload_dataset, upload_dataset_metadata, request, collection_data
 ):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     collection_id = create_test_collection(headers, request, session, api_url, collection_data)
-    _verify_upload_and_delete_succeeded(collection_id, headers, VISIUM_DATASET_URI, session, api_url, upload_dataset)
+    _verify_upload_and_delete_succeeded(
+        collection_id, headers, VISIUM_DATASET_URI, session, api_url, upload_dataset, upload_dataset_metadata
+    )
 
 
 @skip_creation_on_prod
 def test_dataset_upload_flow_with_atac_seq_dataset(
-    session, curator_cookie, api_url, upload_manifest, request, collection_data, curation_api_access_token
+    session,
+    curator_cookie,
+    api_url,
+    upload_manifest,
+    upload_dataset_metadata,
+    request,
+    collection_data,
+    curation_api_access_token,
 ):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     collection_id = create_test_collection(
@@ -180,22 +193,32 @@ def test_dataset_upload_flow_with_atac_seq_dataset(
         collection_data,
     )
     _verify_upload_and_delete_succeeded(
-        collection_id,
-        headers,
-        ATAC_SEQ_MANIFEST,
-        session,
-        api_url,
-        upload_manifest,
+        collection_id, headers, ATAC_SEQ_MANIFEST, session, api_url, upload_manifest, upload_dataset_metadata
     )
 
 
-def _verify_upload_and_delete_succeeded(collection_id, headers, req_body, session, api_url, upload_and_wait):
+def _verify_upload_and_delete_succeeded(
+    collection_id, headers, req_body, session, api_url, upload_and_wait, upload_dataset_metadata
+):
     dataset_id = upload_and_wait(collection_id, req_body)
     # test non owner cant retrieve status
     no_auth_headers = {"Content-Type": "application/json"}
     res = session.get(f"{api_url}/dp/v1/datasets/{dataset_id}/status", headers=no_auth_headers)
     with pytest.raises(HTTPError):
         res.raise_for_status()
+
+    # update collection DOI and await dataset update
+    updated_data = {
+        "contact_email": "person@random.com",
+        "contact_name": "Doctor Who",
+        "description": "These are different words",
+        "links": [
+            {"link_name": "The Source", "link_type": "DATA_SOURCE", "link_url": "https://datasource.com"},
+            {"link_name": "", "link_type": "DOI", "link_url": "10.1093/nar/gkae1142"},
+        ],
+        "name": "lots of cells",
+    }
+    upload_dataset_metadata(collection_id, updated_data)
 
     # Test dataset deletion
     res = session.delete(f"{api_url}/dp/v1/datasets/{dataset_id}", headers=headers)

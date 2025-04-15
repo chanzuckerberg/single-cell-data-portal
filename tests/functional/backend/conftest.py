@@ -11,6 +11,7 @@ from tests.functional.backend.utils import (
     make_cookie,
     make_proxy_auth_token,
     make_session,
+    update_metadata_and_wait,
     upload_manifest_and_wait,
     upload_url_and_wait,
 )
@@ -86,6 +87,17 @@ def upload_dataset(session, api_url, curator_cookie, request):
         return dataset_id
 
     return _upload_dataset
+
+
+@pytest.fixture(scope="session")
+def upload_dataset_metadata(session, api_url, curator_cookie, request):
+    def _upload_dataset_metadata(collection_id, metadata):
+        collection_errors = update_metadata_and_wait(session, api_url, curator_cookie, collection_id, metadata)
+        if collection_errors:
+            raise pytest.fail(str(collection_errors))
+        return collection_id
+
+    return _upload_dataset_metadata
 
 
 @pytest.fixture(scope="session")
