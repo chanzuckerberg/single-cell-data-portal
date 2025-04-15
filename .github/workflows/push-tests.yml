@@ -23,7 +23,7 @@ permissions:
 jobs:
   lint:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: x64-xl-privileged
+    runs-on: xl-amd64-privileged
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -61,12 +61,6 @@ jobs:
       - name: Check frontend
         run: |
           cd frontend
-
-          echo "Configuring npm to reduce server load"
-          npm config set maxsockets 3
-          npm config set fetch-retries 2
-          npm config set fetch-retry-mintimeout 30000
-          npm config set fetch-retry-maxtimeout 60000
 
           echo "Starting npm ci at $(date)"
           npm ci --prefer-offline --no-progress
