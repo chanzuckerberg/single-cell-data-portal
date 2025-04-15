@@ -126,3 +126,18 @@ def collection_data(request):
         "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "https://protocol.com"}],
         "name": request.function.__name__,
     }
+
+
+@pytest.fixture()
+def collection_data_DOI_update(request):
+    return {
+        "contact_email": "lisbon@gmail.com",
+        "contact_name": "Madrid Sparkle",
+        "curator_name": "John Smith",
+        "description": "Well here are some words",
+        "links": [
+            {"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "https://protocol.com"},
+            {"link_name": "", "link_type": "DOI", "link_url": "10.1093/nar/gkae1142"},
+        ],
+        "name": request.function.__name__,
+    }
