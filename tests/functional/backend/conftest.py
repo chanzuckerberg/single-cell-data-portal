@@ -93,9 +93,9 @@ def upload_dataset(session, api_url, curator_cookie, request):
 def upload_dataset_metadata(session, api_url, curator_cookie, request):
     def _upload_dataset_metadata(collection_id, metadata):
         collection_errors = update_metadata_and_wait(session, api_url, curator_cookie, collection_id, metadata)
-        dataset_ids = list(collection_errors.keys())
-        if collection_errors:
+        if any(errors for errors in collection_errors.values()):
             raise pytest.fail(str(collection_errors))
+        dataset_ids = list(collection_errors.keys())
         return collection_id, dataset_ids
 
     return _upload_dataset_metadata

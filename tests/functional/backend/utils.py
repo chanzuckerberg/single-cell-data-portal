@@ -85,8 +85,7 @@ def update_metadata_and_wait(session, api_url, curator_cookie, collection_id, me
         result = _wait_for_dataset_status(session, api_url, dataset_id, headers)
         dataset_id = result["dataset_id"]
         dataset_errors = result["errors"]
-        if dataset_errors:
-            collection_errors[dataset_id] = dataset_errors
+        collection_errors[dataset_id] = dataset_errors
 
     return collection_errors
 
