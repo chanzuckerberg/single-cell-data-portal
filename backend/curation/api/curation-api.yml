@@ -1532,7 +1532,8 @@ components:
       nullable: true
     feature_reference:
       description: |
-        List of NCBITaxon ontology term IDs mapping to reference organisms for features in dataset.
+        List of NCBITaxon ontology term IDs mapping to reference organisms for features in dataset. Find current list of
+        supported feature reference term IDs [here](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#required-gene-annotations).
       type: array
       items:
         type: string
