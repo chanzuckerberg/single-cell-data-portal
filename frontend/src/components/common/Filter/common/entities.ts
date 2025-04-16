@@ -584,7 +584,6 @@ export interface OntologyCategoryView {
   views: OntologyCategoryTreeView[];
   tooltip?: string;
   footerComponentId?: keyof typeof FOOTER_COMPONENT_MAP;
-  showMultiSpeciesFeatures?: boolean;
 }
 
 /**

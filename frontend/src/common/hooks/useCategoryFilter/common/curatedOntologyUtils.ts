@@ -74,8 +74,7 @@ export function buildCuratedOntologyCategoryView(
   config: CuratedOntologyCategoryFilterConfig,
   categoryValueByValue: KeyedSelectCategoryValue,
   filterState: FilterState,
-  ontologyTermLabelsById: Map<string, string>,
-  showMultiSpeciesFeatures?: boolean
+  ontologyTermLabelsById: Map<string, string>
 ): OntologyCategoryView {
   const {
     categoryFilterId,
@@ -101,8 +100,7 @@ export function buildCuratedOntologyCategoryView(
         categoryFilterId === CATEGORY_FILTER_ID.DEVELOPMENT_STAGE &&
         !isDevelopmentStageSpeciesVisible(
           filterState,
-          ontologyViewKey as ONTOLOGY_VIEW_KEY,
-          showMultiSpeciesFeatures
+          ontologyViewKey as ONTOLOGY_VIEW_KEY
         )
       ) {
         return accum;
@@ -393,8 +391,7 @@ function handleOntologyChildRemoved(
  */
 function isDevelopmentStageSpeciesVisible(
   filterState: FilterState,
-  speciesKey: ONTOLOGY_VIEW_KEY,
-  showMultiSpeciesFeatures?: boolean
+  speciesKey: ONTOLOGY_VIEW_KEY
 ) {
   // Find the current selected values for organism.
   const organismCategoryValues = filterState[
@@ -403,17 +400,6 @@ function isDevelopmentStageSpeciesVisible(
   const selectedOrganisms = [...organismCategoryValues.values()]
     .filter((selectCategoryValue) => selectCategoryValue.selected)
     .map((selectCategoryValue) => selectCategoryValue.categoryValueId);
-
-  // Before the feature flag is turned on, keep the current filter behavior
-  if (
-    !showMultiSpeciesFeatures &&
-    selectedOrganisms.length === 0 &&
-    speciesKey !== ONTOLOGY_VIEW_KEY.WBls &&
-    speciesKey !== ONTOLOGY_VIEW_KEY.ZFS &&
-    speciesKey !== ONTOLOGY_VIEW_KEY.FBdv
-  ) {
-    return true;
-  }
 
   // If there is a filter applied for a specific species, show the species
   const developmentalStageValues = filterState[

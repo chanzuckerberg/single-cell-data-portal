@@ -18,10 +18,10 @@ import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { ENTITIES } from "src/common/queries/entities";
 import {
   COLLATOR_CASE_INSENSITIVE,
-  ORGANISM_TAXON,
   PUBLICATION_DATE_VALUES,
   SELF_REPORTED_ETHNICITY_DENY_LIST,
   SUSPENSION_TYPE_DENY_LIST,
+  NON_UBERON_LIFE_STAGE_ORGANISMS,
 } from "src/components/common/Filter/common/constants";
 import {
   Categories,
@@ -34,15 +34,6 @@ import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils
 import { API_URL } from "src/configs/configs";
 import { VIEW_MODE } from "src/common/hooks/useViewMode";
 import { NON_UBERON_DEVELOPMENTAL_STAGE_DESCENDANTS } from "src/components/common/Filter/common/constants";
-import {
-  newWormDataset,
-  newFruitFlyDataset,
-  newFruitFlyDataset2,
-  newZebraFishDataset,
-  newFruitFlyDataset3,
-  newFruitFlyDataset4,
-} from "./tempAdditionalDatasets";
-
 /**
  * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).
  */
@@ -767,14 +758,6 @@ function fetchAndProcessDatasetResponse(
   return fetch(url, DEFAULT_FETCH_OPTIONS)
     .then((response) => response.json())
     .then((datasets: DatasetResponse[]) => {
-      // TODO(smccanny): Remove this once we have a schema 5.3 data in staging and dev envs to test against.
-      // Add additional datasets to the response.
-      datasets.push(newWormDataset);
-      datasets.push(newFruitFlyDataset);
-      datasets.push(newFruitFlyDataset2);
-      datasets.push(newFruitFlyDataset3);
-      datasets.push(newFruitFlyDataset4);
-      datasets.push(newZebraFishDataset);
       // Correct any dirty data returned from endpoint.
       const sanitizedDatasets = datasets.map((dataset: DatasetResponse) => {
         return sanitizeDatasetResponse(dataset);
@@ -1062,13 +1045,8 @@ function processUserCollectionResponse(
 function addDevelopmentalStageAncestors(
   datasetResponse: DatasetResponse
 ): string[] {
-  const nonUberonLifeStageOrganisms = [
-    ORGANISM_TAXON.WORM,
-    ORGANISM_TAXON.FRUIT_FLY,
-    ORGANISM_TAXON.ZEBRA_FISH,
-  ];
   const hasNonUberonLifeStageOrganisms = datasetResponse.organism.some((obj) =>
-    nonUberonLifeStageOrganisms.includes(obj.ontology_term_id)
+    NON_UBERON_LIFE_STAGE_ORGANISMS.includes(obj.ontology_term_id)
   );
   if (!hasNonUberonLifeStageOrganisms) {
     return datasetResponse.development_stage_ancestors;

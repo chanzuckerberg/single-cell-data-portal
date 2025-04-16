@@ -793,6 +793,13 @@ export const ORGANISM_TAXON = {
   ZEBRA_FISH: "NCBITaxon:7955",
   FRUIT_FLY: "NCBITaxon:7227",
 };
+
+export const NON_UBERON_LIFE_STAGE_ORGANISMS = [
+  ORGANISM_TAXON.WORM,
+  ORGANISM_TAXON.FRUIT_FLY,
+  ORGANISM_TAXON.ZEBRA_FISH,
+];
+
 /**
  * Tissues to be included for display in tissue system ontology tree.
  */
