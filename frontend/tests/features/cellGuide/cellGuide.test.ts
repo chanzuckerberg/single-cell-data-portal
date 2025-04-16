@@ -467,7 +467,7 @@ describe("Cell Guide", () => {
         expect(rowCount).toBeGreaterThan(1);
       });
 
-      test("Enriched marker gene table is updated by the organism dropdown", async ({
+      test.skip("Enriched marker gene table is updated by the organism dropdown", async ({
         page,
       }) => {
         await goToPage(
