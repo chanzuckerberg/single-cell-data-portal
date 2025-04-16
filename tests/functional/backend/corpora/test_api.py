@@ -245,7 +245,14 @@ def test_dataset_upload_flow_with_atac_seq_dataset(
 
 
 def _verify_upload_and_delete_succeeded(
-    collection_id, headers, req_body, title_update_body, session, api_url, upload_and_wait, update_title_and_wait
+    collection_id,
+    headers,
+    req_body,
+    title_update_body,
+    session,
+    api_url,
+    upload_and_wait,
+    upload_dataset_title_and_wait,
 ):
     dataset_id = upload_and_wait(collection_id, req_body)
     # test non owner cant retrieve status
@@ -255,7 +262,7 @@ def _verify_upload_and_delete_succeeded(
         res.raise_for_status()
 
     # update title and await dataset update
-    _, updated_dataset_ids = update_title_and_wait(collection_id, title_update_body)
+    _, updated_dataset_ids = upload_dataset_title_and_wait(collection_id, dataset_id, title_update_body)
 
     # Test dataset deletion
     dataset_to_delete_id = updated_dataset_ids[0]

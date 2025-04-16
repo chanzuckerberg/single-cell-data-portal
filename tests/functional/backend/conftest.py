@@ -104,8 +104,8 @@ def upload_collection_metadata(session, api_url, curator_cookie, request):
 
 @pytest.fixture(scope="session")
 def upload_dataset_title(session, api_url, curator_cookie, request):
-    def _upload_dataset_title(collection_id, title):
-        return update_title_and_wait(session, api_url, curator_cookie, collection_id, title)
+    def _upload_dataset_title(collection_id, dataset_id, title):
+        return update_title_and_wait(session, api_url, curator_cookie, collection_id, dataset_id, title)
 
     return _upload_dataset_title
 

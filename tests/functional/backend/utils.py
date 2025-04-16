@@ -117,11 +117,7 @@ def update_title_and_wait(session, api_url, curator_cookie, collection_id, datas
     res.raise_for_status()
     collection = json.loads(res.content)
     updated_dataset = next((dataset for dataset in collection["datasets"] if dataset["id"] == updated_dataset_id), None)
-    if updated_dataset["title"] != dataset_title_update["title"]:
-        raise pytest.fail(
-            f"Dataset title was not updated. "
-            f"Expected: {dataset_title_update['title']}, Actual: {updated_dataset['title']}"
-        )
+    assert updated_dataset["title"] == dataset_title_update["title"]
 
     if dataset_errors:
         raise pytest.fail(f"Dataset {dataset_id} encountered errors: {dataset_errors}")
