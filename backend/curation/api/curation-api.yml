@@ -1532,15 +1532,9 @@ components:
       nullable: true
     feature_reference:
       description: |
-        List of NCBITaxon ontology term IDs mapping to reference organisms for features in dataset. Currently
-        supports Homo Sapiens, Mus musculus, SARS-CoV-2, and ERCC Spike-Ins.
+        List of NCBITaxon ontology term IDs mapping to reference organisms for features in dataset.
       type: array
       items:
-        enum:
-          - NCBITaxon:9606
-          - NCBITaxon:10090
-          - NCBITaxon:2697049
-          - NCBITaxon:32630
         type: string
       nullable: true
     is_primary_data:
