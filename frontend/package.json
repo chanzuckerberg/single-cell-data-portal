@@ -158,7 +158,8 @@
     "prettier-check": "npx prettier --check .",
     "build-and-start-prod": "npm run build && npm run serve",
     "postbuild": "next-sitemap",
-    "e2e-trace": "npx playwright show-trace"
+    "e2e-trace": "npx playwright show-trace",
+    "e2e-copy-snapshots-to-linux": "for file in __snapshots__/tests/features/**/*.test.ts-snapshots/*-darwin.txt; do cp \"$file\" \"${file/-darwin.txt/-linux.txt}\"; done"
   },
   "repository": {
     "type": "git",

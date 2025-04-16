@@ -92,7 +92,8 @@ const LUNG_TISSUE_ID = "UBERON_0002048";
 const SALIVARY_ACINAR_GLAND_CELL_TYPE_ID = "CL_0002623";
 const ABNORMAL_CELL_TYPE_ID = "CL_0001061";
 const CELL_CELL_TYPE_ID = "CL_0000000";
-const LUNG_CILIATED_CELL_CELL_TYPE_ID = "CL_1000271";
+const EPITHELIAL_CELL_ID = "0000066";
+const EPITHELIAL_CELL_CELL_TYPE_ID = `CL_${EPITHELIAL_CELL_ID}`;
 
 const NODES_LOCATOR = `[data-testid^='${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}']`;
 
@@ -1270,7 +1271,7 @@ describe("Cell Guide", () => {
           .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
 
         const label = page.getByTestId(
-          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:1000271__0`
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_CLICKABLE_TEXT_LABEL}-CL:${EPITHELIAL_CELL_ID}__0`
         );
 
         await Promise.all([
@@ -1278,7 +1279,7 @@ describe("Cell Guide", () => {
             `${TEST_URL}${ROUTES.CELL_GUIDE_TISSUE_SPECIFIC_CELL_TYPE.replace(
               ":tissueId",
               LUNG_TISSUE_ID
-            ).replace(":cellTypeId", LUNG_CILIATED_CELL_CELL_TYPE_ID)}`
+            ).replace(":cellTypeId", EPITHELIAL_CELL_CELL_TYPE_ID)}`
           ),
           waitForElementAndClick(label),
         ]);
@@ -1286,7 +1287,7 @@ describe("Cell Guide", () => {
         // Check that the new node is highlighted green (isTargetNode=true)
         await page
           .getByTestId(
-            `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:1000271__0-no-children-isTargetNode=true`
+            `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:${EPITHELIAL_CELL_ID}__0-has-children-isTargetNode=true`
           )
           .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
       });
@@ -1301,7 +1302,7 @@ describe("Cell Guide", () => {
           .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
 
         const node = page.getByTestId(
-          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:1000271__0-no-children-isTargetNode=false`
+          `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:${EPITHELIAL_CELL_ID}__0-has-children-isTargetNode=false`
         );
         await node.hover();
         await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
