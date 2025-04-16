@@ -467,7 +467,7 @@ describe("Cell Guide", () => {
         expect(rowCount).toBeGreaterThan(1);
       });
 
-      test.skip("Enriched marker gene table is updated by the organism dropdown", async ({
+      test("Enriched marker gene table is updated by the organism dropdown", async ({
         page,
       }) => {
         await goToPage(
@@ -1257,7 +1257,7 @@ describe("Cell Guide", () => {
 
         expect(textContentBefore).not.toBe(textContentAfter);
       });
-      test.skip("Clicking on a cell type label links to its CellGuide Card", async ({
+      test("Clicking on a cell type label links to its CellGuide Card", async ({
         page,
       }) => {
         await goToPage(
@@ -1291,7 +1291,7 @@ describe("Cell Guide", () => {
           .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
       });
 
-      test.skip("Node tooltip displays on hover", async ({ page }) => {
+      test("Node tooltip displays on hover", async ({ page }) => {
         await goToPage(
           `${TEST_URL}${ROUTES.CELL_GUIDE}/tissues/${LUNG_TISSUE_ID}`,
           page
