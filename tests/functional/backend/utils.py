@@ -101,6 +101,8 @@ def update_title_and_wait(session, api_url, curator_cookie, collection_id, datas
     res.raise_for_status()
 
     # ensure metadata update is queued for dataset
+    res = session.get(f"{api_url}/dp/v1/collections/{collection_id}", headers=headers)
+    res.raise_for_status()
     collection = json.loads(res.content)
     updated_dataset_id = [dataset["id"] for dataset in collection["datasets"]][0]
     res = session.get(f"{api_url}/dp/v1/datasets/{updated_dataset_id}/status", headers=headers)
