@@ -3,7 +3,6 @@ import json
 import time
 from typing import Optional
 
-import pytest
 import requests
 from requests import Session
 from requests.adapters import HTTPAdapter, Retry
@@ -118,9 +117,7 @@ def update_title_and_wait(session, api_url, curator_cookie, collection_id, datas
     collection = json.loads(res.content)
     updated_dataset = next((dataset for dataset in collection["datasets"] if dataset["id"] == updated_dataset_id), None)
     assert updated_dataset["title"] == dataset_title_update["title"]
-
-    if dataset_errors:
-        raise pytest.fail(f"Dataset {dataset_id} encountered errors: {dataset_errors}")
+    assert not dataset_errors
 
     return updated_dataset_id
 
