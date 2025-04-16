@@ -31,7 +31,8 @@ const DataFormat: FC<Props> = ({
 
   return (
     <FormControl>
-      <FormLabel>Data Format</FormLabel>
+      {/* change to update the tests */}
+      <FormLabel>Data Formats</FormLabel>
       <RadioGroup
         name="dataFormat"
         onChange={handleChange}
