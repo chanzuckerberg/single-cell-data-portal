@@ -90,15 +90,15 @@ def upload_dataset(session, api_url, curator_cookie, request):
 
 
 @pytest.fixture(scope="session")
-def upload_dataset_metadata(session, api_url, curator_cookie, request):
-    def _upload_dataset_metadata(collection_id, metadata):
+def upload_collection_metadata(session, api_url, curator_cookie, request):
+    def _upload_collection_metadata(collection_id, metadata):
         collection_errors = update_metadata_and_wait(session, api_url, curator_cookie, collection_id, metadata)
         if any(errors for errors in collection_errors.values()):
             raise pytest.fail(str(collection_errors))
         dataset_ids = list(collection_errors.keys())
         return collection_id, dataset_ids
 
-    return _upload_dataset_metadata
+    return _upload_collection_metadata
 
 
 @pytest.fixture(scope="session")
@@ -142,3 +142,8 @@ def collection_data_DOI_update(request):
         ],
         "name": request.function.__name__,
     }
+
+
+@pytest.fixture()
+def dataset_title_update(request):
+    return {"title": f"Updated Title for {request.function.__name__}"}

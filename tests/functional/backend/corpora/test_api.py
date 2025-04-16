@@ -44,7 +44,15 @@ def test_get_collections(session, api_url):
 
 
 @skip_creation_on_prod
-def test_collection_flow(session, api_url, curator_cookie, upload_dataset, collection_data):
+def test_collection_flow(
+    session,
+    api_url,
+    curator_cookie,
+    upload_dataset,
+    upload_collection_metadata,
+    collection_data_DOI_update,
+    collection_data,
+):
     # create collection
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     res = session.post(f"{api_url}/dp/v1/collections", data=json.dumps(collection_data), headers=headers)
@@ -79,6 +87,9 @@ def test_collection_flow(session, api_url, curator_cookie, upload_dataset, colle
         assert updated_data[key] == data[key]
 
     upload_dataset(collection_id, DATASET_URI)
+
+    # Test collection DOI update and ensure dataset updates are triggered
+    upload_collection_metadata(collection_id, collection_data_DOI_update)
 
     # make collection public
     body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
@@ -157,10 +168,10 @@ def test_dataset_upload_flow_with_dataset(
     curator_cookie,
     api_url,
     upload_dataset,
-    upload_dataset_metadata,
+    update_title_and_wait,
     request,
     collection_data,
-    collection_data_DOI_update,
+    dataset_title_update,
 ):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     collection_id = create_test_collection(headers, request, session, api_url, collection_data)
@@ -168,11 +179,11 @@ def test_dataset_upload_flow_with_dataset(
         collection_id,
         headers,
         DATASET_URI,
-        collection_data_DOI_update,
+        dataset_title_update,
         session,
         api_url,
         upload_dataset,
-        upload_dataset_metadata,
+        update_title_and_wait,
     )
 
 
@@ -182,10 +193,10 @@ def test_dataset_upload_flow_with_visium_dataset(
     curator_cookie,
     api_url,
     upload_dataset,
-    upload_dataset_metadata,
+    update_title_and_wait,
     request,
     collection_data,
-    collection_data_DOI_update,
+    dataset_title_update,
 ):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     collection_id = create_test_collection(headers, request, session, api_url, collection_data)
@@ -193,11 +204,11 @@ def test_dataset_upload_flow_with_visium_dataset(
         collection_id,
         headers,
         VISIUM_DATASET_URI,
-        collection_data_DOI_update,
+        dataset_title_update,
         session,
         api_url,
         upload_dataset,
-        upload_dataset_metadata,
+        update_title_and_wait,
     )
 
 
@@ -207,10 +218,10 @@ def test_dataset_upload_flow_with_atac_seq_dataset(
     curator_cookie,
     api_url,
     upload_manifest,
-    upload_dataset_metadata,
+    update_title_and_wait,
     request,
     collection_data,
-    collection_data_DOI_update,
+    dataset_title_update,
     curation_api_access_token,
 ):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
@@ -225,16 +236,16 @@ def test_dataset_upload_flow_with_atac_seq_dataset(
         collection_id,
         headers,
         ATAC_SEQ_MANIFEST,
-        collection_data_DOI_update,
+        dataset_title_update,
         session,
         api_url,
         upload_manifest,
-        upload_dataset_metadata,
+        update_title_and_wait,
     )
 
 
 def _verify_upload_and_delete_succeeded(
-    collection_id, headers, req_body, metadata_update_body, session, api_url, upload_and_wait, upload_dataset_metadata
+    collection_id, headers, req_body, title_update_body, session, api_url, upload_and_wait, update_title_and_wait
 ):
     dataset_id = upload_and_wait(collection_id, req_body)
     # test non owner cant retrieve status
@@ -243,8 +254,8 @@ def _verify_upload_and_delete_succeeded(
     with pytest.raises(HTTPError):
         res.raise_for_status()
 
-    # update collection DOI and await dataset update
-    _, updated_dataset_ids = upload_dataset_metadata(collection_id, metadata_update_body)
+    # update title and await dataset update
+    _, updated_dataset_ids = update_title_and_wait(collection_id, title_update_body)
 
     # Test dataset deletion
     dataset_to_delete_id = updated_dataset_ids[0]

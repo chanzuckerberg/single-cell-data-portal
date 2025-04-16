@@ -3,6 +3,7 @@ import json
 import time
 from typing import Optional
 
+import pytest
 import requests
 from requests import Session
 from requests.adapters import HTTPAdapter, Retry
@@ -88,6 +89,44 @@ def update_metadata_and_wait(session, api_url, curator_cookie, collection_id, me
         collection_errors[dataset_id] = dataset_errors
 
     return collection_errors
+
+
+def update_title_and_wait(session, api_url, curator_cookie, collection_id, dataset_id, dataset_title_update):
+    headers = {
+        "Cookie": f"cxguser={curator_cookie}",
+        "Content-Type": "application/json",
+    }
+
+    patch_url = f"{api_url}/dp/v1/collections/{collection_id}/datasets/{dataset_id}"
+    res = session.patch(patch_url, data=json.dumps(dataset_title_update), headers=headers)
+    res.raise_for_status()
+
+    # ensure metadata update is queued for dataset
+    collection = json.loads(res.content)
+    updated_dataset_id = [dataset["id"] for dataset in collection["datasets"]][0]
+    res = session.get(f"{api_url}/dp/v1/datasets/{updated_dataset_id}/status", headers=headers)
+    res.raise_for_status()
+    data = json.loads(res.content)
+    assert data["processing_status"] == "INITIALIZED"
+
+    result = _wait_for_dataset_status(session, api_url, updated_dataset_id, headers)
+    dataset_errors = result["errors"]
+
+    # Check if title was updated
+    res = session.get(f"{api_url}/dp/v1/collections/{collection_id}", headers=headers)
+    res.raise_for_status()
+    collection = json.loads(res.content)
+    updated_dataset = next((dataset for dataset in collection["datasets"] if dataset["id"] == updated_dataset_id), None)
+    if updated_dataset["title"] != dataset_title_update["title"]:
+        raise pytest.fail(
+            f"Dataset title was not updated. "
+            f"Expected: {dataset_title_update['title']}, Actual: {updated_dataset['title']}"
+        )
+
+    if dataset_errors:
+        raise pytest.fail(f"Dataset {dataset_id} encountered errors: {dataset_errors}")
+
+    return updated_dataset_id
 
 
 def upload_url_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id=None):
