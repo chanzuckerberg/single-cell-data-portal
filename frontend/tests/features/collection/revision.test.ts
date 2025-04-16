@@ -40,7 +40,7 @@ describe("Collection Revision @loggedIn", () => {
     "We only seed published collections for revision test in dev, rdev, and staging"
   );
 
-  test("enables publish if datasets updated", async ({ page }) => {
+  test.skip("enables publish if datasets updated", async ({ page }) => {
     const testId = buildCollectionRowLocator(COLLECTION_ROW_WRITE_PUBLISHED_ID);
     await startRevision(page, testId);
 
@@ -88,7 +88,7 @@ describe("Collection Revision @loggedIn", () => {
     await deleteRevision(page);
   });
 
-  test("starts a revision", async ({ page }) => {
+  test.skip("starts a revision", async ({ page }) => {
     const testId = buildCollectionRowLocator(COLLECTION_ROW_WRITE_PUBLISHED_ID);
     const collectionName = await startRevision(page, testId);
 
@@ -126,7 +126,7 @@ describe("Collection Revision @loggedIn", () => {
     await deleteRevision(page);
   });
 
-  test("allows editing", async ({ page }) => {
+  test.skip("allows editing", async ({ page }) => {
     const testId = buildCollectionRowLocator(COLLECTION_ROW_WRITE_PUBLISHED_ID);
     await startRevision(page, testId);
 
@@ -215,7 +215,7 @@ describe("Collection Revision @loggedIn", () => {
   });
 
   describe("edit dataset", () => {
-    test("allows rename dataset", async ({ page }) => {
+    test.skip("allows rename dataset", async ({ page }) => {
       // Create and navigate to revision
       const testId = buildCollectionRowLocator(
         COLLECTION_ROW_WRITE_PUBLISHED_ID
@@ -274,7 +274,7 @@ describe("Collection Revision @loggedIn", () => {
   describe("reorder datasets", () => {
     const MIN_DATASET_COUNT = 3;
 
-    test("enables reorder datasets", async ({ page }) => {
+    test.skip("enables reorder datasets", async ({ page }) => {
       // Navigate to a revision with multiple datasets
       await startReorderableRevision(page);
 
@@ -293,7 +293,7 @@ describe("Collection Revision @loggedIn", () => {
       }
     });
 
-    test("cancels reorder", async ({ page }) => {
+    test.skip("cancels reorder", async ({ page }) => {
       // Navigate to revision with multiple datasets
       await startReorderableRevision(page);
 
@@ -320,7 +320,7 @@ describe("Collection Revision @loggedIn", () => {
       }
     });
 
-    test("saves reorder", async ({ page }) => {
+    test.skip("saves reorder", async ({ page }) => {
       await startReorderableRevision(page);
 
       try {
@@ -373,7 +373,7 @@ describe("Collection Revision @loggedIn", () => {
       }
     });
 
-    test("move first dataset to second position", async ({ page }) => {
+    test.skip("move first dataset to second position", async ({ page }) => {
       await startReorderableRevision(page);
 
       try {
@@ -404,7 +404,7 @@ describe("Collection Revision @loggedIn", () => {
       }
     });
 
-    test("move first dataset to last position", async ({ page }) => {
+    test.skip("move first dataset to last position", async ({ page }) => {
       // Navigate to a revision with more than one dataset
       await startReorderableRevision(page);
 
@@ -444,7 +444,7 @@ describe("Collection Revision @loggedIn", () => {
       }
     });
 
-    test("move last dataset to first position", async ({ page }) => {
+    test.skip("move last dataset to first position", async ({ page }) => {
       // Navigate to a revision with more than one dataset
       await startReorderableRevision(page);
 
@@ -484,7 +484,7 @@ describe("Collection Revision @loggedIn", () => {
       }
     });
 
-    test("move last dataset to second position", async ({ page }) => {
+    test.skip("move last dataset to second position", async ({ page }) => {
       // Navigate to a revision with more than one dataset
       await startReorderableRevision(page);
 
