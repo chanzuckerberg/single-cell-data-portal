@@ -12,6 +12,7 @@ from tests.functional.backend.utils import (
     make_proxy_auth_token,
     make_session,
     update_metadata_and_wait,
+    update_title_and_wait,
     upload_manifest_and_wait,
     upload_url_and_wait,
 )
@@ -99,6 +100,14 @@ def upload_collection_metadata(session, api_url, curator_cookie, request):
         return collection_id, dataset_ids
 
     return _upload_collection_metadata
+
+
+@pytest.fixture(scope="session")
+def upload_dataset_title(session, api_url, curator_cookie, request):
+    def _upload_dataset_title(collection_id, title):
+        return update_title_and_wait(session, api_url, curator_cookie, collection_id, title)
+
+    return _upload_dataset_title
 
 
 @pytest.fixture(scope="session")

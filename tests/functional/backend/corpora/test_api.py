@@ -168,7 +168,7 @@ def test_dataset_upload_flow_with_dataset(
     curator_cookie,
     api_url,
     upload_dataset,
-    update_title_and_wait,
+    upload_dataset_title,
     request,
     collection_data,
     dataset_title_update,
@@ -183,7 +183,7 @@ def test_dataset_upload_flow_with_dataset(
         session,
         api_url,
         upload_dataset,
-        update_title_and_wait,
+        upload_dataset_title,
     )
 
 
@@ -193,7 +193,7 @@ def test_dataset_upload_flow_with_visium_dataset(
     curator_cookie,
     api_url,
     upload_dataset,
-    update_title_and_wait,
+    upload_dataset_title,
     request,
     collection_data,
     dataset_title_update,
@@ -208,7 +208,7 @@ def test_dataset_upload_flow_with_visium_dataset(
         session,
         api_url,
         upload_dataset,
-        update_title_and_wait,
+        upload_dataset_title,
     )
 
 
@@ -218,7 +218,7 @@ def test_dataset_upload_flow_with_atac_seq_dataset(
     curator_cookie,
     api_url,
     upload_manifest,
-    update_title_and_wait,
+    upload_dataset_title,
     request,
     collection_data,
     dataset_title_update,
@@ -240,7 +240,7 @@ def test_dataset_upload_flow_with_atac_seq_dataset(
         session,
         api_url,
         upload_manifest,
-        update_title_and_wait,
+        upload_dataset_title,
     )
 
 
