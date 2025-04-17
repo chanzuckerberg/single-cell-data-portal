@@ -12,7 +12,7 @@ import {
   NoMatches,
 } from "src/components/common/Filter/components/FilterContent/components/common/style";
 import { ViewSublist } from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterViewList/style";
-
+import { ListItemInfo } from "./components/ListItemInfo";
 interface Props {
   categoryFilterId: CATEGORY_FILTER_ID;
   isZerosVisible: boolean;
@@ -66,8 +66,14 @@ export default function FilterViewList({
         <NoMatches>No items found</NoMatches>
       ) : (
         filteredValues.map((filteredValue) => {
-          const { categoryValueId, count, label, selected, selectedPartial } =
-            filteredValue;
+          const {
+            categoryValueId,
+            count,
+            label,
+            selected,
+            selectedPartial,
+            tooltip,
+          } = filteredValue;
           let children;
           if (isOntologyCategoryTreeNodeView(filteredValue)) {
             children = filteredValue.children;
@@ -96,7 +102,16 @@ export default function FilterViewList({
                   {/* List item text and count */}
                   <ListItemText
                     disableTypography
-                    primary={<span>{label}</span>}
+                    primary={
+                      <span>
+                        {label}
+                        {tooltip && (
+                          <ListItemInfo content={tooltip.content}>
+                            {tooltip.trigger}
+                          </ListItemInfo>
+                        )}
+                      </span>
+                    }
                     secondary={<span>{count}</span>}
                   />
                 </ListItemButton>
