@@ -30,3 +30,7 @@ declare module "src/components/common/Filter/descendant_mappings/tissue_descenda
   const value: { [key: string]: string[] };
   export default value;
 }
+declare module "src/components/common/Filter/descendant_mappings/development_stage_descendants.json" {
+  const value: { [key: string]: string[] };
+  export default value;
+}
