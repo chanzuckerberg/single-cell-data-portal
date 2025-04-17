@@ -708,6 +708,7 @@ paths:
                         CONVERTED,
                         UPLOADING,
                         UPLOADED,
+                        COPIED,
                         SKIPPED,
                         FAILED,
                         COPIED,
