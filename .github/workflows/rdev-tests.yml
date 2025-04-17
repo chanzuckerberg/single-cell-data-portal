@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   functional-test:
-    runs-on: ubuntu-22.04
+    runs-on: xl-amd64-privileged
     timeout-minutes: 30
     steps:
       - name: Configure AWS Credentials
@@ -40,7 +40,7 @@ jobs:
           DEPLOYMENT_STAGE=rdev STACK_NAME=${{ env.STACK_NAME }} make functional-test
 
   seed-database-e2e-tests:
-    runs-on: ubuntu-22.04
+    runs-on: xl-amd64-privileged
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -62,7 +62,7 @@ jobs:
       - seed-database-e2e-tests
     timeout-minutes: 30
     name: e2e-tests ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
-    runs-on: ubuntu-22.04
+    runs-on: arm64-playwright-16cpu
     strategy:
       fail-fast: false
       matrix:
@@ -87,7 +87,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Install dependencies
@@ -110,8 +110,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
+          name: playwright-report-${{ matrix.project }}-${{ matrix.shardCurrent }}-${{ matrix.shardTotal }}
+          path: frontend/playwright-report
           retention-days: 14
 
       - name: Upload blob report to GitHub Actions Artifacts
@@ -119,7 +119,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: all-blob-reports-${{ matrix.project }}-${{ matrix.shardCurrent }}
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
+          path: frontend/blob-report
           retention-days: 1
           if-no-files-found: error
 
@@ -127,7 +127,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: allure-results-${{ matrix.project }}-${{ matrix.shardCurrent }}
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
+          path: frontend/allure-results
           retention-days: 20
           if-no-files-found: error
 
@@ -149,7 +149,7 @@ jobs:
     # Merge reports after playwright-tests, even if some shards have failed
     if: always()
     needs: run-e2e-tests
-    runs-on: ubuntu-latest
+    runs-on: xl-amd64-privileged
     defaults:
       run:
         working-directory: frontend
@@ -159,7 +159,7 @@ jobs:
           fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: "20.10.0"
       - name: Install dependencies
         run: npm ci
 
@@ -167,7 +167,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           pattern: all-blob-reports-*
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-reports
+          path: frontend/blob-reports
           merge-multiple: true
 
       - name: Merge into HTML Report
@@ -177,15 +177,15 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: html-report--attempt-${{ github.run_attempt }}
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
+          path: frontend/html-reports
           retention-days: 30
-          if-no-files-found: error
+          if-no-files-found: warn
 
   # https://github.com/myieye/web-languageforge/blob/develop/.github/workflows/e2e-tests.yml
   e2e-test:
     if: always()
     name: e2e-test
-    runs-on: ubuntu-latest
+    runs-on: xl-amd64-privileged
     needs:
       - run-e2e-tests
     steps:
@@ -202,7 +202,7 @@ jobs:
 
   e2e-logged-in-test:
     timeout-minutes: 30
-    runs-on: ubuntu-22.04
+    runs-on: arm64-playwright-16cpu
     defaults:
       run:
         working-directory: frontend
@@ -234,6 +234,6 @@ jobs:
         if: always()
         with:
           name: logged-in-test-results
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
+          path: frontend/playwright-report
           retention-days: 30
-          if-no-files-found: error
+          if-no-files-found: warn

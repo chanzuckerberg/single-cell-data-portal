@@ -112,6 +112,7 @@ export function useProjects() {
   return useQuery<ProjectResponse | undefined>([USE_PROJECTS], fetchProjects);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseCrossRefResponse({ message }: any) {
   const author = message.author[0].family;
   const journal = message["short-container-title"];

@@ -19,6 +19,7 @@ import {
   useFilterSearch,
 } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 import { FilterContent as Content } from "./style";
+import { FilterFooter } from "../FilterFooter";
 
 interface Props {
   categoryView: CategoryView;
@@ -32,8 +33,6 @@ export default function FilterContent({
   const filterSearchState = useFilterSearch();
   const clientHeightRef = useRef<number>(0);
   const filterRef = useRef<HTMLDivElement>(null);
-  const minHeight = clientHeightRef.current;
-
   useEffect(() => {
     if (filterRef.current) {
       clientHeightRef.current = filterRef.current.clientHeight;
@@ -41,9 +40,11 @@ export default function FilterContent({
   }, []);
 
   return (
-    <Content minHeight={minHeight} ref={filterRef}>
-      {buildBasicFilterContent(categoryView, onFilter, filterSearchState)}
-    </Content>
+    <>
+      <Content ref={filterRef}>
+        {buildBasicFilterContent(categoryView, onFilter, filterSearchState)}
+      </Content>
+    </>
   );
 }
 
@@ -64,14 +65,18 @@ function buildBasicFilterContent(
 
   // Handle ontology categories.
   if (isOntologyCategoryView(categoryView)) {
+    // (ie. Developmental Stage Filter)
     return (
-      <FilterViews
-        categoryFilterId={categoryFilterId}
-        isSearchable={categoryView.isSearchable}
-        isZerosVisible={categoryView.isZerosVisible}
-        onFilter={onFilter}
-        views={categoryView.views}
-      />
+      <>
+        <FilterViews
+          categoryFilterId={categoryFilterId}
+          isSearchable={categoryView.isSearchable}
+          isZerosVisible={categoryView.isZerosVisible}
+          onFilter={onFilter}
+          views={categoryView.views}
+          footerComponentId={categoryView.footerComponentId}
+        />
+      </>
     );
   }
 
@@ -96,14 +101,18 @@ function buildBasicFilterContent(
 
   // Handle ontology multi panel categories
   if (isOntologyMultiPanelCategoryView(categoryView)) {
+    // (ie. Cell Type and Tissue Type)
     return (
-      <FilterMultiPanelCategoryView
-        categoryView={categoryView}
-        clearSearchValueFn={clearSearchValueFn}
-        onFilter={onFilter}
-        searchValue={searchValue}
-        setSearchValue={setSearchValue}
-      />
+      <>
+        <FilterMultiPanelCategoryView
+          categoryView={categoryView}
+          clearSearchValueFn={clearSearchValueFn}
+          onFilter={onFilter}
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+        />
+        <FilterFooter componentId={categoryView.footerComponentId} />
+      </>
     );
   }
 

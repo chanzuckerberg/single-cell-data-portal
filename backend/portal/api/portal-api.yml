@@ -708,8 +708,10 @@ paths:
                         CONVERTED,
                         UPLOADING,
                         UPLOADED,
+                        COPIED,
                         SKIPPED,
                         FAILED,
+                        COPIED,
                         NA,
                       ]
                   h5ad_status:
