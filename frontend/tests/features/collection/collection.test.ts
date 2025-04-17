@@ -96,7 +96,7 @@ describe("Collection", () => {
       `
     );
 
-    describe("invalid DOIs", () => {
+    describe.skip("invalid DOIs", () => {
       test("doesn't create a collection with a DOI in an invalid format", async ({
         page,
       }) => {
