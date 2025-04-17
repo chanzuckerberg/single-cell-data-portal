@@ -48,7 +48,7 @@ describe("Collection", () => {
       await page.getByTestId("collection-more-button").click();
       await page.getByText("Delete Collection").click();
 
-      // Wait for the page to navigate away after confirming deletion
+      // Wait for the page to navigate away after confirming deletion!
       const currentURL = page.url();
 
       await Promise.all([
