@@ -67,6 +67,63 @@ def create_explorer_url(dataset_id: str, deployment_stage: str) -> str:
     return f"https://cellxgene.{deployment_stage}.single-cell.czi.technology/e/{dataset_id}.cxg/"
 
 
+def update_metadata_and_wait(session, api_url, curator_cookie, collection_id, metadata):
+    headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
+    res = session.put(f"{api_url}/dp/v1/collections/{collection_id}", data=json.dumps(metadata), headers=headers)
+    res.raise_for_status()
+    # ensure metadata update is queued for each dataset
+    collection = json.loads(res.content)
+    dataset_ids = [dataset["id"] for dataset in collection["datasets"]]
+    for dataset_id in dataset_ids:
+        res = session.get(f"{api_url}/dp/v1/datasets/{dataset_id}/status", headers=headers)
+        res.raise_for_status()
+        data = json.loads(res.content)
+        assert data["processing_status"] == "INITIALIZED"
+
+    collection_errors = {}
+    for dataset_id in dataset_ids:
+        result = _wait_for_dataset_status(session, api_url, dataset_id, headers)
+        dataset_id = result["dataset_id"]
+        dataset_errors = result["errors"]
+        collection_errors[dataset_id] = dataset_errors
+
+    return collection_errors
+
+
+def update_title_and_wait(session, api_url, curator_cookie, collection_id, dataset_id, dataset_title_update):
+    headers = {
+        "Cookie": f"cxguser={curator_cookie}",
+        "Content-Type": "application/json",
+    }
+
+    patch_url = f"{api_url}/dp/v1/collections/{collection_id}/datasets/{dataset_id}"
+    res = session.patch(patch_url, data=json.dumps(dataset_title_update), headers=headers)
+    res.raise_for_status()
+
+    # ensure metadata update is queued for dataset
+    res = session.get(f"{api_url}/dp/v1/collections/{collection_id}", headers=headers)
+    res.raise_for_status()
+    collection = json.loads(res.content)
+    updated_dataset_id = [dataset["id"] for dataset in collection["datasets"]][0]
+    res = session.get(f"{api_url}/dp/v1/datasets/{updated_dataset_id}/status", headers=headers)
+    res.raise_for_status()
+    data = json.loads(res.content)
+    assert data["processing_status"] == "INITIALIZED"
+
+    result = _wait_for_dataset_status(session, api_url, updated_dataset_id, headers)
+    dataset_errors = result["errors"]
+
+    # Check if title was updated
+    res = session.get(f"{api_url}/dp/v1/collections/{collection_id}", headers=headers)
+    res.raise_for_status()
+    collection = json.loads(res.content)
+    updated_dataset = next((dataset for dataset in collection["datasets"] if dataset["id"] == updated_dataset_id), None)
+    assert updated_dataset["name"] == dataset_title_update["title"]
+    assert not dataset_errors
+
+    return updated_dataset_id
+
+
 def upload_url_and_wait(session, api_url, curator_cookie, collection_id, dropbox_url, existing_dataset_id=None):
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     body = {"url": dropbox_url}
@@ -146,18 +203,19 @@ def _wait_for_dataset_status(session, api_url, dataset_id, headers):
                 errors.append(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
             if any(
                 [
-                    cxg_status == h5ad_status == "UPLOADED"
+                    (cxg_status == h5ad_status == "UPLOADED" or cxg_status == h5ad_status == "CONVERTED")
                     and rds_status == "SKIPPED"
                     and atac_status in ["SKIPPED", "UPLOADED", "NA", "COPIED"],
                     errors,
                 ]
             ):
                 keep_trying = False
-        if time.time() >= timer + 1200:
-            raise TimeoutError(
-                f"Dataset upload or conversion timed out after 10 min. Check logs for dataset: {dataset_id}"
-                f"upload_status: {upload_status} cxg_status: {cxg_status}, rds_status: {rds_status}, h5ad_status: {h5ad_status}"
-            )
+            if time.time() >= timer + 1200:
+                raise TimeoutError(
+                    f"Dataset upload or conversion timed out after 10 min. Check logs for dataset: {dataset_id}"
+                    f"upload_status: {upload_status} cxg_status: {cxg_status}, rds_status: {rds_status}, "
+                    f"h5ad_status: {h5ad_status}, atac_status: {atac_status}"
+                )
         time.sleep(10)
     return {"dataset_id": dataset_id, "errors": errors}
 
