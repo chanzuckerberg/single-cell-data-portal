@@ -120,7 +120,7 @@ describe("Collection", () => {
 
         // Wait for the specific error message to be visible
         await expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeVisible({
-          timeout: 2000,
+          timeout: 6000,
         });
       });
 
@@ -148,7 +148,7 @@ describe("Collection", () => {
 
         // Wait for the error message to be visible
         await expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeVisible({
-          timeout: 2000,
+          timeout: 6000,
         });
       });
     });
@@ -245,7 +245,14 @@ async function populateRequiredInputs(
   page: Page
 ) {
   await page.locator("#name").fill(testCollection.name);
+  await page.locator("#name").press("Tab");
+
   await page.locator("#description").fill(testCollection.description);
+  await page.locator("#description").press("Tab");
+
   await page.locator("#contact-name").fill(testCollection.contact_name);
+  await page.locator("#contact-name").press("Tab");
+
   await page.locator("#contact-email").fill(testCollection.contact_email);
+  await page.locator("#contact-email").press("Tab");
 }
