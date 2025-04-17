@@ -710,6 +710,7 @@ paths:
                         UPLOADED,
                         SKIPPED,
                         FAILED,
+                        COPIED,
                         NA,
                       ]
                   h5ad_status:
