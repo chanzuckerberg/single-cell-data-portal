@@ -262,11 +262,10 @@ def _verify_upload_and_delete_succeeded(
         res.raise_for_status()
 
     # update title and await dataset update
-    _, updated_dataset_ids = upload_dataset_title_and_wait(collection_id, dataset_id, title_update_body)
+    updated_dataset_id = upload_dataset_title_and_wait(collection_id, dataset_id, title_update_body)
 
     # Test dataset deletion
-    dataset_to_delete_id = updated_dataset_ids[0]
-    res = session.delete(f"{api_url}/dp/v1/datasets/{dataset_to_delete_id}", headers=headers)
+    res = session.delete(f"{api_url}/dp/v1/datasets/{updated_dataset_id}", headers=headers)
     res.raise_for_status()
     assertStatusCode(requests.codes.accepted, res)
 
@@ -275,4 +274,4 @@ def _verify_upload_and_delete_succeeded(
     data = json.loads(res.content)
     datasets = data["datasets"]
     dataset_ids = [dataset.get("id") for dataset in datasets]
-    assert dataset_to_delete_id not in dataset_ids
+    assert updated_dataset_id not in dataset_ids
