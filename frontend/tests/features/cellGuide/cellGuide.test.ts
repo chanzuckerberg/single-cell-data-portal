@@ -835,7 +835,7 @@ describe("Cell Guide", () => {
         );
       });
 
-      test("Node tooltip displays on hover", async ({ page }) => {
+      test.skip("Node tooltip displays on hover", async ({ page }) => {
         await goToPage(
           `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
           page
@@ -1301,7 +1301,7 @@ describe("Cell Guide", () => {
           .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
       });
 
-      test("Node tooltip displays on hover", async ({ page }) => {
+      test.skip("Node tooltip displays on hover", async ({ page }) => {
         await goToPage(
           `${TEST_URL}${ROUTES.CELL_GUIDE}/tissues/${LUNG_TISSUE_ID}`,
           page

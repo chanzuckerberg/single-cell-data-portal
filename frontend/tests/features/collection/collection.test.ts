@@ -114,10 +114,14 @@ describe("Collection", () => {
         // Specify a DOI that is in an invalid format.
         await populatePublicationDOI("INVALID_FORMAT", page);
 
-        // Attempt submit, confirm error message is displayed.
+        // Attempt submit and confirm 400 response
         const [response] = await submitCreateFormInvalid(page);
         expect(response.status()).toEqual(400);
-        expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeTruthy();
+
+        // Wait for the specific error message to be visible
+        await expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeVisible({
+          timeout: 2000,
+        });
       });
 
       test("doesn't create a collection with an invalid DOI", async ({
@@ -134,14 +138,18 @@ describe("Collection", () => {
           page
         );
 
-        // Specify a DOI that is a valid format but is not on Crossref.
+        // Specify a DOI that has a valid format but does not exist on Crossref.
         const VALID_FORMAT_BUT_NON_EXISTENT_DOI = "10.1016/j.2022.104097";
         await populatePublicationDOI(VALID_FORMAT_BUT_NON_EXISTENT_DOI, page);
 
-        // Attempt submit, confirm error message is displayed.
+        // Submit and confirm error
         const [response] = await submitCreateFormInvalid(page);
         expect(response.status()).toEqual(400);
-        expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeTruthy();
+
+        // Wait for the error message to be visible
+        await expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeVisible({
+          timeout: 2000,
+        });
       });
     });
   });
