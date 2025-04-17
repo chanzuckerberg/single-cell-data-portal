@@ -78,7 +78,7 @@ const Content: FC<Props> = ({
       ? selectedFormats.push(DATASET_ASSET_FORMAT.H5AD)
       : selectedFormats.push(allFormats[0]);
 
-    setSelectedFormats(allFormats);
+    setSelectedFormats(selectedFormats);
   }, [availableFormats, dataAssets]);
 
   useEffect(() => {
