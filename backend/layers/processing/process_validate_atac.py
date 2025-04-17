@@ -99,7 +99,6 @@ class ProcessValidateATAC(ProcessingLogic):
                 dataset_version_id,
                 DatasetStatusKey.ATAC,
                 DatasetConversionStatus.NA,
-                validation_errors=[str(e)],
             )
             return True
 
