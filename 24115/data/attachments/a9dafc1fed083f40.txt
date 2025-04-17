@@ -1,3 +1,0 @@
-INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': 1cac56b9-fb4a-4984-bdc9-64de6d9ef47e, 'manifest': IngestionManifest(anndata=HttpUrl('https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0'), atac_fragment=None), 'current_dataset_version_id': None}
-INFO     processing:process.py:109 Processing dataset version 3065dbb7-d669-4bdd-b7e3-539429801d19
-INFO     processing:process_logic.py:49 Updating processing status
