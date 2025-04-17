@@ -34,7 +34,7 @@ const TEST_ID_PUBLISH_COLLECTION = "publish-collection-button";
 const TEST_ID_REORDER_DATASETS_CANCEL = "datasets-reorder-cancel";
 const TEST_ID_REORDER_DATASETS_SAVE = "datasets-reorder-save";
 
-describe("Collection Revision @loggedIn", () => {
+describe.only("Collection Revision @loggedIn", () => {
   skip(
     !isDevStagingRdev,
     "We only seed published collections for revision test in dev, rdev, and staging"

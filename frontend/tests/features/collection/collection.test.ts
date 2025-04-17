@@ -3,7 +3,7 @@ import HTTP_STATUS_CODE from "src/common/constants/HTTP_STATUS_CODE";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
 import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/components/Content/common/constants";
-import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
+import { TEST_URL } from "tests/common/constants";
 import { goToPage, isDevStagingRdev, tryUntil } from "tests/utils/helpers";
 import { getTestID } from "tests/utils/selectors";
 
@@ -29,7 +29,7 @@ type CollectionFormInput = Pick<
   "contact_email" | "contact_name" | "description" | "name"
 >;
 
-describe.only("Collection", () => {
+describe("Collection", () => {
   describe("Logged In Tests @loggedIn", () => {
     skip(
       !isDevStagingRdev,
@@ -218,12 +218,14 @@ async function submitCreateForm(page: Page) {
 async function populatePublicationDOI(value: string, page: Page) {
   await page.getByText("Add Link").click();
   await page.getByText("Publication DOI").click();
-  expect(
+
+  await expect(
     page.getByText(
       "A summary citation linked to this DOI will be automatically added to this collection."
     )
-  ).toBeTruthy();
-  await page.type(ELEMENT_ID_INPUT_DOI, value, BLUEPRINT_SAFE_TYPE_OPTIONS);
+  ).toBeVisible();
+
+  await page.locator(ELEMENT_ID_INPUT_DOI).fill(value);
 }
 
 /**
@@ -234,20 +236,8 @@ async function populateRequiredInputs(
   testCollection: CollectionFormInput,
   page: Page
 ) {
-  await page.type("#name", testCollection.name, BLUEPRINT_SAFE_TYPE_OPTIONS);
-  await page.type(
-    "#description",
-    testCollection.description,
-    BLUEPRINT_SAFE_TYPE_OPTIONS
-  );
-  await page.type(
-    "#contact-name",
-    testCollection.contact_name,
-    BLUEPRINT_SAFE_TYPE_OPTIONS
-  );
-  await page.type(
-    "#contact-email",
-    testCollection.contact_email,
-    BLUEPRINT_SAFE_TYPE_OPTIONS
-  );
+  await page.locator("#name").fill(testCollection.name);
+  await page.locator("#description").fill(testCollection.description);
+  await page.locator("#contact-name").fill(testCollection.contact_name);
+  await page.locator("#contact-email").fill(testCollection.contact_email);
 }
