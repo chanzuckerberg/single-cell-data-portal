@@ -1306,24 +1306,26 @@ describe("Cell Guide", () => {
           `${TEST_URL}${ROUTES.CELL_GUIDE}/tissues/${LUNG_TISSUE_ID}`,
           page
         );
-      
+
         const dagView = page.getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW);
         await expect(dagView).toBeVisible({ timeout: WAIT_FOR_TIMEOUT_MS });
-      
+
         const node = page.getByTestId(
           `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:1000271__0-no-children-isTargetNode=false`
         );
-      
+
         await expect(node).toBeVisible();
         await node.hover();
-      
-        const tooltip = page.getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+
+        const tooltip = page.getByTestId(
+          CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP
+        );
         await expect(tooltip).toBeVisible({ timeout: 2000 });
-      
+
         const textContent = await tooltip.textContent();
         expect(textContent).toContain("in lung");
       });
-      
+    });
 
     describe("CellGuideCard Sidebar", () => {
       test("Clicking on the navbar scrolls to the section", async ({
