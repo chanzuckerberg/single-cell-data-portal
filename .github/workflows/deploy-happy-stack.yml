@@ -133,7 +133,7 @@ jobs:
 
   e2e-logged-in-test:
     timeout-minutes: 30
-    runs-on: ubuntu-22.04
+    runs-on: arm64-playwright-16cpu
     needs:
       - upgrade
     steps:
@@ -203,7 +203,7 @@ jobs:
   run-e2e-tests:
     timeout-minutes: 30
     name: e2e-tests ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
-    runs-on: ubuntu-22.04
+    runs-on: arm64-playwright-16cpu
     needs:
       - upgrade
     strategy:
@@ -258,8 +258,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report ${{ matrix.project }} ${{ matrix.shardCurrent }} of ${{ matrix.shardTotal }}
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
+          name: playwright-report-${{ matrix.project }}-${{ matrix.shardCurrent }}-${{ matrix.shardTotal }}
+          path: frontend/playwright-report
           retention-days: 14
 
       - name: Upload blob report to GitHub Actions Artifacts
@@ -267,9 +267,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: all-blob-reports-${{ matrix.project }}-${{ matrix.shardCurrent }}
-          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/blob-report
+          path: frontend/blob-report
           retention-days: 1
-          if-no-files-found: error
+          if-no-files-found: warn
 
   e2e-test:
     if: always()
