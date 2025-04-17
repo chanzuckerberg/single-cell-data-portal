@@ -11,6 +11,8 @@ from tests.functional.backend.utils import (
     make_cookie,
     make_proxy_auth_token,
     make_session,
+    update_metadata_and_wait,
+    update_title_and_wait,
     upload_manifest_and_wait,
     upload_url_and_wait,
 )
@@ -89,6 +91,26 @@ def upload_dataset(session, api_url, curator_cookie, request):
 
 
 @pytest.fixture(scope="session")
+def upload_collection_metadata(session, api_url, curator_cookie, request):
+    def _upload_collection_metadata(collection_id, metadata):
+        collection_errors = update_metadata_and_wait(session, api_url, curator_cookie, collection_id, metadata)
+        if any(errors for errors in collection_errors.values()):
+            raise pytest.fail(str(collection_errors))
+        dataset_ids = list(collection_errors.keys())
+        return collection_id, dataset_ids
+
+    return _upload_collection_metadata
+
+
+@pytest.fixture(scope="session")
+def upload_dataset_title(session, api_url, curator_cookie, request):
+    def _upload_dataset_title(collection_id, dataset_id, title):
+        return update_title_and_wait(session, api_url, curator_cookie, collection_id, dataset_id, title)
+
+    return _upload_dataset_title
+
+
+@pytest.fixture(scope="session")
 def upload_manifest(session, api_url, curation_api_access_token, curator_cookie, request):
     def _upload_manifest(collection_id: str, manifest: dict, existing_dataset_id=None):
         result = upload_manifest_and_wait(
@@ -114,3 +136,23 @@ def collection_data(request):
         "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "https://protocol.com"}],
         "name": request.function.__name__,
     }
+
+
+@pytest.fixture()
+def collection_data_DOI_update(request):
+    return {
+        "contact_email": "lisbon@gmail.com",
+        "contact_name": "Madrid Sparkle",
+        "curator_name": "John Smith",
+        "description": "Well here are some words",
+        "links": [
+            {"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "https://protocol.com"},
+            {"link_name": "", "link_type": "DOI", "link_url": "10.1093/nar/gkae1142"},
+        ],
+        "name": request.function.__name__,
+    }
+
+
+@pytest.fixture()
+def dataset_title_update(request):
+    return {"title": f"Updated Title for {request.function.__name__}"}
