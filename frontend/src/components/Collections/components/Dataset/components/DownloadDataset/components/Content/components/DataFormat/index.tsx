@@ -1,67 +1,58 @@
 import React, { FC } from "react";
 import { DATASET_ASSET_FORMAT } from "src/common/entities";
-import { FormControl, FormLabel, RadioGroup } from "@mui/material";
-import { InputRadio, Tooltip } from "@czi-sds/components";
-import {
-  TOOLTIP_SLOT_PROPS,
-  TOOLTIP_TITLE,
-} from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/DataFormat/constants";
-
+import { FormLabel } from "@mui/material";
+import { FormControl } from "./style";
+import { InputCheckbox } from "@czi-sds/components";
+import { DownloadLinkType } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content";
+import { POSSIBLE_DOWNLOAD_FORMATS } from "./constants";
+import { getFileSize } from "./utils";
 interface Props {
   handleChange: (format: DATASET_ASSET_FORMAT) => void;
-  isDisabled: boolean;
-  selectedFormat: DATASET_ASSET_FORMAT | "";
-  availableFormats: DATASET_ASSET_FORMAT[];
+  isDisabled?: boolean;
+  selectedFormats: DATASET_ASSET_FORMAT[];
+  availableFormats: Set<DATASET_ASSET_FORMAT>;
+  downloadLinks: DownloadLinkType[];
 }
 
 const DataFormat: FC<Props> = ({
   handleChange: handleChangeRaw,
   isDisabled = false,
-  selectedFormat,
+  selectedFormats,
   availableFormats,
+  downloadLinks,
 }) => {
-  const isH5AD = availableFormats.includes(DATASET_ASSET_FORMAT.H5AD);
-  const isRDS = availableFormats.includes(DATASET_ASSET_FORMAT.RDS);
   const handleChange = (event: React.FormEvent<HTMLElement>) => {
     const value = (event.target as HTMLInputElement)
       .value as DATASET_ASSET_FORMAT;
-
     handleChangeRaw(value);
   };
-
   return (
     <FormControl>
-      <FormLabel>Data Format</FormLabel>
-      <RadioGroup
-        name="dataFormat"
-        onChange={handleChange}
-        row
-        value={selectedFormat}
-        style={{ height: "15px" }}
-      >
-        <InputRadio
-          disabled={isDisabled || !isH5AD}
-          label=".h5ad (AnnData v0.10)"
-          value={DATASET_ASSET_FORMAT.H5AD}
-        />
-        <Tooltip
-          arrow
-          placement="top"
-          sdsStyle="dark"
-          slotProps={TOOLTIP_SLOT_PROPS}
-          title={isRDS ? null : TOOLTIP_TITLE}
-        >
-          {/* The radio button is enclosed within a <span> tag to enable tooltip functionality when the radio button is disabled. */}
-          {/* See https://github.com/chanzuckerberg/sci-components/blob/main/packages/components/src/core/Tooltip/index.tsx#L28. */}
-          <span>
-            <InputRadio
-              disabled={isDisabled || !isRDS}
-              label=".rds (Seurat v5)"
-              value={DATASET_ASSET_FORMAT.RDS}
-            />
-          </span>
-        </Tooltip>
-      </RadioGroup>
+      {POSSIBLE_DOWNLOAD_FORMATS.map(
+        ({ format, label, type, description }) =>
+          availableFormats.has(format) && (
+            <div className="data-format-info" key={format}>
+              <FormLabel className="data-format-type">{type}</FormLabel>
+              <span className="data-format-checkbox-group">
+                <InputCheckbox
+                  disabled={isDisabled || !availableFormats.has(format)}
+                  label={
+                    <span>
+                      {label}
+                      <span className="file-size">
+                        {getFileSize(downloadLinks, format)}
+                      </span>
+                    </span>
+                  }
+                  value={format}
+                  onChange={handleChange}
+                  checked={selectedFormats.includes(format)}
+                />
+              </span>
+              <p className="data-type-description">{description}</p>
+            </div>
+          )
+      )}
     </FormControl>
   );
 };
