@@ -40,7 +40,6 @@ describe("Collection", () => {
 
     test("creates and deletes a collection", async ({ page }) => {
       const timestamp = Date.now();
-
       const collectionName = "TEST_COLLECTION" + timestamp;
 
       await createCollection({ collection: { name: collectionName }, page });
@@ -49,14 +48,21 @@ describe("Collection", () => {
       await page.getByTestId("collection-more-button").click();
       await page.getByText("Delete Collection").click();
 
+      // Wait for the page to navigate away after confirming deletion
+      const currentURL = page.url();
+
       await Promise.all([
-        page.waitForNavigation({ waitUntil: "load" }),
+        page.waitForURL((url) => url.toString() !== currentURL),
         page.click(".bp5-alert-footer >> text=Delete Collection"),
       ]);
 
       await tryUntil(
         async () => {
-          expect(page.getByText(collectionName)).toBeFalsy;
+          const isVisible = await page
+            .getByText(collectionName, { exact: true })
+            .isVisible()
+            .catch(() => false);
+          expect(isVisible).toBeFalsy();
         },
         { page }
       );
