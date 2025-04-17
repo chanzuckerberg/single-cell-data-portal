@@ -118,7 +118,7 @@ def update_title_and_wait(session, api_url, curator_cookie, collection_id, datas
     res.raise_for_status()
     collection = json.loads(res.content)
     updated_dataset = next((dataset for dataset in collection["datasets"] if dataset["id"] == updated_dataset_id), None)
-    assert updated_dataset["title"] == dataset_title_update["title"]
+    assert updated_dataset["name"] == dataset_title_update["title"]
     assert not dataset_errors
 
     return updated_dataset_id
