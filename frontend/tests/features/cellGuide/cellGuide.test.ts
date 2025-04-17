@@ -840,15 +840,25 @@ describe("Cell Guide", () => {
           `${TEST_URL}${ROUTES.CELL_GUIDE}/${NEURON_CELL_TYPE_ID}`,
           page
         );
-        await page
-          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
-          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
+
+        const dagView = page.getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW);
+        await expect(dagView).toBeVisible({ timeout: WAIT_FOR_TIMEOUT_MS });
 
         const node = page.getByTestId(
           `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:0000540__0-has-children-isTargetNode=true`
         );
+
+        // Ensure the node is visible before interacting
+        await expect(node).toBeVisible();
+
+        // Retry hover if necessary
         await node.hover();
-        await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+
+        // Use Playwright’s built-in visibility assertion for tooltip
+        const tooltip = page.getByTestId(
+          CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP
+        );
+        await expect(tooltip).toBeVisible({ timeout: 2000 });
       });
 
       test("Tree view exists for a cell type that is not a descendant of animal cell", async ({
@@ -1296,21 +1306,24 @@ describe("Cell Guide", () => {
           `${TEST_URL}${ROUTES.CELL_GUIDE}/tissues/${LUNG_TISSUE_ID}`,
           page
         );
-        await page
-          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW)
-          .waitFor({ timeout: WAIT_FOR_TIMEOUT_MS });
-
+      
+        const dagView = page.getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW);
+        await expect(dagView).toBeVisible({ timeout: WAIT_FOR_TIMEOUT_MS });
+      
         const node = page.getByTestId(
           `${CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_RECT_OR_CIRCLE_PREFIX_ID}-CL:1000271__0-no-children-isTargetNode=false`
         );
+      
+        await expect(node).toBeVisible();
         await node.hover();
-        await isElementVisible(page, CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
-        const textContent = await page
-          .getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP)
-          .textContent();
+      
+        const tooltip = page.getByTestId(CELL_GUIDE_CARD_ONTOLOGY_DAG_VIEW_TOOLTIP);
+        await expect(tooltip).toBeVisible({ timeout: 2000 });
+      
+        const textContent = await tooltip.textContent();
         expect(textContent).toContain("in lung");
       });
-    });
+      
 
     describe("CellGuideCard Sidebar", () => {
       test("Clicking on the navbar scrolls to the section", async ({
