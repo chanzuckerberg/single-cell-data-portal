@@ -138,7 +138,7 @@ describe("Collection", () => {
           page
         );
 
-        // Specify a DOI that has a valid format but does not exist on Crossref.
+        // Specify a DOI that has a valid format but does not exist on Crossref
         const VALID_FORMAT_BUT_NON_EXISTENT_DOI = "10.1016/j.2022.104097";
         await populatePublicationDOI(VALID_FORMAT_BUT_NON_EXISTENT_DOI, page);
 
