@@ -16,17 +16,17 @@ module stack {
   wmg_desired_vcpus                = 128
   cg_desired_vcpus                 = 128
   cg_batch_container_memory_limit  = 248000
-  backend_instance_count       = 1
+  backend_instance_count       = 6 * 1024
   frontend_instance_count      = 1
   backend_memory               = 4096
   backend_de_instance_count    = 1
   backend_de_memory            = 8192
-  backend_de_cpus              = 1
+  backend_de_cpus              = 2
   backend_de_workers           = 1
   backend_wmg_instance_count    = 1
-  backend_wmg_memory            = 8192
-  backend_wmg_cpus              = 1
-  backend_wmg_workers           = 1  
+  backend_wmg_memory            = 16 * 1024
+  backend_wmg_cpus              = 4
+  backend_wmg_workers           = 5  
   frontend_memory              = 4096
   dd_key_secret_arn            = "arn:aws:secretsmanager:us-west-2:699936264352:secret:dd_api_key-nGPNwx"
 
