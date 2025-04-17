@@ -157,8 +157,6 @@ export enum DATASET_ASSET_FORMAT {
   H5AD = "H5AD",
   RDS = "RDS",
   CXG = "CXG",
-  ATAC_FRAGMENT = "ATAC_FRAGMENT",
-  ATAC_INDEX = "ATAC_INDEX",
 }
 
 export enum DATASET_ASSET_TYPE {

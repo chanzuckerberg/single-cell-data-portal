@@ -26,9 +26,9 @@ export const CodeBlock = styled.div`
     box-sizing: content-box;
     flex: 1;
     line-height: 20px;
+    max-height: 40px;
     overflow: hidden;
     padding: ${spacesXxs}px 0 0;
-    white-space: pre-line;
   }
 
   code:before,
