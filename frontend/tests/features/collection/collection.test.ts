@@ -234,6 +234,7 @@ async function populatePublicationDOI(value: string, page: Page) {
   ).toBeVisible();
 
   await page.locator(ELEMENT_ID_INPUT_DOI).fill(value);
+  await page.locator(ELEMENT_ID_INPUT_DOI).press("Tab");
 }
 
 /**
