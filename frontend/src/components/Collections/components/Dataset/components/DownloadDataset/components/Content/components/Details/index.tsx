@@ -1,79 +1,51 @@
 import { FC, ReactNode } from "react";
 import { DialogLoader } from "src/components/Datasets/components/DownloadDataset/style";
-import { FormLabel } from "@mui/material";
-import {
-  FormControl,
-  SeuratNotice,
-  StyledIcon,
-  StyledLink,
-  TextWrapper,
-} from "./style";
-import { track } from "src/common/analytics";
-import { EVENTS } from "src/common/analytics/events";
-
-export const PROMPT_TEXT =
-  "Select one of the data formats to view its download details.";
+import { FormLabel, FormControl } from "@mui/material";
+import { NoneSelected } from "./style";
 
 interface Props {
   downloadPreview?: ReactNode;
+  hasDownloadLinks: boolean;
   selected: boolean;
-  fileSize: number;
   isLoading: boolean;
-  selectedFormat: string;
 }
-
-const MEGA_BYTES = 2 ** 20;
-
-const DOC_SITE_URL = "/docs/03__Download%20Published%20Data#seurat-deprecated";
 
 const Details: FC<Props> = ({
   downloadPreview,
+  hasDownloadLinks,
   selected = false,
-  fileSize = 0,
   isLoading = false,
-  selectedFormat,
 }) => {
   function renderContent() {
     if (isLoading) {
       return <DialogLoader sdsStyle="minimal" />;
     }
 
-    if (!selected) {
-      return <div>{PROMPT_TEXT}</div>;
+    if (!isLoading && !hasDownloadLinks) {
+      return (
+        <NoneSelected>
+          <h4>No Download Links Available</h4>
+          <p>Please try again later.</p>
+        </NoneSelected>
+      );
     }
 
-    return <div>{`${Math.round(fileSize / MEGA_BYTES)}MB`}</div>;
+    if (!selected) {
+      return (
+        <NoneSelected>
+          <h4>No File Selected</h4>
+          <p>Select files to download</p>
+        </NoneSelected>
+      );
+    }
+
+    return downloadPreview;
   }
 
   return (
     <FormControl>
-      {/* TODO: Remove after Seurat has been deprecated */}
-      {selectedFormat == "RDS" && (
-        <SeuratNotice>
-          <StyledIcon
-            sdsIcon="ExclamationMarkCircle"
-            sdsSize="l"
-            sdsType="static"
-          />
-          <TextWrapper>
-            Seurat support will be removed between Nov 15 - Dec 31, 2024. You
-            can download and convert the .h5ad yourself by following these {""}
-            <StyledLink
-              href={DOC_SITE_URL}
-              target="_blank"
-              onClick={() =>
-                track(EVENTS.DOWNLOAD_DATA_SEURAT_DEPRECATION_CLICKED)
-              }
-            >
-              instructions
-            </StyledLink>
-            .
-          </TextWrapper>
-        </SeuratNotice>
-      )}
       <FormLabel>Download Details</FormLabel>
       {renderContent()}
-      {downloadPreview}
     </FormControl>
   );
 };
