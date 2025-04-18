@@ -9,9 +9,12 @@ import { EVENTS } from "src/common/analytics/events";
 import { DialogActions, DialogContent, DialogTitle } from "@czi-sds/components";
 import { DialogLoader as Loader } from "src/components/Datasets/components/DownloadDataset/style";
 import { Button } from "src/components/common/Button";
-import { POSSIBLE_DOWNLOAD_FORMATS } from "./components/DataFormat/constants";
+import {
+  POSSIBLE_DOWNLOAD_FORMATS,
+  getNotAvailableText,
+} from "./components/DataFormat/constants";
 import { downloadMultipleFiles, getDownloadLink } from "./utils";
-
+import { Tooltip } from "@czi-sds/components";
 interface Props {
   isError?: boolean;
   isLoading?: boolean;
@@ -40,8 +43,27 @@ const Content: FC<Props> = ({
   const [isDownloadLinkLoading, setIsDownloadLinkLoading] =
     useState<boolean>(false);
 
+  const noDownloadLinksAvailable = useMemo(() => {
+    return (
+      selectedFormats.length > 0 &&
+      selectedFormats.every((format) => {
+        const link = downloadLinks.find((l) => l.filetype === format);
+
+        return (
+          !link || // no matching link
+          link.downloadURL === undefined ||
+          link.downloadURL === getNotAvailableText(format)
+        );
+      })
+    );
+  }, [selectedFormats, downloadLinks]);
+
   const isDownloadDisabled =
-    !selectedFormats.length || isDownloadLinkLoading || isError || isLoading;
+    !selectedFormats.length ||
+    isDownloadLinkLoading ||
+    isError ||
+    isLoading ||
+    noDownloadLinksAvailable;
 
   const availableFormats = useMemo(
     () => new Set(dataAssets.map((dataAsset) => dataAsset.filetype)),
@@ -82,51 +104,58 @@ const Content: FC<Props> = ({
   }, [availableFormats, dataAssets]);
 
   useEffect(() => {
+    const shouldSkipFetching = () => {
+      if (selectedFormats.length === 0 || formatsToDownload.length === 0) {
+        return true;
+      }
+      return formatsToDownload.every((format) =>
+        downloadLinks.some((link) => link.filetype === format)
+      );
+    };
+    const getAssetsToRetrieve = () => {
+      return dataAssets.filter(
+        (asset) =>
+          !downloadLinks.some((link) => link.filetype === asset.filetype) &&
+          formatsToDownload.includes(asset.filetype)
+      );
+    };
+    const replaceMissingURLs = (links: (DownloadLinkType | null)[]) => {
+      return links
+        .filter((link) => link !== null)
+        .map((link) => ({
+          ...link,
+          downloadURL: link.downloadURL ?? getNotAvailableText(link.filetype),
+        }));
+    };
+
     const fetchDownloadLinks = async () => {
       setIsDownloadLinkLoading(true);
-      if (selectedFormats.length === 0) {
-        setIsDownloadLinkLoading(false);
-        return;
-      }
-      if (formatsToDownload.length === 0) return;
 
-      // Exit early if all formats already have download links
-      if (
-        formatsToDownload.every((format) =>
-          downloadLinks.some((link) => link.filetype === format)
-        )
-      ) {
+      if (shouldSkipFetching()) {
         setIsDownloadLinkLoading(false);
         return;
       }
 
-      // Filter assets for selected formats
-      const assets = dataAssets.filter((asset) =>
-        formatsToDownload.includes(asset.filetype)
-      );
-      if (assets.length === 0) {
+      const assetsToRetrieve = getAssetsToRetrieve();
+      if (assetsToRetrieve.length === 0) {
         setIsDownloadLinkLoading(false);
-        throw new Error("No Download Formats available");
+        console.error("No Download Formats available");
+        return;
       }
 
       try {
-        // Fetch download links and update state
-        const newLinks = await Promise.all(assets.map(getDownloadLink));
-        const newLinksFiltered = newLinks.filter(
-          (link) => link !== null
-        ) as DownloadLinkType[];
-        setDownloadLinks((prev) => [
-          ...new Set([...prev, ...newLinksFiltered]),
-        ]);
+        const links = await Promise.all(assetsToRetrieve.map(getDownloadLink));
+        const cleanedLinks = replaceMissingURLs(links);
+        setDownloadLinks((prev) => [...new Set([...prev, ...cleanedLinks])]);
       } catch (error) {
         console.error("Error fetching download links", error);
       } finally {
         setIsDownloadLinkLoading(false);
       }
     };
+
     fetchDownloadLinks();
   }, [selectedFormats, dataAssets, downloadLinks, formatsToDownload]);
-
   /**
    * Tracks dataset download analytics as specified by the custom analytics event.
    * @param event - Custom analytics event.
@@ -193,18 +222,28 @@ const Content: FC<Props> = ({
         >
           Cancel
         </Button>
-        <Button
-          data-testid="download-asset-download-button"
-          disabled={isDownloadDisabled}
-          onClick={() => {
-            downloadMultipleFiles(formatsToDownload, downloadLinks);
-            handleAnalytics(EVENTS.DOWNLOAD_DATA_COMPLETE);
-          }}
-          sdsStyle="square"
-          sdsType="primary"
+        <Tooltip
+          placement="top"
+          disableHoverListener={!isDownloadDisabled}
+          disableFocusListener={!isDownloadDisabled}
+          disableTouchListener={!isDownloadDisabled}
+          title={"Select at least one valid format"}
         >
-          Download
-        </Button>
+          <span>
+            <Button
+              data-testid="download-asset-download-button"
+              disabled={isDownloadDisabled}
+              onClick={() => {
+                downloadMultipleFiles(formatsToDownload, downloadLinks);
+                handleAnalytics(EVENTS.DOWNLOAD_DATA_COMPLETE);
+              }}
+              sdsStyle="square"
+              sdsType="primary"
+            >
+              Download
+            </Button>
+          </span>
+        </Tooltip>
       </DialogActions>
     </>
   );
