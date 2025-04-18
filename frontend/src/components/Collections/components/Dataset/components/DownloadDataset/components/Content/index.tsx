@@ -47,7 +47,7 @@ const Content: FC<Props> = ({
     return (
       selectedFormats.length > 0 &&
       selectedFormats.every((format) => {
-        const link = downloadLinks.find((l) => l.filetype === format);
+        const link = downloadLinks.find((link) => link.filetype === format);
 
         return (
           !link || // no matching link
@@ -121,7 +121,7 @@ const Content: FC<Props> = ({
     };
     const replaceMissingURLs = (links: (DownloadLinkType | null)[]) => {
       return links
-        .filter((link) => link !== null)
+        .filter((link): link is DownloadLinkType => link !== null)
         .map((link) => ({
           ...link,
           downloadURL: link.downloadURL ?? getNotAvailableText(link.filetype),
