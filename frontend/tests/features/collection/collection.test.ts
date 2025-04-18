@@ -29,7 +29,7 @@ type CollectionFormInput = Pick<
   "contact_email" | "contact_name" | "description" | "name"
 >;
 
-describe.only("Collection", () => {
+describe("Collection", () => {
   describe("Logged In Tests @loggedIn", () => {
     skip(
       !isDevStagingRdev,
