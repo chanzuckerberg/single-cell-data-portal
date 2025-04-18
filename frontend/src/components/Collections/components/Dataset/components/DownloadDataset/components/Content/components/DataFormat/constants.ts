@@ -15,3 +15,6 @@ export const POSSIBLE_DOWNLOAD_FORMATS = [
       "Tab-separated values file listing sequencing ATAC-seq fragments with an accompanying index for fast genomic range queries.",
   },
 ];
+
+export const getNotAvailableText = (filetype: string) =>
+  `${filetype} file is unavailable for download at the moment`;
