@@ -33,7 +33,7 @@ jobs:
       # TODO: Wait until the deployment is complete and return 200 responses from the version endpoint.
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
       - name: Run functional test
         run: |
           pip3 install -r tests/functional/requirements.txt
@@ -54,7 +54,7 @@ jobs:
           fetch-depth: 1
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
       - name: Seed database for e2e tests
         run: |
           pip3 install -r scripts/smoke_tests/requirements.txt
