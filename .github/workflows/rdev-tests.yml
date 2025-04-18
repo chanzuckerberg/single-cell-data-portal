@@ -203,6 +203,7 @@ jobs:
             exit 1
           fi
 
+  # TODO: Uncomment when we stabilize e2e-logged-in-test in rdev
   # e2e-logged-in-test:
   #   timeout-minutes: 30
   #   runs-on: arm64-playwright-16cpu
