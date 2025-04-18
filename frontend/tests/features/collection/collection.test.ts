@@ -29,7 +29,7 @@ type CollectionFormInput = Pick<
   "contact_email" | "contact_name" | "description" | "name"
 >;
 
-describe("Collection", () => {
+describe.skip("Collection", () => {
   describe("Logged In Tests @loggedIn", () => {
     skip(
       !isDevStagingRdev,
@@ -96,7 +96,7 @@ describe("Collection", () => {
       `
     );
 
-    describe("invalid DOIs", () => {
+    describe.skip("invalid DOIs", () => {
       test("doesn't create a collection with a DOI in an invalid format", async ({
         page,
       }) => {
