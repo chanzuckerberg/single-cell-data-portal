@@ -11,7 +11,11 @@ import {
   VIEW_LIST_ITEM_HEIGHT,
   VIEW_LIST_SUBHEADER_HEIGHT,
 } from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterView/style";
-import { ViewsMenu } from "src/components/common/Filter/components/FilterContent/components/FilterViews/style";
+import {
+  ViewsMenu,
+  ViewsMenuOptions,
+} from "src/components/common/Filter/components/FilterContent/components/FilterViews/style";
+import { FilterFooter } from "../../../FilterFooter";
 
 export const enum CATEGORY_VIEWS_QUANTIFIER {
   NON_SINGLETON = "NON_SINGLETON",
@@ -24,14 +28,17 @@ interface Props {
   isZerosVisible: boolean;
   onFilter: OnFilterFn;
   views: OntologyCategoryTreeView[];
+  footerComponentId?: string;
 }
 
+// (ie. Developmental Stage Filter)
 export default function FilterViews({
   categoryFilterId,
   isSearchable,
   isZerosVisible,
   onFilter,
   views,
+  footerComponentId,
 }: Props): JSX.Element {
   const viewsToDisplay = views.filter(
     (s) => s.children && s.children.filter((child) => child.count).length > 0
@@ -45,21 +52,25 @@ export default function FilterViews({
     viewsQuantifier
   );
   return (
-    <ViewsMenu>
-      {viewsToDisplay.map(({ label, children }, i) => (
-        <FilterView
-          categoryFilterId={categoryFilterId}
-          key={`${label || "view"}-${i}`}
-          label={label}
-          isSearchable={isSearchable}
-          isZerosVisible={isZerosVisible}
-          onFilter={onFilter}
-          showViewDivider={i !== 0}
-          values={children}
-          viewListMaxHeight={viewListMaxHeight}
-        />
-      ))}
-    </ViewsMenu>
+    <>
+      <ViewsMenu viewsToDisplay={viewsToDisplay.length}>
+        <ViewsMenuOptions>
+          {viewsToDisplay.map(({ label, children }, i) => (
+            <FilterView
+              categoryFilterId={categoryFilterId}
+              key={`${label || "view"}-${i}`}
+              label={label}
+              isSearchable={isSearchable}
+              isZerosVisible={isZerosVisible}
+              onFilter={onFilter}
+              values={children}
+              viewListMaxHeight={viewListMaxHeight}
+            />
+          ))}
+        </ViewsMenuOptions>
+        <FilterFooter componentId={footerComponentId} />
+      </ViewsMenu>
+    </>
   );
 }
 

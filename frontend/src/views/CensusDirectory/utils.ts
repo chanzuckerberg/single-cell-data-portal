@@ -9,6 +9,7 @@ export const getProjectTier = (project: UnionProject) => {
 
 export type ClobberedProjects = [Partial<UnionProject>, UnionProject[]][];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isEqual(obj1: any, obj2: any): boolean {
   Object.keys(obj1).forEach((key) => {
     if (typeof obj1[key] === "object" && typeof obj2[key] === "object") {
