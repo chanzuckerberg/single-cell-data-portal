@@ -23,7 +23,7 @@ module stack {
   backend_de_memory            = 8192
   backend_de_cpus              = 1
   backend_de_workers           = 1
-  backend_wmg_instance_count    = 1
+  backend_wmg_instance_count    = 2
   backend_wmg_memory            = 16 * 1024
   backend_wmg_cpus              = 4
   backend_wmg_workers           = 5  
