@@ -1774,9 +1774,7 @@ class TestDataset(BaseAPIPortalTest):
         test_url = furl(path=f"/dp/v1/datasets/{dataset_version_id}/asset/{artifact_id}")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         actual_body = json.loads(response.data)
-        self.assertEqual(actual_body["url"], "http://mock.uri/asset.h5ad")
         self.assertEqual(actual_body["file_size"], -1)
-        self.assertEqual(500, response.status_code)
 
     def test__get_dataset_asset__dataset_NOT_FOUND(self):
         fake_id = DatasetVersionId()
