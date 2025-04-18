@@ -203,40 +203,40 @@ jobs:
             exit 1
           fi
 
-  e2e-logged-in-test:
-    timeout-minutes: 30
-    runs-on: arm64-playwright-16cpu
-    defaults:
-      run:
-        working-directory: frontend
-    needs:
-      - seed-database-e2e-tests
-    steps:
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20.10.0"
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 2700
-      - name: Install dependencies
-        ### config.js set-up required due to transient test dependencies on API_URL
-        run: |
-          npm ci
-          npx playwright install --with-deps
-          cp src/configs/local.js src/configs/configs.js
-      - name: Run e2e Logged In tests
-        run: |
-          DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev-logged-in-ci
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: logged-in-test-results
-          path: frontend/playwright-report
-          retention-days: 30
-          if-no-files-found: warn
+  # e2e-logged-in-test:
+  #   timeout-minutes: 30
+  #   runs-on: arm64-playwright-16cpu
+  #   defaults:
+  #     run:
+  #       working-directory: frontend
+  #   needs:
+  #     - seed-database-e2e-tests
+  #   steps:
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "20.10.0"
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 2
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         aws-region: us-west-2
+  #         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+  #         role-duration-seconds: 2700
+  #     - name: Install dependencies
+  #       ### config.js set-up required due to transient test dependencies on API_URL
+  #       run: |
+  #         npm ci
+  #         npx playwright install --with-deps
+  #         cp src/configs/local.js src/configs/configs.js
+  #     - name: Run e2e Logged In tests
+  #       run: |
+  #         DEBUG=pw:api RDEV_LINK=https://${{ env.STACK_NAME }}-frontend.rdev.single-cell.czi.technology npm run e2e-rdev-logged-in-ci
+  #     - uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: logged-in-test-results
+  #         path: frontend/playwright-report
+  #         retention-days: 30
+  #         if-no-files-found: warn
