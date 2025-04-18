@@ -23,10 +23,10 @@ module stack {
   backend_de_memory            = 8192
   backend_de_cpus              = 1
   backend_de_workers           = 1
-  backend_wmg_instance_count    = 2
-  backend_wmg_memory            = 16 * 1024
-  backend_wmg_cpus              = 4
-  backend_wmg_workers           = 5  
+  backend_wmg_instance_count    = 1
+  backend_wmg_memory            = 24 * 1024
+  backend_wmg_cpus              = 5
+  backend_wmg_workers           = 6  
   frontend_memory              = 4096
   dd_key_secret_arn            = "arn:aws:secretsmanager:us-west-2:699936264352:secret:dd_api_key-nGPNwx"
 
