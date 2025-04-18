@@ -21,6 +21,7 @@ import {
   PUBLICATION_DATE_VALUES,
   SELF_REPORTED_ETHNICITY_DENY_LIST,
   SUSPENSION_TYPE_DENY_LIST,
+  NON_UBERON_LIFE_STAGE_ORGANISMS,
 } from "src/components/common/Filter/common/constants";
 import {
   Categories,
@@ -32,7 +33,7 @@ import {
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { API_URL } from "src/configs/configs";
 import { VIEW_MODE } from "src/common/hooks/useViewMode";
-
+import { NON_UBERON_DEVELOPMENTAL_STAGE_DESCENDANTS } from "src/components/common/Filter/common/constants";
 /**
  * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).
  */
@@ -121,6 +122,7 @@ export interface DatasetResponse {
   cell_type: Ontology[];
   cell_type_ancestors: string[];
   collection_id: string;
+  development_stage: Ontology[];
   development_stage_ancestors: string[];
   disease: Ontology[];
   self_reported_ethnicity: Ontology[];
@@ -1040,6 +1042,34 @@ function processUserCollectionResponse(
   return { ...processedCollection, revisedBy, status };
 }
 
+function addDevelopmentalStageAncestors(
+  datasetResponse: DatasetResponse
+): string[] {
+  const hasNonUberonLifeStageOrganisms = datasetResponse.organism.some((obj) =>
+    NON_UBERON_LIFE_STAGE_ORGANISMS.includes(obj.ontology_term_id)
+  );
+  if (!hasNonUberonLifeStageOrganisms) {
+    return datasetResponse.development_stage_ancestors;
+  }
+  if (
+    datasetResponse.development_stage_ancestors.length === 0 ||
+    !datasetResponse.development_stage_ancestors
+  ) {
+    return [
+      ...new Set(
+        datasetResponse.development_stage.flatMap(
+          (development_stage) =>
+            NON_UBERON_DEVELOPMENTAL_STAGE_DESCENDANTS[
+              development_stage.ontology_term_id
+            ]
+        )
+      ),
+    ];
+  }
+
+  return datasetResponse.development_stage_ancestors;
+}
+
 /**
  * Add defaults for missing filterable values, e.g. convert missing ontology values to empty array.
  * Remove any self-reported ethnicity values on the deny list.
@@ -1072,7 +1102,7 @@ function sanitizeDatasetResponse(
     datasetResponse.cell_type_ancestors ?? [];
 
   sanitizedDatasetResponse.development_stage_ancestors =
-    datasetResponse.development_stage_ancestors ?? [];
+    addDevelopmentalStageAncestors(datasetResponse) ?? [];
 
   sanitizedDatasetResponse.disease = datasetResponse.disease ?? [];
 

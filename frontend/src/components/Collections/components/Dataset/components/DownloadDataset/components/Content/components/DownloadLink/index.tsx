@@ -1,30 +1,37 @@
 import { FC } from "react";
 import { CodeBlock } from "./style";
 import CopyButton from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/DownloadLink/components/CopyButton";
-import { DATASET_ASSET_FORMAT } from "src/common/entities";
 import CopyCaption from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/DownloadLink/components/CopyCaption";
-
+import type { DownloadLinkType } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content";
 interface Props {
-  downloadLink: string;
+  downloadLinks: DownloadLinkType[];
   handleAnalytics: () => void;
-  selectedFormat: DATASET_ASSET_FORMAT | "";
+  formatsToDownload: string[];
 }
 
 const DownloadLink: FC<Props> = ({
-  downloadLink,
+  downloadLinks,
   handleAnalytics,
-  selectedFormat,
+  formatsToDownload,
 }) => {
+  const copyText = downloadLinks.reduce((acc, download) => {
+    if (!formatsToDownload.includes(download.filetype)) {
+      return acc;
+    }
+    return acc + download.downloadURL + "\n";
+  }, "");
+
   return (
     <>
       <CodeBlock>
-        <code>{downloadLink}</code>
+        <code>{copyText}</code>
         <CopyButton
-          downloadLink={downloadLink}
+          downloadLink={copyText}
           handleAnalytics={handleAnalytics}
+          label={downloadLinks.length > 1 ? "Copy All" : "Copy"}
         />
       </CodeBlock>
-      <CopyCaption selectedFormat={selectedFormat} />
+      <CopyCaption />
     </>
   );
 };
