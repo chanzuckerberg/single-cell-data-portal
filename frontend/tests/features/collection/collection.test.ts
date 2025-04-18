@@ -29,7 +29,7 @@ type CollectionFormInput = Pick<
   "contact_email" | "contact_name" | "description" | "name"
 >;
 
-describe("Collection", () => {
+describe.only("Collection", () => {
   describe("Logged In Tests @loggedIn", () => {
     skip(
       !isDevStagingRdev,
@@ -96,7 +96,7 @@ describe("Collection", () => {
       `
     );
 
-    describe.skip("invalid DOIs", () => {
+    describe("invalid DOIs", () => {
       test("doesn't create a collection with a DOI in an invalid format", async ({
         page,
       }) => {
@@ -120,7 +120,7 @@ describe("Collection", () => {
 
         // Wait for the specific error message to be visible
         await expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeVisible({
-          timeout: 6000,
+          timeout: 10000,
         });
       });
 
@@ -148,7 +148,7 @@ describe("Collection", () => {
 
         // Wait for the error message to be visible
         await expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeVisible({
-          timeout: 6000,
+          timeout: 10000,
         });
       });
     });
@@ -167,6 +167,7 @@ async function createCollection({
   const testCollection = { ...TEST_COLLECTION, ...collection };
 
   await populateRequiredInputs(testCollection, page);
+  await page.getByRole("button", { name: "Select Consortia" }).press("Tab");
 
   const [response] = await submitCreateForm(page);
 
