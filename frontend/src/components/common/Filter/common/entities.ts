@@ -1,3 +1,4 @@
+import { FOOTER_COMPONENT_MAP } from "src/components/common/Filter/components/FilterFooter/utils";
 import { CellValue, FilterValue, Row } from "react-table";
 import { EVENTS } from "src/common/analytics/events";
 import {
@@ -6,6 +7,7 @@ import {
   Ontology,
   PublisherMetadata,
 } from "src/common/entities";
+import { ReactNode } from "react";
 
 /**
  * Payload key when tracking select of category values. For example, "organ" in FILTER_SELECT_ORGAN : {organ: "brain"}.
@@ -153,6 +155,7 @@ export interface BaseCategoryFilterConfig {
   pinnedCategoryValues?: CATEGORY_VALUE_KEY[];
   pinnedPosition?: PINNED_POSITION;
   tooltip?: string;
+  footerComponentId?: keyof typeof FOOTER_COMPONENT_MAP;
 }
 
 /**
@@ -518,7 +521,17 @@ export type MultiPanelUIState = Map<
 export enum ORGANISM {
   "HOMO_SAPIENS" = "Homo sapiens",
   "MUS_MUSCULUS" = "Mus musculus",
+  "C_ELEGANS" = "Caenorhabditis elegans",
+  "D_RERIO" = "Danio rerio",
+  "DROSOPHILA" = "Drosophila melanogaster",
 }
+
+/**
+ * Reverse ORGANISM enum so lookup is possible
+ */
+export const ORGANISM_LOOKUP = Object.fromEntries(
+  Object.values(ORGANISM).map((value) => [value.toString(), value])
+);
 
 /**
  * Function invoked when selected state of a category value is toggled or range is selected. Selected value is either
@@ -570,6 +583,7 @@ export interface OntologyCategoryView {
   label: string;
   views: OntologyCategoryTreeView[];
   tooltip?: string;
+  footerComponentId?: keyof typeof FOOTER_COMPONENT_MAP;
 }
 
 /**
@@ -582,6 +596,7 @@ export interface MultiPanelOntologyCategoryView {
   panels: OntologyPanelCategoryView[];
   selectedViews: SelectCategoryValueView[];
   tooltip?: string;
+  footerComponentId?: keyof typeof FOOTER_COMPONENT_MAP;
 }
 
 /**
@@ -610,6 +625,9 @@ export enum ONTOLOGY_VIEW_KEY {
   "HsapDv" = "HsapDv",
   "MmusDv" = "MmusDv",
   "UBERON" = "UBERON",
+  "WBls" = "WBls",
+  "ZFS" = "ZFS",
+  "FBdv" = "FBdv",
 }
 
 /**
@@ -619,6 +637,9 @@ export enum ONTOLOGY_VIEW_LABEL {
   "HsapDv" = "Homo Sapiens",
   "MmusDv" = "Mus Musculus",
   "UBERON" = "Other Organisms",
+  "WBls" = "Caenorhabditis elegans",
+  "ZFS" = "Danio Rerio",
+  "FBdv" = "Drosophila melanogaster",
 }
 
 /**
@@ -669,6 +690,7 @@ export interface RangeCategoryView {
   selectedMax?: number;
   selectedMin?: number;
   tooltip?: string;
+  footerComponentId?: keyof typeof FOOTER_COMPONENT_MAP;
 }
 
 /**
@@ -732,6 +754,10 @@ export interface SelectCategoryValueView {
   selected: boolean;
   selectedPartial: boolean;
   visible: boolean;
+  tooltip?: {
+    trigger: string;
+    content: ReactNode;
+  };
 }
 
 /**
@@ -746,6 +772,7 @@ export interface SelectCategoryView {
   tooltip?: string;
   unpinnedValues: SelectCategoryValueView[];
   values: SelectCategoryValueView[]; // both pinned and unpinned values
+  footerComponentId?: keyof typeof FOOTER_COMPONENT_MAP;
 }
 
 /**

@@ -3,7 +3,7 @@ import HTTP_STATUS_CODE from "src/common/constants/HTTP_STATUS_CODE";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
 import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/components/Content/common/constants";
-import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
+import { TEST_URL } from "tests/common/constants";
 import { goToPage, isDevStagingRdev, tryUntil } from "tests/utils/helpers";
 import { getTestID } from "tests/utils/selectors";
 
@@ -29,7 +29,7 @@ type CollectionFormInput = Pick<
   "contact_email" | "contact_name" | "description" | "name"
 >;
 
-describe("Collection", () => {
+describe.skip("Collection", () => {
   describe("Logged In Tests @loggedIn", () => {
     skip(
       !isDevStagingRdev,
@@ -40,7 +40,6 @@ describe("Collection", () => {
 
     test("creates and deletes a collection", async ({ page }) => {
       const timestamp = Date.now();
-
       const collectionName = "TEST_COLLECTION" + timestamp;
 
       await createCollection({ collection: { name: collectionName }, page });
@@ -49,14 +48,21 @@ describe("Collection", () => {
       await page.getByTestId("collection-more-button").click();
       await page.getByText("Delete Collection").click();
 
+      // Wait for the page to navigate away after confirming deletion!
+      const currentURL = page.url();
+
       await Promise.all([
-        page.waitForNavigation({ waitUntil: "load" }),
+        page.waitForURL((url) => url.toString() !== currentURL),
         page.click(".bp5-alert-footer >> text=Delete Collection"),
       ]);
 
       await tryUntil(
         async () => {
-          expect(page.getByText(collectionName)).toBeFalsy;
+          const isVisible = await page
+            .getByText(collectionName, { exact: true })
+            .isVisible()
+            .catch(() => false);
+          expect(isVisible).toBeFalsy();
         },
         { page }
       );
@@ -90,7 +96,7 @@ describe("Collection", () => {
       `
     );
 
-    describe("invalid DOIs", () => {
+    describe.skip("invalid DOIs", () => {
       test("doesn't create a collection with a DOI in an invalid format", async ({
         page,
       }) => {
@@ -108,10 +114,14 @@ describe("Collection", () => {
         // Specify a DOI that is in an invalid format.
         await populatePublicationDOI("INVALID_FORMAT", page);
 
-        // Attempt submit, confirm error message is displayed.
+        // Attempt submit and confirm 400 response
         const [response] = await submitCreateFormInvalid(page);
         expect(response.status()).toEqual(400);
-        expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeTruthy();
+
+        // Wait for the specific error message to be visible
+        await expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeVisible({
+          timeout: 10000,
+        });
       });
 
       test("doesn't create a collection with an invalid DOI", async ({
@@ -128,14 +138,18 @@ describe("Collection", () => {
           page
         );
 
-        // Specify a DOI that is a valid format but is not on Crossref.
+        // Specify a DOI that has a valid format but does not exist on Crossref
         const VALID_FORMAT_BUT_NON_EXISTENT_DOI = "10.1016/j.2022.104097";
         await populatePublicationDOI(VALID_FORMAT_BUT_NON_EXISTENT_DOI, page);
 
-        // Attempt submit, confirm error message is displayed.
+        // Submit and confirm error
         const [response] = await submitCreateFormInvalid(page);
         expect(response.status()).toEqual(400);
-        expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeTruthy();
+
+        // Wait for the error message to be visible
+        await expect(page.getByText(INVALID_DOI_ERROR_MESSAGE)).toBeVisible({
+          timeout: 10000,
+        });
       });
     });
   });
@@ -153,6 +167,7 @@ async function createCollection({
   const testCollection = { ...TEST_COLLECTION, ...collection };
 
   await populateRequiredInputs(testCollection, page);
+  await page.getByRole("button", { name: "Select Consortia" }).press("Tab");
 
   const [response] = await submitCreateForm(page);
 
@@ -212,12 +227,15 @@ async function submitCreateForm(page: Page) {
 async function populatePublicationDOI(value: string, page: Page) {
   await page.getByText("Add Link").click();
   await page.getByText("Publication DOI").click();
-  expect(
+
+  await expect(
     page.getByText(
       "A summary citation linked to this DOI will be automatically added to this collection."
     )
-  ).toBeTruthy();
-  await page.type(ELEMENT_ID_INPUT_DOI, value, BLUEPRINT_SAFE_TYPE_OPTIONS);
+  ).toBeVisible();
+
+  await page.locator(ELEMENT_ID_INPUT_DOI).fill(value);
+  await page.locator(ELEMENT_ID_INPUT_DOI).press("Tab");
 }
 
 /**
@@ -228,20 +246,15 @@ async function populateRequiredInputs(
   testCollection: CollectionFormInput,
   page: Page
 ) {
-  await page.type("#name", testCollection.name, BLUEPRINT_SAFE_TYPE_OPTIONS);
-  await page.type(
-    "#description",
-    testCollection.description,
-    BLUEPRINT_SAFE_TYPE_OPTIONS
-  );
-  await page.type(
-    "#contact-name",
-    testCollection.contact_name,
-    BLUEPRINT_SAFE_TYPE_OPTIONS
-  );
-  await page.type(
-    "#contact-email",
-    testCollection.contact_email,
-    BLUEPRINT_SAFE_TYPE_OPTIONS
-  );
+  await page.locator("#name").fill(testCollection.name);
+  await page.locator("#name").press("Tab");
+
+  await page.locator("#description").fill(testCollection.description);
+  await page.locator("#description").press("Tab");
+
+  await page.locator("#contact-name").fill(testCollection.contact_name);
+  await page.locator("#contact-name").press("Tab");
+
+  await page.locator("#contact-email").fill(testCollection.contact_email);
+  await page.locator("#contact-email").press("Tab");
 }

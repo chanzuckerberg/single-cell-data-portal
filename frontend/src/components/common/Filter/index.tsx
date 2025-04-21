@@ -12,6 +12,8 @@ import { formatNumberToScale } from "src/components/common/Filter/common/utils";
 import BasicFilter from "src/components/common/Filter/components/BasicFilter";
 import FilterContent from "./components/FilterContent";
 import FilterTags, { CategoryTag } from "./components/FilterTags";
+import { FilterControlContext } from "./context";
+import { useState } from "react";
 
 interface Props {
   categoryViews: CategoryView[];
@@ -22,8 +24,13 @@ export default function Filter({
   categoryViews,
   onFilter,
 }: Props): JSX.Element {
+  const [openSpecificFilter, setOpenSpecificFilter] = useState<string | null>(
+    null
+  );
   return (
-    <>
+    <FilterControlContext.Provider
+      value={{ openSpecificFilter, setOpenSpecificFilter }}
+    >
       {categoryViews.map((categoryView: CategoryView) => {
         const { isDisabled = false, label, tooltip } = categoryView;
         return (
@@ -39,7 +46,7 @@ export default function Filter({
           />
         );
       })}
-    </>
+    </FilterControlContext.Provider>
   );
 }
 

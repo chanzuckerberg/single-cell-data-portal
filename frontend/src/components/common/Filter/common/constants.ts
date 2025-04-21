@@ -13,7 +13,7 @@ import {
 } from "src/components/common/Filter/common/entities";
 import cell_type_descendants_json from "src/components/common/Filter/descendant_mappings/cell_type_descendants.json";
 import tissue_descendants_json from "src/components/common/Filter/descendant_mappings/tissue_descendants.json";
-
+import non_uberon_developmental_stage_descendants_json from "src/components/common/Filter/descendant_mappings/non_uberon_developmental_stage_descendants.json";
 /**
  * Homo sapiens, Mus musculus and other organisms development stage ontology tree.
  */
@@ -126,6 +126,164 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
               ontology_term_id: "MmusDv:0000134",
             },
           ],
+        },
+      ],
+    },
+  ],
+  [ONTOLOGY_VIEW_KEY.WBls]: [
+    {
+      label: "Unfertilized Egg",
+      ontology_term_id: "WBls:0000669",
+    },
+    {
+      label: "Embryo",
+      ontology_term_id: "WBls:0000803",
+    },
+    {
+      label: "Larval",
+      ontology_term_id: "WBls:0000804",
+      children: [
+        {
+          label: "L1 Larva",
+          ontology_term_id: "WBls:0000818",
+        },
+        {
+          label: "L2 Larva",
+          ontology_term_id: "WBls:0000819",
+        },
+        {
+          label: "Dauer Larva",
+          ontology_term_id: "WBls:0000032",
+        },
+        {
+          label: "L3 Larva",
+          ontology_term_id: "WBls:0000820",
+        },
+        {
+          label: "L4 Larva",
+          ontology_term_id: "WBls:0000821",
+        },
+      ],
+    },
+    {
+      label: "Adult",
+      ontology_term_id: "WBls:0000041",
+    },
+  ],
+  [ONTOLOGY_VIEW_KEY.ZFS]: [
+    {
+      label: "Zygote",
+      ontology_term_id: "ZFS:0000001",
+    },
+    {
+      label: "Cleavage",
+      ontology_term_id: "ZFS:0000046",
+    },
+    {
+      label: "Blastula",
+      ontology_term_id: "ZFS:0000045",
+    },
+    {
+      label: "Gastrula",
+      ontology_term_id: "ZFS:0000047",
+    },
+    {
+      label: "Segmentation",
+      ontology_term_id: "ZFS:0000049",
+    },
+    {
+      label: "Pharyngula",
+      ontology_term_id: "ZFS:0000050",
+    },
+    {
+      label: "Hatching",
+      ontology_term_id: "ZFS:0007000",
+    },
+    {
+      label: "Adult",
+      ontology_term_id: "ZFS:0000044",
+    },
+  ],
+  [ONTOLOGY_VIEW_KEY.FBdv]: [
+    {
+      label: "Oogenesis",
+      ontology_term_id: "FBdv:00004886",
+    },
+    {
+      label: "Egg",
+      ontology_term_id: "FBdv:00005286",
+    },
+    {
+      label: "Embryonic",
+      ontology_term_id: "FBdv:00005289",
+      children: [
+        {
+          label: "Pre-Blastoderm",
+          ontology_term_id: "FBdv:00005290",
+        },
+        {
+          label: "Blastoderm",
+          ontology_term_id: "FBdv:00005304",
+        },
+        {
+          label: "Gastrula",
+          ontology_term_id: "FBdv:00005317",
+        },
+        {
+          label: "Extended Germ Band",
+          ontology_term_id: "FBdv:00005321",
+        },
+        {
+          label: "Dorsal Closure",
+          ontology_term_id: "FBdv:00005331",
+        },
+        {
+          label: "Late Embryonic",
+          ontology_term_id: "FBdv:00005333",
+        },
+      ],
+    },
+    {
+      label: "Larval",
+      ontology_term_id: "FBdv:00005336",
+      children: [
+        {
+          label: "First Instar Larva",
+          ontology_term_id: "FBdv:00005337",
+        },
+        {
+          label: "Second Instar Larva",
+          ontology_term_id: "FBdv:00005338",
+        },
+        {
+          label: "Third Instar Larva",
+          ontology_term_id: "FBdv:00005339",
+        },
+      ],
+    },
+    {
+      label: "Adult",
+      ontology_term_id: "FBdv:00005369",
+      children: [
+        {
+          label: "Pre Pupal",
+          ontology_term_id: "FBdv:00005342",
+        },
+        {
+          label: "Pupal",
+          ontology_term_id: "FBdv:00005349",
+        },
+        {
+          label: "Pharate Adult",
+          ontology_term_id: "FBdv:00006011",
+        },
+        {
+          label: "Immature Adult ",
+          ontology_term_id: "FBdv:00007025",
+        },
+        {
+          label: "Mature Adult",
+          ontology_term_id: "FBdv:00007026",
         },
       ],
     },
@@ -627,6 +785,20 @@ export const CELL_TYPE_LEVEL_2_ONTOLOGY_TERM_SET: OntologyTermSet = {
 export const CELL_TYPE_DESCENDANTS: OntologyDescendants =
   cell_type_descendants_json;
 export const TISSUE_DESCENDANTS: OntologyDescendants = tissue_descendants_json;
+export const NON_UBERON_DEVELOPMENTAL_STAGE_DESCENDANTS: OntologyDescendants =
+  non_uberon_developmental_stage_descendants_json;
+
+export const ORGANISM_TAXON = {
+  WORM: "NCBITaxon:6239",
+  ZEBRA_FISH: "NCBITaxon:7955",
+  FRUIT_FLY: "NCBITaxon:7227",
+};
+
+export const NON_UBERON_LIFE_STAGE_ORGANISMS = [
+  ORGANISM_TAXON.WORM,
+  ORGANISM_TAXON.FRUIT_FLY,
+  ORGANISM_TAXON.ZEBRA_FISH,
+];
 
 /**
  * Tissues to be included for display in tissue system ontology tree.
@@ -900,6 +1072,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     ],
     valueSourceKind: "NONE",
     viewKind: "MULTI_PANEL",
+    footerComponentId: "cellTypeFooter",
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_CONSORTIA,
@@ -940,6 +1113,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     source: DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET,
     valueSourceKind: "CURATED",
     viewKind: "CURATED_ONTOLOGY",
+    footerComponentId: "developmentStageFooter",
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_DISEASE,
@@ -1087,6 +1261,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     ],
     valueSourceKind: "NONE",
     viewKind: "MULTI_PANEL",
+    footerComponentId: "tissueFooter",
   },
 ];
 
@@ -1112,3 +1287,18 @@ export const COLLATOR_CASE_INSENSITIVE = new Intl.Collator("en", {
   numeric: true,
   sensitivity: "base",
 });
+
+export const TOOLTIP_SPECIFIC_ONTOLOGIES = {
+  WBbt: {
+    ontologyId: "WBbt",
+    species: "Caenorhabditis elegans",
+  },
+  ZFA: {
+    ontologyId: "ZFA",
+    species: "Danio rerio",
+  },
+  FBbt: {
+    ontologyId: "FBbt",
+    species: "Drosophila melanogaster",
+  },
+};
