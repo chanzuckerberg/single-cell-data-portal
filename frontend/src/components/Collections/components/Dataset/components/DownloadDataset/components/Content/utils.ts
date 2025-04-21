@@ -7,12 +7,13 @@ import { API } from "src/common/API";
 import { DatasetAsset } from "src/common/entities";
 import { getNotAvailableText } from "./components/DataFormat/constants";
 
-export const downloadMultipleFiles = (
+export const downloadMultipleFiles = async (
   formatsToDownload: DATASET_ASSET_FORMAT[],
   downloadLinks: DownloadLinkType[]
 ) => {
-  formatsToDownload.forEach((format) => {
+  for (const format of formatsToDownload) {
     const downloadLink = downloadLinks.find((link) => link.filetype === format);
+
     if (
       downloadLink &&
       downloadLink.downloadURL &&
@@ -24,8 +25,12 @@ export const downloadMultipleFiles = (
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+
+      // Wait for 500ms before downloading the next file
+      // This is to prevent the browser from blocking the downloads
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
-  });
+  }
 };
 
 export const getDownloadLink = async (
