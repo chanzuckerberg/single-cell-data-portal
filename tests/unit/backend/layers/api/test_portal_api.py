@@ -1763,7 +1763,7 @@ class TestDataset(BaseAPIPortalTest):
 
     def test__get_dataset_asset__file_SERVER_ERROR(self):
         """
-        `get_dataset_asset` should throw 500 if url or file_size aren't returned from the server
+        `get_dataset_asset` should return a -1 if file_size isn't returned from the server
         """
         version = self.generate_dataset(
             artifacts=[DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")]
@@ -1773,7 +1773,8 @@ class TestDataset(BaseAPIPortalTest):
 
         test_url = furl(path=f"/dp/v1/datasets/{dataset_version_id}/asset/{artifact_id}")
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
-        self.assertEqual(500, response.status_code)
+        actual_body = json.loads(response.data)
+        self.assertEqual(actual_body["file_size"], -1)
 
     def test__get_dataset_asset__dataset_NOT_FOUND(self):
         fake_id = DatasetVersionId()

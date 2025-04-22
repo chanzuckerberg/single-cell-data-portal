@@ -1,5 +1,6 @@
 import dataclasses
 import itertools
+import logging
 from datetime import datetime
 from typing import Iterable, List, Optional, Tuple
 from urllib.parse import urlparse
@@ -741,7 +742,10 @@ def get_dataset_asset(dataset_id: str, asset_id: str):
         raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}/asset/{asset_id}' not found.") from None
 
     if download_data.file_size is None:
-        raise ServerErrorHTTPException() from None
+        logging.warning("File size not found")
+        download_data.file_size = -1
+        # restore after fixing https://github.com/chanzuckerberg/single-cell-data-portal/issues/7480
+        # raise ServerErrorHTTPException() from None
 
     if download_data.url is None:
         raise ServerErrorHTTPException()
