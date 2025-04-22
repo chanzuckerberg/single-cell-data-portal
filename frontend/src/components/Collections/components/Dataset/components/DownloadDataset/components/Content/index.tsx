@@ -113,13 +113,14 @@ const Content: FC<Props> = ({
   }, [availableFormats, initialFetchDone]);
 
   useEffect(() => {
+    if (initialFetchDone || dataAssets.length === 0) return;
     const fetchDownloadLinks = async () => {
-      if (initialFetchDone) return;
-
       setIsDownloadLinkLoading(true);
 
       try {
-        const links = await Promise.all(dataAssets.map(getDownloadLink));
+        const links = await Promise.all(
+          dataAssets.map((asset) => getDownloadLink(asset))
+        );
         console.log("Fetched download links:", links);
         const cleanedLinks = links
           .filter((link): link is DownloadLinkType => link !== null)
