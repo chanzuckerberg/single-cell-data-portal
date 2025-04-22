@@ -6,7 +6,12 @@ import Details from "./components/Details";
 import Name from "./components/Name";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import { DialogActions, DialogContent, DialogTitle } from "@czi-sds/components";
+import {
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Tooltip,
+} from "@czi-sds/components";
 import { DialogLoader as Loader } from "src/components/Datasets/components/DownloadDataset/style";
 import { Button } from "src/components/common/Button";
 import {
@@ -14,7 +19,6 @@ import {
   getNotAvailableText,
 } from "./components/DataFormat/constants";
 import { downloadMultipleFiles, getDownloadLink } from "./utils";
-import { Tooltip } from "@czi-sds/components";
 interface Props {
   isError?: boolean;
   isLoading?: boolean;
@@ -36,6 +40,8 @@ const Content: FC<Props> = ({
   name,
   dataAssets,
 }) => {
+  const [initialFetchDone, setInitialFetchDone] = useState(false);
+
   const [selectedFormats, setSelectedFormats] = useState<
     DATASET_ASSET_FORMAT[]
   >([]);
@@ -81,6 +87,8 @@ const Content: FC<Props> = ({
 
   // Set selected formats based on available formats and ATAC index
   useEffect(() => {
+    if (!initialFetchDone) return;
+
     const isATACIncomplete = (format: DATASET_ASSET_FORMAT) => {
       if (format !== DATASET_ASSET_FORMAT.ATAC_INDEX) return false;
       const hasIndex = availableFormats.has(DATASET_ASSET_FORMAT.ATAC_INDEX);
@@ -89,64 +97,38 @@ const Content: FC<Props> = ({
       );
       return !(hasIndex && hasFragment);
     };
+
     const allFormats = POSSIBLE_DOWNLOAD_FORMATS.filter(
       ({ format }) => availableFormats.has(format) && !isATACIncomplete(format)
     ).map(({ format }) => format);
 
-    const selectedFormats: DATASET_ASSET_FORMAT[] = [];
+    const defaultFormats: DATASET_ASSET_FORMAT[] = [];
 
-    // Default to just H5AD selected if available
+    // Select H5AD by default if available
     allFormats.includes(DATASET_ASSET_FORMAT.H5AD)
-      ? selectedFormats.push(DATASET_ASSET_FORMAT.H5AD)
-      : selectedFormats.push(allFormats[0]);
+      ? defaultFormats.push(DATASET_ASSET_FORMAT.H5AD)
+      : defaultFormats.push(allFormats[0]);
 
-    setSelectedFormats(selectedFormats);
-  }, [availableFormats, dataAssets]);
+    setSelectedFormats(defaultFormats);
+  }, [availableFormats, initialFetchDone]);
 
   useEffect(() => {
-    const shouldSkipFetching = () => {
-      if (selectedFormats.length === 0 || formatsToDownload.length === 0) {
-        return true;
-      }
-      return formatsToDownload.every((format) =>
-        downloadLinks.some((link) => link.filetype === format)
-      );
-    };
-    const getAssetsToRetrieve = () => {
-      return dataAssets.filter(
-        (asset) =>
-          !downloadLinks.some((link) => link.filetype === asset.filetype) &&
-          formatsToDownload.includes(asset.filetype)
-      );
-    };
-    const replaceMissingURLs = (links: (DownloadLinkType | null)[]) => {
-      return links
-        .filter((link): link is DownloadLinkType => link !== null)
-        .map((link) => ({
-          ...link,
-          downloadURL: link.downloadURL ?? getNotAvailableText(link.filetype),
-        }));
-    };
-
     const fetchDownloadLinks = async () => {
+      if (initialFetchDone) return;
+
       setIsDownloadLinkLoading(true);
 
-      if (shouldSkipFetching()) {
-        setIsDownloadLinkLoading(false);
-        return;
-      }
-
-      const assetsToRetrieve = getAssetsToRetrieve();
-      if (assetsToRetrieve.length === 0) {
-        setIsDownloadLinkLoading(false);
-        console.error("No Download Formats available");
-        return;
-      }
-
       try {
-        const links = await Promise.all(assetsToRetrieve.map(getDownloadLink));
-        const cleanedLinks = replaceMissingURLs(links);
-        setDownloadLinks((prev) => [...new Set([...prev, ...cleanedLinks])]);
+        const links = await Promise.all(dataAssets.map(getDownloadLink));
+        console.log("Fetched download links:", links);
+        const cleanedLinks = links
+          .filter((link): link is DownloadLinkType => link !== null)
+          .map((link) => ({
+            ...link,
+            downloadURL: link.downloadURL ?? getNotAvailableText(link.filetype),
+          }));
+        setDownloadLinks(cleanedLinks);
+        setInitialFetchDone(true);
       } catch (error) {
         console.error("Error fetching download links", error);
       } finally {
@@ -155,7 +137,7 @@ const Content: FC<Props> = ({
     };
 
     fetchDownloadLinks();
-  }, [selectedFormats, dataAssets, downloadLinks, formatsToDownload]);
+  }, [dataAssets, initialFetchDone]);
   /**
    * Tracks dataset download analytics as specified by the custom analytics event.
    * @param event - Custom analytics event.
