@@ -1286,11 +1286,6 @@ describe("Cell Guide", () => {
         );
         await expect(label).toBeVisible();
 
-        const expectedURL = `${TEST_URL}${ROUTES.CELL_GUIDE_TISSUE_SPECIFIC_CELL_TYPE.replace(
-          ":tissueId",
-          LUNG_TISSUE_ID
-        ).replace(":cellTypeId", LUNG_CILIATED_CELL_CELL_TYPE_ID)}`;
-
         await Promise.all([
           page.waitForURL(
             `${TEST_URL}${ROUTES.CELL_GUIDE_TISSUE_SPECIFIC_CELL_TYPE.replace(
