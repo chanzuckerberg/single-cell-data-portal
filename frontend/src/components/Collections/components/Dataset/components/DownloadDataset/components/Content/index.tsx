@@ -121,7 +121,6 @@ const Content: FC<Props> = ({
         const links = await Promise.all(
           dataAssets.map((asset) => getDownloadLink(asset))
         );
-        console.log("Fetched download links:", links);
         const cleanedLinks = links
           .filter((link): link is DownloadLinkType => link !== null)
           .map((link) => ({
