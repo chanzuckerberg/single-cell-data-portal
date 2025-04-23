@@ -75,12 +75,6 @@ def test_collection_access(session, api_url, supercurator_cookie, curator_cookie
     # len should be less than super curator
     curator_collections = [c for c in res.json()["collections"] if c["visibility"].lower() == "private"]
 
-    print("Super curator collections:", superuser_collections)
-    print("Curator collections:", curator_collections)
-    print("All collection visibilities (super curator):", [c["visibility"] for c in res.json()["collections"]])
-
-    print("Super curator claims:", jwt.get_unverified_claims(supercurator_token["access_token"]))
-    print("Curator claims:", jwt.get_unverified_claims(curator_token["access_token"]))
     assert len(curator_collections) < len(superuser_collections)
 
 
