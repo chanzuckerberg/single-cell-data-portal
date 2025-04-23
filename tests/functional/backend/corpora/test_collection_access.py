@@ -75,6 +75,10 @@ def test_collection_access(session, api_url, supercurator_cookie, curator_cookie
     # len should be less than super curator
     curator_collections = [c for c in res.json()["collections"] if c["visibility"] == "PRIVATE"]
 
+    print("Super curator collections:", superuser_collections)
+    print("Curator collections:", curator_collections)
+    print("All collection visibilities (super curator):", [c["visibility"] for c in res.json()["collections"]])
+
     assert len(curator_collections) < len(superuser_collections)
 
 
