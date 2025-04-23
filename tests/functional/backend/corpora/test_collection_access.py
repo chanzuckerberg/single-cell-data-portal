@@ -87,7 +87,7 @@ def test_collection_access(session, api_url, supercurator_cookie, curator_cookie
 
     assert curator_ids.issubset(
          super_ids
-     ), f"Curator sees collections the super curator cannot: {curator_ids - super_ids}"
+    ), f"Curator sees collections the super curator cannot: {curator_ids - super_ids}"
     assert len(super_ids) > len(curator_ids), "Super curator should see more collections than a curator"
 
 
