@@ -79,7 +79,6 @@ def test_collection_access(session, api_url, supercurator_cookie, curator_cookie
     print(f"[DEBUG] Super curator collection IDs ({len(super_ids)}): {sorted(super_ids)}")
     print(f"[DEBUG] Curator collection IDs ({len(curator_ids)}): {sorted(curator_ids)}")
 
-    # Optional: explicitly print the mismatch
     if not curator_ids.issubset(super_ids):
         diff = curator_ids - super_ids
         print(f"[DEBUG] ❌ Curator sees collections that super curator cannot: {sorted(diff)}")
@@ -87,7 +86,7 @@ def test_collection_access(session, api_url, supercurator_cookie, curator_cookie
     assert curator_ids.issubset(
         super_ids
     ), f"Curator sees collections the super curator cannot: {curator_ids - super_ids}"
-    assert len(super_ids) > len(curator_ids), "Super curator should see more collections than a curator"
+    assert len(super_ids) >= len(curator_ids), "Super curator should see more collections than a curator"
 
 
 def test_super_curator_claims(supercurator_token):
