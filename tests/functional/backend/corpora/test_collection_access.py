@@ -64,29 +64,21 @@ def test_collection_access(session, api_url, supercurator_cookie, curator_cookie
     headers = {"Cookie": f"cxguser={supercurator_cookie}", "Content-Type": "application/json"}
     res = session.get(f"{api_url}/dp/v1/collections", headers=headers)
     assertStatusCode(requests.codes.ok, res)
-    superuser_collections = [c for c in res.json()["collections"] if c["visibility"].lower() == "private"]
 
-    # get collection for curator user
-    headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
-    res = session.get(f"{api_url}/dp/v1/collections", headers=headers)
-    assertStatusCode(requests.codes.ok, res)
+    # ### Disabling this test: Only support super curator authorization
+    # https://github.com/chanzuckerberg/single-cell-data-portal/issues/7369
+    # # len should be a lot
+    # superuser_collections = [c for c in res.json()["collections"] if c["visibility"] == "PRIVATE"]
 
-    curator_collections = [c for c in res.json()["collections"] if c["visibility"].lower() == "private"]
+    # # get collection for curator user
+    # headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
+    # res = session.get(f"{api_url}/dp/v1/collections", headers=headers)
+    # assertStatusCode(requests.codes.ok, res)
 
-    curator_ids = {c["id"] for c in curator_collections}
-    super_ids = {c["id"] for c in superuser_collections}
+    # # len should be less than super curator
+    # curator_collections = [c for c in res.json()["collections"] if c["visibility"] == "PRIVATE"]
 
-    print(f"[DEBUG] Super curator collection IDs ({len(super_ids)}): {sorted(super_ids)}")
-    print(f"[DEBUG] Curator collection IDs ({len(curator_ids)}): {sorted(curator_ids)}")
-
-    if not curator_ids.issubset(super_ids):
-        diff = curator_ids - super_ids
-        print(f"[DEBUG] ❌ Curator sees collections that super curator cannot: {sorted(diff)}")
-
-    assert curator_ids.issubset(
-        super_ids
-    ), f"Curator sees collections the super curator cannot: {curator_ids - super_ids}"
-    assert len(super_ids) >= len(curator_ids), "Super curator should see more collections than a curator"
+    # assert len(curator_collections) < len(superuser_collections)
 
 
 def test_super_curator_claims(supercurator_token):
@@ -95,12 +87,13 @@ def test_super_curator_claims(supercurator_token):
     claims = token["scope"]
     assert "write:collections" in claims
 
-
-def test_curator_claims(functest_auth_token):
-    access_token = functest_auth_token["access_token"]
-    token = jwt.get_unverified_claims(access_token)
-    claims = token["scope"]
-    assert "write:collections" not in claims
+# ### Disabling this test: Only support super curator authorization
+# https://github.com/chanzuckerberg/single-cell-data-portal/issues/7369
+# def test_curator_claims(functest_auth_token):
+#     access_token = functest_auth_token["access_token"]
+#     token = jwt.get_unverified_claims(access_token)
+#     claims = token["scope"]
+#     assert "write:collections" not in claims
 
 
 def test_nocollection_claims(nocollection_token):
