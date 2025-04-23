@@ -26,7 +26,7 @@ export const getFileSize = (
           x.filetype === DATASET_ASSET_FORMAT.ATAC_FRAGMENT
       )
       .reduce((acc, x) => {
-        return x.fileSize ? acc + x.fileSize : acc;
+        return x.fileSize && x.fileSize !== -1 ? acc + x.fileSize : acc;
       }, 0);
   } else {
     fileSize =

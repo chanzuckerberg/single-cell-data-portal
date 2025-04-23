@@ -3,7 +3,7 @@ export const POSSIBLE_DOWNLOAD_FORMATS = [
   {
     format: DATASET_ASSET_FORMAT.H5AD,
     label: ".h5ad (AnnData v0.10)",
-    type: "RNA",
+    type: "Gene Matrix",
     description:
       "Hierarchical data format used to store annotated data matrices, typically for single-cell omics data, including gene expression, metadata, and embeddings.",
   },

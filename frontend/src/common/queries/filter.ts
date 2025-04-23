@@ -1045,27 +1045,33 @@ function processUserCollectionResponse(
 function addDevelopmentalStageAncestors(
   datasetResponse: DatasetResponse
 ): string[] {
-  const hasNonUberonLifeStageOrganisms = datasetResponse.organism.some((obj) =>
-    NON_UBERON_LIFE_STAGE_ORGANISMS.includes(obj.ontology_term_id)
-  );
+  const hasNonUberonLifeStageOrganisms =
+    datasetResponse.organism &&
+    datasetResponse.organism?.some((obj) =>
+      NON_UBERON_LIFE_STAGE_ORGANISMS.includes(obj.ontology_term_id)
+    );
   if (!hasNonUberonLifeStageOrganisms) {
     return datasetResponse.development_stage_ancestors;
   }
-  if (
-    datasetResponse.development_stage_ancestors.length === 0 ||
-    !datasetResponse.development_stage_ancestors
-  ) {
-    return [
-      ...new Set(
-        datasetResponse.development_stage.flatMap(
-          (development_stage) =>
-            NON_UBERON_DEVELOPMENTAL_STAGE_DESCENDANTS[
-              development_stage.ontology_term_id
-            ]
-        )
-      ),
-    ];
-  }
+  // Map developmental stage ontology term IDs to the curated filter parent stage IDs
+  // found in DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET. (ie if the dataset has a developmental stage of "day 1 of adulthood"
+  // make sure to include it's parent stage of "adulthood" in its development stage ancestors.)
+  const curatedAncestors = datasetResponse.development_stage.flatMap(
+    (stage) => {
+      const termId = stage?.ontology_term_id;
+      return NON_UBERON_DEVELOPMENTAL_STAGE_DESCENDANTS[termId] || [];
+    }
+  );
+
+  const curatedFilterCategoryAncestors = Array.from(new Set(curatedAncestors));
+
+  // Add curated filter category ancestors to the dataset response.
+  datasetResponse.development_stage_ancestors = Array.from(
+    new Set([
+      ...(datasetResponse.development_stage_ancestors || []),
+      ...curatedFilterCategoryAncestors,
+    ])
+  );
 
   return datasetResponse.development_stage_ancestors;
 }
