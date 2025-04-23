@@ -67,15 +67,16 @@ const ToS = (): JSX.Element => {
             Foundation, a 501(c)(3) nonprofit private foundation (
             <strong>“Provider,” “we,” “us”</strong>) and agree to be bound by
             these Terms as well as our{" "}
-            <a href={ROUTES.PRIVACY}>Privacy Policy</a>. If you don’t agree to
-            these Terms, or to our <a href={ROUTES.PRIVACY}>Privacy Policy</a>,
-            don’t access the Site.
+            <a href={ROUTES.PRIVACY_NEW}>Privacy Policy</a>. If you don’t agree
+            to these Terms, or to our{" "}
+            <a href={ROUTES.PRIVACY_NEW}>Privacy Policy</a>, don’t access the
+            Site.
           </p>
 
           <p>
             Please read our full Terms and{" "}
-            <a href={ROUTES.PRIVACY}>Privacy Policy</a> for complete details,
-            but here is the key information you should know:
+            <a href={ROUTES.PRIVACY_NEW}>Privacy Policy</a> for complete
+            details, but here is the key information you should know:
           </p>
 
           <ul>
@@ -125,6 +126,14 @@ const ToS = (): JSX.Element => {
                 here
               </a>
               .
+            </li>
+            <li>
+              <h4>Restrictions on Use of the Services.</h4> You shall not
+              otherwise access or use – or attempt to access or use – the Site
+              to take any action that could harm us, the Site, or any third
+              party, or use the Site in a manner that violates applicable law or
+              violates the rights of others. You further agree not to attempt to
+              re-identify any individual from the datasets provided on the Site.
             </li>
             <li>
               <h4>Site Limitations.</h4> We may restrict or terminate your
@@ -238,7 +247,7 @@ const ToS = (): JSX.Element => {
 
             <li>
               <h4>Indemnification.</h4>
-              <ol className="section5">
+              <ol>
                 <li>
                   You shall indemnify, defend and hold the Protected Parties
                   harmless from and against, and shall pay all damages, costs,
@@ -266,10 +275,9 @@ const ToS = (): JSX.Element => {
                 </li>
               </ol>
             </li>
-
-            <li id="section6">
+            <li>
               <h4>Arbitration Agreement and Class Action Waiver.</h4>
-              <ol className="section6">
+              <ol>
                 <li>
                   <h5>Applicability.</h5> In the unlikely event we end up in a
                   legal dispute, you and CZIF agree that all Disputes, including
@@ -280,7 +288,7 @@ const ToS = (): JSX.Element => {
                   individual action in small claims court.
                   <ol>
                     <li>
-                      (1) A <strong>“Dispute”</strong> means a dispute, claim or
+                      A <strong>“Dispute”</strong> means a dispute, claim or
                       controversy arising out of or relating to the Site or
                       these Terms; whether that dispute is (1) based on past,
                       present or future events; or (2) in tort, contract,
@@ -288,7 +296,7 @@ const ToS = (): JSX.Element => {
                       basis.
                     </li>
                     <li>
-                      (2) An
+                      An
                       <strong>“Enforceability Dispute”</strong> means a Dispute
                       relating to the interpretation, applicability, or
                       enforceability of this Arbitration Agreement, including
@@ -297,9 +305,9 @@ const ToS = (): JSX.Element => {
                       Arbitration Agreement is void or voidable.
                     </li>
                     <li>
-                      (3) An <strong>“IP Dispute”</strong> means a Dispute
-                      relating to the ownership or enforcement of intellectual
-                      property rights.
+                      An <strong>“IP Dispute”</strong> means a Dispute relating
+                      to the ownership or enforcement of intellectual property
+                      rights.
                     </li>
                   </ol>
                 </li>
@@ -403,9 +411,9 @@ const ToS = (): JSX.Element => {
               </ol>
             </li>
 
-            <li id="section7">
+            <li>
               <h4>General Terms.</h4>
-              <ol className="section7">
+              <ol>
                 <li>
                   These Terms constitute the entire agreement between the
                   parties with respect to the subject matter hereof and your use
@@ -430,7 +438,7 @@ const ToS = (): JSX.Element => {
                   may assign these Terms in connection with a reorganization, or
                   to a successor or assign that agrees to assume our obligations
                   under these Terms (and{" "}
-                  <a href={ROUTES.PRIVACY}>Privacy Policy</a>) without your
+                  <a href={ROUTES.PRIVACY_NEW}>Privacy Policy</a>) without your
                   consent.
                 </li>
               </ol>

@@ -30,7 +30,7 @@ const Privacy = (): JSX.Element => {
 
           <div>
             <h1>Privacy Policy</h1>
-            <p>Last updated: February 25, 2025.</p>
+            <p>Last updated: April 23, 2025.</p>
             {/* Introduction */}
             <>
               <h2>Introduction</h2>
@@ -45,9 +45,9 @@ const Privacy = (): JSX.Element => {
               </p>
               <p>
                 Please read our full{" "}
-                <a href={ROUTES.TOS}>Terms of Use (&quot;Terms&quot;)</a> (which
-                incorporates this Privacy Policy) and this Privacy Policy for
-                complete details, but here is the key information you should
+                <a href={ROUTES.TOS_NEW}>Terms of Use (&quot;Terms&quot;)</a>{" "}
+                (which incorporates this Privacy Policy) and this Privacy Policy
+                for complete details, but here is the key information you should
                 know:
               </p>
               <ul className="text-list">
@@ -79,7 +79,7 @@ const Privacy = (): JSX.Element => {
                 that Provider is the “controller” of your personal data provided
                 to, collected by, or processed in connection with the Site. This
                 Privacy Policy along with the{" "}
-                <a href={ROUTES.TOS}>Terms of Use</a> form a contract.{" "}
+                <a href={ROUTES.TOS_NEW}>Terms of Use</a> form a contract.{" "}
                 <strong>
                   If you don’t agree with this Privacy Policy or the Terms of
                   Use, do not access or use the Site.
@@ -223,7 +223,8 @@ const Privacy = (): JSX.Element => {
                   <h4>Security and Investigations.</h4> We use your data
                   (including your communications) if we think it’s necessary for
                   security purposes or to investigate violations of our{" "}
-                  <a href={ROUTES.TOS}>Terms of Use</a> or this Privacy Policy.
+                  <a href={ROUTES.TOS_NEW}>Terms of Use</a> or this Privacy
+                  Policy.
                 </li>
               </ul>
             </>
@@ -641,6 +642,12 @@ const Privacy = (): JSX.Element => {
                     privacy@chanzuckerberg.com
                   </a>
                   .
+                  <address>
+                    Chan Zuckerberg Initiative <br />
+                    2682 Middlefield Road, Suite i <br />
+                    Redwood City, CA 94063
+                    <br />
+                  </address>
                   <div>
                     To comply with article 27 of the GDPR and the UK-GDPR, we
                     have appointed a representative who can accept
