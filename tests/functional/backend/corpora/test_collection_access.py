@@ -87,6 +87,7 @@ def test_super_curator_claims(supercurator_token):
     claims = token["scope"]
     assert "write:collections" in claims
 
+
 # ### Disabling this test: Only support super curator authorization
 # https://github.com/chanzuckerberg/single-cell-data-portal/issues/7369
 # def test_curator_claims(functest_auth_token):
