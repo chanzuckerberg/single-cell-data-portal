@@ -75,13 +75,12 @@ def test_collection_access(session, api_url, supercurator_cookie, curator_cookie
     # len should be less than super curator
     curator_collections = [c for c in res.json()["collections"] if c["visibility"].lower() == "private"]
 
-    curator_ids = set(c["id"] for c in curator_collections)
-    super_ids = set(c["id"] for c in superuser_collections)
+    curator_ids = {c["id"] for c in curator_collections}
+    super_ids = {c["id"] for c in superuser_collections}
 
-    print(f"[DEBUG] Curator collections: {curator_ids}")
-    print(f"[DEBUG] Supercurator collections: {super_ids}")
-
-    assert curator_ids.issubset(super_ids), f"Curator sees collections not visible to supercurator: {curator_ids - super_ids}"
+    assert curator_ids.issubset(super_ids), (
+        f"Curator sees collections the super curator cannot: {curator_ids - super_ids}"
+    )
     assert len(super_ids) > len(curator_ids), (
         "Super curator should see more collections than a curator"
     )
