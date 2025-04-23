@@ -42,6 +42,7 @@ class H5ADDataFile:
         self,
         input_filename,
         var_index_column_name=None,
+        skip_dataset_metadata_extraction=False,
     ):
         self.input_filename = input_filename
         # Set by self.extract_metadata_about_dataset
@@ -53,7 +54,11 @@ class H5ADDataFile:
         self.validate_input_file_type()
 
         self.extract_anndata_elements_from_file()
-        self.extract_metadata_about_dataset()
+
+        if not skip_dataset_metadata_extraction:
+            self.extract_metadata_about_dataset()
+        else:
+            self.corpora_properties = None
 
         self.validate_anndata()
 
