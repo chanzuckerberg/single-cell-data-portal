@@ -1047,7 +1047,7 @@ function addDevelopmentalStageAncestors(
 ): string[] {
   const hasNonUberonLifeStageOrganisms =
     datasetResponse.organism &&
-    datasetResponse.organism.some((obj) =>
+    datasetResponse.organism?.some((obj) =>
       NON_UBERON_LIFE_STAGE_ORGANISMS.includes(obj.ontology_term_id)
     );
   if (!hasNonUberonLifeStageOrganisms) {

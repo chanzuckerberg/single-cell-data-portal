@@ -60,7 +60,6 @@ def test_nocollection_access(session, api_url, nocollection_cookie):
 
 def test_collection_access(session, api_url, supercurator_cookie, curator_cookie):
     """Test that only a super curator has access to all of the collections"""
-    
     # get collection for supercurator user
     headers = {"Cookie": f"cxguser={supercurator_cookie}", "Content-Type": "application/json"}
     res = session.get(f"{api_url}/dp/v1/collections", headers=headers)
