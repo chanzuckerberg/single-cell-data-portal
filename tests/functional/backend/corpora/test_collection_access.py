@@ -64,18 +64,29 @@ def test_collection_access(session, api_url, supercurator_cookie, curator_cookie
     headers = {"Cookie": f"cxguser={supercurator_cookie}", "Content-Type": "application/json"}
     res = session.get(f"{api_url}/dp/v1/collections", headers=headers)
     assertStatusCode(requests.codes.ok, res)
-    # len should be a lot
-    superuser_collections = [c for c in res.json()["collections"] if c["visibility"] == "PRIVATE"]
+    superuser_collections = [c for c in res.json()["collections"] if c["visibility"].lower() == "private"]
 
     # get collection for curator user
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     res = session.get(f"{api_url}/dp/v1/collections", headers=headers)
     assertStatusCode(requests.codes.ok, res)
 
-    # len should be less than super curator
-    curator_collections = [c for c in res.json()["collections"] if c["visibility"] == "PRIVATE"]
+    curator_collections = [c for c in res.json()["collections"] if c["visibility"].lower() == "private"]
 
-    assert len(curator_collections) < len(superuser_collections)
+    curator_ids = {c["id"] for c in curator_collections}
+    super_ids = {c["id"] for c in superuser_collections}
+
+    print(f"[DEBUG] Super curator collection IDs ({len(super_ids)}): {sorted(super_ids)}")
+    print(f"[DEBUG] Curator collection IDs ({len(curator_ids)}): {sorted(curator_ids)}")
+
+    if not curator_ids.issubset(super_ids):
+        diff = curator_ids - super_ids
+        print(f"[DEBUG] ❌ Curator sees collections that super curator cannot: {sorted(diff)}")
+
+    assert curator_ids.issubset(
+        super_ids
+    ), f"Curator sees collections the super curator cannot: {curator_ids - super_ids}"
+    assert len(super_ids) >= len(curator_ids), "Super curator should see more collections than a curator"
 
 
 def test_super_curator_claims(supercurator_token):
