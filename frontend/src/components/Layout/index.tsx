@@ -22,12 +22,8 @@ const Layout = ({ children }: Props) => {
           bannerOptions={{
             content: (
               <p>
-                New feature: Visualize and analyze spatial transcriptomics
-                datasets in Explorer!&nbsp;
-                <a href="https://cellxgene.cziscience.com/datasets?utm_campaign=spatial_jul_2024?utm_source=homepage_banner&utm_medium=product">
-                  Browse datasets
-                </a>
-                &nbsp;using the Visium or Slide-seqV2 assay filter.
+                Review our updated <a href="/tos-new/">Terms of Service</a> and{" "}
+                <a href="/privacy-new/">Privacy Policy.</a>
               </p>
             ),
           }}
