@@ -18,7 +18,7 @@ from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionMetadataUpdate
 from backend.layers.business.exceptions import CollectionUpdateException, InvalidMetadataException
 from backend.layers.common.entities import CollectionId, CollectionLinkType, Link
-from backend.portal.api.providers import get_business_logic
+from backend.portal.api.providers import get_business_logic, get_cloudfront_provider
 
 
 def delete(collection_id: str, token_info: dict, delete_published: bool = False) -> Response:
@@ -28,6 +28,7 @@ def delete(collection_id: str, token_info: dict, delete_published: bool = False)
     if collection_version.published_at:
         if user_info.is_cxg_admin() and delete_published:
             get_business_logic().tombstone_collection(CollectionId(collection_id))
+            get_cloudfront_provider().create_invalidation_for_index_paths()
         elif not user_info.is_cxg_admin() and delete_published:
             raise ForbiddenHTTPException(
                 detail="Only CXG admins can delete a published collection. Roles are granted through Auth0"
@@ -36,6 +37,7 @@ def delete(collection_id: str, token_info: dict, delete_published: bool = False)
             raise MethodNotAllowedException(detail="Cannot delete a published collection through API.")
     else:
         get_business_logic().delete_collection_version(collection_version)
+        get_cloudfront_provider().create_invalidation_for_index_paths()
     return make_response("", 204)
 
 
