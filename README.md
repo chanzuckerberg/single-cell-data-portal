@@ -8,7 +8,7 @@ CELLxGENE Discover enables the publication, discovery and exploration of interop
 ## Developer Guidelines
 
 ### FE Setup
-
+<!-- test -->
 Follow instructions in [/frontend README](./frontend/README.md)
 
 ### Pre-requisite installations and setups
