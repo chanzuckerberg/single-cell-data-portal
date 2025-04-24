@@ -22,10 +22,10 @@ class TestTombstone(BaseTest):
 
         context = self.get_context()
         tombstone_collection(context, c_v.collection_id.id)
+        context.obj["cloudfront_provider"].create_invalidation_for_index_paths.assert_called()
 
         c_v = self.business_logic.get_collection_version(c_v.version_id, get_tombstoned=True)
         self.assertTrue(c_v.canonical_collection.tombstoned)
-        context.obj["cloudfront_provider"].create_invalidation_for_index_paths.assert_called()
 
     def test__resurrect_collection(self):
         c_v = self.generate_published_collection()

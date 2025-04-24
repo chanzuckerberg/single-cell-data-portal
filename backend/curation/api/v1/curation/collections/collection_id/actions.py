@@ -4,7 +4,6 @@ from flask import Response, jsonify, make_response
 
 import backend.common.doi as doi
 from backend.common.utils.http_exceptions import (
-    ForbiddenHTTPException,
     InvalidParametersHTTPException,
     MethodNotAllowedException,
 )
@@ -18,7 +17,7 @@ from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionMetadataUpdate
 from backend.layers.business.exceptions import CollectionUpdateException, InvalidMetadataException
 from backend.layers.common.entities import CollectionId, CollectionLinkType, Link
-from backend.portal.api.providers import get_business_logic, get_cloudfront_provider
+from backend.portal.api.providers import get_business_logic
 
 
 def delete(collection_id: str, token_info: dict, delete_published: bool = False) -> Response:
@@ -28,9 +27,8 @@ def delete(collection_id: str, token_info: dict, delete_published: bool = False)
     if collection_version.published_at:
         if user_info.is_cxg_admin() and delete_published:
             get_business_logic().tombstone_collection(CollectionId(collection_id))
-            get_cloudfront_provider().create_invalidation_for_index_paths()
         elif not user_info.is_cxg_admin() and delete_published:
-            raise ForbiddenHTTPException(
+            raise MethodNotAllowedException(
                 detail="Only CXG admins can delete a published collection. Roles are granted through Auth0"
             )
         else:
