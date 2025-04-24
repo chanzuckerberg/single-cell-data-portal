@@ -4,7 +4,6 @@ import os
 import tempfile
 
 import numpy as np
-import pyvips
 from PIL import Image
 
 from backend.layers.thirdparty.s3_provider import S3Provider
@@ -111,6 +110,8 @@ class SpatialDataProcessor:
             image_array (np.ndarray): The image array.
             assets_folder (str): The temporary directory to save the assets.
         """
+        import pyvips
+
         h, w, bands = image_array.shape
         linear = image_array.reshape(w * h * bands)
         image = pyvips.Image.new_from_memory(linear.data, w, h, bands, "uchar")
