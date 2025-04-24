@@ -54,8 +54,8 @@ class TestDeleteCollection(BaseAPIPortalTest):
         tests = [
             ("not_owner", (403, 403)),
             ("noauth", (401, 401)),
-            ("owner", (403, 403)),
-            ("super", (403, 403)),
+            ("owner", (405, 403)),
+            ("super", (405, 403)),
             ("cxg_admin", (405, 204)),
         ]
         query_param_strs = ("", "delete_published=true")
@@ -1564,7 +1564,7 @@ class TestDeleteDataset(BaseAPIPortalTest):
             with self.subTest("Cannot delete published Dataset in a revision even after it has been updated"):
                 self.generate_dataset(collection_version=revision, replace_dataset_version_id=dataset_version_id)
                 response = self._delete(auth_func, revision.collection_id, dataset_id)
-                self.assertEqual(405, response.status_code)
+                self.assertEqual(40, response.status_code)
 
     def test__delete_published_dataset_cxg_admin(self):
         """
