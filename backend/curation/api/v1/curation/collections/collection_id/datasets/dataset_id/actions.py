@@ -51,6 +51,11 @@ def delete(token_info: dict, collection_id: str, dataset_id: str, delete_publish
     if not user_info.is_user_owner_or_allowed(collection_version.owner):
         raise ForbiddenHTTPException("Unauthorized")
 
+    if not user_info.is_cxg_admin():
+        raise ForbiddenHTTPException(
+            "Only CXG admins can delete a dataset through API. Roles are granted through Auth0"
+        )
+
     if dataset_version.version_id not in [v.version_id for v in collection_version.datasets]:
         raise ForbiddenHTTPException(f"Dataset {dataset_id} does not belong to a collection")
 
