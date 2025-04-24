@@ -4,6 +4,7 @@ from flask import Response, jsonify, make_response
 
 import backend.common.doi as doi
 from backend.common.utils.http_exceptions import (
+    ForbiddenHTTPException,
     InvalidParametersHTTPException,
     MethodNotAllowedException,
 )
@@ -28,7 +29,7 @@ def delete(collection_id: str, token_info: dict, delete_published: bool = False)
         if user_info.is_cxg_admin() and delete_published:
             get_business_logic().tombstone_collection(CollectionId(collection_id))
         elif not user_info.is_cxg_admin() and delete_published:
-            raise MethodNotAllowedException(
+            raise ForbiddenHTTPException(
                 detail="Only CXG admins can delete a published collection. Roles are granted through Auth0"
             )
         else:
