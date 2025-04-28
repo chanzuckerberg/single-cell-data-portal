@@ -123,7 +123,10 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
   - multiple-puck Slide-seq datasets are permitted if each puck is also submitted individually
     - obsm['spatial'] is not required for these
 - **Additional ATAC-seq standards**
-  - Fragment files are required for unpaired ATAC-seq submissions, _preferred_ for multi-modal submissions
+  - A fragments file is required for each unpaired scATAC-seq submission, _preferred_ for multi-modal submission
+  - Follows the 5-column tabular format produced by [Cell Ranger](https://www.10xgenomics.com/support/software/cell-ranger-atac/latest/analysis/outputs/fragments-file)
+  - Barcode values must match the values in the obs index of the corresponding AnnData object
+  - [This notebook](https://github.com/Lattice-Data/lattice-tools/blob/main/cellxgene_resources/curation_fragments.ipynb) may be helpful to curate from Cell Ranger outputs
 
 ## Data Submission Policy
 
