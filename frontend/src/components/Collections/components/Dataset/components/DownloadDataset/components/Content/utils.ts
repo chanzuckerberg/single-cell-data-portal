@@ -5,7 +5,7 @@ import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "src/common/API";
 import { DatasetAsset } from "src/common/entities";
-import { getNotAvailableText } from "./components/DataFormat/constants";
+import { getNotAvailableText } from "./components/BrowserTab/components/DataFormat/constants";
 
 export const downloadMultipleFiles = async (
   formatsToDownload: DATASET_ASSET_FORMAT[],
@@ -56,3 +56,9 @@ export const getDownloadLink = async (
     return null;
   }
 };
+
+export enum ActiveTab {
+  Browser = "Browser",
+  PythonApi = "PythonApi",
+  RApi = "RApi",
+}
