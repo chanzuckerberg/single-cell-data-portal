@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2025-05-05T18:40:13.005Z", "name": "processing", "message": "Updating processing status", "lineno": 49, "pathname": "/single-cell-data-portal/backend/layers/processing/process_logic.py", "validation_message": null, "status_key": "validation", "status_value": "INVALID", "dataset_version_id": "9b4fb7bc-4d4c-47ac-8995-c0787d35155a"}
