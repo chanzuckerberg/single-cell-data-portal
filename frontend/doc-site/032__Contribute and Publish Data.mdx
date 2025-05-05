@@ -101,7 +101,7 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
   - one or more two-dimensional embeddings, prefixed with 'X\_'
 - **Features in var & raw.var (if present)**:
   - index is Ensembl gene ID
-  - preference is that genes have not been filtered in order to maximize future data integration efforts
+  - recommendation is that genes have not been filtered in order to maximize future data integration efforts
 - **Additional standards for single-capture area Visium datasets** (largely aligns with [scanpy’s model](https://scanpy.readthedocs.io/en/stable/generated/scanpy.read_visium.html), [this notebook](https://github.com/Lattice-Data/lattice-tools/blob/main/cellxgene_resources/curation_visium.ipynb) may be helpful to curate from Space Ranger outputs):
   - empty spots must be included
     - 4992 total observations for 6.5 mm capture areas
@@ -110,7 +110,7 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
   - **obs['array_row']**
   - **obs['array_col']**
   - **obs['in_tissue']**
-  - **uns['spatial'][library_id]['images']['fullres']** _preferred_
+  - **uns['spatial'][library_id]['images']['fullres']** _recommended_
     - fullres image that is _input_ to Space Ranger
   - **uns['spatial'][library_id]['images']['hires']**
     - hires image that is _output_ from Space Ranger
@@ -123,7 +123,7 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
   - multiple-puck Slide-seq datasets are permitted if each puck is also submitted individually
     - obsm['spatial'] is not required for these
 - **Additional ATAC-seq standards**
-  - A fragments file is required for each unpaired scATAC-seq submission, _preferred_ for multi-modal submission
+  - A fragments file is required for each unpaired scATAC-seq submission, _recommended_ for multi-modal submission
   - Follows the 5-column tabular format produced by [Cell Ranger](https://www.10xgenomics.com/support/software/cell-ranger-atac/latest/analysis/outputs/fragments-file)
   - Barcode values must match the values in the obs index of the corresponding AnnData object
   - [This notebook](https://github.com/Lattice-Data/lattice-tools/blob/main/cellxgene_resources/curation_fragments.ipynb) may be helpful to curate from Cell Ranger outputs
