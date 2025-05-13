@@ -155,9 +155,17 @@ class ProcessAddLabels(ProcessingLogic):
             else:
                 return None
 
+        def _get_organism_terms() -> List[OntologyTermId]:
+            if "organism" in adata.uns and "organism_ontology_term_id" in adata.uns:
+                return [
+                    OntologyTermId(label=adata.uns["organism"], ontology_term_id=adata.uns["organism_ontology_term_id"])
+                ]
+            else:
+                return _get_term_pairs("organism")
+
         return DatasetMetadata(
             name=adata.uns["title"],
-            organism=_get_term_pairs("organism"),
+            organism=_get_organism_terms(),
             tissue=_get_tissue_terms(),
             assay=_get_term_pairs("assay"),
             disease=_get_term_pairs("disease"),
