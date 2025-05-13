@@ -157,7 +157,9 @@ class ProcessAddLabels(ProcessingLogic):
 
         def _get_organism_terms() -> List[OntologyTermId]:
             if "organism" in adata.uns and "organism_ontology_term_id" in adata.uns:
-                return [adata.uns["organism"], adata.uns["organism_ontology_term_id"]]
+                return [
+                    OntologyTermId(label=adata.uns["organism"], ontology_term_id=adata.uns["organism_ontology_term_id"])
+                ]
             else:
                 return _get_term_pairs("organism")
 
