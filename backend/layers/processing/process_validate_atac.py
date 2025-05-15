@@ -213,4 +213,4 @@ class ProcessValidateATAC(ProcessingLogic):
             )
             self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.UPLOADED)
         self.logger.info("Processing completed successfully")
-        return
+        return fragment_artifact_id

@@ -111,7 +111,7 @@ class ProcessMain(ProcessingLogic):
             if step_name == "validate_anndata":
                 self.process_validate_h5ad.process(dataset_version_id, manifest, artifact_bucket)
             elif step_name == "validate_atac":
-                self.process_validate_atac_seq.process(
+                fragment_artifact_id = self.process_validate_atac_seq.process(
                     collection_version_id,
                     dataset_version_id,
                     manifest,
@@ -122,9 +122,9 @@ class ProcessMain(ProcessingLogic):
                     collection_version_id, dataset_version_id, artifact_bucket, datasets_bucket
                 )
             elif step_name == "cxg":
-                self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket)
+                self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket, fragment_artifact_id)
             elif step_name == "cxg_remaster":
-                self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket, is_reprocess=True)
+                self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket, fragment_artifact_id, is_reprocess=True)
             else:
                 self.logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 
