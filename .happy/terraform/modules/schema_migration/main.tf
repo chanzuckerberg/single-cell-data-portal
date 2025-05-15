@@ -231,7 +231,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
       }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,
-          "MaxAttempts": 7,
+          "MaxAttempts": 3,
           "BackoffRate": 5
       }],
       "Catch": [
@@ -301,7 +301,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             }, {
                 "ErrorEquals": ["States.ALL"],
                 "IntervalSeconds": 2,
-                "MaxAttempts": 7,
+                "MaxAttempts": 3,
                 "BackoffRate": 5
             }],
             "Catch": [
@@ -369,7 +369,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             }, {
                 "ErrorEquals": ["States.ALL"],
                 "IntervalSeconds": 2,
-                "MaxAttempts": 7,
+                "MaxAttempts": 3,
                 "BackoffRate": 5
             }],
             "Catch": [
@@ -447,7 +447,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   }, {
                       "ErrorEquals": ["States.ALL"],
                       "IntervalSeconds": 2,
-                      "MaxAttempts": 7,
+                      "MaxAttempts": 3,
                       "BackoffRate": 5
                   }],
                   "Catch": [
@@ -591,7 +591,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
       }, {
         "ErrorEquals": ["States.ALL"],
         "IntervalSeconds": 2,
-        "MaxAttempts": 7,
+        "MaxAttempts": 3,
         "BackoffRate": 5
       }],
       "End": true
