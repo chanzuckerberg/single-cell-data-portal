@@ -34,8 +34,6 @@ import { UnderlyingDataChangeBanner } from "../GeneSearchBar/components/SaveExpo
 import { StyledRightSideBar } from "./style";
 import { useConnect } from "src/views/WheresMyGeneV2/components/Main/connect";
 import Notification from "src/components/Notification";
-import { BANNER_FEEDBACK_SURVEY_LINK } from "src/common/constants/airtableLinks";
-import BottomBanner from "src/components/BottomBanner";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -212,7 +210,6 @@ export default function WheresMyGene(): JSX.Element {
           />
         </Wrapper>
       </View>
-      <BottomBanner surveyLink={BANNER_FEEDBACK_SURVEY_LINK} />
     </>
   );
 }
