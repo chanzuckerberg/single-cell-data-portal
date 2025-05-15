@@ -228,7 +228,12 @@ resource aws_sfn_state_machine sfn_schema_migration {
           "IntervalSeconds": 2,
           "MaxAttempts": 7,
           "BackoffRate": 5
-      } ],
+      }, {
+          "ErrorEquals": ["States.ALL"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 7,
+          "BackoffRate": 5
+      }],
       "Catch": [
         {
           "ErrorEquals": [
@@ -293,7 +298,12 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "IntervalSeconds": 2,
                 "MaxAttempts": 7,
                 "BackoffRate": 5
-            } ],
+            }, {
+                "ErrorEquals": ["States.ALL"],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 7,
+                "BackoffRate": 5
+            }],
             "Catch": [
               {
                 "ErrorEquals": [
@@ -356,7 +366,12 @@ resource aws_sfn_state_machine sfn_schema_migration {
                 "IntervalSeconds": 2,
                 "MaxAttempts": 7,
                 "BackoffRate": 5
-            } ],
+            }, {
+                "ErrorEquals": ["States.ALL"],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 7,
+                "BackoffRate": 5
+            }],
             "Catch": [
               {
                 "ErrorEquals": [
@@ -429,7 +444,12 @@ resource aws_sfn_state_machine sfn_schema_migration {
                       "IntervalSeconds": 2,
                       "MaxAttempts": 7,
                       "BackoffRate": 5
-                  } ],
+                  }, {
+                      "ErrorEquals": ["States.ALL"],
+                      "IntervalSeconds": 2,
+                      "MaxAttempts": 7,
+                      "BackoffRate": 5
+                  }],
                   "Catch": [
                     {
                       "ErrorEquals": [
@@ -513,7 +533,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
           "Key.$": "$.key_name"
         }
       },
-      "MaxConcurrency": 10,
+      "MaxConcurrency": 20,
       "Next": "report",
       "Catch": [
         {
@@ -568,7 +588,12 @@ resource aws_sfn_state_machine sfn_schema_migration {
         "IntervalSeconds": 2,
         "MaxAttempts": 7,
         "BackoffRate": 5
-      } ],
+      }, {
+        "ErrorEquals": ["States.ALL"],
+        "IntervalSeconds": 2,
+        "MaxAttempts": 7,
+        "BackoffRate": 5
+      }],
       "End": true
     }
   }
