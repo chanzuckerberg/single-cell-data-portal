@@ -54,8 +54,8 @@ class TestDeleteCollection(BaseAPIPortalTest):
         tests = [
             ("not_owner", (403, 403)),
             ("noauth", (401, 401)),
-            ("owner", (405, 405)),
-            ("super", (405, 405)),
+            ("owner", (405, 403)),
+            ("super", (405, 403)),
             ("cxg_admin", (405, 204)),
         ]
         query_param_strs = ("", "delete_published=true")

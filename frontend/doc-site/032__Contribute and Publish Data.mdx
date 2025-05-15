@@ -21,15 +21,15 @@ CELLxGENE supports most single-cell RNA-seq and ATAC-seq data, but a few types o
 - cell lines
 - species not on the [supported list](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#organism_ontology_term_id)
 - assays not on the [supported list](https://github.com/chanzuckerberg/cellxgene-census/blob/main/docs/census_accepted_assays.csv)
-  - these additional assays are pending Census acceptance and will be accepted:
-    - expression measurements from multi-modal assays (e.g. 10x multiome, mCT-seq)
-    - unpaired ATAC-seq measurements
+  - these additional assays are accepted:
+    - expression data from paired (i.e. multi-modal) assays (e.g. 10x multiome, mCT-seq)
+    - unpaired scATAC-seq gene activity matrices with fragments file
 
 CELLxGENE continues to expand support for additional species and assays so please [contact us] if you are interested in submitting data not currently covered by the supported lists.
 
 ### Scale Constraints
 
-CELLxGENE Discover sets the maximum per dataset file size for submissions to 50 GB. Additionally, datasets with more than 4.6 million cells can be submitted but will not visualized in CELLxGENE Explorer.
+CELLxGENE Discover sets the maximum per dataset file size for submissions to 50 GB. Additionally, datasets with more than 4.3 million cells can be submitted but will not visualized in CELLxGENE Explorer.
 
 ### Formatting Requirements
 
@@ -101,7 +101,7 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
   - one or more two-dimensional embeddings, prefixed with 'X\_'
 - **Features in var & raw.var (if present)**:
   - index is Ensembl gene ID
-  - preference is that genes have not been filtered in order to maximize future data integration efforts
+  - recommendation is that genes have not been filtered in order to maximize future data integration efforts
 - **Additional standards for single-capture area Visium datasets** (largely aligns with [scanpy’s model](https://scanpy.readthedocs.io/en/stable/generated/scanpy.read_visium.html), [this notebook](https://github.com/Lattice-Data/lattice-tools/blob/main/cellxgene_resources/curation_visium.ipynb) may be helpful to curate from Space Ranger outputs):
   - empty spots must be included
     - 4992 total observations for 6.5 mm capture areas
@@ -110,7 +110,7 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
   - **obs['array_row']**
   - **obs['array_col']**
   - **obs['in_tissue']**
-  - **uns['spatial'][library_id]['images']['fullres']** _preferred_
+  - **uns['spatial'][library_id]['images']['fullres']** _recommended_
     - fullres image that is _input_ to Space Ranger
   - **uns['spatial'][library_id]['images']['hires']**
     - hires image that is _output_ from Space Ranger
@@ -123,7 +123,10 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
   - multiple-puck Slide-seq datasets are permitted if each puck is also submitted individually
     - obsm['spatial'] is not required for these
 - **Additional ATAC-seq standards**
-  - Fragment files are required for unpaired ATAC-seq submissions, _preferred_ for multi-modal submissions
+  - A fragments file is required for each unpaired scATAC-seq submission, _recommended_ for multi-modal submission
+  - Follows the 5-column tabular format produced by [Cell Ranger](https://www.10xgenomics.com/support/software/cell-ranger-atac/latest/analysis/outputs/fragments-file)
+  - Barcode values must match the values in the obs index of the corresponding AnnData object
+  - [This notebook](https://github.com/Lattice-Data/lattice-tools/blob/main/cellxgene_resources/curation_fragments.ipynb) may be helpful to curate from Cell Ranger outputs
 
 ## Data Submission Policy
 
@@ -136,6 +139,6 @@ I give CZI permission to display, distribute, and create derivative works (e.g. 
 [HsapDv]: https://www.ebi.ac.uk/ols/ontologies/hsapdv
 [MONDO]: https://www.ebi.ac.uk/ols/ontologies/mondo
 [MmusDv]: https://www.ebi.ac.uk/ols/ontologies/mmusdv
-[NCBITaxon]: https://www.ncbi.nlm.nih.gov/taxonomy
+[NCBITaxon]: https://www.ebi.ac.uk/ols4/ontologies/ncbitaxon
 [UBERON]: https://www.ebi.ac.uk/ols/ontologies/uberon
 [ZFS]: https://www.ebi.ac.uk/ols4/ontologies/zfs

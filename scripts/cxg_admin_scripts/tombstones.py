@@ -27,6 +27,7 @@ def tombstone_collection(ctx: Context, collection_id: str) -> None:
         logging.error(f"{collection_id} is not a valid uuid")
         exit(1)
     business_logic: BusinessLogic = ctx.obj["business_logic"]
+    cloudfront_provider: CloudfrontProvider = ctx.obj["cloudfront_provider"]
     collection = business_logic.get_canonical_collection(CollectionId(collection_id))
     if not collection:
         logging.error(f"Collection {collection_id} does not exist")
@@ -35,6 +36,7 @@ def tombstone_collection(ctx: Context, collection_id: str) -> None:
         logging.error(f"Collection {collection_id} is already tombstoned")
         exit(1)
     business_logic.tombstone_collection(CollectionId(collection_id))
+    cloudfront_provider.create_invalidation_for_index_paths()
     print(f"Successfully tombstoned Collection {collection_id}")
 
 
