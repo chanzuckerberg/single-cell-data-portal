@@ -171,7 +171,6 @@ export default function DifferentialExpression(): JSX.Element {
           <DeResults setIsLoading={setIsLoading} />
         </div>
       </TwoPanelLayout>
-      {/* <BottomBanner surveyLink={BANNER_FEEDBACK_SURVEY_LINK} /> */}
     </>
   );
 }

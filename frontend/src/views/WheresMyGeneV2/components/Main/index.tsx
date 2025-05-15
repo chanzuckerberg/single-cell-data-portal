@@ -210,7 +210,6 @@ export default function WheresMyGene(): JSX.Element {
           />
         </Wrapper>
       </View>
-      {/* <BottomBanner surveyLink={BANNER_FEEDBACK_SURVEY_LINK} /> */}
     </>
   );
 }
