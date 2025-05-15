@@ -33,8 +33,6 @@ import {
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { useConnect } from "./connect";
-import BottomBanner from "src/components/BottomBanner";
-import { BANNER_FEEDBACK_SURVEY_LINK } from "src/common/constants/airtableLinks";
 
 export default function DifferentialExpression(): JSX.Element {
   const {
@@ -173,7 +171,6 @@ export default function DifferentialExpression(): JSX.Element {
           <DeResults setIsLoading={setIsLoading} />
         </div>
       </TwoPanelLayout>
-      <BottomBanner surveyLink={BANNER_FEEDBACK_SURVEY_LINK} />
     </>
   );
 }
