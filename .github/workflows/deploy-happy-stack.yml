@@ -411,9 +411,24 @@ jobs:
       - e2e-test
       - functional-test
     steps:
-      - uses: martialonline/workflow-status@v4
+      - name: Check workflow result
         id: check
-      - uses: 8398a7/action-slack@v3
+        run: |
+          failed=false
+          for job in performance-test e2e-logged-in-test e2e-test functional-test; do
+            result="${{ needs[job].result }}"
+            echo "$job result: $result"
+            if [[ "$result" != "success" && "$result" != "skipped" ]]; then
+              failed=true
+            fi
+          done
+          if [[ "$failed" == "true" ]]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+          else
+            echo "status=success" >> $GITHUB_OUTPUT
+          fi
+      - name: Notify prod team
+        uses: 8398a7/action-slack@v3
         with:
           status: ${{ steps.check.outputs.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
@@ -422,7 +437,8 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: github.ref == 'refs/heads/prod'
-      - uses: 8398a7/action-slack@v3
+      - name: Notify failures on main/staging
+        uses: 8398a7/action-slack@v3
         with:
           status: ${{ steps.check.outputs.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
