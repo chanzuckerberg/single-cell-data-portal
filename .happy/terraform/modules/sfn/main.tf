@@ -79,8 +79,12 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "IntervalSeconds": 2,
                   "MaxAttempts": 7,
                   "BackoffRate": 5
-                }
-              ],
+                }, {
+                  "ErrorEquals": ["States.ALL"],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 5
+                }],
               "End": true
             }
           }
@@ -128,8 +132,12 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "IntervalSeconds": 2,
                   "MaxAttempts": 7,
                   "BackoffRate": 5
-                }
-              ],
+                }, {
+                  "ErrorEquals": ["States.ALL"],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 5
+              }],
               "End": true
             }
           }
@@ -183,6 +191,11 @@ resource "aws_sfn_state_machine" "state_machine" {
           "IntervalSeconds": 2,
           "MaxAttempts": 7,
           "BackoffRate": 5
+        }, {
+          "ErrorEquals": ["States.ALL"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 5
         }
       ],
       "Catch": [
@@ -226,6 +239,11 @@ resource "aws_sfn_state_machine" "state_machine" {
           "IntervalSeconds": 2,
           "MaxAttempts": 7,
           "BackoffRate": 5
+        }, {
+          "ErrorEquals": ["States.ALL"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 5
         }
       ],
       "Catch": [
@@ -256,6 +274,11 @@ resource "aws_sfn_state_machine" "state_machine" {
           "IntervalSeconds": 1,
           "MaxAttempts": 3,
           "BackoffRate": 2.0
+        }, {
+          "ErrorEquals": ["States.ALL"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 5
         }
       ],
       "End": true,
@@ -279,6 +302,11 @@ resource "aws_sfn_state_machine" "state_machine" {
           "IntervalSeconds": 1,
           "MaxAttempts": 3,
           "BackoffRate": 2.0
+        }, {
+          "ErrorEquals": ["States.ALL"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 5
         }
       ],
       "ResultPath": null,
