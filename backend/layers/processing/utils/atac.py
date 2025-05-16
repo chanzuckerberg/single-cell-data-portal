@@ -30,32 +30,6 @@ CHROM_LENGTHS = {
 
 
 class ATACDataProcessor:
-    """
-    ATACDataProcessor is a class designed to process ATAC-seq fragment files and generate binned coverage data for downstream analysis. 
-    It provides methods to extract metadata, map cell names to IDs, create a TileDB array schema, and write binned coverage data.
-    Attributes:
-        fragment_artifact_id (str): The path to the fragment file to be processed.
-        ctx (tiledb.Ctx): TileDB context for managing TileDB operations.
-        bin_size (int): The size of bins used for coverage calculation.
-        chrom_lengths (dict): A dictionary mapping chromosome names to their lengths.
-        bins_per_chrom (dict): A dictionary mapping chromosome names to the number of bins.
-        scale_factors (dict): A dictionary mapping chromosome names to scale factors for normalization.
-        max_bins (int): The maximum number of bins per chromosome.
-    Methods:
-        __init__(fragment_artifact_id=None, ctx=None):
-            Initializes the ATACDataProcessor with optional fragment file path and TileDB context.
-        extract_cell_metadata_from_h5ad(obs: pd.DataFrame, obs_column: str = "cell_type") -> pd.DataFrame:
-            Extracts cell metadata from the H5AD file and returns a DataFrame with cell names and metadata.
-        map_cell_name_to_ids() -> Tuple[int, dict, int, dict]:
-            Maps cell names to unique IDs and returns the maximum chromosome ID, cell ID map, number of cells, and chromosome map.
-        create_dataframe_array(array_name: str, max_chrom: int, num_cells: int):
-            Creates a TileDB sparse array schema for storing binned coverage data.
-        write_binned_coverage_per_chrom(array_name: str, chrom_map: dict, cell_id_map: dict):
-            Writes binned coverage data for each chromosome to the TileDB array.
-        process_fragment_file(obs: pd.DataFrame, array_name: str) -> Tuple[pd.DataFrame, dict]:
-            Processes the fragment file, generates binned coverage data, and returns cell metadata and cell ID map.
-    """
-
     def __init__(self, fragment_artifact_id=None, ctx=None):
         self.fragment_artifact_id = fragment_artifact_id
         self.ctx = ctx
@@ -151,8 +125,14 @@ class ATACDataProcessor:
             
                 df = pd.DataFrame(data, columns=["chrom", "bin", "cell_id"])
                 binned = df.groupby(["chrom", "bin", "cell_id"]).size().reset_index(name="coverage")
-                A[(binned["chrom"].values, binned["bin"].values, binned["cell_id"].values)] = {
-                    binned["coverage"].values
+                A[
+                    (
+                        binned["chrom"].astype("int32").to_numpy(),
+                        binned["bin"].astype("int32").to_numpy(),
+                        binned["cell_id"].astype("int32").to_numpy(),
+                    )
+                ] = {
+                    "coverage": binned["coverage"].astype("int32").to_numpy()
                 }
 
 
