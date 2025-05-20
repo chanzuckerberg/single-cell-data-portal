@@ -411,23 +411,34 @@ jobs:
       - e2e-test
       - functional-test
     steps:
-      - uses: martialonline/workflow-status@v4
-        id: check
-      - uses: 8398a7/action-slack@v3
+      - name: Determine overall test result
+        id: result
+        run: |
+          if [[ "${{ needs.performance-test.result }}" == "success" && \
+                "${{ needs.e2e-logged-in-test.result }}" == "success" && \
+                "${{ needs.e2e-test.result }}" == "success" && \
+                "${{ needs.functional-test.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+      - name: Notify team of deploy result
+        uses: 8398a7/action-slack@v3
         with:
-          status: ${{ steps.check.outputs.status }}
+          status: ${{ steps.result.outputs.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
           mention: "subteam^S02KZL4SQM6,subteam^S03MNFMGD0F"
           if_mention: "always"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: github.ref == 'refs/heads/prod'
-      - uses: 8398a7/action-slack@v3
+      - name: Notify failures on main/staging
+        uses: 8398a7/action-slack@v3
         with:
-          status: ${{ steps.check.outputs.status }}
+          status: ${{ steps.result.outputs.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
           mention: "subteam^S02K38PMTTQ"
           if_mention: "always"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: steps.check.outputs.status == 'failure' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
+        if: steps.result.outputs.status == 'failure' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')

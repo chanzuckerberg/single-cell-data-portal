@@ -413,8 +413,6 @@ export default function Datasets(): JSX.Element {
                 />
               )}
             </View>
-            {/* May be added in the future after sign off */}
-            {/* <BottomBanner /> */}
           </>
         )
       )}
