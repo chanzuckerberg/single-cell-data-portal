@@ -69,17 +69,10 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               "ResultPath": null,
               "TimeoutSeconds": ${local.h5ad_timeout},
-              "Retry": [
-                {
-                  "ErrorEquals": [
-                    "AWS.Batch.TooManyRequestsException",
-                    "Batch.BatchException",
-                    "Batch.AWSBatchException"
-                  ],
-                  "IntervalSeconds": 2,
-                  "MaxAttempts": 7,
-                  "BackoffRate": 5
-                }, {
+              "Retry": [ {
+                  "ErrorEquals": ["States.TaskFailed"],
+                  "MaxAttempts": 0,
+              }, {
                   "ErrorEquals": ["States.ALL"],
                   "IntervalSeconds": 2,
                   "MaxAttempts": 3,
@@ -122,17 +115,10 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               "ResultPath": null,
               "TimeoutSeconds": ${local.atac_timeout},
-              "Retry": [
-                {
-                  "ErrorEquals": [
-                    "AWS.Batch.TooManyRequestsException",
-                    "Batch.BatchException",
-                    "Batch.AWSBatchException"
-                  ],
-                  "IntervalSeconds": 2,
-                  "MaxAttempts": 7,
-                  "BackoffRate": 5
-                }, {
+              "Retry": [ {
+                  "ErrorEquals": ["States.TaskFailed"],
+                  "MaxAttempts": 0,
+              }, {
                   "ErrorEquals": ["States.ALL"],
                   "IntervalSeconds": 2,
                   "MaxAttempts": 3,
@@ -181,17 +167,10 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "ResultPath": null,
       "TimeoutSeconds": ${local.h5ad_timeout},
-      "Retry": [
-        {
-          "ErrorEquals": [
-            "AWS.Batch.TooManyRequestsException",
-            "Batch.BatchException",
-            "Batch.AWSBatchException"
-          ],
-          "IntervalSeconds": 2,
-          "MaxAttempts": 7,
-          "BackoffRate": 5
-        }, {
+      "Retry": [ {
+          "ErrorEquals": ["States.TaskFailed"],
+          "MaxAttempts": 0,
+      }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,
           "MaxAttempts": 3,
@@ -229,17 +208,10 @@ resource "aws_sfn_state_machine" "state_machine" {
           ]
         }
       },
-      "Retry": [
-        {
-          "ErrorEquals": [
-            "AWS.Batch.TooManyRequestsException",
-            "Batch.BatchException",
-            "Batch.AWSBatchException"
-          ],
-          "IntervalSeconds": 2,
-          "MaxAttempts": 7,
-          "BackoffRate": 5
-        }, {
+      "Retry": [ {
+          "ErrorEquals": ["States.TaskFailed"],
+          "MaxAttempts": 0,
+      }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,
           "MaxAttempts": 3,
@@ -266,15 +238,10 @@ resource "aws_sfn_state_machine" "state_machine" {
         "execution_id.$": "$$.Execution.Id",
         "cxg_job.$": "$"
       },
-      "Retry": [
-        {
-          "ErrorEquals": [
-            "Lambda.AWSLambdaException"
-          ],
-          "IntervalSeconds": 1,
-          "MaxAttempts": 3,
-          "BackoffRate": 2.0
-        }, {
+      "Retry": [ {
+          "ErrorEquals": ["States.TaskFailed"],
+          "MaxAttempts": 0,
+      }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,
           "MaxAttempts": 3,
@@ -294,15 +261,10 @@ resource "aws_sfn_state_machine" "state_machine" {
         "dataset_version_id.$": "$.dataset_version_id",
         "collection_version_id.$": "$.collection_version_id"
       },
-      "Retry": [
-        {
-          "ErrorEquals": [
-            "Lambda.AWSLambdaException"
-          ],
-          "IntervalSeconds": 1,
-          "MaxAttempts": 3,
-          "BackoffRate": 2.0
-        }, {
+      "Retry": [ {
+          "ErrorEquals": ["States.TaskFailed"],
+          "MaxAttempts": 0,
+      }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,
           "MaxAttempts": 3,

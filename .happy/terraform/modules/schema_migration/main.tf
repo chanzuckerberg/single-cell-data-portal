@@ -224,10 +224,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
       },
       "Next": "SpanCollections",
       "Retry": [ {
-          "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-          "IntervalSeconds": 2,
-          "MaxAttempts": 7,
-          "BackoffRate": 5
+          "ErrorEquals": ["States.TaskFailed"],
+          "MaxAttempts": 0,
       }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,
@@ -294,10 +292,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
             },
             "Next": "DatasetsExists",
             "Retry": [ {
-                "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-                "IntervalSeconds": 2,
-                "MaxAttempts": 7,
-                "BackoffRate": 5
+                "ErrorEquals": ["States.TaskFailed"],
+                "MaxAttempts": 0,
             }, {
                 "ErrorEquals": ["States.ALL"],
                 "IntervalSeconds": 2,
@@ -362,10 +358,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
             },
             "End": true,
             "Retry": [ {
-                "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-                "IntervalSeconds": 2,
-                "MaxAttempts": 7,
-                "BackoffRate": 5
+                "ErrorEquals": ["States.TaskFailed"],
+                "MaxAttempts": 0,
             }, {
                 "ErrorEquals": ["States.ALL"],
                 "IntervalSeconds": 2,
@@ -440,10 +434,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   },
                   "Next": "StepFunctionsStartExecution",
                   "Retry": [ {
-                      "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-                      "IntervalSeconds": 2,
-                      "MaxAttempts": 7,
-                      "BackoffRate": 5
+                      "ErrorEquals": ["States.TaskFailed"],
+                      "MaxAttempts": 0,
                   }, {
                       "ErrorEquals": ["States.ALL"],
                       "IntervalSeconds": 2,
@@ -584,10 +576,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
         }
       },
       "Retry": [ {
-        "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
-        "IntervalSeconds": 2,
-        "MaxAttempts": 7,
-        "BackoffRate": 5
+          "ErrorEquals": ["States.TaskFailed"],
+          "MaxAttempts": 0,
       }, {
         "ErrorEquals": ["States.ALL"],
         "IntervalSeconds": 2,
