@@ -8,11 +8,13 @@ import {
   DISCOVER_API_URL,
   NOTEBOOK_URLS,
 } from "../../utils";
+import { EVENTS } from "src/common/analytics/events";
 
 interface ApiTabsProps {
   name: string;
   tab: ActiveTab.PythonApi | ActiveTab.RApi;
   censusCopyText: string;
+  handleAnalytics: (event: EVENTS) => void;
   discoverCopyText: string;
 }
 
@@ -21,6 +23,7 @@ export const ApiTab = ({
   tab,
   censusCopyText,
   discoverCopyText,
+  handleAnalytics,
 }: ApiTabsProps) => {
   return (
     <>
@@ -47,7 +50,7 @@ export const ApiTab = ({
             </p>
           }
           handleAnalytics={() => {
-            return; // handleAnalytics(EVENTS.DOWNLOAD_CENSUS_API_LINK_CLICKED);
+            handleAnalytics(EVENTS.DOWNLOAD_DATA_COPY);
           }}
         />
       </FormControl>
@@ -81,7 +84,7 @@ export const ApiTab = ({
             </p>
           }
           handleAnalytics={() => {
-            return; // handleAnalytics(EVENTS.DOWNLOAD_CENSUS_API_LINK_CLICKED);
+            handleAnalytics(EVENTS.DOWNLOAD_DATA_COPY);
           }}
         />
       </FormControl>

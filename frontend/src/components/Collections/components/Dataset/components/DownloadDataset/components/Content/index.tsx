@@ -201,6 +201,7 @@ const Content: FC<Props> = ({
           <ApiTab
             name={name}
             tab={ActiveTab.PythonApi}
+            handleAnalytics={handleAnalytics}
             censusCopyText={`import cellxgene_census
 
                 help(cellxgene_census)
@@ -215,6 +216,7 @@ const Content: FC<Props> = ({
           <ApiTab
             name={name}
             tab={ActiveTab.RApi}
+            handleAnalytics={handleAnalytics}
             censusCopyText={`library("cellxgene.census")
 
               ?cellxgene.census::get_seurat
