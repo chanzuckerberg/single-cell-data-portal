@@ -1,6 +1,6 @@
 import { DialogLoader as Loader } from "src/components/Datasets/components/DownloadDataset/style";
 import { DATASET_ASSET_FORMAT } from "src/common/entities";
-import DownloadLink from "./components/DownloadLink";
+import CopyCodeBlock from "../CopyCodeBlock";
 import DataFormat from "./components/DataFormat";
 import Details from "./components/Details";
 import Name from "./components/Name";
@@ -34,12 +34,11 @@ export const BrowserTab = ({
   selectedFormats,
   isDownloadLinkLoading,
 }: BrowserTabProps) => {
-  const copyText = downloadLinks.reduce((acc, download) => {
-    if (!formatsToDownload.includes(download.filetype)) {
-      return acc;
-    }
-    return acc + download.downloadURL + "\n";
-  }, "");
+  const copyLinks = downloadLinks
+    .filter((download) => formatsToDownload.includes(download.filetype))
+    .map((download) => download.downloadURL);
+
+  const copyText = copyLinks.join("\n");
   return (
     <>
       {isError && <div>Dataset download is currently not available.</div>}
@@ -56,9 +55,9 @@ export const BrowserTab = ({
           />
           <Details
             downloadPreview={
-              <DownloadLink
+              <CopyCodeBlock
                 copyText={copyText}
-                plural={downloadLinks.length > 1}
+                plural={copyLinks.length > 1}
                 handleAnalytics={() =>
                   handleAnalytics(EVENTS.DOWNLOAD_DATA_COPY)
                 }

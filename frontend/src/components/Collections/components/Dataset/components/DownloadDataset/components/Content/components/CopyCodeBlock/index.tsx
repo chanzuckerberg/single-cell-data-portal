@@ -1,7 +1,7 @@
 import { FC, ReactNode } from "react";
 import { CodeBlock } from "./style";
-import CopyButton from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/BrowserTab/components/DownloadLink/components/CopyButton";
-import CopyCaption from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/BrowserTab/components/DownloadLink/components/CopyCaption";
+import CopyButton from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/CopyCodeBlock/components/CopyButton";
+import CopyCaption from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/CopyCodeBlock/components/CopyCaption";
 interface Props {
   plural?: boolean;
   handleAnalytics: () => void;
@@ -9,7 +9,7 @@ interface Props {
   captionText: ReactNode;
 }
 
-const DownloadLink: FC<Props> = ({
+const CopyCodeBlock: FC<Props> = ({
   plural = false,
   handleAnalytics,
   copyText,
@@ -30,4 +30,4 @@ const DownloadLink: FC<Props> = ({
   );
 };
 
-export default DownloadLink;
+export default CopyCodeBlock;

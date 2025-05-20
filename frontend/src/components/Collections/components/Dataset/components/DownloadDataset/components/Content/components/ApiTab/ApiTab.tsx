@@ -1,5 +1,5 @@
 import Name from "../BrowserTab/components/Name";
-import DownloadLink from "../BrowserTab/components/DownloadLink";
+import CopyCodeBlock from "../CopyCodeBlock";
 import { FormControl, FormLabel } from "@mui/material";
 import { Link } from "@czi-sds/components";
 import {
@@ -22,13 +22,12 @@ export const ApiTab = ({
   censusCopyText,
   discoverCopyText,
 }: ApiTabsProps) => {
-  console.log("ApiTab Name", name);
   return (
     <>
       <Name name={name} />
       <FormControl>
         <FormLabel>Census Api</FormLabel>
-        <DownloadLink
+        <CopyCodeBlock
           copyText={censusCopyText}
           captionText={
             <p>
@@ -54,7 +53,7 @@ export const ApiTab = ({
       </FormControl>
       <FormControl>
         <FormLabel>Discover Api</FormLabel>
-        <DownloadLink
+        <CopyCodeBlock
           copyText={discoverCopyText}
           captionText={
             <p>
