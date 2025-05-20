@@ -9,6 +9,7 @@ interface Props {
   datasetId: string;
   isDisabled?: boolean;
   name: string;
+  collectionId: string;
 }
 
 /**
@@ -22,6 +23,7 @@ const DownloadDataset: FC<Props> = ({
   datasetId,
   isDisabled = false,
   name,
+  collectionId,
 }) => {
   const { onClose, onOpen, open } = useDialog();
 
@@ -46,6 +48,7 @@ const DownloadDataset: FC<Props> = ({
           isLoading={isLoading}
           name={name}
           onClose={onClose}
+          collectionId={collectionId}
         />
       </StyledDialog>
     </>

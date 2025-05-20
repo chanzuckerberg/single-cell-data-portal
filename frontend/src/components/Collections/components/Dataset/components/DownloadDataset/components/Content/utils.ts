@@ -5,7 +5,7 @@ import { apiTemplateToUrl } from "src/common/utils/apiTemplateToUrl";
 import { API_URL } from "src/configs/configs";
 import { API } from "src/common/API";
 import { DatasetAsset } from "src/common/entities";
-import { getNotAvailableText } from "./components/DataFormat/constants";
+import { getNotAvailableText } from "./components/BrowserTab/components/DataFormat/constants";
 
 export const downloadMultipleFiles = async (
   formatsToDownload: DATASET_ASSET_FORMAT[],
@@ -55,4 +55,24 @@ export const getDownloadLink = async (
     console.error("Error fetching download link for asset:", asset, error);
     return null;
   }
+};
+
+export enum ActiveTab {
+  Browser = "Browser",
+  PythonApi = "PythonApi",
+  RApi = "RApi",
+}
+
+export const SCHEMA_URL =
+  "https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html";
+
+export const DISCOVER_API_URL =
+  "https://api.cellxgene.cziscience.com/curation/ui/#/";
+export const CENSUS_API_URL =
+  "https://chanzuckerberg.github.io/cellxgene-census/index.html";
+export const NOTEBOOK_URLS = {
+  [ActiveTab.PythonApi]:
+    "https://github.com/chanzuckerberg/single-cell-curation/blob/main/notebooks/curation_api/python/get_dataset.ipynb",
+  [ActiveTab.RApi]:
+    "https://github.com/chanzuckerberg/single-cell-curation/blob/main/notebooks/curation_api/R/get_dataset_R.ipynb",
 };
