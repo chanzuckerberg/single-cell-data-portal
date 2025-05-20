@@ -20,10 +20,7 @@ interface BrowserTabProps {
   selectedFormats: DATASET_ASSET_FORMAT[];
   isDownloadLinkLoading: boolean;
 }
-
-const DISCOVER_API_URL = "https://api.cellxgene.cziscience.com/curation/ui/#/";
-const SCHEMA_URL =
-  "https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html";
+import { SCHEMA_URL } from "../../utils";
 
 export const BrowserTab = ({
   name,
@@ -74,18 +71,7 @@ export const BrowserTab = ({
                       permanently references the next version of this dataset.
                     </p>
                     <p>
-                      Individual datasets and their versions may also be
-                      downloaded programmatically using the{" "}
-                      <Link
-                        href={DISCOVER_API_URL}
-                        rel="noreferrer noopener"
-                        sdsSize="xs"
-                        sdsStyle="default"
-                        target="_blank"
-                      >
-                        Discover API
-                      </Link>
-                      . The{" "}
+                      The{" "}
                       <Link
                         href={SCHEMA_URL}
                         rel="noreferrer noopener"

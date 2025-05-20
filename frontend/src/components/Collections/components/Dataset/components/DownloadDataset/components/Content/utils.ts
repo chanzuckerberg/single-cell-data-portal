@@ -62,3 +62,17 @@ export enum ActiveTab {
   PythonApi = "PythonApi",
   RApi = "RApi",
 }
+
+export const SCHEMA_URL =
+  "https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html";
+
+export const DISCOVER_API_URL =
+  "https://api.cellxgene.cziscience.com/curation/ui/#/";
+export const CENSUS_API_URL =
+  "https://chanzuckerberg.github.io/cellxgene-census/index.html";
+export const NOTEBOOK_URLS = {
+  [ActiveTab.PythonApi]:
+    "https://github.com/chanzuckerberg/single-cell-curation/blob/main/notebooks/curation_api/python/get_dataset.ipynb",
+  [ActiveTab.RApi]:
+    "https://github.com/chanzuckerberg/single-cell-curation/blob/main/notebooks/curation_api/R/get_dataset_R.ipynb",
+};

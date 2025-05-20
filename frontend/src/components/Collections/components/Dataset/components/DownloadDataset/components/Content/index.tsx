@@ -200,26 +200,28 @@ const Content: FC<Props> = ({
         {activeTab === ActiveTab.PythonApi && (
           <ApiTab
             name={name}
+            tab={ActiveTab.PythonApi}
             censusCopyText={`import cellxgene_census
 
                 help(cellxgene_census)
                 help(cellxgene_census.get_anndata)
             `}
-            discoverCopyText={
-              collectionId + `/datasets/${dataAssets[0].dataset_id}`
-            }
+            discoverCopyText={`collection_id = "${collectionId}"
+               dataset_id = "${dataAssets[0].dataset_id}"
+              `}
           />
         )}
         {activeTab === ActiveTab.RApi && (
           <ApiTab
             name={name}
+            tab={ActiveTab.RApi}
             censusCopyText={`library("cellxgene.census")
 
               ?cellxgene.census::get_seurat
             `}
-            discoverCopyText={
-              collectionId + `/datasets/${dataAssets[0].dataset_id}`
-            }
+            discoverCopyText={`collection_id <- "${collectionId}"
+               dataset_id <- "${dataAssets[0].dataset_id}"
+              `}
           />
         )}
       </DialogContent>

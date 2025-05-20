@@ -13,7 +13,7 @@ import { StyledDialog as CommonStyledDialog } from "src/views/Collection/common/
 export const StyledDialog = styled(CommonStyledDialog)`
   .MuiDialog-paper {
     padding: ${spacesXxl}px;
-    min-height: 570px; /* min-height ensures dialog height consistency in any download state. */
+    min-height: 595px; /* min-height ensures dialog height consistency in any download state. */
   }
 
   .MuiDialogTitle-root {
