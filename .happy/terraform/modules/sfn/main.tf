@@ -169,7 +169,8 @@ resource "aws_sfn_state_machine" "state_machine" {
       "TimeoutSeconds": ${local.h5ad_timeout},
       "Retry": [ {
           "ErrorEquals": ["States.TaskFailed"],
-          "MaxAttempts": 0,
+          "IntervalSeconds": 30,
+          "MaxAttempts": 1,
       }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,
@@ -240,7 +241,8 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "Retry": [ {
           "ErrorEquals": ["States.TaskFailed"],
-          "MaxAttempts": 0,
+          "IntervalSeconds": 30,
+          "MaxAttempts": 1,
       }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,
@@ -263,7 +265,8 @@ resource "aws_sfn_state_machine" "state_machine" {
       },
       "Retry": [ {
           "ErrorEquals": ["States.TaskFailed"],
-          "MaxAttempts": 0,
+          "IntervalSeconds": 30,
+          "MaxAttempts": 1,
       }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,

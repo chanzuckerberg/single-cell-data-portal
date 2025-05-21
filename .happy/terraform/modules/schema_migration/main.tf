@@ -225,7 +225,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
       "Next": "SpanCollections",
       "Retry": [ {
           "ErrorEquals": ["States.TaskFailed"],
-          "MaxAttempts": 0,
+          "IntervalSeconds": 30,
+          "MaxAttempts": 1
       }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,
@@ -293,7 +294,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "Next": "DatasetsExists",
             "Retry": [ {
                 "ErrorEquals": ["States.TaskFailed"],
-                "MaxAttempts": 0,
+                "IntervalSeconds": 30,
+                "MaxAttempts": 1
             }, {
                 "ErrorEquals": ["States.ALL"],
                 "IntervalSeconds": 2,
@@ -359,7 +361,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
             "End": true,
             "Retry": [ {
                 "ErrorEquals": ["States.TaskFailed"],
-                "MaxAttempts": 0,
+                "IntervalSeconds": 30,
+                "MaxAttempts": 1
             }, {
                 "ErrorEquals": ["States.ALL"],
                 "IntervalSeconds": 2,
@@ -435,7 +438,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   "Next": "StepFunctionsStartExecution",
                   "Retry": [ {
                       "ErrorEquals": ["States.TaskFailed"],
-                      "MaxAttempts": 0,
+                      "IntervalSeconds": 30,
+                      "MaxAttempts": 1
                   }, {
                       "ErrorEquals": ["States.ALL"],
                       "IntervalSeconds": 2,
@@ -577,7 +581,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
       },
       "Retry": [ {
           "ErrorEquals": ["States.TaskFailed"],
-          "MaxAttempts": 0,
+          "IntervalSeconds": 30,
+          "MaxAttempts": 1
       }, {
         "ErrorEquals": ["States.ALL"],
         "IntervalSeconds": 2,
