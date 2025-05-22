@@ -73,6 +73,11 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "ErrorEquals": ["States.TaskFailed"],
                   "MaxAttempts": 0,
               }, {
+                  "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
+                  "ErrorEquals": ["States.TaskFailed"],
+                  "IntervalSeconds": 30,
+                  "MaxAttempts": 1
+              }, {
                   "ErrorEquals": ["States.ALL"],
                   "IntervalSeconds": 2,
                   "MaxAttempts": 3,
@@ -118,6 +123,11 @@ resource "aws_sfn_state_machine" "state_machine" {
               "Retry": [ {
                   "ErrorEquals": ["States.TaskFailed"],
                   "MaxAttempts": 0,
+              }, {
+                  "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
+                  "ErrorEquals": ["States.TaskFailed"],
+                  "IntervalSeconds": 30,
+                  "MaxAttempts": 1
               }, {
                   "ErrorEquals": ["States.ALL"],
                   "IntervalSeconds": 2,
@@ -172,6 +182,11 @@ resource "aws_sfn_state_machine" "state_machine" {
           "IntervalSeconds": 30,
           "MaxAttempts": 1,
       }, {
+          "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 30,
+          "MaxAttempts": 1
+      }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,
           "MaxAttempts": 3,
@@ -213,6 +228,11 @@ resource "aws_sfn_state_machine" "state_machine" {
           "ErrorEquals": ["States.TaskFailed"],
           "MaxAttempts": 0,
       }, {
+          "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 30,
+          "MaxAttempts": 1
+      }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,
           "MaxAttempts": 3,
@@ -244,6 +264,11 @@ resource "aws_sfn_state_machine" "state_machine" {
           "IntervalSeconds": 30,
           "MaxAttempts": 1,
       }, {
+          "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 30,
+          "MaxAttempts": 1
+      }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,
           "MaxAttempts": 3,
@@ -267,6 +292,11 @@ resource "aws_sfn_state_machine" "state_machine" {
           "ErrorEquals": ["States.TaskFailed"],
           "IntervalSeconds": 30,
           "MaxAttempts": 1,
+      }, {
+          "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 30,
+          "MaxAttempts": 1
       }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,
