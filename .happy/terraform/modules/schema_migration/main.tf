@@ -230,7 +230,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
       }, {
           "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
           "IntervalSeconds": 2,
-          "MaxAttempts": 3,
+          "MaxAttempts": 7,
           "BackoffRate": 5
       }, {
           "ErrorEquals": ["States.ALL"],
@@ -304,7 +304,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             }, {
                 "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
                 "IntervalSeconds": 2,
-                "MaxAttempts": 3,
+                "MaxAttempts": 7,
                 "BackoffRate": 5
             }, {
                 "ErrorEquals": ["States.ALL"],
@@ -376,7 +376,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
             }, {
                 "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
                 "IntervalSeconds": 2,
-                "MaxAttempts": 3,
+                "MaxAttempts": 7,
                 "BackoffRate": 5
             }, {
                 "ErrorEquals": ["States.ALL"],
@@ -458,7 +458,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
                   }, {
                       "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
                       "IntervalSeconds": 2,
-                      "MaxAttempts": 3,
+                      "MaxAttempts": 7,
                       "BackoffRate": 5
                   }, {
                       "ErrorEquals": ["States.ALL"],
@@ -606,7 +606,7 @@ resource aws_sfn_state_machine sfn_schema_migration {
       }, {
           "ErrorEquals": ["AWS.Batch.TooManyRequestsException", "Batch.BatchException", "Batch.AWSBatchException"],
           "IntervalSeconds": 2,
-          "MaxAttempts": 3,
+          "MaxAttempts": 7,
           "BackoffRate": 5
       }, {
           "ErrorEquals": ["States.ALL"],
