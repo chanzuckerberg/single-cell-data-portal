@@ -1,0 +1,26 @@
+###### Generated using `argus bootstrap` command ######
+stack:
+  global:
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+    service:
+      port: 9000
+    nodeSelector:
+      kubernetes.io/arch: amd64
+
+  services:
+    frontend:
+      image:
+        repository: 533267185808.dkr.ecr.us-west-2.amazonaws.com/core-platform/single-cell-data-portal/frontend/frontend
+      resources:
+        limits:
+          cpu: 500m
+          memory: 500Mi
+        requests:
+          cpu: 500m
+          memory: 500Mi
+      ingress:
+        paths:
+          - path: /
+            pathType: Prefix

@@ -1,0 +1,22 @@
+###### Generated using `argus bootstrap` command ######
+
+# Validates PR title follows conventional commits
+name: conventional-commits
+on:
+  pull_request:
+    branches:
+      - nshao/* # Only enforce on branches that is for argus onboarding for now
+    types:
+      - edited
+      - opened
+      - synchronize
+      - reopened
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  conventional_commit_title:
+    runs-on: AMD64
+    steps:
+      - uses: chanzuckerberg/github-actions/.github/actions/conventional-commits@v6

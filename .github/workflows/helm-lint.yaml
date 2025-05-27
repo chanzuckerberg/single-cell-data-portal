@@ -1,0 +1,32 @@
+###### Generated using `argus bootstrap` command ######
+name: Lint argus stack helm chart
+
+on:
+  - pull_request
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-rdev:
+    runs-on: AMD64
+    steps:
+      - uses: chanzuckerberg/github-actions/.github/actions/helm-lint@v6
+        with:
+          chart_path: .infra/rdev
+          values_files: ../common.yaml,./values.yaml
+  # lint-staging:
+  #   runs-on: AMD64
+  #   steps:
+  #     - uses: chanzuckerberg/github-actions/.github/actions/helm-lint@v6
+  #       with:
+  #         chart_path: .infra/staging
+  #         values_files: ../common.yaml,./values.yaml
+  # lint-prod:
+  #   runs-on: AMD64
+  #   steps:
+  #     - uses: chanzuckerberg/github-actions/.github/actions/helm-lint@v6
+  #       with:
+  #         chart_path: .infra/prod
+  #         values_files: ../common.yaml,./values.yaml

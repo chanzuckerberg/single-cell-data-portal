@@ -1,0 +1,24 @@
+###### Generated using `argus bootstrap` command ######
+name: Create/update rdev stack
+
+on:
+  pull_request:
+    types: [ labeled, synchronize ]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  create-stack:
+    runs-on: ARM64
+    if: contains(github.event.pull_request.labels.*.name, 'stack')
+    permissions:
+      id-token: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Create/update rdev stack
+        uses: chanzuckerberg/argus-artifacts/ci/packages/create-stack@v0
+        with:
+          appName: single-cell-data-portal
+          envName: rdev

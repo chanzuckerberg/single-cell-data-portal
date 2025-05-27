@@ -1,0 +1,23 @@
+###### Generated using `argus bootstrap` command ######
+name: Delete a RDev Stack
+
+on:
+  pull_request:
+    types: [ unlabeled, closed ]
+
+jobs:
+  delete-stack:
+    runs-on: ARM64
+    if: ${{!contains(github.event.pull_request.labels.*.name, 'stack') || github.event.pull_request.state == 'closed'}}
+    permissions:
+      id-token: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Delete rdev stack
+        uses: chanzuckerberg/argus-artifacts/ci/packages/delete-stack@v0
+        with:
+          appName: single-cell-data-portal
+          envName: rdev
+

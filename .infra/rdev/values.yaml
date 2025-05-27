@@ -1,0 +1,13 @@
+###### Generated using `argus bootstrap` command ######
+stack:
+  services:
+    frontend:
+      image:
+        tag: sha-TO-BE-REPLACED-BY-BUILDER-WORKFLOW
+      env:
+        - name: DEPLOYMENT_STAGE
+          value: dev
+        - name: COMMIT_SHA
+          value: $(__ARGUS_APP_REVISION)
+        - name: COMMIT_BRANCH
+          value: $(__ARGUS_APP_SOURCE_TARGET_REVISION)

@@ -1,0 +1,14 @@
+###### Generated using `argus bootstrap` command ######
+name: HelmDep Update
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '43 7 * * *'
+
+jobs:
+  helm_dependency_update:
+    uses: chanzuckerberg/github-actions/.github/workflows/argus-helm-chart-update.yaml@v6
+    secrets: inherit
+    with:
+      app_name: single-cell-data-portal
