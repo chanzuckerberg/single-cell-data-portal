@@ -74,18 +74,26 @@ class ATACDataProcessor:
 
 
     def create_dataframe_array(self, array_name, max_chrom):
+        # Define filters (compression options)
+        zstd_filter = tiledb.ZstdFilter(level=3)
+        gzip_filter = tiledb.GzipFilter(level=4)
+
+        # Apply filters to attributes and dimensions
+        attr_filters = tiledb.FilterList([zstd_filter])
+        dim_filters = tiledb.FilterList([gzip_filter])
+
         domain = tiledb.Domain(
-            tiledb.Dim(name="chrom", domain=(1, max_chrom), tile=1, dtype=np.uint32),
-            tiledb.Dim(name="bin", domain=(0, self.max_bins), tile=10, dtype=np.uint32),
-            tiledb.Dim(name="cell_type", dtype="ascii"),  # cell_type as dimension
+            tiledb.Dim(name="chrom", domain=(1, max_chrom), tile=1, dtype=np.uint32, filters=dim_filters),
+            tiledb.Dim(name="bin", domain=(0, self.max_bins), tile=10, dtype=np.uint32, filters=dim_filters),
+            tiledb.Dim(name="cell_type", dtype="ascii", filters=dim_filters),
         )
 
         schema = tiledb.ArraySchema(
             domain=domain,
         attrs=[
-            tiledb.Attr(name="coverage", dtype=np.float32),
-            tiledb.Attr(name="total_coverage", dtype=np.float32),
-            tiledb.Attr(name="normalized_coverage", dtype=np.float32)
+            tiledb.Attr(name="coverage", dtype=np.float32, filters=attr_filters),
+            tiledb.Attr(name="total_coverage", dtype=np.float32, filters=attr_filters),
+            tiledb.Attr(name="normalized_coverage", dtype=np.float32, filters=attr_filters)
         ],
             sparse=True,
             allows_duplicates=False,
@@ -110,14 +118,22 @@ class ATACDataProcessor:
             data = []
             for row in rows:
                 _, start, end, cell, _ = row.strip().split('\t')
+
                 if cell not in cell_id_map:
                     continue
-                raw_bin_start = int(start) // self.bin_size
-                raw_bin_end = int(end) // self.bin_size
+
+                start = int(start)
+                end = int(end)
+
+                # Determine bin range spanned by this read
+                bin_start = start // self.bin_size
+                bin_end = (end - 1) // self.bin_size  # ensure end is inclusive if needed
 
                 cell_type = cell_id_map[cell]["cell_type"]
-                data.append((chrom_id, raw_bin_start, cell_type))
-                data.append((chrom_id, raw_bin_end, cell_type))
+
+                data.append((chrom_id, bin_start, cell_type))
+                data.append((chrom_id, bin_end, cell_type))
+
 
             if not data:
                 continue
@@ -129,15 +145,16 @@ class ATACDataProcessor:
         if not all_binned_data:
             return
 
+
         # Concatenate all chromosome data
         full_df = pd.concat(all_binned_data, ignore_index=True)
         # full_df.to_csv("full_df.csv", index=True)
 
         # Compute total coverage across all chromosomes
         cell_type_totals = full_df.groupby("cell_type")["coverage"].sum()
-        normalization_factor = 200_000
+        normalization_factor = 2_000_000
         full_df["total_coverage"] = full_df["cell_type"].map(cell_type_totals)
-        full_df["normalized_coverage"] = (full_df["coverage"] / full_df["total_coverage"]) * normalization_factor
+        full_df["normalized_coverage"] = ((full_df["coverage"] / full_df["total_coverage"]) * normalization_factor).fillna(0)
 
         with tiledb.SparseArray(array_name, mode="w", ctx=self.ctx) as A:
             A[
