@@ -1,0 +1,10 @@
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': 77f4f9e6-e981-463e-9d5c-101de14dda6c, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': 77f4f9e6-e981-463e-9d5c-101de14dda6c, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [73f0db4d-ee00-4841-aa36-c4b7b77367f4/atac_fragment] to s3://datasets/06439ef4-4f3c-45eb-88ae-3a861bced37f-fragment.tsv.bgz
+INFO     processing:process_validate_atac.py:67 Updated database with atac_fragment.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [73f0db4d-ee00-4841-aa36-c4b7b77367f4/atac_index] to s3://datasets/06439ef4-4f3c-45eb-88ae-3a861bced37f-fragment.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:67 Updated database with atac_index.
+INFO     processing:process_validate_atac.py:112 Fragment is optional and not present. Skipping fragment validation.
+INFO     processing:process_logic.py:49 Updating processing status
