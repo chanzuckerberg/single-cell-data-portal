@@ -20,5 +20,5 @@ jobs:
       - name: Create/update rdev stack
         uses: chanzuckerberg/argus-artifacts/ci/packages/create-stack@v0
         with:
-          appName: single-cell-data-portal
+          appName: test-single-cell-data-portal
           envName: rdev
