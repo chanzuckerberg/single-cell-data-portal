@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   create-stack:
-    runs-on: ARM64
+    runs-on: AMD64
     if: contains(github.event.pull_request.labels.*.name, 'stack')
     permissions:
       id-token: write
