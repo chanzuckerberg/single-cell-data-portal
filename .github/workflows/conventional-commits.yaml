@@ -5,13 +5,13 @@ name: conventional-commits
 permissions:
   contents: read
 on:
-    branches:
-      - nshao/* # Only enforce on branches that is for argus onboarding for now
-    types:
-      - edited
-      - opened
-      - synchronize
-      - reopened
+  branches:
+    - nshao/* # Only enforce on branches that is for argus onboarding for now
+  types:
+    - edited
+    - opened
+    - synchronize
+    - reopened
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
