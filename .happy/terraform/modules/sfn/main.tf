@@ -76,7 +76,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "BackoffRate": 5
               }, {
                   "ErrorEquals": ["States.TaskFailed"],
-                  "MaxAttempts": 0,
+                  "MaxAttempts": 0
               }, {
                   "ErrorEquals": ["States.ALL"],
                   "IntervalSeconds": 2,
@@ -127,7 +127,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "BackoffRate": 5
               }, {
                   "ErrorEquals": ["States.TaskFailed"],
-                  "MaxAttempts": 0,
+                  "MaxAttempts": 0
               }, {
                   "ErrorEquals": ["States.ALL"],
                   "IntervalSeconds": 2,
@@ -231,7 +231,7 @@ resource "aws_sfn_state_machine" "state_machine" {
           "BackoffRate": 5
       }, {
           "ErrorEquals": ["States.TaskFailed"],
-          "MaxAttempts": 0,
+          "MaxAttempts": 0
       }, {
           "ErrorEquals": ["States.ALL"],
           "IntervalSeconds": 2,
