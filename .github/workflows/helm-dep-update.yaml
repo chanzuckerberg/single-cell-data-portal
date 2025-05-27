@@ -4,7 +4,7 @@ name: HelmDep Update
 on:
   workflow_dispatch:
   schedule:
-    - cron: '43 7 * * *'
+    - cron: "43 7 * * *"
 
 jobs:
   helm_dependency_update:

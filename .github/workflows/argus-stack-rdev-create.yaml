@@ -3,7 +3,7 @@ name: Create/update rdev stack
 
 on:
   pull_request:
-    types: [ labeled, synchronize ]
+    types: [labeled, synchronize]
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true

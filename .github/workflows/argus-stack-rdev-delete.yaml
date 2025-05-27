@@ -3,7 +3,7 @@ name: Delete a RDev Stack
 
 on:
   pull_request:
-    types: [ unlabeled, closed ]
+    types: [unlabeled, closed]
 
 jobs:
   delete-stack:
@@ -20,4 +20,3 @@ jobs:
         with:
           appName: single-cell-data-portal
           envName: rdev
-
