@@ -18,5 +18,7 @@ jobs:
       - name: Delete rdev stack
         uses: chanzuckerberg/argus-artifacts/ci/packages/delete-stack@v0
         with:
-          appName: test-single-cell-data-portal
+          appName: single-cell-data-portal
           envName: rdev
+        env:
+          PLATFORM_BASE_URL: https://core-platform-staging.core-platform.dev.czi.team
