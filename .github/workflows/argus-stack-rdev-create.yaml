@@ -22,3 +22,5 @@ jobs:
         with:
           appName: single-cell-data-portal
           envName: rdev
+        env:
+          PLATFORM_BASE_URL: https://argus-rdev-0bfafe5c.core-platform.dev.czi.team
