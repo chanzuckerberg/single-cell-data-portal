@@ -10,6 +10,7 @@ interface Props {
   dataAssets: Dataset["dataset_assets"];
   isDisabled?: boolean;
   name: string;
+  collectionId?: string;
 }
 
 const DownloadDataset: FC<Props> = ({
@@ -17,6 +18,7 @@ const DownloadDataset: FC<Props> = ({
   dataAssets = EMPTY_ARRAY,
   isDisabled = false,
   name,
+  collectionId,
 }) => {
   const { onClose, onOpen, open } = useDialog();
 
@@ -33,7 +35,12 @@ const DownloadDataset: FC<Props> = ({
         onClick={onOpen}
       />
       <StyledDialog onClose={onClose} open={open}>
-        <Content name={name} dataAssets={dataAssets} onClose={onClose} />
+        <Content
+          name={name}
+          dataAssets={dataAssets}
+          onClose={onClose}
+          collectionId={collectionId}
+        />
       </StyledDialog>
     </>
   );

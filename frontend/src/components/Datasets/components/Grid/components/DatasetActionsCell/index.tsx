@@ -13,6 +13,7 @@ interface Props {
   name: string;
   tombstone: boolean;
   explorerUrl: string;
+  collectionId: string;
 }
 
 export default function DatasetsActionsCell({
@@ -21,6 +22,7 @@ export default function DatasetsActionsCell({
   isOverMaxCellCount = false, // TODO(cc) either set isOverMaxCellCount here to false when undefined or in parent...
   name,
   tombstone,
+  collectionId,
 }: Props): JSX.Element {
   // Determine if Explorer link and tooltip is disabled.
   const explorerDisabled = tombstone || !explorerUrl;
@@ -32,6 +34,7 @@ export default function DatasetsActionsCell({
         datasetId={datasetId}
         isDisabled={tombstone || !explorerUrl}
         name={name}
+        collectionId={collectionId}
       />
       <Tooltip
         content={OVER_MAX_CELL_COUNT_TOOLTIP}

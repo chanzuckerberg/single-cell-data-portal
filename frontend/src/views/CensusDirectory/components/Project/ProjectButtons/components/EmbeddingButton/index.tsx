@@ -3,7 +3,7 @@ import React from "react";
 import { Dialog, InputRadio, DialogTitle } from "@czi-sds/components";
 import { useConnect } from "./connect";
 import { EmbeddingButtonProps } from "./types";
-import CopyButton from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/DownloadLink/components/CopyButton";
+import CopyButton from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/CopyCodeBlock/components/CopyButton";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import Highlight from "react-highlight";

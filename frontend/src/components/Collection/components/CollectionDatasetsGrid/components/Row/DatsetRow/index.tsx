@@ -266,6 +266,7 @@ const DatasetRow: FC<Props> = ({
             dataAssets={dataset?.dataset_assets}
             Button={DownloadButton}
             isDisabled={dataset.tombstone}
+            collectionId={collectionId}
           />
           {hasCXGFile(dataset) && (
             <Tooltip
