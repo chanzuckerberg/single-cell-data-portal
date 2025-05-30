@@ -101,9 +101,9 @@ class H5ADDataFile:
         x_matrix_data = self.anndata.X
         with dask.config.set(
             {
-                "num_workers": 2,  # match the number of workers to the number of vCPUs
-                "threads_per_worker": 1,
-                "distributed.worker.memory.limit": "6GB",
+                "num_workers": 1,  # a single worker with as many threads as vCPUs is more memory efficient
+                "threads_per_worker": 2,  # match the number of vCPUs
+                "distributed.worker.memory.limit": "12GB",
                 "scheduler": "threads",
             }
         ):
@@ -190,7 +190,7 @@ class H5ADDataFile:
 
     def extract_anndata_elements_from_file(self):
         logging.info(f"Reading in AnnData dataset: {path.basename(self.input_filename)}")
-        self.anndata = read_h5ad(self.input_filename, chunk_size=7500)
+        self.anndata = read_h5ad(self.input_filename, chunk_size=12000)
         logging.info("Completed reading in AnnData dataset!")
 
         self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)
