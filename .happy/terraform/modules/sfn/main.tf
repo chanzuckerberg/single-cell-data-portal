@@ -2,7 +2,7 @@
 locals {
   h5ad_timeout = 86400 # 24 hours
   atac_timeout = 86400 # 24 hours
-  cxg_timeout = 345600 # 96 hours
+  cxg_timeout = 172800 # 48 hours
 }
 
 data aws_region current {}
