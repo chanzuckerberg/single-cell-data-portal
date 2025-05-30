@@ -1,0 +1,1 @@
+INFO     root:cxg_generation_utils.py:171 create /single-cell-data-portal/tests/unit/backend/fixtures/b21f9d18-81c1-4f78-970c-ca75670d67ca/awesome_zero_matrix_ff43638b-8c33-4360-93d5-6f392a723c04
