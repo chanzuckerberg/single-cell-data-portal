@@ -41,7 +41,7 @@ class ProcessCxg(ProcessingLogic):
         dataset_version_id: DatasetVersionId,
         artifact_bucket: str,
         cellxgene_bucket: str,
-        fragment_artifact_id: str,
+        fragment_artifact_id: str = None,
         is_reprocess=False,
     ):
         """
@@ -107,7 +107,7 @@ class ProcessCxg(ProcessingLogic):
         self.s3_provider.upload_directory(cxg_dir, s3_uri)
 
     def process_cxg(
-        self, local_filename, dataset_version_id, cellxgene_bucket, fragment_artifact_id, current_artifacts=None
+        self, local_filename, dataset_version_id, cellxgene_bucket, fragment_artifact_id=None, current_artifacts=None
     ):
         cxg_dir = self.convert_file(
             self.make_cxg, local_filename, dataset_version_id, fragment_artifact_id, DatasetStatusKey.CXG
