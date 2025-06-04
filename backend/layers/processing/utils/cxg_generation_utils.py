@@ -79,7 +79,6 @@ def convert_coverage_to_cxg_array(cxg_container, metadata_dict, fragment_artifac
     # tiledb.consolidate(array_name, ctx=ctx)
 
 
-
 def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, index_column_name, ctx):
     """
     Saves the contents of the dataframe to the CXG output directory specified.

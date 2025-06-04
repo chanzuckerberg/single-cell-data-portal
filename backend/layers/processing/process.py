@@ -124,7 +124,9 @@ class ProcessMain(ProcessingLogic):
             elif step_name == "cxg":
                 self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket, fragment_artifact_id)
             elif step_name == "cxg_remaster":
-                self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket, fragment_artifact_id, is_reprocess=True)
+                self.process_cxg.process(
+                    dataset_version_id, artifact_bucket, cxg_bucket, fragment_artifact_id, is_reprocess=True
+                )
             else:
                 self.logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 

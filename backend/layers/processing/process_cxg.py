@@ -1,4 +1,5 @@
 from typing import Optional
+
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
     DatasetArtifactType,
@@ -36,7 +37,12 @@ class ProcessCxg(ProcessingLogic):
         self.s3_provider = s3_provider
 
     def process(
-        self, dataset_version_id: DatasetVersionId, artifact_bucket: str, cellxgene_bucket: str, fragment_artifact_id: str, is_reprocess=False
+        self,
+        dataset_version_id: DatasetVersionId,
+        artifact_bucket: str,
+        cellxgene_bucket: str,
+        fragment_artifact_id: str,
+        is_reprocess=False,
     ):
         """
         1. Download the labeled dataset from the artifact bucket
@@ -65,10 +71,14 @@ class ProcessCxg(ProcessingLogic):
         self.download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
         # Convert the labeled dataset to CXG and upload it to the cellxgene bucket
-        self.process_cxg(labeled_h5ad_filename, dataset_version_id, cellxgene_bucket, fragment_artifact_id, current_artifacts)
+        self.process_cxg(
+            labeled_h5ad_filename, dataset_version_id, cellxgene_bucket, fragment_artifact_id, current_artifacts
+        )
 
     @logit
-    def make_cxg(self, local_filename, dataset_version_id: DatasetVersionId, fragment_artifact_id: Optional[str] = None):
+    def make_cxg(
+        self, local_filename, dataset_version_id: DatasetVersionId, fragment_artifact_id: Optional[str] = None
+    ):
         """
         Convert the uploaded H5AD file to the CXG format servicing the cellxgene Explorer.
         """
@@ -76,7 +86,12 @@ class ProcessCxg(ProcessingLogic):
         cxg_output_container = local_filename.replace(".h5ad", ".cxg")
         try:
             h5ad_data_file = H5ADDataFile(local_filename, var_index_column_name="feature_name")
-            h5ad_data_file.to_cxg(cxg_output_container, sparse_threshold=25.0, dataset_version_id=dataset_version_id.id, fragment_artifact_id=fragment_artifact_id)
+            h5ad_data_file.to_cxg(
+                cxg_output_container,
+                sparse_threshold=25.0,
+                dataset_version_id=dataset_version_id.id,
+                fragment_artifact_id=fragment_artifact_id,
+            )
         except Exception as ex:
             # TODO use a specialized exception
             msg = "CXG conversion failed."
@@ -91,8 +106,12 @@ class ProcessCxg(ProcessingLogic):
         """
         self.s3_provider.upload_directory(cxg_dir, s3_uri)
 
-    def process_cxg(self, local_filename, dataset_version_id, cellxgene_bucket, fragment_artifact_id, current_artifacts=None):
-        cxg_dir = self.convert_file(self.make_cxg, local_filename, dataset_version_id, fragment_artifact_id, DatasetStatusKey.CXG)
+    def process_cxg(
+        self, local_filename, dataset_version_id, cellxgene_bucket, fragment_artifact_id, current_artifacts=None
+    ):
+        cxg_dir = self.convert_file(
+            self.make_cxg, local_filename, dataset_version_id, fragment_artifact_id, DatasetStatusKey.CXG
+        )
         s3_uri = None
         if current_artifacts:
             existing_cxg = [artifact for artifact in current_artifacts if artifact.type == DatasetArtifactType.CXG][0]

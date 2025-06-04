@@ -1,14 +1,10 @@
-import os
-import scanpy as sc
+import logging
+from collections import defaultdict
+
+import numpy as np
 import pandas as pd
 import pysam
 import tiledb
-import numpy as np
-import json
-from collections import defaultdict
-import logging
-import time
-
 
 logger = logging.getLogger(__name__)
 
@@ -16,13 +12,59 @@ logger = logging.getLogger(__name__)
 # Config
 BIN_SIZE = 100
 CHROM_LENGTHS = {
-    "chr1": 248956422, "chr2": 242193529, "chr3": 198295559, "chr4": 190214555,
-    "chr5": 181538259, "chr6": 170805979, "chr7": 159345973, "chr8": 145138636,
-    "chr9": 138394717, "chr10": 133797422, "chr11": 135086622, "chr12": 133275309,
-    "chr13": 114364328, "chr14": 107043718, "chr15": 101991189, "chr16": 90338345,
-    "chr17": 83257441, "chr18": 80373285, "chr19": 58617616, "chr20": 64444167,
-    "chr21": 46709983, "chr22": 50818468, "chrX": 156040895, "chrY": 57227415, "chrM": 16569
+    "hg38": {
+        "chr1": 248956422,
+        "chr2": 242193529,
+        "chr3": 198295559,
+        "chr4": 190214555,
+        "chr5": 181538259,
+        "chr6": 170805979,
+        "chr7": 159345973,
+        "chr8": 145138636,
+        "chr9": 138394717,
+        "chr10": 133797422,
+        "chr11": 135086622,
+        "chr12": 133275309,
+        "chr13": 114364328,
+        "chr14": 107043718,
+        "chr15": 101991189,
+        "chr16": 90338345,
+        "chr17": 83257441,
+        "chr18": 80373285,
+        "chr19": 58617616,
+        "chr20": 64444167,
+        "chr21": 46709983,
+        "chr22": 50818468,
+        "chrX": 156040895,
+        "chrY": 57227415,
+        "chrM": 16569,
+    },
+    "mm39": {
+        "chr1": 195154279,
+        "chr2": 181755017,
+        "chr3": 159745316,
+        "chr4": 156860686,
+        "chr5": 151758149,
+        "chr6": 149588044,
+        "chr7": 144995196,
+        "chr8": 130127694,
+        "chr9": 124359700,
+        "chr10": 130530862,
+        "chr11": 122082543,
+        "chr12": 120129022,
+        "chr13": 120421639,
+        "chr14": 124902244,
+        "chr15": 104043685,
+        "chr16": 98207768,
+        "chr17": 94987271,
+        "chr18": 90702639,
+        "chr19": 61431566,
+        "chrX": 169476879,
+        "chrY": 91455967,
+        "chrM": 16299,
+    },
 }
+NORMALIZATION_FACTOR = 2_000_000
 
 
 class ATACDataProcessor:
@@ -31,75 +73,87 @@ class ATACDataProcessor:
         self.ctx = ctx
         self.bin_size = BIN_SIZE
         self.chrom_lengths = CHROM_LENGTHS
+        self.normalization_factor = NORMALIZATION_FACTOR
 
-        self.bins_per_chrom = {
-            chrom: int(length / self.bin_size) + 1 for chrom, length in self.chrom_lengths.items()
+    @staticmethod
+    def get_genome_version(organism_ontology_term_id: str) -> str:
+        mapping = {
+            "NCBITaxon:9606": "hg38",
+            "NCBITaxon:10090": "mm39",
         }
-        self.max_bins = max(self.bins_per_chrom.values()) - 1
+
+        if organism_ontology_term_id not in mapping:
+            raise ValueError(f"Unknown organism ontology term ID: {organism_ontology_term_id}")
+        return mapping[organism_ontology_term_id]
 
     def extract_cell_metadata_from_h5ad(self, obs: pd.DataFrame, obs_column: str = "cell_type"):
         if obs_column not in obs.columns:
             raise ValueError(f"Column {obs_column} not found in obs DataFrame.")
         df = obs[[obs_column]].copy()
         df = df.rename_axis("cell_name").reset_index()
-        # print("df", df)
-        # df.to_csv("output.csv", index=True)
-        return df
+        organism_ontology_term_id = (
+            obs["organism_ontology_term_id"].iloc[0] if "organism_ontology_term_id" in obs.columns else None
+        )
+        genome_version = self.get_genome_version(organism_ontology_term_id)
+        return df, genome_version
 
-    def map_cell_type_info(self, valid_barcodes: set, cell_type_map: dict):
+    def calculate_max_bins(self, genome_version):
+        bins_per_chrom = {
+            chrom: int(length / self.bin_size) + 1 for chrom, length in self.chrom_lengths[genome_version].items()
+        }
+        return max(bins_per_chrom.values()) - 1
+
+    def map_cell_type_info(self, valid_barcodes, cell_type_map, genome_version):
         chrom_map = defaultdict(lambda: 0)
-        for i, chrom in enumerate(self.chrom_lengths, 1):
+        for i, chrom in enumerate(self.chrom_lengths[genome_version], 1):
             chrom_map[chrom] = i
         max_chrom = max(chrom_map.values())
 
         tabix = pysam.TabixFile(self.fragment_artifact_id)
         cell_id_map = {}
 
-        for chrom_str in chrom_map.keys():
+        for chrom_str in chrom_map:
             try:
                 for row in tabix.fetch(chrom_str):
-                    # print("tabix row", row)
-                    cell = row.strip().split('\t')[3]
+                    cell = row.strip().split("\t")[3]
                     if cell not in valid_barcodes:
                         continue
                     if cell not in cell_id_map:
                         cell_id_map[cell] = {
                             "cell_type": cell_type_map[cell],
                         }
-                        # print("cell_id_map", cell_id_map)
             except ValueError:
                 continue
 
         return max_chrom, cell_id_map, chrom_map
 
+    def create_dataframe_array(self, array_name, max_chrom, max_bins):
+        compression = tiledb.FilterList(
+            [
+                tiledb.BitShuffleFilter(),
+                tiledb.ZstdFilter(level=3),
+            ]
+        )
 
-    def create_dataframe_array(self, array_name, max_chrom):
-        # Define filters (compression options)
-        zstd_filter = tiledb.ZstdFilter(level=3)
-        gzip_filter = tiledb.GzipFilter(level=4)
-
-        # Apply filters to attributes and dimensions
-        attr_filters = tiledb.FilterList([zstd_filter])
-        dim_filters = tiledb.FilterList([gzip_filter])
+        dim_filters = tiledb.FilterList([tiledb.ZstdFilter(level=3)])
 
         domain = tiledb.Domain(
             tiledb.Dim(name="chrom", domain=(1, max_chrom), tile=1, dtype=np.uint32, filters=dim_filters),
-            tiledb.Dim(name="bin", domain=(0, self.max_bins), tile=10, dtype=np.uint32, filters=dim_filters),
+            tiledb.Dim(name="bin", domain=(0, max_bins), tile=10, dtype=np.uint32, filters=dim_filters),
             tiledb.Dim(name="cell_type", dtype="ascii", filters=dim_filters),
         )
 
         schema = tiledb.ArraySchema(
             domain=domain,
-        attrs=[
-            tiledb.Attr(name="coverage", dtype=np.float32, filters=attr_filters),
-            tiledb.Attr(name="total_coverage", dtype=np.float32, filters=attr_filters),
-            tiledb.Attr(name="normalized_coverage", dtype=np.float32, filters=attr_filters)
-        ],
+            attrs=[
+                tiledb.Attr(name="coverage", dtype=np.float32, filters=compression),
+                tiledb.Attr(name="total_coverage", dtype=np.float32, filters=compression),
+                tiledb.Attr(name="normalized_coverage", dtype=np.float32, filters=compression),
+            ],
             sparse=True,
             allows_duplicates=False,
         )
         tiledb.SparseArray.create(array_name, schema)
-
 
     def write_binned_coverage_per_chrom(self, array_name, chrom_map, cell_id_map):
         tabix = pysam.TabixFile(self.fragment_artifact_id)
@@ -117,7 +171,7 @@ class ATACDataProcessor:
 
             data = []
             for row in rows:
-                _, start, end, cell, _ = row.strip().split('\t')
+                _, start, end, cell, _ = row.strip().split("\t")
 
                 if cell not in cell_id_map:
                     continue
@@ -134,7 +188,6 @@ class ATACDataProcessor:
                 data.append((chrom_id, bin_start, cell_type))
                 data.append((chrom_id, bin_end, cell_type))
 
-
             if not data:
                 continue
 
@@ -145,16 +198,16 @@ class ATACDataProcessor:
         if not all_binned_data:
             return
 
-
         # Concatenate all chromosome data
         full_df = pd.concat(all_binned_data, ignore_index=True)
-        # full_df.to_csv("full_df.csv", index=True)
 
         # Compute total coverage across all chromosomes
         cell_type_totals = full_df.groupby("cell_type")["coverage"].sum()
-        normalization_factor = 2_000_000
+
         full_df["total_coverage"] = full_df["cell_type"].map(cell_type_totals)
-        full_df["normalized_coverage"] = ((full_df["coverage"] / full_df["total_coverage"]) * normalization_factor).fillna(0)
+        full_df["normalized_coverage"] = (
+            (full_df["coverage"] / full_df["total_coverage"]) * self.normalization_factor
+        ).fillna(0)
 
         with tiledb.SparseArray(array_name, mode="w", ctx=self.ctx) as A:
             A[
@@ -169,22 +222,19 @@ class ATACDataProcessor:
                 "normalized_coverage": full_df["normalized_coverage"].to_numpy(),
             }
 
-
-
     def process_fragment_file(self, obs: pd.DataFrame, array_name: str):
-        df_meta = self.extract_cell_metadata_from_h5ad(obs)
+        df_meta, genome_version = self.extract_cell_metadata_from_h5ad(obs)
         valid_barcodes = set(df_meta["cell_name"])
-        cell_type_map = dict(zip(df_meta["cell_name"], df_meta["cell_type"]))
+        cell_type_map = dict(zip(df_meta["cell_name"], df_meta["cell_type"], strict=False))
 
-        max_chrom, cell_id_map, chrom_map = self.map_cell_type_info(valid_barcodes, cell_type_map)
+        max_chrom, cell_id_map, chrom_map = self.map_cell_type_info(valid_barcodes, cell_type_map, genome_version)
 
         dropped = len(valid_barcodes - set(cell_id_map.keys()))
         if dropped:
             logger.warning(f"{dropped} barcodes in .h5ad were not found in fragment file.")
 
-        self.create_dataframe_array(array_name, max_chrom)
+        max_bins = self.calculate_max_bins(genome_version)
+        self.create_dataframe_array(array_name, max_chrom, max_bins)
         self.write_binned_coverage_per_chrom(array_name, chrom_map, cell_id_map)
 
         return df_meta, cell_id_map
-
-
