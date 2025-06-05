@@ -102,6 +102,7 @@ class ProcessMain(ProcessingLogic):
         artifact_bucket: Optional[str],
         datasets_bucket: Optional[str],
         cxg_bucket: Optional[str],
+        fragment_artifact_id: Optional[str] = None,
     ):
         """
         Gets called by the step function at every different step, as defined by `step_name`
