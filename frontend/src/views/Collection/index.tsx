@@ -177,6 +177,8 @@ const Collection: FC = () => {
           visibility={collection.visibility}
         />
       </CollectionView>
+      {/* May be added in the future after sign off */}
+      {/* <BottomBanner /> */}
     </>
   );
 };
