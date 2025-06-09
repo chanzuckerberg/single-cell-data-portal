@@ -80,9 +80,6 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
         if not anndata_label_adder.write_labels(output_file):
             raise AddLabelsFailed(anndata_label_adder.errors)
 
-    def count_matrix_nonzero(self, matrix):
-        return validate.Validator.count_matrix_nonzero(matrix)
-
     def validate_atac(self, fragment_file, anndata_file, output_file) -> Tuple[Optional[List[str]], str, str]:
         """
         Validates an ATAC fragment file against an anndata file.
