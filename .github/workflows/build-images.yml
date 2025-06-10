@@ -17,10 +17,6 @@ env:
 permissions:
   id-token: write
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
-  cancel-in-progress: true
-
 jobs:
   build_images:
     strategy:
