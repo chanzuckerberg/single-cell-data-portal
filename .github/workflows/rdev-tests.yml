@@ -12,10 +12,6 @@ permissions:
   issues: write
   pull-requests: write
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
-  cancel-in-progress: true
-
 jobs:
   functional-test:
     runs-on: xl-amd64-privileged
