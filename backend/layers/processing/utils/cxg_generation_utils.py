@@ -197,6 +197,7 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
             sparse=True,
             allows_duplicates=True,
             # TODO: investigate if this is a good value for capacity, could maybe lower it to improve slicing performance
+            # https://czi.atlassian.net/browse/VC-2950
             capacity=1024000,
         )
     else:
