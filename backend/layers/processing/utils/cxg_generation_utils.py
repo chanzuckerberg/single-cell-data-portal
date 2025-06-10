@@ -123,6 +123,8 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
         array.meta["cxg_schema"] = json.dumps(schema_hints)
 
     tiledb.consolidate(array_name, ctx=ctx)
+    if hasattr(tiledb, "vacuum"):
+        tiledb.vacuum(array_name)
 
 
 def convert_ndarray_to_cxg_dense_array(ndarray_name, ndarray, ctx):
@@ -155,6 +157,8 @@ def convert_ndarray_to_cxg_dense_array(ndarray_name, ndarray, ctx):
         array[:] = ndarray
 
     tiledb.consolidate(ndarray_name, ctx=ctx)
+    if hasattr(tiledb, "vacuum"):
+        tiledb.vacuum(ndarray_name)
 
 
 def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as_sparse_array: bool, ctx: tiledb.Ctx):
@@ -166,7 +170,7 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
     """
     number_of_rows = matrix.shape[0]
     number_of_columns = matrix.shape[1]
-    compression = 22
+    compression = 7
 
     logging.info(f"create {matrix_name}")
     dim_filters = tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=compression)])
@@ -192,6 +196,7 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
         array_schema_params = dict(
             sparse=True,
             allows_duplicates=True,
+            # TODO: investigate if this is a good value for capacity, could maybe lower it to improve slicing performance
             capacity=1024000,
         )
     else:
