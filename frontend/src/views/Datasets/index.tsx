@@ -185,6 +185,7 @@ export default function Datasets(): JSX.Element {
             name={values.name}
             tombstone={false} // Only public datasets are displayed in the datasets index.
             explorerUrl={values.explorer_url}
+            collectionId={values.collection_id}
           />
         ),
         accessor: (datasetRow: DatasetRow): DatasetRow => datasetRow,
@@ -412,6 +413,8 @@ export default function Datasets(): JSX.Element {
                 />
               )}
             </View>
+            {/* May be added in the future after sign off */}
+            {/* <BottomBanner /> */}
           </>
         )
       )}
