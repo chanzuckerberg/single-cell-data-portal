@@ -1,0 +1,10 @@
+###### Generated using `argus bootstrap` command ######
+apiVersion: v2
+name: stack
+type: application
+version: 1.0.0
+
+dependencies:
+  - name: stack
+    version: 2.10.3
+    repository: https://chanzuckerberg.github.io/argo-helm-charts

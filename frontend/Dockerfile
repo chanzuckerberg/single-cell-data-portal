@@ -42,11 +42,7 @@ RUN mkdir -p node_modules
 RUN ln -sf /opt/node_app/node_modules/* /opt/node_app/node_modules/.bin ./node_modules/.
 RUN npm run build
 
-ARG HAPPY_BRANCH="unknown"
-ARG HAPPY_COMMIT=""
-LABEL branch=${HAPPY_BRANCH}
-LABEL commit=${HAPPY_COMMIT}
-ENV COMMIT_SHA=${HAPPY_COMMIT}
-ENV COMMIT_BRANCH=${HAPPY_BRANCH}
+LABEL branch=${COMMIT_BRANCH}
+LABEL commit=${COMMIT_SHA}
 
 ENTRYPOINT ["./container_init.sh"]
