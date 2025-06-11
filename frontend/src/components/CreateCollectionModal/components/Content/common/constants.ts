@@ -12,6 +12,7 @@ export enum CONSORTIA {
   HPAP = "Human Pancreas Analysis Program (HPAP)",
   HTAN = "Human Tumor Atlas Network (HTAN)",
   KPMP = "Kidney Precision Medicine Project (KPMP)",
+  NEPTUNE = "Nephrotic Syndrome Study Network (NEPTUNE)",
   LUNG_MAP = "LungMAP",
   PCEN = "Pediatric Center of Excellence in Nephrology (PCEN)",
   SEA_AD = "SEA-AD",

@@ -23,6 +23,7 @@ valid_consortia = {
     "Human Pancreas Analysis Program (HPAP)",
     "Human Tumor Atlas Network (HTAN)",
     "Kidney Precision Medicine Project (KPMP)",
+    "Nephrotic Syndrome Study Network (NEPTUNE)",
     "LungMAP",
     "Pediatric Center of Excellence in Nephrology (PCEN)",
     "SEA-AD",
