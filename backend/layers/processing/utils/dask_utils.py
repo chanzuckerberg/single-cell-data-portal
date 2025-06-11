@@ -19,4 +19,4 @@ class TileDBSparseArrayWriteWrapper:
             col_offset = col_slice.start if col_slice.start is not None else 0
             v_coo = v.tocoo()
             tiledb_array = tiledb.open(self.uri, mode="w")
-            tiledb_array[v_coo.row + row_offset, v_coo.col + col_offset] = v.data
+            tiledb_array[v_coo.row + row_offset, v_coo.col + col_offset] = v_coo.data
