@@ -16,6 +16,7 @@ from backend.layers.processing.utils.color_conversion_utils import (
     convert_anndata_category_colors_to_cxg_category_colors,
 )
 from backend.layers.processing.utils.cxg_generation_utils import (
+    convert_coverage_to_cxg_array,
     convert_dataframe_to_cxg_array,
     convert_dictionary_to_cxg_group,
     convert_matrices_to_cxg_arrays,
@@ -58,7 +59,12 @@ class H5ADDataFile:
         self.validate_anndata()
 
     def to_cxg(
-        self, output_cxg_directory, sparse_threshold, dataset_version_id, convert_anndata_colors_to_cxg_colors=True
+        self,
+        output_cxg_directory,
+        sparse_threshold,
+        dataset_version_id,
+        fragment_artifact_id=None,
+        convert_anndata_colors_to_cxg_colors=True,
     ):
         """
         Writes the following attributes of the anndata to CXG: 1) the metadata as metadata attached to an empty
@@ -87,6 +93,15 @@ class H5ADDataFile:
 
         convert_uns_to_cxg_group(output_cxg_directory, self.anndata.uns, dataset_version_id, "uns", ctx)
         logging.info("\t...dataset uns dataframe saved")
+
+        if fragment_artifact_id is not None:
+            # Set the index of the obs dataframe to the obs_index_column_name
+            # This is necessary for the coverage conversion to work correctly.
+            # The obs_index_column_name is set in the transform_dataframe_index_into_column method.
+            self.obs.set_index(self.obs_index_column_name, inplace=True)
+
+            convert_coverage_to_cxg_array(output_cxg_directory, self.obs, fragment_artifact_id, "coverage", ctx)
+            logging.info("\t...dataset coverage dataframe saved")
 
         self.write_anndata_embeddings_to_cxg(output_cxg_directory, ctx)
         logging.info("\t...dataset embeddings saved")
