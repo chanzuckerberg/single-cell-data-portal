@@ -23,10 +23,6 @@ permissions:
   pull-requests: write
   contents: write
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
-  cancel-in-progress: true
-
 jobs:
   get_previous_image_digests:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
