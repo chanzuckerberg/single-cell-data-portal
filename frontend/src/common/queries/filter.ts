@@ -52,9 +52,9 @@ const QUERY_ID_COLLECTIONS = "collectionsIndex";
 const QUERY_ID_DATASETS = "datasetIndex";
 
 /**
- * Value used to separate multiple ethnicities in self reported ethnicity.
+ * Value used to separate multiple values in ontology terms (ethnicities, diseases, etc.).
  */
-const DELIMITER_MULTI_ETHNICITY = ",";
+const DELIMITER_MULTI_VALUE = "||";
 
 /**
  * Model returned on fetch of collections or datasets: materialized view models (rows) as well as fetch status.
@@ -895,16 +895,12 @@ function groupDatasetRowsByCollection(
 }
 
 /**
- * Returns true if the given self reported ethnicity ontology term contains
- * mutliple ethnicities.
- * @param selfReportedEthnicity - Self reported ethnicity ontology term to
- * check for multiple ethnicities.
- * @returns True if the given ontology contains multiple ethnicity values.
+ * Returns true if the given ontology term contains multiple values.
+ * @param ontology - Ontology term to check for multiple values.
+ * @returns True if the given ontology contains multiple values.
  */
-function isMultiEthnicity(selfReportedEthnicity: Ontology): boolean {
-  return selfReportedEthnicity.ontology_term_id.includes(
-    DELIMITER_MULTI_ETHNICITY
-  );
+function isMultiValue(ontology: Ontology): boolean {
+  return ontology.ontology_term_id.includes(DELIMITER_MULTI_VALUE);
 }
 
 /**
@@ -986,41 +982,30 @@ function processDatasetResponse(
     ...tagOntologyTermsAsExplicit(tissue),
   ];
 
-  // Split multiple self reported ethnicities into separate values.
-  const selfReportedEthnicities = processSelfReportedEthnicity(
-    dataset.self_reported_ethnicity
-  );
-
   return {
     ...dataset,
     cellTypeCalculated,
-    self_reported_ethnicity: selfReportedEthnicities,
+    // Split multiple diseases into separate values.
+    disease: processMultiValueOntologies(dataset.disease),
+    // Split multiple self reported ethnicities into separate values.
+    self_reported_ethnicity: processMultiValueOntologies(
+      dataset.self_reported_ethnicity
+    ),
     tissueCalculated,
     tissue,
   };
 }
 
 /**
- * Split multiple self reported enthicity ontology values into separate
- * ontology values to facilitate filtering on individual values.
- * @param selfReportedEthnicities Array of self reported enthicity ontology
- * values to possibly split.
- * @returns Array of self reported enthicity ontology values.
+ * Process ontology values: split any multi-value entries into separate, individual values.
+ * @param ontologies - Array of ontology values to process.
+ * @returns Array of processed ontology values.
  */
-export function processSelfReportedEthnicity(
-  selfReportedEthnicities: Ontology[]
+export function processMultiValueOntologies(
+  ontologies: Ontology[]
 ): Ontology[] {
-  return selfReportedEthnicities.reduce(
-    (accum: Ontology[], selfReportedEthnicity) => {
-      if (isMultiEthnicity(selfReportedEthnicity)) {
-        accum.push(...splitMultiEthnicity(selfReportedEthnicity));
-      } else {
-        accum.push(selfReportedEthnicity);
-      }
-
-      return accum;
-    },
-    []
+  return ontologies.flatMap((ontology) =>
+    isMultiValue(ontology) ? splitMultiValue(ontology) : [ontology]
   );
 }
 
@@ -1152,14 +1137,19 @@ function sortOntologies(o0: Ontology, o1: Ontology): number {
 }
 
 /**
- * Split the given multiple ethnicity ontology term into separate values.
- * @param selfReportedEthnicity - Ontology term with multiple, comma-separated values.
- * @returns Array of single self reported enthicity ontology values.
+ * Split the given multiple value ontology term into separate values.
+ * @param ontology - Ontology term with multiple, delimiter-separated values.
+ * @returns Array of single ontology values.
  */
-function splitMultiEthnicity(selfReportedEthnicity: Ontology): Ontology[] {
-  const { label, ontology_term_id } = selfReportedEthnicity;
-  const labels = label.split(DELIMITER_MULTI_ETHNICITY);
-  const ontologyTermIds = ontology_term_id.split(DELIMITER_MULTI_ETHNICITY);
+function splitMultiValue(ontology: Ontology): Ontology[] {
+  const { label, ontology_term_id } = ontology;
+  const labels = label
+    .split(DELIMITER_MULTI_VALUE)
+    .map((value) => value.trim());
+
+  const ontologyTermIds = ontology_term_id
+    .split(DELIMITER_MULTI_VALUE)
+    .map((id) => id.trim());
 
   return ontologyTermIds.map((ontologyTermId, index) => ({
     label: labels[index],

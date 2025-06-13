@@ -11,13 +11,22 @@ import {
   createPublicationDateValues,
   createTaggedTissueOntology,
   TissueOntology,
-  processSelfReportedEthnicity,
+  processMultiValueOntologies,
 } from "src/common/queries/filter";
 import { PUBLICATION_DATE_VALUES } from "src/components/common/Filter/common/constants";
 import { TISSUE_TYPE } from "src/components/common/Filter/common/entities";
 import { test } from "tests/common/test";
 
 const { describe } = test;
+
+const ONTOLOGY_TERM_ID_ASIAN = "HANCESTRO:0008";
+const ONTOLOGY_TERM_ID_DUTCH = "HANCESTRO:0320";
+const ONTOLOGY_TERM_ID_CUBAN = "HANCESTRO:0405";
+const ONTOLOGY_TERM_ID_BRAIN = "UBERON:0000955";
+
+const LABEL_ASIAN = "Asian";
+const LABEL_DUTCH = "Dutch";
+const LABEL_CUBAN = "Cuban";
 
 describe("filter", () => {
   describe("Calculate Months Since Publication", () => {
@@ -145,7 +154,7 @@ describe("filter", () => {
       // TODO remove this test with #6266.
       const tissue = {
         label: "brain",
-        ontology_term_id: "UBERON:0000955",
+        ontology_term_id: ONTOLOGY_TERM_ID_BRAIN,
       } as TissueOntology; // Force 3.x.x format.
 
       const processedTissue = createTaggedTissueOntology(tissue);
@@ -155,7 +164,7 @@ describe("filter", () => {
     test("handles organoid", () => {
       const tissue = {
         label: "brain",
-        ontology_term_id: "UBERON:0000955",
+        ontology_term_id: ONTOLOGY_TERM_ID_BRAIN,
         tissue_type: TISSUE_TYPE.ORGANOID,
       };
 
@@ -185,7 +194,7 @@ describe("filter", () => {
     test("handles tissue", () => {
       const tissue = {
         label: "brain",
-        ontology_term_id: "UBERON:0000955",
+        ontology_term_id: ONTOLOGY_TERM_ID_BRAIN,
         tissue_type: TISSUE_TYPE.TISSUE,
       };
 
@@ -195,18 +204,14 @@ describe("filter", () => {
     });
   });
   describe("Process Self Reported Ethnicity", () => {
-    const LABEL_ASIAN = "Asian";
-    const LABEL_DUTCH = "Dutch";
-    const LABEL_CUBAN = "Cuban";
-    const ONTOLOGY_TERM_ID_ASIAN = "HANCESTRO:0008";
-    const ONTOLOGY_TERM_ID_DUTCH = "HANCESTRO:0320";
-    const ONTOLOGY_TERM_ID_CUBAN = "HANCESTRO:0405";
     test("splits multiethnicity", () => {
       const selfReportedEthnicity = {
-        label: `${LABEL_ASIAN},${LABEL_DUTCH},${LABEL_CUBAN}`,
-        ontology_term_id: `${ONTOLOGY_TERM_ID_ASIAN},${ONTOLOGY_TERM_ID_DUTCH},${ONTOLOGY_TERM_ID_CUBAN}`,
+        label: `${LABEL_ASIAN}||${LABEL_DUTCH}||${LABEL_CUBAN}`,
+        ontology_term_id: `${ONTOLOGY_TERM_ID_ASIAN}||${ONTOLOGY_TERM_ID_DUTCH}||${ONTOLOGY_TERM_ID_CUBAN}`,
       };
-      const ethnicities = processSelfReportedEthnicity([selfReportedEthnicity]);
+
+      const ethnicities = processMultiValueOntologies([selfReportedEthnicity]);
+
       expect(ethnicities.length).toEqual(3);
       const [asian, dutch, cuban] = ethnicities;
       expect(asian.label).toEqual(LABEL_ASIAN);
@@ -221,11 +226,42 @@ describe("filter", () => {
         label: `${LABEL_ASIAN}`,
         ontology_term_id: `${ONTOLOGY_TERM_ID_ASIAN}`,
       };
-      const ethnicities = processSelfReportedEthnicity([selfReportedEthnicity]);
+      const ethnicities = processMultiValueOntologies([selfReportedEthnicity]);
       expect(ethnicities.length).toEqual(1);
       const [asian] = ethnicities;
       expect(asian.label).toEqual(LABEL_ASIAN);
       expect(asian.ontology_term_id).toEqual(ONTOLOGY_TERM_ID_ASIAN);
+    });
+  });
+  /**
+   * (thuang): Disease examples:
+   * [
+   *  {'label': "atrial fibrillation, familial, 16 || mitral valve insufficiency",'ontology_term_id': "MONDO:0800349 || MONDO:1030008"},
+   *  {'label': "Hodgkin's lymphoma, lymphocytic-histiocytic predominance",'ontology_term_id': "MONDO:0004604"},
+   *  {'label': "Hodgkin's lymphoma, lymphocytic-histiocytic predominance || Weil's disease",'ontology_term_id': "MONDO:0004604 || MONDO:0043004"},
+   *  {'label': "mitral valve insufficiency",'ontology_term_id': "MONDO:1030008"},
+   *  {'label': "normal",'ontology_term_id': "PATO:0000461"},
+   * ]
+   * @see: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/gh/chanzuckerberg/single-cell/748
+   */
+  describe("Process Disease", () => {
+    test("splits multidisease", () => {
+      const disease = {
+        label:
+          "atrial fibrillation, familial, 16 || mitral valve insufficiency || Hodgkin's lymphoma, lymphocytic-histiocytic predominance",
+        ontology_term_id: "MONDO:0800349 || MONDO:1030008 || MONDO:0004604",
+      };
+      const diseases = processMultiValueOntologies([disease]);
+      expect(diseases.length).toEqual(3);
+      const [disease1, disease2, disease3] = diseases;
+      expect(disease1.label).toEqual("atrial fibrillation, familial, 16");
+      expect(disease1.ontology_term_id).toEqual("MONDO:0800349");
+      expect(disease2.label).toEqual("mitral valve insufficiency");
+      expect(disease2.ontology_term_id).toEqual("MONDO:1030008");
+      expect(disease3.label).toEqual(
+        "Hodgkin's lymphoma, lymphocytic-histiocytic predominance"
+      );
+      expect(disease3.ontology_term_id).toEqual("MONDO:0004604");
     });
   });
 });
