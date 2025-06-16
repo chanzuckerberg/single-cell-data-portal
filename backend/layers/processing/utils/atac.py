@@ -153,93 +153,125 @@ class ATACDataProcessor:
     def write_binned_coverage_per_chrom(
         self, array_name: str, chrom_map: Dict[str, int], cell_type_map: Dict[str, str], valid_barcodes: Set[str]
     ) -> None:
-        chrome_to_ingest = list(chrom_map.keys())
-        found_cells = set()  # Track cells we've actually found
+        """Main orchestration method for processing fragment data and writing to TileDB."""
+        # Step 1: Process all fragments and aggregate coverage
+        coverage_aggregator, found_cells = self._process_all_chromosomes(chrom_map, cell_type_map, valid_barcodes)
+        
+        # Step 2: Report missing cells
+        self._report_missing_cells(valid_barcodes, found_cells)
+        
+        if not coverage_aggregator:
+            return
+        
+        # Step 3: Convert to DataFrame and normalize
+        coverage_df = self._create_coverage_dataframe(coverage_aggregator)
+        
+        # Step 4: Write to TileDB
+        self._write_coverage_to_tiledb(array_name, coverage_df)
 
-        # Use incremental aggregation to avoid memory explosion
+    def _process_all_chromosomes(
+        self, chrom_map: Dict[str, int], cell_type_map: Dict[str, str], valid_barcodes: Set[str]
+    ) -> Tuple[defaultdict, Set[str]]:
+        """Process fragments from all chromosomes and aggregate coverage counts."""
         coverage_aggregator = defaultdict(int)  # (chrom, bin, cell_type) -> coverage_count
-
+        found_cells = set()
+        
         with pysam.TabixFile(self.fragment_artifact_id) as tabix:
-            for chrom_str in chrome_to_ingest:
+            for chrom_str in chrom_map.keys():
                 chrom_id = chrom_map[chrom_str]
                 logger.info(f"Processing {chrom_str}...")
+                self._process_chromosome(tabix, chrom_str, chrom_id, cell_type_map, valid_barcodes, 
+                                       coverage_aggregator, found_cells)
+        
+        return coverage_aggregator, found_cells
 
-                try:
-                    for row in tabix.fetch(chrom_str):
-                        try:
-                            fields = row.strip().split("\t")
-                            if len(fields) < 4:
-                                logger.warning(
-                                    f"Invalid fragment format: expected at least 4 columns, got {len(fields)}"
-                                )
-                                continue
+    def _process_chromosome(
+        self, tabix: pysam.TabixFile, chrom_str: str, chrom_id: int, 
+        cell_type_map: Dict[str, str], valid_barcodes: Set[str],
+        coverage_aggregator: defaultdict, found_cells: Set[str]
+    ) -> None:
+        """Process fragments for a single chromosome."""
+        try:
+            for row in tabix.fetch(chrom_str):
+                self._process_fragment_row(row, chrom_id, cell_type_map, valid_barcodes, 
+                                         coverage_aggregator, found_cells)
+        except ValueError:
+            logger.warning(f"Failed to fetch chromosome {chrom_str}")
 
-                            cell = fields[3]
-                            if cell not in valid_barcodes:
-                                continue
+    def _process_fragment_row(
+        self, row: str, chrom_id: int, cell_type_map: Dict[str, str], 
+        valid_barcodes: Set[str], coverage_aggregator: defaultdict, found_cells: Set[str]
+    ) -> None:
+        """Process a single fragment row and update coverage counts."""
+        try:
+            fields = row.strip().split("\t")
+            if len(fields) < 4:
+                logger.warning(f"Invalid fragment format: expected at least 4 columns, got {len(fields)}")
+                return
+            
+            cell = fields[3]
+            if cell not in valid_barcodes:
+                return
+            
+            found_cells.add(cell)
+            
+            start, end = int(fields[1]), int(fields[2])
+            if start < 0 or end < 0 or start >= end:
+                logger.warning(f"Invalid fragment coordinates: start={start}, end={end}")
+                return
+            
+            # Calculate bins and update coverage
+            bin_start = start // self.bin_size
+            bin_end = (end - 1) // self.bin_size
+            cell_type = cell_type_map[cell]
+            
+            # Count both Tn5 insertion sites independently for ATAC-seq accessibility
+            # Fragment intervals represent accessible chromatin between insertion sites
+            # See: https://www.10xgenomics.com/support/software/cell-ranger-atac/latest/analysis/outputs/fragments-file#fragment-interval-5b7699
+            coverage_aggregator[(chrom_id, bin_start, cell_type)] += 1  # Start insertion site
+            if bin_start != bin_end:  # Only add end bin if in different bin
+                coverage_aggregator[(chrom_id, bin_end, cell_type)] += 1   # End insertion site
+                
+        except ValueError as e:
+            logger.warning(f"Failed to parse fragment row '{row.strip()}': {e}")
 
-                            found_cells.add(cell)  # Track that we found this cell
-
-                            start = int(fields[1])
-                            end = int(fields[2])
-
-                            if start < 0 or end < 0 or start >= end:
-                                logger.warning(f"Invalid fragment coordinates: start={start}, end={end}")
-                                continue
-
-                            # Determine bin range spanned by this fragment
-                            bin_start = start // self.bin_size
-                            bin_end = (end - 1) // self.bin_size  # ensure end is inclusive if needed
-
-                            cell_type = cell_type_map[cell]
-
-                            # Count both Tn5 insertion sites independently for ATAC-seq accessibility
-                            # Fragment intervals represent accessible chromatin between insertion sites
-                            # See: https://www.10xgenomics.com/support/software/cell-ranger-atac/latest/analysis/outputs/fragments-file#fragment-interval-5b7699
-                            coverage_aggregator[(chrom_id, bin_start, cell_type)] += 1  # Start insertion site
-                            if bin_start != bin_end:  # Only add end bin if in different bin
-                                coverage_aggregator[(chrom_id, bin_end, cell_type)] += 1  # End insertion site
-
-                        except ValueError as e:
-                            logger.warning(f"Failed to parse fragment row '{row.strip()}': {e}")
-                            continue
-                except ValueError:
-                    continue
-
-        # Log missing cells at the end
+    def _report_missing_cells(self, valid_barcodes: Set[str], found_cells: Set[str]) -> None:
+        """Log warning about cells not found in fragment file."""
         missing_cells = len(valid_barcodes - found_cells)
         if missing_cells:
             logger.warning(f"{missing_cells} barcodes in .h5ad were not found in fragment file.")
 
-        if not coverage_aggregator:
-            return
-
-        # Convert aggregated data to DataFrame for final processing
+    def _create_coverage_dataframe(self, coverage_aggregator: defaultdict) -> pd.DataFrame:
+        """Convert aggregated coverage data to normalized DataFrame."""
         data_tuples = [
-            (chrom, bin_id, cell_type, count) for (chrom, bin_id, cell_type), count in coverage_aggregator.items()
+            (chrom, bin_id, cell_type, count) 
+            for (chrom, bin_id, cell_type), count in coverage_aggregator.items()
         ]
-
-        full_df = pd.DataFrame(data_tuples, columns=["chrom", "bin", "cell_type", "coverage"])
-
-        # Compute total coverage across all chromosomes
-        cell_type_totals = full_df.groupby("cell_type")["coverage"].sum()
-
-        full_df["total_coverage"] = full_df["cell_type"].map(cell_type_totals)
-        full_df["normalized_coverage"] = (
-            (full_df["coverage"] / full_df["total_coverage"]) * self.normalization_factor
+        
+        df = pd.DataFrame(data_tuples, columns=["chrom", "bin", "cell_type", "coverage"])
+        
+        # Compute total coverage and normalization
+        cell_type_totals = df.groupby("cell_type")["coverage"].sum()
+        df["total_coverage"] = df["cell_type"].map(cell_type_totals)
+        df["normalized_coverage"] = (
+            (df["coverage"] / df["total_coverage"]) * self.normalization_factor
         ).fillna(0)
+        
+        return df
 
+    def _write_coverage_to_tiledb(self, array_name: str, coverage_df: pd.DataFrame) -> None:
+        """Write coverage DataFrame to TileDB array."""
         with tiledb.SparseArray(array_name, mode="w", ctx=self.ctx) as A:
             A[
                 (
-                    full_df["chrom"].astype("int32").to_numpy(),
-                    full_df["bin"].astype("int32").to_numpy(),
-                    full_df["cell_type"].to_numpy(),
+                    coverage_df["chrom"].astype("int32").to_numpy(),
+                    coverage_df["bin"].astype("int32").to_numpy(),
+                    coverage_df["cell_type"].to_numpy(),
                 )
             ] = {
-                "coverage": full_df["coverage"].astype("int32").to_numpy(),
-                "total_coverage": full_df["total_coverage"].astype("int32").to_numpy(),
-                "normalized_coverage": full_df["normalized_coverage"].to_numpy(),
+                "coverage": coverage_df["coverage"].astype("int32").to_numpy(),
+                "total_coverage": coverage_df["total_coverage"].astype("int32").to_numpy(),
+                "normalized_coverage": coverage_df["normalized_coverage"].to_numpy(),
             }
 
     def process_fragment_file(
