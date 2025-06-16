@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from collections import defaultdict
@@ -106,16 +105,16 @@ class ATACDataProcessor:
         """Main orchestration method for processing fragment data and writing to TileDB."""
         # Step 1: Process all fragments and aggregate coverage
         coverage_aggregator, found_cells = self._process_all_chromosomes(chrom_map, cell_type_map, valid_barcodes)
-        
+
         # Step 2: Report missing cells
         self._report_missing_cells(valid_barcodes, found_cells)
-        
+
         if not coverage_aggregator:
             return
-        
+
         # Step 3: Convert to DataFrame and normalize
         coverage_df = self._create_coverage_dataframe(coverage_aggregator)
-        
+
         # Step 4: Write to TileDB
         self._write_coverage_to_tiledb(array_name, coverage_df)
 
@@ -125,32 +124,44 @@ class ATACDataProcessor:
         """Process fragments from all chromosomes and aggregate coverage counts."""
         coverage_aggregator = defaultdict(int)  # (chrom, bin, cell_type) -> coverage_count
         found_cells = set()
-        
+
         with pysam.TabixFile(self.fragment_artifact_id) as tabix:
-            for chrom_str in chrom_map.keys():
+            for chrom_str in chrom_map:
                 chrom_id = chrom_map[chrom_str]
                 logger.info(f"Processing {chrom_str}...")
-                self._process_chromosome(tabix, chrom_str, chrom_id, cell_type_map, valid_barcodes, 
-                                       coverage_aggregator, found_cells)
-        
+                self._process_chromosome(
+                    tabix, chrom_str, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells
+                )
+
         return coverage_aggregator, found_cells
 
     def _process_chromosome(
-        self, tabix: pysam.TabixFile, chrom_str: str, chrom_id: int, 
-        cell_type_map: Dict[str, str], valid_barcodes: Set[str],
-        coverage_aggregator: defaultdict, found_cells: Set[str]
+        self,
+        tabix: pysam.TabixFile,
+        chrom_str: str,
+        chrom_id: int,
+        cell_type_map: Dict[str, str],
+        valid_barcodes: Set[str],
+        coverage_aggregator: defaultdict,
+        found_cells: Set[str],
     ) -> None:
         """Process fragments for a single chromosome."""
         try:
             for row in tabix.fetch(chrom_str):
-                self._process_fragment_row(row, chrom_id, cell_type_map, valid_barcodes, 
-                                         coverage_aggregator, found_cells)
+                self._process_fragment_row(
+                    row, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells
+                )
         except ValueError:
             logger.warning(f"Failed to fetch chromosome {chrom_str}")
 
     def _process_fragment_row(
-        self, row: str, chrom_id: int, cell_type_map: Dict[str, str], 
-        valid_barcodes: Set[str], coverage_aggregator: defaultdict, found_cells: Set[str]
+        self,
+        row: str,
+        chrom_id: int,
+        cell_type_map: Dict[str, str],
+        valid_barcodes: Set[str],
+        coverage_aggregator: defaultdict,
+        found_cells: Set[str],
     ) -> None:
         """Process a single fragment row and update coverage counts."""
         try:
@@ -158,30 +169,30 @@ class ATACDataProcessor:
             if len(fields) < 4:
                 logger.warning(f"Invalid fragment format: expected at least 4 columns, got {len(fields)}")
                 return
-            
+
             cell = fields[3]
             if cell not in valid_barcodes:
                 return
-            
+
             found_cells.add(cell)
-            
+
             start, end = int(fields[1]), int(fields[2])
             if start < 0 or end < 0 or start >= end:
                 logger.warning(f"Invalid fragment coordinates: start={start}, end={end}")
                 return
-            
+
             # Calculate bins and update coverage
             bin_start = start // self.bin_size
             bin_end = (end - 1) // self.bin_size
             cell_type = cell_type_map[cell]
-            
+
             # Count both Tn5 insertion sites independently for ATAC-seq accessibility
             # Fragment intervals represent accessible chromatin between insertion sites
             # See: https://www.10xgenomics.com/support/software/cell-ranger-atac/latest/analysis/outputs/fragments-file#fragment-interval-5b7699
             coverage_aggregator[(chrom_id, bin_start, cell_type)] += 1  # Start insertion site
             if bin_start != bin_end:  # Only add end bin if in different bin
-                coverage_aggregator[(chrom_id, bin_end, cell_type)] += 1   # End insertion site
-                
+                coverage_aggregator[(chrom_id, bin_end, cell_type)] += 1  # End insertion site
+
         except ValueError as e:
             logger.warning(f"Failed to parse fragment row '{row.strip()}': {e}")
 
@@ -193,20 +204,16 @@ class ATACDataProcessor:
 
     def _create_coverage_dataframe(self, coverage_aggregator: defaultdict) -> pd.DataFrame:
         """Convert aggregated coverage data to normalized DataFrame."""
-        data_tuples = [
-            (chrom, bin_id, cell_type, count) 
-            for (chrom, bin_id, cell_type), count in coverage_aggregator.items()
-        ]
-        
-        df = pd.DataFrame(data_tuples, columns=["chrom", "bin", "cell_type", "coverage"])
-        
+        df = pd.DataFrame(
+            ((chrom, bin_id, cell_type, count) for (chrom, bin_id, cell_type), count in coverage_aggregator.items()),
+            columns=["chrom", "bin", "cell_type", "coverage"],
+        )
+
         # Compute total coverage and normalization
         cell_type_totals = df.groupby("cell_type")["coverage"].sum()
         df["total_coverage"] = df["cell_type"].map(cell_type_totals)
-        df["normalized_coverage"] = (
-            (df["coverage"] / df["total_coverage"]) * self.normalization_factor
-        ).fillna(0)
-        
+        df["normalized_coverage"] = ((df["coverage"] / df["total_coverage"]) * self.normalization_factor).fillna(0)
+
         return df
 
     def _write_coverage_to_tiledb(self, array_name: str, coverage_df: pd.DataFrame) -> None:
