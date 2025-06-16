@@ -145,15 +145,16 @@ class ATACDataProcessor:
 
     def write_binned_coverage_per_chrom(self, array_name, chrom_map, cell_type_map, valid_barcodes):
         chrome_to_ingest = list(chrom_map.keys())
-        all_binned_data = []
         found_cells = set()  # Track cells we've actually found
+        
+        # Use incremental aggregation to avoid memory explosion
+        coverage_aggregator = defaultdict(int)  # (chrom, bin, cell_type) -> coverage_count
 
         with pysam.TabixFile(self.fragment_artifact_id) as tabix:
             for chrom_str in chrome_to_ingest:
                 chrom_id = chrom_map[chrom_str]
                 logger.info(f"Processing {chrom_str}...")
                 
-                data = []
                 try:
                     for row in tabix.fetch(chrom_str):
                         try:
@@ -184,9 +185,9 @@ class ATACDataProcessor:
                             # Count both Tn5 insertion sites independently for ATAC-seq accessibility
                             # Fragment intervals represent accessible chromatin between insertion sites
                             # See: https://www.10xgenomics.com/support/software/cell-ranger-atac/latest/analysis/outputs/fragments-file#fragment-interval-5b7699
-                            data.append((chrom_id, bin_start, cell_type))  # Start insertion site
+                            coverage_aggregator[(chrom_id, bin_start, cell_type)] += 1  # Start insertion site
                             if bin_start != bin_end:  # Only add end bin if in different bin
-                                data.append((chrom_id, bin_end, cell_type))   # End insertion site
+                                coverage_aggregator[(chrom_id, bin_end, cell_type)] += 1   # End insertion site
                                 
                         except ValueError as e:
                             logger.warning(f"Failed to parse fragment row '{row.strip()}': {e}")
@@ -194,23 +195,19 @@ class ATACDataProcessor:
                 except ValueError:
                     continue
 
-                if not data:
-                    continue
-
-                df = pd.DataFrame(data, columns=["chrom", "bin", "cell_type"])
-                binned = df.groupby(["chrom", "bin", "cell_type"]).size().reset_index(name="coverage")
-                all_binned_data.append(binned)
-
         # Log missing cells at the end
         missing_cells = len(valid_barcodes - found_cells)
         if missing_cells:
             logger.warning(f"{missing_cells} barcodes in .h5ad were not found in fragment file.")
 
-        if not all_binned_data:
+        if not coverage_aggregator:
             return
 
-        # Concatenate all chromosome data
-        full_df = pd.concat(all_binned_data, ignore_index=True)
+        # Convert aggregated data to DataFrame for final processing
+        data_tuples = [(chrom, bin_id, cell_type, count) 
+                      for (chrom, bin_id, cell_type), count in coverage_aggregator.items()]
+        
+        full_df = pd.DataFrame(data_tuples, columns=["chrom", "bin", "cell_type", "coverage"])
 
         # Compute total coverage across all chromosomes
         cell_type_totals = full_df.groupby("cell_type")["coverage"].sum()
