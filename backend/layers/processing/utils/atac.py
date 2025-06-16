@@ -108,28 +108,12 @@ class ATACDataProcessor:
         }
         return max(bins_per_chrom.values()) - 1
 
-    def map_cell_type_info(self, valid_barcodes, cell_type_map, genome_version):
+    def build_chrom_mapping(self, genome_version):
         chrom_map = defaultdict(lambda: 0)
         for i, chrom in enumerate(self.chrom_lengths[genome_version], 1):
             chrom_map[chrom] = i
         max_chrom = max(chrom_map.values())
-
-        cell_id_map = {}
-        with pysam.TabixFile(self.fragment_artifact_id) as tabix:
-            for chrom_str in chrom_map:
-                try:
-                    for row in tabix.fetch(chrom_str):
-                        cell = row.strip().split("\t")[3]
-                        if cell not in valid_barcodes:
-                            continue
-                        if cell not in cell_id_map:
-                            cell_id_map[cell] = {
-                                "cell_type": cell_type_map[cell],
-                            }
-                except ValueError:
-                    continue
-
-        return max_chrom, cell_id_map, chrom_map
+        return max_chrom, chrom_map
 
     def create_dataframe_array(self, array_name, max_chrom, max_bins):
         compression = tiledb.FilterList(
@@ -159,37 +143,53 @@ class ATACDataProcessor:
         )
         tiledb.SparseArray.create(array_name, schema)
 
-    def write_binned_coverage_per_chrom(self, array_name, chrom_map, cell_id_map):
+    def write_binned_coverage_per_chrom(self, array_name, chrom_map, cell_type_map, valid_barcodes):
         chrome_to_ingest = list(chrom_map.keys())
         all_binned_data = []
+        found_cells = set()  # Track cells we've actually found
 
         with pysam.TabixFile(self.fragment_artifact_id) as tabix:
             for chrom_str in chrome_to_ingest:
                 chrom_id = chrom_map[chrom_str]
                 logger.info(f"Processing {chrom_str}...")
+                
+                data = []
                 try:
-                    rows = list(tabix.fetch(chrom_str))
+                    for row in tabix.fetch(chrom_str):
+                        try:
+                            fields = row.strip().split("\t")
+                            if len(fields) < 4:
+                                logger.warning(f"Invalid fragment format: expected at least 4 columns, got {len(fields)}")
+                                continue
+                            
+                            cell = fields[3]
+                            if cell not in valid_barcodes:
+                                continue
+                            
+                            found_cells.add(cell)  # Track that we found this cell
+                            
+                            start = int(fields[1])
+                            end = int(fields[2])
+                            
+                            if start < 0 or end < 0 or start >= end:
+                                logger.warning(f"Invalid fragment coordinates: start={start}, end={end}")
+                                continue
+                            
+                            # Determine bin range spanned by this read
+                            bin_start = start // self.bin_size
+                            bin_end = (end - 1) // self.bin_size  # ensure end is inclusive if needed
+
+                            cell_type = cell_type_map[cell]
+
+                            data.append((chrom_id, bin_start, cell_type))
+                            if bin_start != bin_end:  # Only add end bin if different
+                                data.append((chrom_id, bin_end, cell_type))
+                                
+                        except ValueError as e:
+                            logger.warning(f"Failed to parse fragment row '{row.strip()}': {e}")
+                            continue
                 except ValueError:
                     continue
-
-                data = []
-                for row in rows:
-                    _, start, end, cell, _ = row.strip().split("\t")
-
-                    if cell not in cell_id_map:
-                        continue
-
-                    start = int(start)
-                    end = int(end)
-
-                    # Determine bin range spanned by this read
-                    bin_start = start // self.bin_size
-                    bin_end = (end - 1) // self.bin_size  # ensure end is inclusive if needed
-
-                    cell_type = cell_id_map[cell]["cell_type"]
-
-                    data.append((chrom_id, bin_start, cell_type))
-                    data.append((chrom_id, bin_end, cell_type))
 
                 if not data:
                     continue
@@ -197,6 +197,11 @@ class ATACDataProcessor:
                 df = pd.DataFrame(data, columns=["chrom", "bin", "cell_type"])
                 binned = df.groupby(["chrom", "bin", "cell_type"]).size().reset_index(name="coverage")
                 all_binned_data.append(binned)
+
+        # Log missing cells at the end
+        missing_cells = len(valid_barcodes - found_cells)
+        if missing_cells:
+            logger.warning(f"{missing_cells} barcodes in .h5ad were not found in fragment file.")
 
         if not all_binned_data:
             return
@@ -230,14 +235,13 @@ class ATACDataProcessor:
         valid_barcodes = set(df_meta["cell_name"])
         cell_type_map = dict(zip(df_meta["cell_name"], df_meta["cell_type"], strict=False))
 
-        max_chrom, cell_id_map, chrom_map = self.map_cell_type_info(valid_barcodes, cell_type_map, genome_version)
-
-        dropped = len(valid_barcodes - set(cell_id_map.keys()))
-        if dropped:
-            logger.warning(f"{dropped} barcodes in .h5ad were not found in fragment file.")
+        max_chrom, chrom_map = self.build_chrom_mapping(genome_version)
 
         max_bins = self.calculate_max_bins(genome_version)
         self.create_dataframe_array(array_name, max_chrom, max_bins)
-        self.write_binned_coverage_per_chrom(array_name, chrom_map, cell_id_map)
+        self.write_binned_coverage_per_chrom(array_name, chrom_map, cell_type_map, valid_barcodes)
 
+        # Build cell_id_map for return value (maintaining API compatibility)
+        cell_id_map = {cell: {"cell_type": cell_type_map[cell]} for cell in valid_barcodes}
+        
         return df_meta, cell_id_map
