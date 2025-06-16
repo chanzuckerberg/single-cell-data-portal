@@ -175,15 +175,18 @@ class ATACDataProcessor:
                                 logger.warning(f"Invalid fragment coordinates: start={start}, end={end}")
                                 continue
                             
-                            # Determine bin range spanned by this read
+                            # Determine bin range spanned by this fragment
                             bin_start = start // self.bin_size
                             bin_end = (end - 1) // self.bin_size  # ensure end is inclusive if needed
 
                             cell_type = cell_type_map[cell]
 
-                            data.append((chrom_id, bin_start, cell_type))
-                            if bin_start != bin_end:  # Only add end bin if different
-                                data.append((chrom_id, bin_end, cell_type))
+                            # Count both Tn5 insertion sites independently for ATAC-seq accessibility
+                            # Fragment intervals represent accessible chromatin between insertion sites
+                            # See: https://www.10xgenomics.com/support/software/cell-ranger-atac/latest/analysis/outputs/fragments-file#fragment-interval-5b7699
+                            data.append((chrom_id, bin_start, cell_type))  # Start insertion site
+                            if bin_start != bin_end:  # Only add end bin if in different bin
+                                data.append((chrom_id, bin_end, cell_type))   # End insertion site
                                 
                         except ValueError as e:
                             logger.warning(f"Failed to parse fragment row '{row.strip()}': {e}")
