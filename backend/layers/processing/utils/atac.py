@@ -1,4 +1,5 @@
 import logging
+import os
 from collections import defaultdict
 
 import numpy as np
@@ -69,6 +70,9 @@ NORMALIZATION_FACTOR = 2_000_000
 
 class ATACDataProcessor:
     def __init__(self, fragment_artifact_id=None, ctx=None):
+        if fragment_artifact_id is not None and not os.path.exists(fragment_artifact_id):
+            raise FileNotFoundError(f"Fragment file not found: {fragment_artifact_id}")
+        
         self.fragment_artifact_id = fragment_artifact_id
         self.ctx = ctx
         self.bin_size = BIN_SIZE
