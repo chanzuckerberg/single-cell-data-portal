@@ -138,8 +138,8 @@ class ATACDataProcessor:
         schema = tiledb.ArraySchema(
             domain=domain,
             attrs=[
-                tiledb.Attr(name="coverage", dtype=np.float32, filters=compression),
-                tiledb.Attr(name="total_coverage", dtype=np.float32, filters=compression),
+                tiledb.Attr(name="coverage", dtype=np.int32, filters=compression),
+                tiledb.Attr(name="total_coverage", dtype=np.int32, filters=compression),
                 tiledb.Attr(name="normalized_coverage", dtype=np.float32, filters=compression),
             ],
             sparse=True,
