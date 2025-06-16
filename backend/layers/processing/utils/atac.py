@@ -89,11 +89,16 @@ class ATACDataProcessor:
     def extract_cell_metadata_from_h5ad(self, obs: pd.DataFrame, obs_column: str = "cell_type"):
         if obs_column not in obs.columns:
             raise ValueError(f"Column {obs_column} not found in obs DataFrame.")
+        
+        if "organism_ontology_term_id" not in obs.columns:
+            raise ValueError("Column 'organism_ontology_term_id' is required but not found in obs DataFrame.")
+        
+        organism_ontology_term_id = obs["organism_ontology_term_id"].iloc[0]
+        if pd.isna(organism_ontology_term_id):
+            raise ValueError("organism_ontology_term_id cannot be null/NaN.")
+        
         df = obs[[obs_column]].copy()
         df = df.rename_axis("cell_name").reset_index()
-        organism_ontology_term_id = (
-            obs["organism_ontology_term_id"].iloc[0] if "organism_ontology_term_id" in obs.columns else None
-        )
         genome_version = self.get_genome_version(organism_ontology_term_id)
         return df, genome_version
 
@@ -109,21 +114,20 @@ class ATACDataProcessor:
             chrom_map[chrom] = i
         max_chrom = max(chrom_map.values())
 
-        tabix = pysam.TabixFile(self.fragment_artifact_id)
         cell_id_map = {}
-
-        for chrom_str in chrom_map:
-            try:
-                for row in tabix.fetch(chrom_str):
-                    cell = row.strip().split("\t")[3]
-                    if cell not in valid_barcodes:
-                        continue
-                    if cell not in cell_id_map:
-                        cell_id_map[cell] = {
-                            "cell_type": cell_type_map[cell],
-                        }
-            except ValueError:
-                continue
+        with pysam.TabixFile(self.fragment_artifact_id) as tabix:
+            for chrom_str in chrom_map:
+                try:
+                    for row in tabix.fetch(chrom_str):
+                        cell = row.strip().split("\t")[3]
+                        if cell not in valid_barcodes:
+                            continue
+                        if cell not in cell_id_map:
+                            cell_id_map[cell] = {
+                                "cell_type": cell_type_map[cell],
+                            }
+                except ValueError:
+                    continue
 
         return max_chrom, cell_id_map, chrom_map
 
@@ -156,44 +160,43 @@ class ATACDataProcessor:
         tiledb.SparseArray.create(array_name, schema)
 
     def write_binned_coverage_per_chrom(self, array_name, chrom_map, cell_id_map):
-        tabix = pysam.TabixFile(self.fragment_artifact_id)
         chrome_to_ingest = list(chrom_map.keys())
-
         all_binned_data = []
 
-        for chrom_str in chrome_to_ingest:
-            chrom_id = chrom_map[chrom_str]
-            print(f"Processing {chrom_str}...")
-            try:
-                rows = list(tabix.fetch(chrom_str))
-            except ValueError:
-                continue
-
-            data = []
-            for row in rows:
-                _, start, end, cell, _ = row.strip().split("\t")
-
-                if cell not in cell_id_map:
+        with pysam.TabixFile(self.fragment_artifact_id) as tabix:
+            for chrom_str in chrome_to_ingest:
+                chrom_id = chrom_map[chrom_str]
+                logger.info(f"Processing {chrom_str}...")
+                try:
+                    rows = list(tabix.fetch(chrom_str))
+                except ValueError:
                     continue
 
-                start = int(start)
-                end = int(end)
+                data = []
+                for row in rows:
+                    _, start, end, cell, _ = row.strip().split("\t")
 
-                # Determine bin range spanned by this read
-                bin_start = start // self.bin_size
-                bin_end = (end - 1) // self.bin_size  # ensure end is inclusive if needed
+                    if cell not in cell_id_map:
+                        continue
 
-                cell_type = cell_id_map[cell]["cell_type"]
+                    start = int(start)
+                    end = int(end)
 
-                data.append((chrom_id, bin_start, cell_type))
-                data.append((chrom_id, bin_end, cell_type))
+                    # Determine bin range spanned by this read
+                    bin_start = start // self.bin_size
+                    bin_end = (end - 1) // self.bin_size  # ensure end is inclusive if needed
 
-            if not data:
-                continue
+                    cell_type = cell_id_map[cell]["cell_type"]
 
-            df = pd.DataFrame(data, columns=["chrom", "bin", "cell_type"])
-            binned = df.groupby(["chrom", "bin", "cell_type"]).size().reset_index(name="coverage")
-            all_binned_data.append(binned)
+                    data.append((chrom_id, bin_start, cell_type))
+                    data.append((chrom_id, bin_end, cell_type))
+
+                if not data:
+                    continue
+
+                df = pd.DataFrame(data, columns=["chrom", "bin", "cell_type"])
+                binned = df.groupby(["chrom", "bin", "cell_type"]).size().reset_index(name="coverage")
+                all_binned_data.append(binned)
 
         if not all_binned_data:
             return

@@ -70,14 +70,56 @@ class ProcessCxg(ProcessingLogic):
             object_key = f"{key_prefix}/{labeled_h5ad_filename}"
         self.download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
+        # Download fragment file if fragment_artifact_id is provided
+        fragment_file_path = None
+        if fragment_artifact_id:
+            fragment_file_path = self.download_fragment_file(dataset_version_id, fragment_artifact_id, artifact_bucket, current_artifacts)
+
         # Convert the labeled dataset to CXG and upload it to the cellxgene bucket
         self.process_cxg(
-            labeled_h5ad_filename, dataset_version_id, cellxgene_bucket, fragment_artifact_id, current_artifacts
+            labeled_h5ad_filename, dataset_version_id, cellxgene_bucket, fragment_file_path, current_artifacts
         )
+
+    def download_fragment_file(
+        self, 
+        dataset_version_id: DatasetVersionId, 
+        fragment_artifact_id: str, 
+        artifact_bucket: str, 
+        current_artifacts=None
+    ) -> str:
+        """
+        Download the fragment file from S3 using the fragment_artifact_id
+        :param dataset_version_id: the dataset version id
+        :param fragment_artifact_id: the fragment artifact id
+        :param artifact_bucket: the bucket containing the fragment file
+        :param current_artifacts: existing artifacts for reprocessing
+        :return: local path to the downloaded fragment file
+        """
+        
+        if current_artifacts:
+            # For reprocessing, find the fragment artifact from current artifacts
+            fragment_artifact = next(
+                (artifact for artifact in current_artifacts if artifact.id.id == fragment_artifact_id), 
+                None
+            )
+            if fragment_artifact:
+                _, object_key = self.s3_provider.parse_s3_uri(fragment_artifact.uri)
+                # Extract filename from the S3 key
+                fragment_filename = object_key.split('/')[-1]
+            else:
+                raise RuntimeError(f"Fragment artifact {fragment_artifact_id} not found in current artifacts")
+        else:
+            # For normal processing, construct the object key and filename
+            key_prefix = self.get_key_prefix(fragment_artifact_id)
+            object_key = f"{key_prefix}-fragment.tsv.bgz"
+            fragment_filename = f"fragment-{fragment_artifact_id}.tsv.bgz"
+        
+        self.download_from_s3(artifact_bucket, object_key, fragment_filename)
+        return fragment_filename
 
     @logit
     def make_cxg(
-        self, local_filename, dataset_version_id: DatasetVersionId, fragment_artifact_id: Optional[str] = None
+        self, local_filename, dataset_version_id: DatasetVersionId, fragment_file_path: Optional[str] = None
     ):
         """
         Convert the uploaded H5AD file to the CXG format servicing the cellxgene Explorer.
@@ -90,7 +132,7 @@ class ProcessCxg(ProcessingLogic):
                 cxg_output_container,
                 sparse_threshold=25.0,
                 dataset_version_id=dataset_version_id.id,
-                fragment_artifact_id=fragment_artifact_id,
+                fragment_artifact_id=fragment_file_path,
             )
         except Exception as ex:
             # TODO use a specialized exception
@@ -107,10 +149,10 @@ class ProcessCxg(ProcessingLogic):
         self.s3_provider.upload_directory(cxg_dir, s3_uri)
 
     def process_cxg(
-        self, local_filename, dataset_version_id, cellxgene_bucket, fragment_artifact_id=None, current_artifacts=None
+        self, local_filename, dataset_version_id, cellxgene_bucket, fragment_file_path=None, current_artifacts=None
     ):
         cxg_dir = self.convert_file(
-            self.make_cxg, local_filename, dataset_version_id, fragment_artifact_id, DatasetStatusKey.CXG
+            self.make_cxg, local_filename, dataset_version_id, fragment_file_path, DatasetStatusKey.CXG
         )
         s3_uri = None
         if current_artifacts:
