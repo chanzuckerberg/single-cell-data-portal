@@ -114,7 +114,6 @@ class ProcessValidateATAC(ProcessingLogic):
                     dataset_version_id,
                     DatasetStatusKey.ATAC,
                     DatasetConversionStatus.SKIPPED,
-                    validation_errors=["Fragment is optional and not present."],
                 )
                 return True
         return False
