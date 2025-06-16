@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import pysam
 import tiledb
+from tqdm import tqdm
 
 from .config.genome_config import CHROM_LENGTHS
 
@@ -126,7 +127,7 @@ class ATACDataProcessor:
         found_cells = set()
 
         with pysam.TabixFile(self.fragment_artifact_id) as tabix:
-            for chrom_str in chrom_map:
+            for chrom_str in tqdm(chrom_map, desc="Processing chromosomes", unit="chrom"):
                 chrom_id = chrom_map[chrom_str]
                 logger.info(f"Processing {chrom_str}...")
                 self._process_chromosome(
@@ -204,11 +205,21 @@ class ATACDataProcessor:
 
     def _create_coverage_dataframe(self, coverage_aggregator: defaultdict) -> pd.DataFrame:
         """Convert aggregated coverage data to normalized DataFrame."""
+        logger.info("Converting aggregated data to DataFrame...")
         df = pd.DataFrame(
-            ((chrom, bin_id, cell_type, count) for (chrom, bin_id, cell_type), count in coverage_aggregator.items()),
+            tqdm(
+                (
+                    (chrom, bin_id, cell_type, count)
+                    for (chrom, bin_id, cell_type), count in coverage_aggregator.items()
+                ),
+                desc="Creating DataFrame",
+                unit="bins",
+                total=len(coverage_aggregator),
+            ),
             columns=["chrom", "bin", "cell_type", "coverage"],
         )
 
+        logger.info("Computing normalized coverage...")
         # Compute total coverage and normalization
         cell_type_totals = df.groupby("cell_type")["coverage"].sum()
         df["total_coverage"] = df["cell_type"].map(cell_type_totals)
@@ -218,6 +229,7 @@ class ATACDataProcessor:
 
     def _write_coverage_to_tiledb(self, array_name: str, coverage_df: pd.DataFrame) -> None:
         """Write coverage DataFrame to TileDB array."""
+        logger.info(f"Writing {len(coverage_df):,} coverage records to TileDB...")
         with tiledb.SparseArray(array_name, mode="w", ctx=self.ctx) as A:
             A[
                 (
@@ -230,6 +242,7 @@ class ATACDataProcessor:
                 "total_coverage": coverage_df["total_coverage"].astype("int32").to_numpy(),
                 "normalized_coverage": coverage_df["normalized_coverage"].to_numpy(),
             }
+        logger.info("Successfully wrote coverage data to TileDB")
 
     def process_fragment_file(
         self, obs: pd.DataFrame, array_name: str
