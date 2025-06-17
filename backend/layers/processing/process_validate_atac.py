@@ -156,10 +156,15 @@ class ProcessValidateATAC(ProcessingLogic):
         if self.skip_atac_validation(local_anndata_filename, manifest, dataset_version_id):
             return
 
-        # Download the original fragment file from URI
-        local_fragment_filename = self.download_from_source_uri(
-            source_uri=str(manifest.atac_fragment), local_path=CorporaConstants.ORIGINAL_ATAC_FRAGMENT_FILENAME
-        )
+        try:
+            # Download the original fragment file from URI
+            local_fragment_filename = self.download_from_source_uri(
+                source_uri=str(manifest.atac_fragment), local_path=CorporaConstants.ORIGINAL_ATAC_FRAGMENT_FILENAME
+            )
+        except Exception as e:
+            self.logger.exception(f"Failed to download fragment file from {manifest.atac_fragment}")
+            self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.FAILED)
+            raise ValidationAtacFailed(errors=[str(e)]) from None
 
         # Validate the fragment with anndata file
         try:

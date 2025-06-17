@@ -99,6 +99,7 @@ if [[ $DEST_ENV == 'rdev' && -n "$COLLECTIONS" ]]; then
   DEPLOYMENT_STAGE=$SRC_ENV make db/tunnel/down  # db access no longer needed
   export AWS_PROFILE=single-cell-dev  # For DEST_ENV
 
+  # TODO: update to include fragment files
   exts=("rds" "h5ad")
   for dv_id in "${dataset_version_ids[@]}"; do
     for ext in "${exts[@]}"; do
