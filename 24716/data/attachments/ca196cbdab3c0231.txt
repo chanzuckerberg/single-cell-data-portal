@@ -1,0 +1,4 @@
+WARNING  backend.layers.processing.utils.atac:atac.py:197 Invalid fragment coordinates: start=-50, end=100
+WARNING  backend.layers.processing.utils.atac:atac.py:197 Invalid fragment coordinates: start=200, end=200
+WARNING  backend.layers.processing.utils.atac:atac.py:197 Invalid fragment coordinates: start=300, end=250
+WARNING  backend.layers.processing.utils.atac:atac.py:171 Failed to fetch chromosome chr2
