@@ -20,7 +20,11 @@ NORMALIZATION_FACTOR = 2_000_000
 
 
 class ATACDataProcessor:
-    def __init__(self, fragment_artifact_id: Optional[str] = None, ctx: Optional[tiledb.Ctx] = None) -> None:
+    def __init__(
+        self,
+        fragment_artifact_id: Optional[str] = None,
+        ctx: Optional[tiledb.Ctx] = None,
+    ) -> None:
         if fragment_artifact_id is not None and not os.path.exists(fragment_artifact_id):
             raise FileNotFoundError(f"Fragment file not found: {fragment_artifact_id}")
 
@@ -203,28 +207,96 @@ class ATACDataProcessor:
         if missing_cells:
             logger.warning(f"{missing_cells} barcodes in .h5ad were not found in fragment file.")
 
-    def _create_coverage_dataframe(self, coverage_aggregator: defaultdict) -> pd.DataFrame:
-        """Convert aggregated coverage data to normalized DataFrame."""
-        logger.info("Converting aggregated data to DataFrame...")
-        df = pd.DataFrame(
-            tqdm(
-                (
-                    (chrom, bin_id, cell_type, count)
-                    for (chrom, bin_id, cell_type), count in coverage_aggregator.items()
-                ),
-                desc="Creating DataFrame",
-                unit="bins",
-                total=len(coverage_aggregator),
-            ),
-            columns=["chrom", "bin", "cell_type", "coverage"],
-        )
+    def _compute_cell_type_totals(self, coverage_aggregator: defaultdict) -> Dict[str, int]:
+        """Compute total coverage per cell type for normalization."""
+        logger.info("Computing cell type totals for normalization...")
+        cell_type_totals = defaultdict(int)
+        for (_, _, cell_type), count in coverage_aggregator.items():
+            cell_type_totals[cell_type] += count
+        return dict(cell_type_totals)
 
-        logger.info("Computing normalized coverage...")
-        # Compute total coverage and normalization
-        cell_type_totals = df.groupby("cell_type")["coverage"].sum()
-        df["total_coverage"] = df["cell_type"].map(cell_type_totals)
-        df["normalized_coverage"] = ((df["coverage"] / df["total_coverage"]) * self.normalization_factor).fillna(0)
+    def _process_coverage_data(
+        self,
+        coverage_aggregator: defaultdict,
+        stage_name: str = "processing",
+    ) -> None:
+        """Process coverage data for DataFrame creation."""
+        cell_type_totals = self._compute_cell_type_totals(coverage_aggregator)
+        total_records = len(coverage_aggregator)
 
+        logger.info(f"Processing {total_records:,} records for {stage_name}...")
+
+        for i, ((chrom, bin_id, cell_type), count) in enumerate(
+            tqdm(coverage_aggregator.items(), desc=f"Processing {stage_name}", unit="records")
+        ):
+            total_coverage = cell_type_totals[cell_type]
+            normalized_coverage = (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
+
+            record = {
+                "chrom": chrom,
+                "bin": bin_id,
+                "cell_type": cell_type,
+                "coverage": count,
+                "total_coverage": total_coverage,
+                "normalized_coverage": normalized_coverage,
+            }
+
+            # Process record for DataFrame creation
+            should_continue = self._dataframe_processor(record, i, total_records)
+            if not should_continue:
+                break
+
+    def _dataframe_processor(self, record: Dict, i: int, total_records: int) -> bool:
+        """Process a single record for DataFrame creation."""
+        self._current_chunk.append(record)
+
+        # Process chunk when it reaches target size
+        if len(self._current_chunk) >= self._dataframe_chunk_size:
+            self._chunks.append(pd.DataFrame(self._current_chunk))
+            self._current_chunk.clear()
+
+        return True  # Continue processing
+
+    def _create_coverage_dataframe(self, coverage_aggregator: defaultdict, chunk_size: int = 50000) -> pd.DataFrame:
+        """Convert aggregated coverage data to normalized DataFrame using chunked processing."""
+        # Store as instance variables temporarily
+        self._chunks = []
+        self._current_chunk = []
+        self._dataframe_chunk_size = chunk_size
+
+        # Use shared processing logic
+        self._process_coverage_data(coverage_aggregator, "DataFrame creation")
+
+        # Process remaining records
+        if self._current_chunk:
+            self._chunks.append(pd.DataFrame(self._current_chunk))
+
+        logger.info("Concatenating chunks...")
+        if not self._chunks:
+            # Clean up instance variables
+            del self._chunks
+            del self._current_chunk
+            del self._dataframe_chunk_size
+            return pd.DataFrame(
+                columns=["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
+            )
+
+        # Concatenate all chunks efficiently
+        df = pd.concat(self._chunks, ignore_index=True, copy=False)
+
+        # Clean up instance variables
+        del self._chunks
+        del self._current_chunk
+        del self._dataframe_chunk_size
+
+        # Optimize data types to save memory
+        df["chrom"] = df["chrom"].astype("int32")
+        df["bin"] = df["bin"].astype("int32")
+        df["coverage"] = df["coverage"].astype("int32")
+        df["total_coverage"] = df["total_coverage"].astype("int32")
+        df["normalized_coverage"] = df["normalized_coverage"].astype("float32")
+
+        logger.info(f"Created DataFrame with {len(df):,} records")
         return df
 
     def _write_coverage_to_tiledb(self, array_name: str, coverage_df: pd.DataFrame) -> None:
