@@ -24,15 +24,26 @@ class ATACDataProcessor:
         self,
         fragment_artifact_id: Optional[str] = None,
         ctx: Optional[tiledb.Ctx] = None,
+        strict_mode: bool = False,
     ) -> None:
         if fragment_artifact_id is not None and not os.path.exists(fragment_artifact_id):
             raise FileNotFoundError(f"Fragment file not found: {fragment_artifact_id}")
 
         self.fragment_artifact_id = fragment_artifact_id
         self.ctx = ctx
+        self.strict_mode = strict_mode  # If True, raise errors instead of warnings
         self.bin_size = BIN_SIZE
         self.chrom_lengths = CHROM_LENGTHS
         self.normalization_factor = NORMALIZATION_FACTOR
+
+        # Error tracking
+        self.error_stats = {
+            "invalid_format": 0,
+            "invalid_coordinates": 0,
+            "parse_errors": 0,
+            "missing_chromosomes": 0,
+            "total_fragments_processed": 0,
+        }
 
     @staticmethod
     def get_genome_version(organism_ontology_term_id: str) -> str:
