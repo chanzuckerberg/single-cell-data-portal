@@ -1,0 +1,2 @@
+{"levelname": "INFO", "asctime": "2025-06-18T21:58:41.018Z", "name": "backend.layers.processing.utils.atac", "message": "Computing cell type totals for normalization...", "lineno": 213, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
+{"levelname": "INFO", "asctime": "2025-06-18T21:58:41.018Z", "name": "backend.layers.processing.utils.atac", "message": "Processing 5 records for DataFrame creation...", "lineno": 227, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
