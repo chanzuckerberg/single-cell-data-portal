@@ -24,26 +24,15 @@ class ATACDataProcessor:
         self,
         fragment_artifact_id: Optional[str] = None,
         ctx: Optional[tiledb.Ctx] = None,
-        strict_mode: bool = False,
     ) -> None:
         if fragment_artifact_id is not None and not os.path.exists(fragment_artifact_id):
             raise FileNotFoundError(f"Fragment file not found: {fragment_artifact_id}")
 
         self.fragment_artifact_id = fragment_artifact_id
         self.ctx = ctx
-        self.strict_mode = strict_mode  # If True, raise errors instead of warnings
         self.bin_size = BIN_SIZE
         self.chrom_lengths = CHROM_LENGTHS
         self.normalization_factor = NORMALIZATION_FACTOR
-
-        # Error tracking
-        self.error_stats = {
-            "invalid_format": 0,
-            "invalid_coordinates": 0,
-            "parse_errors": 0,
-            "missing_chromosomes": 0,
-            "total_fragments_processed": 0,
-        }
 
     @staticmethod
     def get_genome_version(organism_ontology_term_id: str) -> str:
@@ -119,19 +108,20 @@ class ATACDataProcessor:
         self, array_name: str, chrom_map: Dict[str, int], cell_type_map: Dict[str, str], valid_barcodes: Set[str]
     ) -> None:
         """Main orchestration method for processing fragment data and writing to TileDB."""
-        # Step 1: Process all fragments and aggregate coverage
+        # Process all fragments and aggregate coverage
         coverage_aggregator, found_cells = self._process_all_chromosomes(chrom_map, cell_type_map, valid_barcodes)
 
-        # Step 2: Report missing cells
+        # Report missing cells
         self._report_missing_cells(valid_barcodes, found_cells)
 
+        # Early exit if no coverage data found (empty fragment file, no matching cells, or processing errors)
         if not coverage_aggregator:
             return
 
-        # Step 3: Convert to DataFrame and normalize
+        # Convert to DataFrame and normalize
         coverage_df = self._create_coverage_dataframe(coverage_aggregator)
 
-        # Step 4: Write to TileDB
+        # Write to TileDB
         self._write_coverage_to_tiledb(array_name, coverage_df)
 
     def _process_all_chromosomes(
@@ -229,16 +219,15 @@ class ATACDataProcessor:
     def _process_coverage_data(
         self,
         coverage_aggregator: defaultdict,
-        stage_name: str = "processing",
     ) -> None:
         """Process coverage data for DataFrame creation."""
         cell_type_totals = self._compute_cell_type_totals(coverage_aggregator)
         total_records = len(coverage_aggregator)
 
-        logger.info(f"Processing {total_records:,} records for {stage_name}...")
+        logger.info(f"Processing {total_records:,} records for DataFrame creation...")
 
-        for i, ((chrom, bin_id, cell_type), count) in enumerate(
-            tqdm(coverage_aggregator.items(), desc=f"Processing {stage_name}", unit="records")
+        for _, ((chrom, bin_id, cell_type), count) in enumerate(
+            tqdm(coverage_aggregator.items(), desc="Processing DataFrame creation", unit="records")
         ):
             total_coverage = cell_type_totals[cell_type]
             normalized_coverage = (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
@@ -252,21 +241,13 @@ class ATACDataProcessor:
                 "normalized_coverage": normalized_coverage,
             }
 
-            # Process record for DataFrame creation
-            should_continue = self._dataframe_processor(record, i, total_records)
-            if not should_continue:
-                break
+            # Add record to current chunk
+            self._current_chunk.append(record)
 
-    def _dataframe_processor(self, record: Dict, i: int, total_records: int) -> bool:
-        """Process a single record for DataFrame creation."""
-        self._current_chunk.append(record)
-
-        # Process chunk when it reaches target size
-        if len(self._current_chunk) >= self._dataframe_chunk_size:
-            self._chunks.append(pd.DataFrame(self._current_chunk))
-            self._current_chunk.clear()
-
-        return True  # Continue processing
+            # Process chunk when it reaches target size
+            if len(self._current_chunk) >= self._dataframe_chunk_size:
+                self._chunks.append(pd.DataFrame(self._current_chunk))
+                self._current_chunk.clear()
 
     def _create_coverage_dataframe(self, coverage_aggregator: defaultdict, chunk_size: int = 50000) -> pd.DataFrame:
         """Convert aggregated coverage data to normalized DataFrame using chunked processing."""
@@ -275,8 +256,8 @@ class ATACDataProcessor:
         self._current_chunk = []
         self._dataframe_chunk_size = chunk_size
 
-        # Use shared processing logic
-        self._process_coverage_data(coverage_aggregator, "DataFrame creation")
+        # Process coverage data for DataFrame creation
+        self._process_coverage_data(coverage_aggregator)
 
         # Process remaining records
         if self._current_chunk:
@@ -331,16 +312,12 @@ class ATACDataProcessor:
         self, obs: pd.DataFrame, array_name: str
     ) -> Tuple[pd.DataFrame, Dict[str, Dict[str, str]]]:
         df_meta, genome_version = self.extract_cell_metadata_from_h5ad(obs)
+
         valid_barcodes = set(df_meta["cell_name"])
         cell_type_map = dict(zip(df_meta["cell_name"], df_meta["cell_type"], strict=False))
 
         max_chrom, chrom_map = self.build_chrom_mapping(genome_version)
-
         max_bins = self.calculate_max_bins(genome_version)
+
         self.create_dataframe_array(array_name, max_chrom, max_bins)
         self.write_binned_coverage_per_chrom(array_name, chrom_map, cell_type_map, valid_barcodes)
-
-        # Build cell_id_map for return value (maintaining API compatibility)
-        cell_id_map = {cell: {"cell_type": cell_type_map[cell]} for cell in valid_barcodes}
-
-        return df_meta, cell_id_map

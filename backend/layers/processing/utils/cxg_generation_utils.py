@@ -67,16 +67,7 @@ def convert_coverage_to_cxg_array(cxg_container, metadata_dict, fragment_artifac
 
     array_name = f"{cxg_container}/{group_metadata_name}"
 
-    df_meta, cell_id_map = atac_processor.process_fragment_file(metadata_dict, array_name)
-
-    print(df_meta)
-
-    with tiledb.open(array_name, mode="w", ctx=ctx) as array:
-        array.meta["cell_id_map"] = json.dumps(cell_id_map)
-        cell_metadata_dict = df_meta.set_index("cell_name")["cell_type"].to_dict()
-        array.meta["cell_metadata"] = json.dumps(cell_metadata_dict)
-
-    # tiledb.consolidate(array_name, ctx=ctx)
+    atac_processor.process_fragment_file(metadata_dict, array_name)
 
 
 def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, index_column_name, ctx):

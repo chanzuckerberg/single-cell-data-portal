@@ -40,19 +40,8 @@ class TestATACDataProcessor:
         # Verify all attributes are set correctly
         assert processor.fragment_artifact_id == str(fragment_file)
         assert processor.ctx is None
-        assert processor.strict_mode is False
         assert processor.bin_size == 100
         assert processor.normalization_factor == 2_000_000
-
-        # Verify error stats initialization
-        expected_error_stats = {
-            "invalid_format": 0,
-            "invalid_coordinates": 0,
-            "parse_errors": 0,
-            "missing_chromosomes": 0,
-            "total_fragments_processed": 0,
-        }
-        assert processor.error_stats == expected_error_stats
 
     def test_constructor_file_not_found(self):
         """Test FileNotFoundError is raised when fragment file doesn't exist."""
@@ -521,8 +510,8 @@ class TestATACDataProcessor:
         assert df.empty
         assert isinstance(df, pd.DataFrame)
 
-    def test_process_coverage_data_early_termination(self, tmp_path):
-        """Test _process_coverage_data() early termination when _dataframe_processor returns False."""
+    def test_process_coverage_data_all_records_processed(self, tmp_path):
+        """Test _process_coverage_data() processes all records."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
@@ -540,29 +529,21 @@ class TestATACDataProcessor:
             }
         )
 
-        # Mock the dataframe processor to return False after processing 2 records
-        processed_count = 0
-        original_processor = processor._dataframe_processor
-
-        def mock_processor_with_early_stop(record, i, total_records):
-            nonlocal processed_count
-            processed_count += 1
-            original_processor(record, i, total_records)
-            # Stop processing after 2 records to test early termination
-            return processed_count < 2
-
-        processor._dataframe_processor = mock_processor_with_early_stop
-
         # Initialize required instance variables for processing with small chunk size
         processor._chunks = []
         processor._current_chunk = []
-        processor._dataframe_chunk_size = 2  # Small chunk size to trigger chunking (line 267)
+        processor._dataframe_chunk_size = 2  # Small chunk size to trigger chunking
 
-        # Process coverage data - should stop early
-        processor._process_coverage_data(coverage_aggregator, "test")
+        # Process coverage data - should process all records
+        processor._process_coverage_data(coverage_aggregator)
 
-        # Verify processing stopped early
-        assert processed_count == 2  # Should have stopped after 2 records, not processed all 5
+        # Verify all records were processed by checking total records in chunks
+        total_records_processed = 0
+        for chunk in processor._chunks:
+            total_records_processed += len(chunk)
+        total_records_processed += len(processor._current_chunk)  # Add remaining records
+
+        assert total_records_processed == 5  # Should have processed all 5 records
 
         # Clean up instance variables
         del processor._chunks
@@ -969,7 +950,10 @@ class TestATACDataProcessor:
         array_name = str(tmp_path / "test_array")
 
         # Call process_fragment_file - covers all missing lines
-        df_meta, cell_id_map = processor.process_fragment_file(obs, array_name)
+        processor.process_fragment_file(obs, array_name)
+
+        # Get df_meta to verify the internal processing
+        df_meta, _ = processor.extract_cell_metadata_from_h5ad(obs)
 
         # Verify line 335: valid_barcodes = set(df_meta["cell_name"])
         expected_valid_barcodes = {"cell1", "cell2"}
@@ -987,15 +971,6 @@ class TestATACDataProcessor:
         # Verify line 341: self.write_binned_coverage_per_chrom called
         mock_pysam.TabixFile.assert_called_with(str(fragment_file))
 
-        # Verify line 344: cell_id_map = {cell: {"cell_type": cell_type_map[cell]} for cell in valid_barcodes}
-        expected_cell_id_map = {
-            "cell1": {"cell_type": "T cell"},
-            "cell2": {"cell_type": "B cell"},
-        }
-        assert cell_id_map == expected_cell_id_map
-
-        # Verify line 346: return df_meta, cell_id_map
+        # Verify DataFrame structure and content
         assert isinstance(df_meta, pd.DataFrame)
-        assert isinstance(cell_id_map, dict)
         assert len(df_meta) == 2
-        assert len(cell_id_map) == 2
