@@ -1,0 +1,15 @@
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': 4df0218b-1616-4c91-996e-7ad86ea6cc51, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': 4df0218b-1616-4c91-996e-7ad86ea6cc51, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [12f03796-98db-4a0f-b299-d0011295a343/atac_fragment] to s3://datasets/2e85af26-292f-4b5d-a045-5e34df74c271-fragment.tsv.bgz
+INFO     processing:process_validate_atac.py:67 Updated database with atac_fragment.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [12f03796-98db-4a0f-b299-d0011295a343/atac_index] to s3://datasets/2e85af26-292f-4b5d-a045-5e34df74c271-fragment.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:67 Updated database with atac_index.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [063455eb-f7f8-4920-a64e-a1085edbc34b/atac_fragment] to s3://datasets/e2576085-9da4-4b11-b336-0c6e67f8d7d4-fragment.tsv.bgz
+INFO     processing:process_validate_atac.py:67 Updated database with atac_fragment.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [063455eb-f7f8-4920-a64e-a1085edbc34b/atac_index] to s3://datasets/e2576085-9da4-4b11-b336-0c6e67f8d7d4-fragment.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:67 Updated database with atac_index.
+INFO     processing:process_logic.py:49 Updating processing status
