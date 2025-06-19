@@ -99,3 +99,9 @@ The CELLxGENE Discover upload application code by default uses the base image ta
 If a new base image build is needed but the Dockerfile has no functional change (e.g. upstream R libraries versions have changed), the `Dockerfile.processing` can be modified with a non-functional to force the build (e.g. adding a blank line).
 
 In the rare event a new build of the base image needs to be built without Github Actions (e.g. Github Actions is down), follow the steps [Github's documentation](https://docs.github.com/en/packages/guides/pushing-and-pulling-docker-images) for creating a personal access token, and build locally and push like any other Docker image.
+
+## Trademarks
+
+CZ CELLXGENE, CZ CELLXGENE DISCOVER, and CZ CELLXGENE ANNOTATE are trademarks of the Chan Zuckerberg Initiative. All rights reserved.
+
+Use, reuse, modification, and re-distribution of the source code in this repository is subject to the terms of the applicable open source [license](LICENSE). However, that license does not grant permission to use the trademarks without separate, express permission from the Chan Zuckerberg Initiative.

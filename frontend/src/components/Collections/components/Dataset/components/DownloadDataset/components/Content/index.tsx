@@ -1,30 +1,31 @@
-import React, { FC, useEffect, useMemo, useState } from "react";
+import React, { FC, SyntheticEvent, useEffect, useMemo, useState } from "react";
 import { Dataset, DATASET_ASSET_FORMAT } from "src/common/entities";
-import DownloadLink from "./components/DownloadLink";
-import DataFormat from "./components/DataFormat";
-import Details from "./components/Details";
-import Name from "./components/Name";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Tab,
   Tooltip,
 } from "@czi-sds/components";
-import { DialogLoader as Loader } from "src/components/Datasets/components/DownloadDataset/style";
 import { Button } from "src/components/common/Button";
 import {
   POSSIBLE_DOWNLOAD_FORMATS,
   getNotAvailableText,
-} from "./components/DataFormat/constants";
+} from "./components/BrowserTab/components/DataFormat/constants";
 import { downloadMultipleFiles, getDownloadLink } from "./utils";
+import { BrowserTab } from "./components/BrowserTab/BrowserTab";
+import { ActiveTab } from "./utils";
+import { ApiTab } from "./components/ApiTab/ApiTab";
+import { StyledTabs } from "./style";
 interface Props {
   isError?: boolean;
   isLoading?: boolean;
   onClose: () => void;
   name: string;
   dataAssets: Dataset["dataset_assets"];
+  collectionId?: string;
 }
 
 export interface DownloadLinkType {
@@ -39,7 +40,9 @@ const Content: FC<Props> = ({
   onClose,
   name,
   dataAssets,
+  collectionId,
 }) => {
+  const [activeTab, setActiveTab] = useState<ActiveTab>(ActiveTab.Browser);
   const [initialFetchDone, setInitialFetchDone] = useState(false);
 
   const [selectedFormats, setSelectedFormats] = useState<
@@ -162,37 +165,66 @@ const Content: FC<Props> = ({
     handleAnalytics(EVENTS.DOWNLOAD_DATA_FORMAT_CLICKED, format);
   };
 
+  const handleTabsChange = (_: SyntheticEvent, activeTabValue: ActiveTab) => {
+    setActiveTab(activeTabValue);
+  };
+
   return (
     <>
       <DialogTitle title="Download Data" />
+      <StyledTabs
+        value={activeTab}
+        underlined
+        sdsSize="small"
+        onChange={handleTabsChange}
+      >
+        <Tab label="Browser" value={ActiveTab.Browser} />
+        <Tab label="Python API" value={ActiveTab.PythonApi} />
+        <Tab label="R API" value={ActiveTab.RApi} />
+      </StyledTabs>
       <DialogContent>
-        {isError && <div>Dataset download is currently not available.</div>}
-        {isLoading && <Loader sdsStyle="minimal" />}
-        {!isError && !isLoading && (
-          <>
-            <Name name={name} />
-            <DataFormat
-              availableFormats={availableFormats}
-              handleChange={handleChange}
-              selectedFormats={selectedFormats}
-              downloadLinks={downloadLinks}
-              isDisabled={downloadLinks.length === 0}
-            />
-            <Details
-              downloadPreview={
-                <DownloadLink
-                  formatsToDownload={formatsToDownload}
-                  downloadLinks={downloadLinks}
-                  handleAnalytics={() =>
-                    handleAnalytics(EVENTS.DOWNLOAD_DATA_COPY)
-                  }
-                />
-              }
-              isLoading={isDownloadLinkLoading}
-              hasDownloadLinks={downloadLinks.length > 0}
-              selected={selectedFormats.length > 0}
-            />
-          </>
+        {activeTab === ActiveTab.Browser && (
+          <BrowserTab
+            name={name}
+            isError={isError}
+            isLoading={isLoading}
+            availableFormats={availableFormats}
+            handleChange={handleChange}
+            downloadLinks={downloadLinks}
+            formatsToDownload={formatsToDownload}
+            handleAnalytics={handleAnalytics}
+            selectedFormats={selectedFormats}
+            isDownloadLinkLoading={isDownloadLinkLoading}
+          />
+        )}
+        {activeTab === ActiveTab.PythonApi && (
+          <ApiTab
+            name={name}
+            tab={ActiveTab.PythonApi}
+            handleAnalytics={handleAnalytics}
+            censusCopyText={`import cellxgene_census
+
+                help(cellxgene_census)
+                help(cellxgene_census.get_anndata)
+            `}
+            discoverCopyText={`collection_id = "${collectionId}"
+               dataset_id = "${dataAssets[0].dataset_id}"
+              `}
+          />
+        )}
+        {activeTab === ActiveTab.RApi && (
+          <ApiTab
+            name={name}
+            tab={ActiveTab.RApi}
+            handleAnalytics={handleAnalytics}
+            censusCopyText={`library("cellxgene.census")
+
+              ?cellxgene.census::get_seurat
+            `}
+            discoverCopyText={`collection_id <- "${collectionId}"
+               dataset_id <- "${dataAssets[0].dataset_id}"
+              `}
+          />
         )}
       </DialogContent>
       <DialogActions>
