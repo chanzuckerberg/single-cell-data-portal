@@ -3,7 +3,7 @@ stack:
   services:
     frontend:
       image:
-        tag: sha-8bc1293
+        tag: sha-7b85ecf
       env:
         - name: DEPLOYMENT_STAGE
           value: dev
