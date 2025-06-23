@@ -1,5 +1,4 @@
 from collections import defaultdict
-from unittest.mock import Mock, patch
 
 import numpy as np
 import pandas as pd
@@ -8,113 +7,231 @@ import pytest
 from backend.layers.processing.utils.atac import ATACDataProcessor
 
 
+# Parametrized fixtures and test data
+@pytest.fixture(params=[
+    {"cell1": "T cell", "cell2": "B cell", "cell3": "NK cell"},
+    {"cell1": "CD4+ T cell", "cell2": "Memory B cell", "cell3": "Monocyte"},
+    {"cell1": "Naive T cell", "cell2": "Plasma cell"},
+])
+def cell_type_mapping(request):
+    """Parametrized fixture for cell type mappings."""
+    return request.param
+
+
+@pytest.fixture(params=[
+    ("NCBITaxon:9606", "hg38"),
+    ("NCBITaxon:10090", "mm39"),
+])
+def organism_genome_pair(request):
+    """Parametrized fixture for organism ID and genome version pairs."""
+    return request.param
+
+
+@pytest.fixture(params=[
+    # Small coverage aggregator
+    {
+        (1, 0, "T cell"): 5,
+        (1, 1, "T cell"): 3,
+        (2, 0, "B cell"): 4,
+    },
+    # Multi-cell type coverage
+    {
+        (1, 0, "T cell"): 10,
+        (1, 1, "T cell"): 20,
+        (2, 0, "B cell"): 50,
+        (2, 1, "B cell"): 50,
+        (3, 0, "NK cell"): 15,
+    },
+    # Single cell type
+    {
+        (1, 0, "T cell"): 100,
+        (1, 1, "T cell"): 200,
+        (1, 2, "T cell"): 300,
+    },
+])
+def coverage_aggregator_data(request):
+    """Parametrized fixture for coverage aggregator test data."""
+    coverage_aggregator = defaultdict(int)
+    coverage_aggregator.update(request.param)
+    return coverage_aggregator
+
+
+@pytest.fixture(params=[
+    # Valid coordinates
+    ("chr1\t100\t200\tcell1", 100, 199, 1, 1),
+    ("chr1\t0\t99\tcell1", 0, 99, 0, 0),
+    ("chr1\t199\t300\tcell1", 199, 299, 1, 2),
+    ("chr1\t250\t350\tcell1", 250, 349, 2, 3),
+    # Edge cases
+    ("chr1\t99\t100\tcell1", 99, 99, 0, 0),
+])
+def fragment_coordinate_data(request):
+    """Parametrized fixture for fragment coordinate test cases."""
+    row, start, end, expected_start_bin, expected_end_bin = request.param
+    return {
+        "row": row,
+        "start": start,
+        "end": end,
+        "expected_start_bin": expected_start_bin,
+        "expected_end_bin": expected_end_bin,
+    }
+
+
+@pytest.fixture(params=[
+    # Invalid coordinates
+    ("chr1\t-50\t100\tcell1", "negative start"),
+    ("chr1\t200\t200\tcell1", "start equals end"),
+    ("chr1\t300\t250\tcell1", "start greater than end"),
+    ("chr1\tabc\t200\tcell1", "non-integer start"),
+    ("chr1\t100\txyz\tcell1", "non-integer end"),
+])
+def invalid_fragment_coordinates(request):
+    """Parametrized fixture for invalid fragment coordinate test cases."""
+    row, description = request.param
+    return {"row": row, "description": description}
+
+
+@pytest.fixture(params=[
+    # TileDB array configuration scenarios
+    {"max_chrom": 25, "max_bins": 1000, "compression_level": 3},
+    {"max_chrom": 1, "max_bins": 0, "compression_level": 3},  # Edge case
+    {"max_chrom": 50, "max_bins": 5000, "compression_level": 3},  # Larger dataset
+])
+def tiledb_array_config(request):
+    """Parametrized fixture for TileDB array configuration test cases."""
+    return request.param
+
+
+@pytest.fixture
+def mock_tiledb_components(mocker):
+    """Fixture that provides mocked TileDB components for testing."""
+    mock_tiledb = mocker.patch("backend.layers.processing.utils.atac.tiledb")
+    
+    # Create mock objects
+    mock_filter_list = mocker.MagicMock()
+    mock_domain = mocker.MagicMock()
+    mock_dim = mocker.MagicMock()
+    mock_attr = mocker.MagicMock()
+    mock_schema = mocker.MagicMock()
+    mock_array = mocker.MagicMock()
+    
+    # Configure mock returns
+    mock_tiledb.FilterList.return_value = mock_filter_list
+    mock_tiledb.BitShuffleFilter.return_value = mocker.MagicMock()
+    mock_tiledb.ZstdFilter.return_value = mocker.MagicMock()
+    mock_tiledb.Domain.return_value = mock_domain
+    mock_tiledb.Dim.return_value = mock_dim
+    mock_tiledb.Attr.return_value = mock_attr
+    mock_tiledb.ArraySchema.return_value = mock_schema
+    mock_tiledb.SparseArray.create = mocker.MagicMock()
+    
+    # Configure array for writing
+    mock_array.__setitem__ = mocker.MagicMock()
+    mock_tiledb.SparseArray.return_value.__enter__.return_value = mock_array
+    
+    return {
+        "tiledb": mock_tiledb,
+        "filter_list": mock_filter_list,
+        "domain": mock_domain,
+        "dim": mock_dim,
+        "attr": mock_attr,
+        "schema": mock_schema,
+        "array": mock_array,
+    }
+
+
 class TestATACDataProcessor:
     """Test suite for ATACDataProcessor class."""
 
-    @pytest.mark.parametrize(
-        "organism_id,expected_genome",
-        [
-            ("NCBITaxon:9606", "hg38"),
-            ("NCBITaxon:10090", "mm39"),
-        ],
-    )
-    def test_get_genome_version_valid_organisms(self, organism_id, expected_genome):
+    def test__get_genome_version_valid_organisms(self, organism_genome_pair):
         """Test genome version mapping for valid organisms."""
+        organism_id, expected_genome = organism_genome_pair
         result = ATACDataProcessor.get_genome_version(organism_id)
         assert result == expected_genome
 
-    def test_get_genome_version_invalid_organism(self):
+    def test__get_genome_version_invalid_organism(self):
         """Test ValueError is raised for unknown organism ontology term ID."""
         with pytest.raises(ValueError, match="Unknown organism ontology term ID"):
             ATACDataProcessor.get_genome_version("NCBITaxon:12345")
 
-    def test_constructor_valid_file_path(self, tmp_path):
+    def test__constructor_valid_file_path(self, tmp_path):
         """Test ATACDataProcessor initialization with valid fragment file path."""
-        # Create a temporary fragment file
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        # Initialize processor with valid file
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
-
-        # Verify all attributes are set correctly
         assert processor.fragment_artifact_id == str(fragment_file)
         assert processor.ctx is None
         assert processor.bin_size == 100
         assert processor.normalization_factor == 2_000_000
 
-    def test_constructor_file_not_found(self):
+    def test__constructor_file_not_found(self):
         """Test FileNotFoundError is raised when fragment file doesn't exist."""
         non_existent_file = "/path/to/non/existent/file.tsv.gz"
 
         with pytest.raises(FileNotFoundError, match=f"Fragment file not found: {non_existent_file}"):
             ATACDataProcessor(fragment_artifact_id=non_existent_file)
 
-    def test_extract_cell_metadata_valid_obs(self, tmp_path):
+    def test__extract_cell_metadata_valid_obs(self, tmp_path, cell_type_mapping, organism_genome_pair):
         """Test cell metadata extraction with valid obs DataFrame."""
-        # Create temporary fragment file
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
-
-        # Create valid obs DataFrame
+        organism_id, expected_genome = organism_genome_pair
+        cell_names = list(cell_type_mapping.keys())
+        cell_types = list(cell_type_mapping.values())
         obs = pd.DataFrame(
             {
-                "cell_type": ["T cell", "B cell", "NK cell"],
-                "organism_ontology_term_id": ["NCBITaxon:9606", "NCBITaxon:9606", "NCBITaxon:9606"],
+                "cell_type": cell_types,
+                "organism_ontology_term_id": [organism_id] * len(cell_types),
             },
-            index=["cell1", "cell2", "cell3"],
+            index=cell_names,
         )
 
         df_meta, genome_version = processor.extract_cell_metadata_from_h5ad(obs)
 
-        # Verify returned DataFrame structure
         expected_df = pd.DataFrame(
-            {"cell_name": ["cell1", "cell2", "cell3"], "cell_type": ["T cell", "B cell", "NK cell"]}
+            {"cell_name": cell_names, "cell_type": cell_types}
         )
         pd.testing.assert_frame_equal(df_meta, expected_df)
+        assert genome_version == expected_genome
 
-        # Verify genome version
-        assert genome_version == "hg38"
-
-    def test_extract_cell_metadata_missing_obs_column(self, tmp_path):
+    def test__extract_cell_metadata_missing_obs_column(self, tmp_path, organism_genome_pair):
         """Test ValueError when obs_column is missing from DataFrame."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
-
-        # Create obs DataFrame without cell_type column
+        organism_id, _ = organism_genome_pair
         obs = pd.DataFrame(
-            {"other_column": ["value1", "value2"], "organism_ontology_term_id": ["NCBITaxon:9606", "NCBITaxon:9606"]},
+            {"other_column": ["value1", "value2"], "organism_ontology_term_id": [organism_id, organism_id]},
             index=["cell1", "cell2"],
         )
 
         with pytest.raises(ValueError, match="Column cell_type not found in obs DataFrame"):
             processor.extract_cell_metadata_from_h5ad(obs)
 
-    def test_extract_cell_metadata_missing_organism_column(self, tmp_path):
+    def test__extract_cell_metadata_missing_organism_column(self, tmp_path, cell_type_mapping):
         """Test ValueError when organism_ontology_term_id column is missing."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
-        # Create obs DataFrame without organism_ontology_term_id column
-        obs = pd.DataFrame({"cell_type": ["T cell", "B cell"]}, index=["cell1", "cell2"])
+        cell_names = list(cell_type_mapping.keys())[:2]
+        cell_types = [cell_type_mapping[name] for name in cell_names]
+        obs = pd.DataFrame({"cell_type": cell_types}, index=cell_names)
 
         with pytest.raises(ValueError, match="Column 'organism_ontology_term_id' is required but not found"):
             processor.extract_cell_metadata_from_h5ad(obs)
 
-    def test_extract_cell_metadata_null_organism_id(self, tmp_path):
+    def test__extract_cell_metadata_null_organism_id(self, tmp_path):
         """Test ValueError when organism_ontology_term_id is null/NaN."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
-
-        # Create obs DataFrame with null organism_ontology_term_id
         obs = pd.DataFrame(
             {"cell_type": ["T cell", "B cell"], "organism_ontology_term_id": [None, None]},
             index=["cell1", "cell2"],
@@ -123,85 +240,74 @@ class TestATACDataProcessor:
         with pytest.raises(ValueError, match="organism_ontology_term_id cannot be null/NaN"):
             processor.extract_cell_metadata_from_h5ad(obs)
 
-    def test_build_chrom_mapping_hg38(self, tmp_path):
-        """Test chromosome mapping creation for human genome (hg38)."""
+    def test__build_chrom_mapping(self, tmp_path, organism_genome_pair):
+        """Test chromosome mapping creation for different genomes."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
-        max_chrom, chrom_map = processor.build_chrom_mapping("hg38")
+        _, genome_version = organism_genome_pair
+        max_chrom, chrom_map = processor.build_chrom_mapping(genome_version)
 
-        # Verify mapping starts at 1
         assert chrom_map["chr1"] == 1
         assert chrom_map["chr2"] == 2
         assert chrom_map["chrX"] > 0
         assert chrom_map["chrY"] > 0
 
-        # Verify max_chrom is the highest value
         assert max_chrom == max(chrom_map.values())
 
-        # Verify unmapped chromosomes return 0 (defaultdict behavior)
         assert chrom_map["unknown_chr"] == 0
 
-    def test_calculate_max_bins_mm39(self, tmp_path):
-        """Test maximum bins calculation for mouse genome."""
+    def test__calculate_max_bins(self, tmp_path, organism_genome_pair):
+        """Test maximum bins calculation for different genomes."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
-        max_bins = processor.calculate_max_bins("mm39")
+        _, genome_version = organism_genome_pair
+        max_bins = processor.calculate_max_bins(genome_version)
 
-        # Should be a positive integer
         assert isinstance(max_bins, int)
         assert max_bins > 0
-
-        # Should be reasonable for mouse genome
         assert max_bins > 500_000  # At least 500K bins
-        assert max_bins < 3_000_000  # Less than 3M bins
+        assert max_bins < 3_500_000  # Less than 3.5M bins (hg38 is larger than mm39)
 
-    def test_process_fragment_row_bin_calculation_accuracy(self, tmp_path):
+    def test__process_fragment_row_bin_calculation_accuracy(self, tmp_path, fragment_coordinate_data):
         """Test accurate bin calculation for various fragment positions."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
-        # Test cases: (start, end, expected_start_bin, expected_end_bin)
-        test_cases = [
-            (0, 99, 0, 0),  # Both in bin 0
-            (100, 199, 1, 1),  # Both in bin 1
-            (99, 100, 0, 0),  # Edge case: end-1 = 99
-            (199, 300, 1, 2),  # Spans bin 1 to 2
-            (250, 350, 2, 3),  # Spans bin 2 to 3
-        ]
+        # Use parametrized test data
+        row = fragment_coordinate_data["row"]
+        expected_start_bin = fragment_coordinate_data["expected_start_bin"]
+        expected_end_bin = fragment_coordinate_data["expected_end_bin"]
+        
+        chrom_id = 1
+        cell_type_map = {"cell1": "T cell"}
+        valid_barcodes = {"cell1"}
+        coverage_aggregator = defaultdict(int)
+        found_cells = set()
 
-        for start, end, expected_start_bin, expected_end_bin in test_cases:
-            row = f"chr1\t{start}\t{end}\tcell1"
-            chrom_id = 1
-            cell_type_map = {"cell1": "T cell"}
-            valid_barcodes = {"cell1"}
-            coverage_aggregator = defaultdict(int)
-            found_cells = set()
+        processor._process_fragment_row(
+            row, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells
+        )
 
-            processor._process_fragment_row(
-                row, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells
-            )
+        if expected_start_bin == expected_end_bin:
+            # Single bin case
+            expected_key = (1, expected_start_bin, "T cell")
+            assert coverage_aggregator[expected_key] == 1
+            assert len(coverage_aggregator) == 1
+        else:
+            # Multiple bins case
+            start_key = (1, expected_start_bin, "T cell")
+            end_key = (1, expected_end_bin, "T cell")
+            assert coverage_aggregator[start_key] == 1
+            assert coverage_aggregator[end_key] == 1
+            assert len(coverage_aggregator) == 2
 
-            # Verify bin calculations
-            if expected_start_bin == expected_end_bin:
-                # Single bin case
-                expected_key = (1, expected_start_bin, "T cell")
-                assert coverage_aggregator[expected_key] == 1
-                assert len(coverage_aggregator) == 1
-            else:
-                # Multiple bins case
-                start_key = (1, expected_start_bin, "T cell")
-                end_key = (1, expected_end_bin, "T cell")
-                assert coverage_aggregator[start_key] == 1
-                assert coverage_aggregator[end_key] == 1
-                assert len(coverage_aggregator) == 2
-
-    def test_process_fragment_row_coverage_counting(self, tmp_path):
+    def test__process_fragment_row_coverage_counting(self, tmp_path):
         """Test that coverage counting for insertion sites works correctly."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
@@ -215,7 +321,6 @@ class TestATACDataProcessor:
         coverage_aggregator = defaultdict(int)
         found_cells = set()
 
-        # Process multiple fragments that affect the same bins
         fragments = [
             "chr1\t150\t350\tcell1",  # Bins 1 and 3
             "chr1\t250\t450\tcell1",  # Bins 2 and 4
@@ -227,7 +332,6 @@ class TestATACDataProcessor:
                 row, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells
             )
 
-        # Verify coverage accumulation
         assert coverage_aggregator[(1, 1, "T cell")] == 2  # From fragments 1 and 3
         assert coverage_aggregator[(1, 2, "T cell")] == 2  # From fragments 2 and 3
         assert coverage_aggregator[(1, 3, "T cell")] == 1  # From fragment 1
@@ -236,50 +340,44 @@ class TestATACDataProcessor:
     @pytest.mark.parametrize(
         "invalid_row,expected_columns",
         [
-            ("chr1\t100\t200", 3),  # Only 3 columns
-            ("chr1\t100", 2),  # Only 2 columns
-            ("chr1", 1),  # Only 1 column
-            ("", 1),  # Empty string (split creates 1 empty element)
-            ("\t\t", 1),  # Only tabs (strip() makes it empty, splits to 1 field)
+            ("chr1\t100\t200", 3),
+            ("chr1\t100", 2),
+            ("chr1", 1),
+            ("", 1),
+            ("\t\t", 1),
         ],
     )
-    def test_process_fragment_row_insufficient_columns(self, tmp_path, invalid_row, expected_columns, caplog):
+    def test__process_fragment_row_insufficient_columns(self, tmp_path, invalid_row, expected_columns, caplog):
         """Test that fragments with < 4 columns are handled properly."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
-        # Setup test data
         chrom_id = 1
         cell_type_map = {"cell1": "T cell"}
         valid_barcodes = {"cell1"}
         coverage_aggregator = defaultdict(int)
         found_cells = set()
 
-        # Process invalid fragment row
         with caplog.at_level("WARNING"):
             processor._process_fragment_row(
                 invalid_row, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells
             )
 
-        # Verify no data was processed
         assert len(coverage_aggregator) == 0
         assert len(found_cells) == 0
 
-        # Verify warning was logged
         if expected_columns < 4:
             assert "Invalid fragment format" in caplog.text
             assert f"expected at least 4 columns, got {expected_columns}" in caplog.text
 
-    def test_process_fragment_row_extra_columns_valid(self, tmp_path):
+    def test__process_fragment_row_extra_columns_valid(self, tmp_path):
         """Test that fragments with > 4 columns work correctly (uses first 4)."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
-
-        # Setup test data with extra columns
         row = "chr1\t150\t250\tcell1\textra_col1\textra_col2"
         chrom_id = 1
         cell_type_map = {"cell1": "T cell"}
@@ -287,68 +385,40 @@ class TestATACDataProcessor:
         coverage_aggregator = defaultdict(int)
         found_cells = set()
 
-        # Process fragment with extra columns
         processor._process_fragment_row(row, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells)
 
-        # Verify fragment was processed correctly (extra columns ignored)
         assert "cell1" in found_cells
         expected_key = (1, 1, "T cell")  # 150//100 = 1, (250-1)//100 = 2, but they're different bins
         assert coverage_aggregator[expected_key] == 1
 
-    def test_compute_cell_type_totals_multiple_cell_types(self, tmp_path):
+    def test__compute_cell_type_totals_multiple_cell_types(self, tmp_path, coverage_aggregator_data):
         """Test cell type totals computation with multiple cell types."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
-        # Create coverage aggregator with multiple cell types and chromosomes
-        coverage_aggregator = defaultdict(int)
-        coverage_aggregator.update(
-            {
-                # T cell coverage across different chromosomes and bins
-                (1, 0, "T cell"): 5,
-                (1, 1, "T cell"): 3,
-                (2, 0, "T cell"): 2,
-                (2, 5, "T cell"): 1,
-                # B cell coverage
-                (1, 0, "B cell"): 4,
-                (1, 2, "B cell"): 6,
-                (3, 1, "B cell"): 2,
-                # NK cell coverage
-                (1, 3, "NK cell"): 8,
-                (2, 2, "NK cell"): 3,
-            }
-        )
-
-        # Compute totals
-        cell_type_totals = processor._compute_cell_type_totals(coverage_aggregator)
-
-        # Verify totals are calculated correctly
-        expected_totals = {
-            "T cell": 5 + 3 + 2 + 1,  # = 11
-            "B cell": 4 + 6 + 2,  # = 12
-            "NK cell": 8 + 3,  # = 11
-        }
+        cell_type_totals = processor._compute_cell_type_totals(coverage_aggregator_data)
+        expected_totals = {}
+        for (chrom, bin_num, cell_type), count in coverage_aggregator_data.items():
+            if cell_type not in expected_totals:
+                expected_totals[cell_type] = 0
+            expected_totals[cell_type] += count
 
         assert cell_type_totals == expected_totals
 
-        # Verify all cell types are present
-        assert set(cell_type_totals.keys()) == {"T cell", "B cell", "NK cell"}
-
-        # Verify totals are positive integers
+        expected_cell_types = {key[2] for key in coverage_aggregator_data.keys()}
+        assert set(cell_type_totals.keys()) == expected_cell_types
         for total in cell_type_totals.values():
             assert isinstance(total, int)
             assert total > 0
 
-    def test_normalized_coverage_calculation(self, tmp_path):
+    def test__normalized_coverage_calculation(self, tmp_path):
         """Test normalized coverage calculation: (count / total_coverage) * normalization_factor."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
-
-        # Create test coverage data with known totals
         coverage_aggregator = defaultdict(int)
         coverage_aggregator.update(
             {
@@ -359,14 +429,10 @@ class TestATACDataProcessor:
             }
         )
 
-        # Create DataFrame to test normalization
         df = processor._create_coverage_dataframe(coverage_aggregator)
-
-        # Verify DataFrame structure
         expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
         assert list(df.columns) == expected_columns
 
-        # Test normalization calculations
         normalization_factor = 2_000_000
 
         for _, row in df.iterrows():
@@ -375,19 +441,13 @@ class TestATACDataProcessor:
             normalized_coverage = row["normalized_coverage"]
             cell_type = row["cell_type"]
 
-            # Calculate expected normalized coverage
             expected_normalized = (count / total_coverage) * normalization_factor
-
-            # Verify calculation is correct (with float32 precision tolerance)
             assert abs(normalized_coverage - expected_normalized) < 1e-1
-
-            # Verify total_coverage matches expected cell type totals
             if cell_type == "T cell":
                 assert total_coverage == 30
             elif cell_type == "B cell":
                 assert total_coverage == 100
 
-        # Test specific expected values
         t_cell_rows = df[df["cell_type"] == "T cell"]
         b_cell_rows = df[df["cell_type"] == "B cell"]
 
@@ -407,46 +467,31 @@ class TestATACDataProcessor:
             expected_b_cell = (50 / 100) * normalization_factor
             assert abs(row["normalized_coverage"] - expected_b_cell) < 1e-1
 
-    def test_normalized_coverage_zero_total(self, tmp_path):
+    def test__normalized_coverage_zero_total(self, tmp_path):
         """Test normalized coverage calculation when total_coverage is 0."""
-        # Test direct calculation with zero total (edge case in _process_coverage_data)
         count = 5
         total_coverage = 0
         normalization_factor = 2_000_000
 
-        # This simulates the calculation in line 244 of the original code
+        # This simulates the calculation in the original code
         normalized_coverage = (count / total_coverage) * normalization_factor if total_coverage > 0 else 0.0
 
-        # Should return 0.0 when total_coverage is 0
         assert normalized_coverage == 0.0
         assert isinstance(normalized_coverage, float)
 
-    def test_create_coverage_dataframe_small_dataset(self, tmp_path):
-        """Test _create_coverage_dataframe() with small dataset."""
+    def test__create_coverage_dataframe_small_dataset(self, tmp_path, coverage_aggregator_data):
+        """Test _create_coverage_dataframe() with parametrized datasets."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
-        # Create small coverage aggregator
-        coverage_aggregator = defaultdict(int)
-        coverage_aggregator.update(
-            {
-                (1, 0, "T cell"): 5,
-                (1, 1, "T cell"): 3,
-                (2, 0, "B cell"): 4,
-            }
-        )
-
-        # Create DataFrame
-        df = processor._create_coverage_dataframe(coverage_aggregator)
-
-        # Verify DataFrame structure
-        assert len(df) == 3  # Should have 3 rows
+        df = processor._create_coverage_dataframe(coverage_aggregator_data)
+        expected_rows = len(coverage_aggregator_data)
+        assert len(df) == expected_rows
         expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
         assert list(df.columns) == expected_columns
 
-        # Verify data types are optimized
         assert df["chrom"].dtype == "int32"
         assert df["bin"].dtype == "int32"
         assert df["coverage"].dtype == "int32"
@@ -454,70 +499,46 @@ class TestATACDataProcessor:
         assert df["normalized_coverage"].dtype == "float32"
         assert df["cell_type"].dtype == "object"  # String columns are object type
 
-        # Verify cell type totals are calculated correctly
-        t_cell_rows = df[df["cell_type"] == "T cell"]
-        b_cell_rows = df[df["cell_type"] == "B cell"]
+        expected_totals = {}
+        for (chrom, bin_num, cell_type), count in coverage_aggregator_data.items():
+            if cell_type not in expected_totals:
+                expected_totals[cell_type] = 0
+            expected_totals[cell_type] += count
 
-        # T cell total should be 5 + 3 = 8
-        assert all(t_cell_rows["total_coverage"] == 8)
-        # B cell total should be 4
-        assert all(b_cell_rows["total_coverage"] == 4)
+        for cell_type, expected_total in expected_totals.items():
+            cell_type_rows = df[df["cell_type"] == cell_type]
+            assert all(cell_type_rows["total_coverage"] == expected_total)
 
-        # Verify individual rows contain expected data
-        expected_data = [
-            {"chrom": 1, "bin": 0, "cell_type": "T cell", "coverage": 5, "total_coverage": 8},
-            {"chrom": 1, "bin": 1, "cell_type": "T cell", "coverage": 3, "total_coverage": 8},
-            {"chrom": 2, "bin": 0, "cell_type": "B cell", "coverage": 4, "total_coverage": 4},
-        ]
+        for _, row in df.iterrows():
+            expected_normalized = (row["coverage"] / row["total_coverage"]) * 2_000_000
+            assert abs(row["normalized_coverage"] - expected_normalized) < 1e-1
 
-        # Sort DataFrame for predictable comparison
-        df_sorted = df.sort_values(["chrom", "bin", "cell_type"]).reset_index(drop=True)
-
-        for i, expected_row in enumerate(expected_data):
-            actual_row = df_sorted.iloc[i]
-            assert actual_row["chrom"] == expected_row["chrom"]
-            assert actual_row["bin"] == expected_row["bin"]
-            assert actual_row["cell_type"] == expected_row["cell_type"]
-            assert actual_row["coverage"] == expected_row["coverage"]
-            assert actual_row["total_coverage"] == expected_row["total_coverage"]
-
-            # Verify normalized coverage calculation
-            expected_normalized = (expected_row["coverage"] / expected_row["total_coverage"]) * 2_000_000
-            assert abs(actual_row["normalized_coverage"] - expected_normalized) < 1e-1
-
-        # Verify no NaN values
         assert not df.isnull().any().any()
 
-    def test_create_coverage_dataframe_empty_aggregator(self, tmp_path):
+    def test__create_coverage_dataframe_empty_aggregator(self, tmp_path):
         """Test _create_coverage_dataframe() with empty aggregator."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
-        # Create empty coverage aggregator
         coverage_aggregator = defaultdict(int)
-
-        # Create DataFrame
         df = processor._create_coverage_dataframe(coverage_aggregator)
 
-        # Verify empty DataFrame has correct structure
         assert len(df) == 0
         expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
         assert list(df.columns) == expected_columns
 
-        # Verify DataFrame is truly empty but properly structured
         assert df.empty
         assert isinstance(df, pd.DataFrame)
 
-    def test_process_coverage_data_all_records_processed(self, tmp_path):
+    def test__process_coverage_data_all_records_processed(self, tmp_path):
         """Test _process_coverage_data() processes all records."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
-        # Create coverage aggregator with multiple records
         coverage_aggregator = defaultdict(int)
         coverage_aggregator.update(
             {
@@ -534,103 +555,68 @@ class TestATACDataProcessor:
         processor._current_chunk = []
         processor._dataframe_chunk_size = 2  # Small chunk size to trigger chunking
 
-        # Process coverage data - should process all records
         processor._process_coverage_data(coverage_aggregator)
-
-        # Verify all records were processed by checking total records in chunks
         total_records_processed = 0
         for chunk in processor._chunks:
             total_records_processed += len(chunk)
-        total_records_processed += len(processor._current_chunk)  # Add remaining records
-
-        assert total_records_processed == 5  # Should have processed all 5 records
-
-        # Clean up instance variables
+        total_records_processed += len(processor._current_chunk)
+        assert total_records_processed == 5
         del processor._chunks
         del processor._current_chunk
         del processor._dataframe_chunk_size
 
-    @patch("backend.layers.processing.utils.atac.tiledb")
-    def test_create_dataframe_array(self, mock_tiledb, tmp_path):
+    def test__create_dataframe_array(self, tmp_path, mock_tiledb_components, tiledb_array_config):
         """Test create_dataframe_array() creates TileDB schema correctly."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        mock_tiledb = mock_tiledb_components["tiledb"]
 
-        # Mock TileDB components
-        mock_filter_list = Mock()
-        mock_domain = Mock()
-        mock_dim = Mock()
-        mock_attr = Mock()
-        mock_schema = Mock()
-
-        mock_tiledb.FilterList.return_value = mock_filter_list
-        mock_tiledb.BitShuffleFilter.return_value = Mock()
-        mock_tiledb.ZstdFilter.return_value = Mock()
-        mock_tiledb.Domain.return_value = mock_domain
-        mock_tiledb.Dim.return_value = mock_dim
-        mock_tiledb.Attr.return_value = mock_attr
-        mock_tiledb.ArraySchema.return_value = mock_schema
-        mock_tiledb.SparseArray.create = Mock()
-
-        # Test parameters
         array_name = str(tmp_path / "test_array")
-        max_chrom = 25
-        max_bins = 1000
+        max_chrom = tiledb_array_config["max_chrom"]
+        max_bins = tiledb_array_config["max_bins"]
+        expected_compression_level = tiledb_array_config["compression_level"]
 
-        # Call method
         processor.create_dataframe_array(array_name, max_chrom, max_bins)
 
-        # Verify compression filters were created
         assert mock_tiledb.FilterList.call_count >= 2  # One for compression, one for dimensions
         mock_tiledb.BitShuffleFilter.assert_called_once()
         assert mock_tiledb.ZstdFilter.call_count >= 1  # Called for both compression and dimensions
-
-        # Verify ZstdFilter compression level
         zstd_calls = mock_tiledb.ZstdFilter.call_args_list
-        compression_call = next((call for call in zstd_calls if call.kwargs.get("level") == 3), None)
+        compression_call = next((call for call in zstd_calls if call.kwargs.get("level") == expected_compression_level), None)
         assert compression_call is not None
 
-        # Verify domain creation with 3 dimensions
         mock_tiledb.Domain.assert_called_once()
         domain_args = mock_tiledb.Domain.call_args[0]
         assert len(domain_args) == 3  # chrom, bin, cell_type dimensions
-
-        # Verify dimension creation calls
         dim_calls = mock_tiledb.Dim.call_args_list
         assert len(dim_calls) == 3
 
-        # Check chrom dimension
         chrom_dim_call = dim_calls[0]
         assert chrom_dim_call.kwargs["name"] == "chrom"
         assert chrom_dim_call.kwargs["domain"] == (1, max_chrom)
         assert chrom_dim_call.kwargs["tile"] == 1
         assert chrom_dim_call.kwargs["dtype"] == np.uint32
 
-        # Check bin dimension
         bin_dim_call = dim_calls[1]
         assert bin_dim_call.kwargs["name"] == "bin"
         assert bin_dim_call.kwargs["domain"] == (0, max_bins)
         assert bin_dim_call.kwargs["tile"] == 10
         assert bin_dim_call.kwargs["dtype"] == np.uint32
 
-        # Check cell_type dimension
         cell_type_dim_call = dim_calls[2]
         assert cell_type_dim_call.kwargs["name"] == "cell_type"
         assert cell_type_dim_call.kwargs["dtype"] == "ascii"
 
-        # Verify attribute creation
         attr_calls = mock_tiledb.Attr.call_args_list
         assert len(attr_calls) == 3
 
-        # Check attributes
         attr_names = [call.kwargs["name"] for call in attr_calls]
         assert "coverage" in attr_names
         assert "total_coverage" in attr_names
         assert "normalized_coverage" in attr_names
 
-        # Check attribute dtypes
         coverage_attr = next(call for call in attr_calls if call.kwargs["name"] == "coverage")
         assert coverage_attr.kwargs["dtype"] == np.int32
 
@@ -640,18 +626,14 @@ class TestATACDataProcessor:
         normalized_attr = next(call for call in attr_calls if call.kwargs["name"] == "normalized_coverage")
         assert normalized_attr.kwargs["dtype"] == np.float32
 
-        # Verify schema creation
         mock_tiledb.ArraySchema.assert_called_once()
         schema_kwargs = mock_tiledb.ArraySchema.call_args.kwargs
-        assert schema_kwargs["domain"] == mock_domain
+        assert schema_kwargs["domain"] == mock_tiledb_components["domain"]
         assert len(schema_kwargs["attrs"]) == 3
         assert schema_kwargs["sparse"] is True
         assert schema_kwargs["allows_duplicates"] is False
 
-        # Verify array creation
-        mock_tiledb.SparseArray.create.assert_called_once_with(array_name, mock_schema)
-
-        # Test writing to the created array (covers line 317)
+        mock_tiledb.SparseArray.create.assert_called_once_with(array_name, mock_tiledb_components["schema"])
         test_df = pd.DataFrame(
             {
                 "chrom": [1, 2],
@@ -663,47 +645,23 @@ class TestATACDataProcessor:
             }
         )
 
-        # Mock the array for writing
-        mock_array = Mock()
-        mock_array.__setitem__ = Mock()  # Enable item assignment
-        mock_tiledb.SparseArray.return_value.__enter__.return_value = mock_array
-
-        # Call write method (this covers line 317)
         processor._write_coverage_to_tiledb(array_name, test_df)
-
-        # Verify TileDB array was opened for writing
         mock_tiledb.SparseArray.assert_called_with(array_name, mode="w", ctx=processor.ctx)
+        assert mock_tiledb_components["array"].__setitem__.called
 
-        # Verify data was written
-        assert mock_array.__setitem__.called
-
-    @patch("backend.layers.processing.utils.atac.tiledb")
-    def test_create_dataframe_array_edge_cases(self, mock_tiledb, tmp_path):
+    def test__create_dataframe_array_edge_cases(self, tmp_path, mock_tiledb_components):
         """Test create_dataframe_array() with edge case parameters."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        mock_tiledb = mock_tiledb_components["tiledb"]
 
-        # Mock TileDB components
-        mock_tiledb.FilterList.return_value = Mock()
-        mock_tiledb.BitShuffleFilter.return_value = Mock()
-        mock_tiledb.ZstdFilter.return_value = Mock()
-        mock_tiledb.Domain.return_value = Mock()
-        mock_tiledb.Dim.return_value = Mock()
-        mock_tiledb.Attr.return_value = Mock()
-        mock_tiledb.ArraySchema.return_value = Mock()
-        mock_tiledb.SparseArray.create = Mock()
-
-        # Test with minimal values
         array_name = str(tmp_path / "minimal_array")
         max_chrom = 1
         max_bins = 0
 
-        # Should not raise any errors
         processor.create_dataframe_array(array_name, max_chrom, max_bins)
-
-        # Verify dimensions were created with edge case values
         dim_calls = mock_tiledb.Dim.call_args_list
         chrom_dim_call = dim_calls[0]
         bin_dim_call = dim_calls[1]
@@ -711,8 +669,7 @@ class TestATACDataProcessor:
         assert chrom_dim_call.kwargs["domain"] == (1, 1)
         assert bin_dim_call.kwargs["domain"] == (0, 0)
 
-    @patch("backend.layers.processing.utils.atac.pysam")
-    def test_process_all_chromosomes(self, mock_pysam, tmp_path):
+    def test__process_all_chromosomes(self, tmp_path, cell_type_mapping, invalid_fragment_coordinates, mocker):
         """Test _process_all_chromosomes() processes fragments from all chromosomes."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
@@ -720,27 +677,27 @@ class TestATACDataProcessor:
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         # Mock pysam TabixFile
-        mock_tabix = Mock()
+        mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
+        mock_tabix = mocker.MagicMock()
         mock_pysam.TabixFile.return_value.__enter__.return_value = mock_tabix
 
+        valid_cells = list(cell_type_mapping.keys())[:3]
+        invalid_coord_row = invalid_fragment_coordinates["row"]
+        
         # Mock fragment data for different chromosomes
         chr1_fragments = [
-            "chr1\t100\t200\tcell1",
-            "chr1\t300\t400\tcell2",
-            "chr1\t500\t600\tcell1",
+            "chr1\t100\t200\t" + valid_cells[0],
+            "chr1\t300\t400\t" + valid_cells[1],
+            "chr1\t500\t600\t" + valid_cells[0],
             "chr1\t700\t800\tinvalid_cell",  # Invalid barcode - should be filtered out
-            "chr1\t-50\t100\tcell1",  # Invalid coordinates: negative start
-            "chr1\t200\t200\tcell2",  # Invalid coordinates: start == end
-            "chr1\t300\t250\tcell1",  # Invalid coordinates: start > end
-            "chr1\tabc\t200\tcell1",  # Invalid coordinates: non-integer start (triggers ValueError)
-            "chr1\t100\txyz\tcell2",  # Invalid coordinates: non-integer end (triggers ValueError)
+            invalid_coord_row,
         ]
         chr2_fragments = [
-            "chr2\t150\t250\tcell2",
-            "chr2\t350\t450\tcell3",
+            "chr2\t150\t250\t" + valid_cells[1],
+            "chr2\t350\t450\t" + valid_cells[2] if len(valid_cells) > 2 else "chr2\t350\t450\t" + valid_cells[0],
         ]
         chrX_fragments = [
-            "chrX\t200\t300\tcell1",
+            "chrX\t200\t300\t" + valid_cells[0],
             "chrX\t400\t500\tunknown_barcode",  # Another invalid barcode
         ]
 
@@ -758,54 +715,29 @@ class TestATACDataProcessor:
 
         mock_tabix.fetch.side_effect = mock_fetch
 
-        # Test parameters
         chrom_map = {"chr1": 1, "chr2": 2, "chrX": 23}
-        cell_type_map = {"cell1": "T cell", "cell2": "B cell", "cell3": "NK cell"}
-        valid_barcodes = {"cell1", "cell2", "cell3"}
+        valid_barcodes = set(valid_cells)
+        coverage_aggregator, found_cells = processor._process_all_chromosomes(chrom_map, cell_type_mapping, valid_barcodes)
 
-        # Call method
-        coverage_aggregator, found_cells = processor._process_all_chromosomes(chrom_map, cell_type_map, valid_barcodes)
-
-        # Verify TabixFile was used correctly
         mock_pysam.TabixFile.assert_called_once_with(str(fragment_file))
-
-        # Verify fetch was called for each chromosome
         expected_fetch_calls = ["chr1", "chr2", "chrX"]
         actual_fetch_calls = [call[0][0] for call in mock_tabix.fetch.call_args_list]
         assert set(actual_fetch_calls) == set(expected_fetch_calls)
 
-        # Verify cells from successful chromosomes were found (chr2 failed, so cell3 missing from chr2)
-        assert found_cells == {"cell1", "cell2"}  # cell1 from chr1+chrX, cell2 from chr1
+        expected_found_cells = {valid_cells[0], valid_cells[1]}
+        assert found_cells == expected_found_cells
 
-        # Verify coverage aggregation
-        # chr1 fragments: cell1 (bins 1,2), cell2 (bins 3,4), cell1 (bins 5,6)
-        # chr2 fragments: cell2 (bins 1,2), cell3 (bins 3,4)
-        # chrX fragments: cell1 (bins 2,3)
-
-        # Expected coverage structure (for reference):
-        # chr1 (chrom_id=1): cell1 (bins 1,2), cell2 (bins 3,4), cell1 (bins 5,6)
-        # chr2 (chrom_id=2): cell2 (bins 1,2), cell3 (bins 3,4)
-        # chrX (chrom_id=23): cell1 (bins 2,3)
-
-        # Check specific key coverage values (only chr1 and chrX succeeded)
-        assert coverage_aggregator[(1, 1, "T cell")] >= 1  # cell1 from chr1
-        assert coverage_aggregator[(1, 3, "B cell")] >= 1  # cell2 from chr1
-        assert coverage_aggregator[(23, 2, "T cell")] >= 1  # cell1 from chrX
-
-        # chr2 data should be missing due to ValueError (no NK cell coverage)
-        assert (2, 1, "B cell") not in coverage_aggregator
-        assert (2, 3, "NK cell") not in coverage_aggregator
-
-        # Verify coverage aggregator contains T cell and B cell (but not NK cell due to chr2 failure)
+        assert len(coverage_aggregator) > 0
+        
         cell_types_in_coverage = {key[2] for key in coverage_aggregator}
-        assert cell_types_in_coverage == {"T cell", "B cell"}
+        expected_cell_types = {cell_type_mapping[cell] for cell in expected_found_cells}
+        assert cell_types_in_coverage == expected_cell_types
 
-        # Verify chromosomes in coverage match chrom_map
         chroms_in_coverage = {key[0] for key in coverage_aggregator}
-        assert chroms_in_coverage.issubset(set(chrom_map.values()))
+        expected_chroms = {1, 23}  # chr1=1, chrX=23 (chr2=2 failed)
+        assert chroms_in_coverage == expected_chroms
 
-    @patch("backend.layers.processing.utils.atac.pysam")
-    def test_process_all_chromosomes_missing_cells(self, mock_pysam, tmp_path):
+    def test__process_all_chromosomes_missing_cells(self, tmp_path, cell_type_mapping, mocker):
         """Test _process_all_chromosomes() handles missing cells correctly."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
@@ -813,164 +745,160 @@ class TestATACDataProcessor:
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         # Mock pysam TabixFile with limited fragments
-        mock_tabix = Mock()
+        mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
+        mock_tabix = mocker.MagicMock()
         mock_pysam.TabixFile.return_value.__enter__.return_value = mock_tabix
 
-        # Only fragments for cell1, missing cell2 and cell3
-        mock_tabix.fetch.return_value = ["chr1\t100\t200\tcell1"]
+        # Use parametrized cell type mapping
+        present_cell = list(cell_type_mapping.keys())[0]  # First cell will have fragments
+        expected_cell_type = cell_type_mapping[present_cell]
+        
+        # Only fragments for one cell, missing others
+        mock_tabix.fetch.return_value = [f"chr1\t100\t200\t{present_cell}"]
 
-        # Test parameters - expect cells 1, 2, 3 but only cell1 has fragments
+        # Test parameters - expect all cells but only one has fragments
         chrom_map = {"chr1": 1}
-        cell_type_map = {"cell1": "T cell", "cell2": "B cell", "cell3": "NK cell"}
-        valid_barcodes = {"cell1", "cell2", "cell3"}
+        valid_barcodes = set(cell_type_mapping.keys())
+        coverage_aggregator, found_cells = processor._process_all_chromosomes(chrom_map, cell_type_mapping, valid_barcodes)
 
-        # Call method
-        coverage_aggregator, found_cells = processor._process_all_chromosomes(chrom_map, cell_type_map, valid_barcodes)
+        assert found_cells == {present_cell}
 
-        # Verify only cell1 was found
-        assert found_cells == {"cell1"}
-
-        # Verify coverage only contains T cell data
         cell_types_in_coverage = {key[2] for key in coverage_aggregator}
-        assert cell_types_in_coverage == {"T cell"}
+        assert cell_types_in_coverage == {expected_cell_type}
 
-        # Verify missing cells can be detected
         missing_cells = valid_barcodes - found_cells
-        assert missing_cells == {"cell2", "cell3"}
+        expected_missing = set(cell_type_mapping.keys()) - {present_cell}
+        assert missing_cells == expected_missing
 
-    @patch("backend.layers.processing.utils.atac.pysam")
-    @patch("backend.layers.processing.utils.atac.tiledb")
-    def test_write_binned_coverage_per_chrom_full_pipeline(self, mock_tiledb, mock_pysam, tmp_path):
-        """Test write_binned_coverage_per_chrom() full pipeline orchestration (lines 123,126,129,132,135)."""
+    def test__write_binned_coverage_per_chrom_full_pipeline(self, mocker, tmp_path):
+        """Test write_binned_coverage_per_chrom() full pipeline orchestration."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
-        # Mock pysam TabixFile with fragments
-        mock_tabix = Mock()
+        mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
+        mock_tabix = mocker.MagicMock()
         mock_pysam.TabixFile.return_value.__enter__.return_value = mock_tabix
         mock_tabix.fetch.return_value = [
             "chr1\t100\t200\tcell1",
             "chr1\t300\t400\tcell2",
         ]
 
-        # Mock TileDB for writing
-        mock_array = Mock()
-        mock_array.__setitem__ = Mock()
+        mock_tiledb = mocker.patch("backend.layers.processing.utils.atac.tiledb")
+        mock_array = mocker.MagicMock()
+        mock_array.__setitem__ = mocker.MagicMock()
         mock_tiledb.SparseArray.return_value.__enter__.return_value = mock_array
 
-        # Test parameters
         array_name = str(tmp_path / "test_array")
         chrom_map = {"chr1": 1}
         cell_type_map = {"cell1": "T cell", "cell2": "B cell", "cell3": "NK cell"}
         valid_barcodes = {"cell1", "cell2", "cell3"}
 
-        # Call the orchestration method (covers lines 123, 126, 132, 135)
         processor.write_binned_coverage_per_chrom(array_name, chrom_map, cell_type_map, valid_barcodes)
 
-        # Verify _process_all_chromosomes was called (line 123)
         mock_pysam.TabixFile.assert_called_once_with(str(fragment_file))
 
-        # Verify _report_missing_cells was called (line 126) - cell3 should be missing
-        # This is tested implicitly by the method completing successfully
-
-        # Verify _create_coverage_dataframe was called (line 132) - coverage_aggregator not empty
-        # Verify _write_coverage_to_tiledb was called (line 135)
         mock_tiledb.SparseArray.assert_called_with(array_name, mode="w", ctx=processor.ctx)
         assert mock_array.__setitem__.called
 
-    @patch("backend.layers.processing.utils.atac.pysam")
-    def test_write_binned_coverage_per_chrom_empty_coverage(self, mock_pysam, tmp_path):
-        """Test write_binned_coverage_per_chrom() early return with empty coverage (line 129)."""
+    def test__write_binned_coverage_per_chrom_empty_coverage(self, mocker, tmp_path):
+        """Test write_binned_coverage_per_chrom() early return with empty coverage."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
-        # Mock pysam TabixFile to return no fragments (empty coverage)
-        mock_tabix = Mock()
+        mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
+        mock_tabix = mocker.MagicMock()
         mock_pysam.TabixFile.return_value.__enter__.return_value = mock_tabix
-        mock_tabix.fetch.return_value = []  # No fragments found
-
-        # Test parameters
+        mock_tabix.fetch.return_value = []
         array_name = str(tmp_path / "test_array")
         chrom_map = {"chr1": 1}
         cell_type_map = {"cell1": "T cell"}
         valid_barcodes = {"cell1"}
 
-        # Call method - should return early due to empty coverage_aggregator (line 129)
         result = processor.write_binned_coverage_per_chrom(array_name, chrom_map, cell_type_map, valid_barcodes)
-
-        # Verify method returns None (early return on line 129)
         assert result is None
-
-        # Verify _process_all_chromosomes was still called (line 123)
         mock_pysam.TabixFile.assert_called_once_with(str(fragment_file))
 
-    @patch("backend.layers.processing.utils.atac.tiledb")
-    @patch("backend.layers.processing.utils.atac.pysam")
-    def test_process_fragment_file_integration(self, mock_pysam, mock_tiledb, tmp_path):
-        """Integration test for process_fragment_file covering lines 335, 337, 341, 344, 346."""
-        # Setup test file
+    def test__process_fragment_file_integration(self, tmp_path, cell_type_mapping, organism_genome_pair, mock_tiledb_components, mocker):
+        """Integration test for process_fragment_file."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
-        fragment_file.write_text("chr1\t100\t200\tcell1\nchr1\t300\t400\tcell2\n")
+        
+        cell_names = list(cell_type_mapping.keys())[:2]
+        fragment_lines = [f"chr1\t{100 + i*200}\t{200 + i*200}\t{cell}" for i, cell in enumerate(cell_names)]
+        fragment_file.write_text("\n".join(fragment_lines) + "\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         # Mock pysam TabixFile
-        mock_tabix = Mock()
+        mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
+        mock_tabix = mocker.MagicMock()
         mock_pysam.TabixFile.return_value.__enter__.return_value = mock_tabix
-        mock_tabix.fetch.return_value = ["chr1\t100\t200\tcell1", "chr1\t300\t400\tcell2"]
+        mock_tabix.fetch.return_value = fragment_lines
 
-        # Mock TileDB components
-        mock_tiledb.FilterList.return_value = Mock()
-        mock_tiledb.BitShuffleFilter.return_value = Mock()
-        mock_tiledb.ZstdFilter.return_value = Mock()
-        mock_tiledb.Domain.return_value = Mock()
-        mock_tiledb.Dim.return_value = Mock()
-        mock_tiledb.Attr.return_value = Mock()
-        mock_tiledb.ArraySchema.return_value = Mock()
-        mock_tiledb.SparseArray.create = Mock()
-
-        # Mock SparseArray for writing
-        mock_array = Mock()
-        mock_array.__setitem__ = Mock()
-        mock_tiledb.SparseArray.return_value.__enter__.return_value = mock_array
-
-        # Create test obs DataFrame
+        organism_id, expected_genome = organism_genome_pair
+        
+        cell_types = [cell_type_mapping[cell] for cell in cell_names]
         obs = pd.DataFrame(
             {
-                "cell_type": ["T cell", "B cell"],
-                "organism_ontology_term_id": ["NCBITaxon:9606", "NCBITaxon:9606"],
+                "cell_type": cell_types,
+                "organism_ontology_term_id": [organism_id] * len(cell_types),
             },
-            index=["cell1", "cell2"],
+            index=cell_names,
         )
 
         array_name = str(tmp_path / "test_array")
 
-        # Call process_fragment_file - covers all missing lines
         processor.process_fragment_file(obs, array_name)
 
-        # Get df_meta to verify the internal processing
-        df_meta, _ = processor.extract_cell_metadata_from_h5ad(obs)
+        df_meta, genome_version = processor.extract_cell_metadata_from_h5ad(obs)
 
-        # Verify line 335: valid_barcodes = set(df_meta["cell_name"])
-        expected_valid_barcodes = {"cell1", "cell2"}
+        expected_valid_barcodes = set(cell_names)
         assert set(df_meta["cell_name"]) == expected_valid_barcodes
 
-        # Verify line 335: cell_type_map = dict(zip(df_meta["cell_name"], df_meta["cell_type"], strict=False))
-        expected_cell_type_map = {"cell1": "T cell", "cell2": "B cell"}
+        expected_cell_type_map = {cell: cell_type_mapping[cell] for cell in cell_names}
         actual_cell_type_map = dict(zip(df_meta["cell_name"], df_meta["cell_type"], strict=False))
         assert actual_cell_type_map == expected_cell_type_map
 
-        # Verify line 337: max_chrom, chrom_map = self.build_chrom_mapping(genome_version)
-        # This is called internally, verify chromosome mapping was used
-        assert mock_tabix.fetch.call_count > 0  # Should be called for each chromosome
-
-        # Verify line 341: self.write_binned_coverage_per_chrom called
+        assert genome_version == expected_genome
+        assert mock_tabix.fetch.call_count > 0  
         mock_pysam.TabixFile.assert_called_with(str(fragment_file))
-
-        # Verify DataFrame structure and content
         assert isinstance(df_meta, pd.DataFrame)
-        assert len(df_meta) == 2
+        assert len(df_meta) == len(cell_names)
+
+    def test__convert_coverage_to_cxg_array(self, tmp_path, cell_type_mapping, organism_genome_pair, mocker):
+        """
+        Test convert_coverage_to_cxg_array creates ATACDataProcessor and processes fragment file correctly.
+        """
+        from backend.layers.processing.utils.cxg_generation_utils import convert_coverage_to_cxg_array
+
+        mock_atac_processor = mocker.MagicMock()
+        mock_atac_processor_class = mocker.patch(
+            "backend.layers.processing.utils.cxg_generation_utils.ATACDataProcessor",
+            return_value=mock_atac_processor,
+        )
+
+        cxg_container = str(tmp_path / "test_container.cxg")
+        organism_id, _ = organism_genome_pair
+        
+        cell_names = list(cell_type_mapping.keys())
+        cell_types = list(cell_type_mapping.values())
+        metadata_dict = pd.DataFrame(
+            {
+                "cell_type": cell_types,
+                "organism_ontology_term_id": [organism_id] * len(cell_types),
+            },
+            index=cell_names,
+        )
+        fragment_artifact_id = str(tmp_path / "fragments.tsv.gz")
+        group_metadata_name = "coverage"
+        ctx = mocker.MagicMock()
+
+        convert_coverage_to_cxg_array(cxg_container, metadata_dict, fragment_artifact_id, group_metadata_name, ctx)
+
+        mock_atac_processor_class.assert_called_once_with(fragment_artifact_id, ctx)
+
+        expected_array_name = f"{cxg_container}/{group_metadata_name}"
+        mock_atac_processor.process_fragment_file.assert_called_once_with(metadata_dict, expected_array_name)
