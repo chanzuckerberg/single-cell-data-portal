@@ -1,0 +1,1 @@
+Processing DataFrame creation:   0%|          | 0/4 [00:00<?, ?records/s]Processing DataFrame creation: 100%|██████████| 4/4 [00:00<00:00, 79891.50records/s]

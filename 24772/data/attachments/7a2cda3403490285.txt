@@ -1,0 +1,3 @@
+Processing small chromosomes:   0%|          | 0/1 [00:00<?, ?chrom/s]Processing small chromosomes: 100%|██████████| 1/1 [00:00<00:00, 632.72chrom/s]
+Processing chromosome windows:   0%|          | 0/285 [00:00<?, ?window/s]Processing chromosome windows: 100%|██████████| 285/285 [00:00<00:00, 7674.13window/s]
+Processing DataFrame creation:   0%|          | 0/44 [00:00<?, ?records/s]Processing DataFrame creation: 100%|██████████| 44/44 [00:00<00:00, 353542.87records/s]

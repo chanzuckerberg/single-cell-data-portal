@@ -1,0 +1,2 @@
+{"levelname": "INFO", "asctime": "2025-06-24T18:32:15.024Z", "name": "backend.layers.processing.utils.atac", "message": "Writing 2 coverage records to TileDB...", "lineno": 430, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
+{"levelname": "INFO", "asctime": "2025-06-24T18:32:15.024Z", "name": "backend.layers.processing.utils.atac", "message": "Successfully wrote coverage data to TileDB", "lineno": 443, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
