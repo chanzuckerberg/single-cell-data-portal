@@ -1,9 +1,0 @@
-INFO     backend.layers.processing.utils.atac:atac.py:137 Processing chr1...
-WARNING  backend.layers.processing.utils.atac:atac.py:187 Invalid fragment coordinates: start=-50, end=100
-WARNING  backend.layers.processing.utils.atac:atac.py:187 Invalid fragment coordinates: start=200, end=200
-WARNING  backend.layers.processing.utils.atac:atac.py:187 Invalid fragment coordinates: start=300, end=250
-WARNING  backend.layers.processing.utils.atac:atac.py:203 Failed to parse fragment row 'chr1	abc	200	cell1': invalid literal for int() with base 10: 'abc'
-WARNING  backend.layers.processing.utils.atac:atac.py:203 Failed to parse fragment row 'chr1	100	xyz	cell2': invalid literal for int() with base 10: 'xyz'
-INFO     backend.layers.processing.utils.atac:atac.py:137 Processing chr2...
-WARNING  backend.layers.processing.utils.atac:atac.py:161 Failed to fetch chromosome chr2
-INFO     backend.layers.processing.utils.atac:atac.py:137 Processing chrX...
