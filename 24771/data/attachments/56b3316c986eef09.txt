@@ -1,0 +1,1 @@
+{"levelname": "WARNING", "asctime": "2025-06-24T17:13:07.024Z", "name": "backend.layers.processing.utils.atac", "message": "Invalid fragment format: expected at least 4 columns, got 3", "lineno": 268, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
