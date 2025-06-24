@@ -320,7 +320,8 @@ class TestATACDataProcessor:
             }
         )
 
-        df = processor._create_coverage_dataframe(coverage_aggregator)
+        cell_type_totals = processor._compute_cell_type_totals(coverage_aggregator)
+        df = processor._create_coverage_dataframe_with_totals(coverage_aggregator, cell_type_totals)
         expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
         assert list(df.columns) == expected_columns
 
@@ -371,13 +372,14 @@ class TestATACDataProcessor:
         assert isinstance(normalized_coverage, float)
 
     def test__create_coverage_dataframe_small_dataset(self, tmp_path, coverage_aggregator_data):
-        """Test _create_coverage_dataframe() with parametrized datasets."""
+        """Test _create_coverage_dataframe_with_totals() with parametrized datasets."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
-        df = processor._create_coverage_dataframe(coverage_aggregator_data)
+        cell_type_totals = processor._compute_cell_type_totals(coverage_aggregator_data)
+        df = processor._create_coverage_dataframe_with_totals(coverage_aggregator_data, cell_type_totals)
         expected_rows = len(coverage_aggregator_data)
         assert len(df) == expected_rows
         expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
@@ -407,14 +409,15 @@ class TestATACDataProcessor:
         assert not df.isnull().any().any()
 
     def test__create_coverage_dataframe_empty_aggregator(self, tmp_path):
-        """Test _create_coverage_dataframe() with empty aggregator."""
+        """Test _create_coverage_dataframe_with_totals() with empty aggregator."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         coverage_aggregator = defaultdict(int)
-        df = processor._create_coverage_dataframe(coverage_aggregator)
+        cell_type_totals = processor._compute_cell_type_totals(coverage_aggregator)
+        df = processor._create_coverage_dataframe_with_totals(coverage_aggregator, cell_type_totals)
 
         assert len(df) == 0
         expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
@@ -423,8 +426,8 @@ class TestATACDataProcessor:
         assert df.empty
         assert isinstance(df, pd.DataFrame)
 
-    def test__process_coverage_data_all_records_processed(self, tmp_path):
-        """Test _process_coverage_data() processes all records."""
+    def test__compute_cell_type_totals(self, tmp_path):
+        """Test _compute_cell_type_totals() computes correct totals."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
@@ -441,20 +444,9 @@ class TestATACDataProcessor:
             }
         )
 
-        # Initialize required instance variables for processing with small chunk size
-        processor._chunks = []
-        processor._current_chunk = []
-        processor._dataframe_chunk_size = 2  # Small chunk size to trigger chunking
-
-        processor._process_coverage_data(coverage_aggregator)
-        total_records_processed = 0
-        for chunk in processor._chunks:
-            total_records_processed += len(chunk)
-        total_records_processed += len(processor._current_chunk)
-        assert total_records_processed == 5
-        del processor._chunks
-        del processor._current_chunk
-        del processor._dataframe_chunk_size
+        totals = processor._compute_cell_type_totals(coverage_aggregator)
+        expected_totals = {"T cell": 15, "B cell": 20, "NK cell": 6}
+        assert totals == expected_totals
 
     def test__create_dataframe_array(self, tmp_path, mock_tiledb_components, tiledb_array_config):
         """Test create_dataframe_array() creates TileDB schema correctly."""
@@ -597,7 +589,7 @@ class TestATACDataProcessor:
         chrom_map = {"chr1": 1, "chr2": 2, "chrX": 23}
         valid_barcodes = set(valid_cells)
         coverage_aggregator, found_cells = processor._process_all_chromosomes(
-            chrom_map, cell_type_mapping, valid_barcodes, genome_version=None
+            chrom_map, cell_type_mapping, valid_barcodes
         )
 
         expected_found_cells = {valid_cells[0], valid_cells[1]}
@@ -639,7 +631,7 @@ class TestATACDataProcessor:
         chrom_map = {"chr1": 1}
         valid_barcodes = set(cell_type_mapping.keys())
         coverage_aggregator, found_cells = processor._process_all_chromosomes(
-            chrom_map, cell_type_mapping, valid_barcodes, genome_version=None
+            chrom_map, cell_type_mapping, valid_barcodes
         )
 
         assert found_cells == {present_cell}
