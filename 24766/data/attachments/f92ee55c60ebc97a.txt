@@ -1,0 +1,2 @@
+Processing chromosomes:   0%|          | 0/22 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 22/22 [00:00<00:00, 6998.99chrom/s]
+Processing DataFrame creation:   0%|          | 0/44 [00:00<?, ?records/s]Processing DataFrame creation: 100%|██████████| 44/44 [00:00<00:00, 308611.00records/s]
