@@ -8,47 +8,53 @@ from backend.layers.processing.utils.atac import ATACDataProcessor
 
 
 # Parametrized fixtures and test data
-@pytest.fixture(params=[
-    {"cell1": "T cell", "cell2": "B cell", "cell3": "NK cell"},
-    {"cell1": "CD4+ T cell", "cell2": "Memory B cell", "cell3": "Monocyte"},
-    {"cell1": "Naive T cell", "cell2": "Plasma cell"},
-])
+@pytest.fixture(
+    params=[
+        {"cell1": "T cell", "cell2": "B cell", "cell3": "NK cell"},
+        {"cell1": "CD4+ T cell", "cell2": "Memory B cell", "cell3": "Monocyte"},
+        {"cell1": "Naive T cell", "cell2": "Plasma cell"},
+    ]
+)
 def cell_type_mapping(request):
     """Parametrized fixture for cell type mappings."""
     return request.param
 
 
-@pytest.fixture(params=[
-    ("NCBITaxon:9606", "hg38"),
-    ("NCBITaxon:10090", "mm39"),
-])
+@pytest.fixture(
+    params=[
+        ("NCBITaxon:9606", "hg38"),
+        ("NCBITaxon:10090", "mm39"),
+    ]
+)
 def organism_genome_pair(request):
     """Parametrized fixture for organism ID and genome version pairs."""
     return request.param
 
 
-@pytest.fixture(params=[
-    # Small coverage aggregator
-    {
-        (1, 0, "T cell"): 5,
-        (1, 1, "T cell"): 3,
-        (2, 0, "B cell"): 4,
-    },
-    # Multi-cell type coverage
-    {
-        (1, 0, "T cell"): 10,
-        (1, 1, "T cell"): 20,
-        (2, 0, "B cell"): 50,
-        (2, 1, "B cell"): 50,
-        (3, 0, "NK cell"): 15,
-    },
-    # Single cell type
-    {
-        (1, 0, "T cell"): 100,
-        (1, 1, "T cell"): 200,
-        (1, 2, "T cell"): 300,
-    },
-])
+@pytest.fixture(
+    params=[
+        # Small coverage aggregator
+        {
+            (1, 0, "T cell"): 5,
+            (1, 1, "T cell"): 3,
+            (2, 0, "B cell"): 4,
+        },
+        # Multi-cell type coverage
+        {
+            (1, 0, "T cell"): 10,
+            (1, 1, "T cell"): 20,
+            (2, 0, "B cell"): 50,
+            (2, 1, "B cell"): 50,
+            (3, 0, "NK cell"): 15,
+        },
+        # Single cell type
+        {
+            (1, 0, "T cell"): 100,
+            (1, 1, "T cell"): 200,
+            (1, 2, "T cell"): 300,
+        },
+    ]
+)
 def coverage_aggregator_data(request):
     """Parametrized fixture for coverage aggregator test data."""
     coverage_aggregator = defaultdict(int)
@@ -56,15 +62,17 @@ def coverage_aggregator_data(request):
     return coverage_aggregator
 
 
-@pytest.fixture(params=[
-    # Valid coordinates
-    ("chr1\t100\t200\tcell1", 100, 199, 1, 1),
-    ("chr1\t0\t99\tcell1", 0, 99, 0, 0),
-    ("chr1\t199\t300\tcell1", 199, 299, 1, 2),
-    ("chr1\t250\t350\tcell1", 250, 349, 2, 3),
-    # Edge cases
-    ("chr1\t99\t100\tcell1", 99, 99, 0, 0),
-])
+@pytest.fixture(
+    params=[
+        # Valid coordinates
+        ("chr1\t100\t200\tcell1", 100, 199, 1, 1),
+        ("chr1\t0\t99\tcell1", 0, 99, 0, 0),
+        ("chr1\t199\t300\tcell1", 199, 299, 1, 2),
+        ("chr1\t250\t350\tcell1", 250, 349, 2, 3),
+        # Edge cases
+        ("chr1\t99\t100\tcell1", 99, 99, 0, 0),
+    ]
+)
 def fragment_coordinate_data(request):
     """Parametrized fixture for fragment coordinate test cases."""
     row, start, end, expected_start_bin, expected_end_bin = request.param
@@ -77,26 +85,30 @@ def fragment_coordinate_data(request):
     }
 
 
-@pytest.fixture(params=[
-    # Invalid coordinates
-    ("chr1\t-50\t100\tcell1", "negative start"),
-    ("chr1\t200\t200\tcell1", "start equals end"),
-    ("chr1\t300\t250\tcell1", "start greater than end"),
-    ("chr1\tabc\t200\tcell1", "non-integer start"),
-    ("chr1\t100\txyz\tcell1", "non-integer end"),
-])
+@pytest.fixture(
+    params=[
+        # Invalid coordinates
+        ("chr1\t-50\t100\tcell1", "negative start"),
+        ("chr1\t200\t200\tcell1", "start equals end"),
+        ("chr1\t300\t250\tcell1", "start greater than end"),
+        ("chr1\tabc\t200\tcell1", "non-integer start"),
+        ("chr1\t100\txyz\tcell1", "non-integer end"),
+    ]
+)
 def invalid_fragment_coordinates(request):
     """Parametrized fixture for invalid fragment coordinate test cases."""
     row, description = request.param
     return {"row": row, "description": description}
 
 
-@pytest.fixture(params=[
-    # TileDB array configuration scenarios
-    {"max_chrom": 25, "max_bins": 1000, "compression_level": 3},
-    {"max_chrom": 1, "max_bins": 0, "compression_level": 3},  # Edge case
-    {"max_chrom": 50, "max_bins": 5000, "compression_level": 3},  # Larger dataset
-])
+@pytest.fixture(
+    params=[
+        # TileDB array configuration scenarios
+        {"max_chrom": 25, "max_bins": 1000, "compression_level": 3},
+        {"max_chrom": 1, "max_bins": 0, "compression_level": 3},  # Edge case
+        {"max_chrom": 50, "max_bins": 5000, "compression_level": 3},  # Larger dataset
+    ]
+)
 def tiledb_array_config(request):
     """Parametrized fixture for TileDB array configuration test cases."""
     return request.param
@@ -106,7 +118,7 @@ def tiledb_array_config(request):
 def mock_tiledb_components(mocker):
     """Fixture that provides mocked TileDB components for testing."""
     mock_tiledb = mocker.patch("backend.layers.processing.utils.atac.tiledb")
-    
+
     # Create mock objects
     mock_filter_list = mocker.MagicMock()
     mock_domain = mocker.MagicMock()
@@ -114,7 +126,7 @@ def mock_tiledb_components(mocker):
     mock_attr = mocker.MagicMock()
     mock_schema = mocker.MagicMock()
     mock_array = mocker.MagicMock()
-    
+
     # Configure mock returns
     mock_tiledb.FilterList.return_value = mock_filter_list
     mock_tiledb.BitShuffleFilter.return_value = mocker.MagicMock()
@@ -124,11 +136,11 @@ def mock_tiledb_components(mocker):
     mock_tiledb.Attr.return_value = mock_attr
     mock_tiledb.ArraySchema.return_value = mock_schema
     mock_tiledb.SparseArray.create = mocker.MagicMock()
-    
+
     # Configure array for writing
     mock_array.__setitem__ = mocker.MagicMock()
     mock_tiledb.SparseArray.return_value.__enter__.return_value = mock_array
-    
+
     return {
         "tiledb": mock_tiledb,
         "filter_list": mock_filter_list,
@@ -191,9 +203,7 @@ class TestATACDataProcessor:
 
         df_meta, genome_version = processor.extract_cell_metadata_from_h5ad(obs)
 
-        expected_df = pd.DataFrame(
-            {"cell_name": cell_names, "cell_type": cell_types}
-        )
+        expected_df = pd.DataFrame({"cell_name": cell_names, "cell_type": cell_types})
         pd.testing.assert_frame_equal(df_meta, expected_df)
         assert genome_version == expected_genome
 
@@ -283,16 +293,14 @@ class TestATACDataProcessor:
         row = fragment_coordinate_data["row"]
         expected_start_bin = fragment_coordinate_data["expected_start_bin"]
         expected_end_bin = fragment_coordinate_data["expected_end_bin"]
-        
+
         chrom_id = 1
         cell_type_map = {"cell1": "T cell"}
         valid_barcodes = {"cell1"}
         coverage_aggregator = defaultdict(int)
         found_cells = set()
 
-        processor._process_fragment_row(
-            row, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells
-        )
+        processor._process_fragment_row(row, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells)
 
         if expected_start_bin == expected_end_bin:
             # Single bin case
@@ -400,14 +408,14 @@ class TestATACDataProcessor:
 
         cell_type_totals = processor._compute_cell_type_totals(coverage_aggregator_data)
         expected_totals = {}
-        for (chrom, bin_num, cell_type), count in coverage_aggregator_data.items():
+        for (_, _, cell_type), count in coverage_aggregator_data.items():
             if cell_type not in expected_totals:
                 expected_totals[cell_type] = 0
             expected_totals[cell_type] += count
 
         assert cell_type_totals == expected_totals
 
-        expected_cell_types = {key[2] for key in coverage_aggregator_data.keys()}
+        expected_cell_types = {key[2] for key in coverage_aggregator_data}
         assert set(cell_type_totals.keys()) == expected_cell_types
         for total in cell_type_totals.values():
             assert isinstance(total, int)
@@ -500,7 +508,7 @@ class TestATACDataProcessor:
         assert df["cell_type"].dtype == "object"  # String columns are object type
 
         expected_totals = {}
-        for (chrom, bin_num, cell_type), count in coverage_aggregator_data.items():
+        for (_, _, cell_type), count in coverage_aggregator_data.items():
             if cell_type not in expected_totals:
                 expected_totals[cell_type] = 0
             expected_totals[cell_type] += count
@@ -584,7 +592,9 @@ class TestATACDataProcessor:
         mock_tiledb.BitShuffleFilter.assert_called_once()
         assert mock_tiledb.ZstdFilter.call_count >= 1  # Called for both compression and dimensions
         zstd_calls = mock_tiledb.ZstdFilter.call_args_list
-        compression_call = next((call for call in zstd_calls if call.kwargs.get("level") == expected_compression_level), None)
+        compression_call = next(
+            (call for call in zstd_calls if call.kwargs.get("level") == expected_compression_level), None
+        )
         assert compression_call is not None
 
         mock_tiledb.Domain.assert_called_once()
@@ -683,7 +693,7 @@ class TestATACDataProcessor:
 
         valid_cells = list(cell_type_mapping.keys())[:3]
         invalid_coord_row = invalid_fragment_coordinates["row"]
-        
+
         # Mock fragment data for different chromosomes
         chr1_fragments = [
             "chr1\t100\t200\t" + valid_cells[0],
@@ -717,7 +727,9 @@ class TestATACDataProcessor:
 
         chrom_map = {"chr1": 1, "chr2": 2, "chrX": 23}
         valid_barcodes = set(valid_cells)
-        coverage_aggregator, found_cells = processor._process_all_chromosomes(chrom_map, cell_type_mapping, valid_barcodes)
+        coverage_aggregator, found_cells = processor._process_all_chromosomes(
+            chrom_map, cell_type_mapping, valid_barcodes
+        )
 
         mock_pysam.TabixFile.assert_called_once_with(str(fragment_file))
         expected_fetch_calls = ["chr1", "chr2", "chrX"]
@@ -728,7 +740,7 @@ class TestATACDataProcessor:
         assert found_cells == expected_found_cells
 
         assert len(coverage_aggregator) > 0
-        
+
         cell_types_in_coverage = {key[2] for key in coverage_aggregator}
         expected_cell_types = {cell_type_mapping[cell] for cell in expected_found_cells}
         assert cell_types_in_coverage == expected_cell_types
@@ -752,14 +764,16 @@ class TestATACDataProcessor:
         # Use parametrized cell type mapping
         present_cell = list(cell_type_mapping.keys())[0]  # First cell will have fragments
         expected_cell_type = cell_type_mapping[present_cell]
-        
+
         # Only fragments for one cell, missing others
         mock_tabix.fetch.return_value = [f"chr1\t100\t200\t{present_cell}"]
 
         # Test parameters - expect all cells but only one has fragments
         chrom_map = {"chr1": 1}
         valid_barcodes = set(cell_type_mapping.keys())
-        coverage_aggregator, found_cells = processor._process_all_chromosomes(chrom_map, cell_type_mapping, valid_barcodes)
+        coverage_aggregator, found_cells = processor._process_all_chromosomes(
+            chrom_map, cell_type_mapping, valid_barcodes
+        )
 
         assert found_cells == {present_cell}
 
@@ -822,10 +836,12 @@ class TestATACDataProcessor:
         assert result is None
         mock_pysam.TabixFile.assert_called_once_with(str(fragment_file))
 
-    def test__process_fragment_file_integration(self, tmp_path, cell_type_mapping, organism_genome_pair, mock_tiledb_components, mocker):
+    def test__process_fragment_file_integration(
+        self, tmp_path, cell_type_mapping, organism_genome_pair, mock_tiledb_components, mocker
+    ):
         """Integration test for process_fragment_file."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
-        
+
         cell_names = list(cell_type_mapping.keys())[:2]
         fragment_lines = [f"chr1\t{100 + i*200}\t{200 + i*200}\t{cell}" for i, cell in enumerate(cell_names)]
         fragment_file.write_text("\n".join(fragment_lines) + "\n")
@@ -839,7 +855,7 @@ class TestATACDataProcessor:
         mock_tabix.fetch.return_value = fragment_lines
 
         organism_id, expected_genome = organism_genome_pair
-        
+
         cell_types = [cell_type_mapping[cell] for cell in cell_names]
         obs = pd.DataFrame(
             {
@@ -863,7 +879,7 @@ class TestATACDataProcessor:
         assert actual_cell_type_map == expected_cell_type_map
 
         assert genome_version == expected_genome
-        assert mock_tabix.fetch.call_count > 0  
+        assert mock_tabix.fetch.call_count > 0
         mock_pysam.TabixFile.assert_called_with(str(fragment_file))
         assert isinstance(df_meta, pd.DataFrame)
         assert len(df_meta) == len(cell_names)
@@ -882,7 +898,7 @@ class TestATACDataProcessor:
 
         cxg_container = str(tmp_path / "test_container.cxg")
         organism_id, _ = organism_genome_pair
-        
+
         cell_names = list(cell_type_mapping.keys())
         cell_types = list(cell_type_mapping.values())
         metadata_dict = pd.DataFrame(
