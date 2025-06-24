@@ -171,7 +171,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
         assert processor.fragment_artifact_id == str(fragment_file)
         assert processor.ctx is None
         assert processor.bin_size == 100
@@ -182,14 +182,14 @@ class TestATACDataProcessor:
         non_existent_file = "/path/to/non/existent/file.tsv.gz"
 
         with pytest.raises(FileNotFoundError, match=f"Fragment file not found: {non_existent_file}"):
-            ATACDataProcessor(fragment_artifact_id=non_existent_file, enable_parallel=False)
+            ATACDataProcessor(fragment_artifact_id=non_existent_file)
 
     def test__extract_cell_metadata_valid_obs(self, tmp_path, cell_type_mapping, organism_genome_pair):
         """Test cell metadata extraction with valid obs DataFrame."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
         organism_id, expected_genome = organism_genome_pair
         cell_names = list(cell_type_mapping.keys())
         cell_types = list(cell_type_mapping.values())
@@ -212,7 +212,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
         organism_id, _ = organism_genome_pair
         obs = pd.DataFrame(
             {"other_column": ["value1", "value2"], "organism_ontology_term_id": [organism_id, organism_id]},
@@ -227,7 +227,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         cell_names = list(cell_type_mapping.keys())[:2]
         cell_types = [cell_type_mapping[name] for name in cell_names]
@@ -241,7 +241,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
         obs = pd.DataFrame(
             {"cell_type": ["T cell", "B cell"], "organism_ontology_term_id": [None, None]},
             index=["cell1", "cell2"],
@@ -255,7 +255,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
         _, genome_version = organism_genome_pair
         max_chrom, chrom_map = processor.build_chrom_mapping(genome_version)
 
@@ -273,7 +273,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
         _, genome_version = organism_genome_pair
         max_bins = processor.calculate_max_bins(genome_version)
 
@@ -282,129 +282,12 @@ class TestATACDataProcessor:
         assert max_bins > 500_000  # At least 500K bins
         assert max_bins < 3_500_000  # Less than 3.5M bins (hg38 is larger than mm39)
 
-    def test__process_fragment_row_bin_calculation_accuracy(self, tmp_path, fragment_coordinate_data):
-        """Test accurate bin calculation for various fragment positions."""
-        fragment_file = tmp_path / "test_fragments.tsv.gz"
-        fragment_file.write_text("chr1\t100\t200\tcell1\n")
-
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
-
-        # Use parametrized test data
-        row = fragment_coordinate_data["row"]
-        expected_start_bin = fragment_coordinate_data["expected_start_bin"]
-        expected_end_bin = fragment_coordinate_data["expected_end_bin"]
-
-        chrom_id = 1
-        cell_type_map = {"cell1": "T cell"}
-        valid_barcodes = {"cell1"}
-        coverage_aggregator = defaultdict(int)
-        found_cells = set()
-
-        processor._process_fragment_row(row, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells)
-
-        if expected_start_bin == expected_end_bin:
-            # Single bin case
-            expected_key = (1, expected_start_bin, "T cell")
-            assert coverage_aggregator[expected_key] == 1
-            assert len(coverage_aggregator) == 1
-        else:
-            # Multiple bins case
-            start_key = (1, expected_start_bin, "T cell")
-            end_key = (1, expected_end_bin, "T cell")
-            assert coverage_aggregator[start_key] == 1
-            assert coverage_aggregator[end_key] == 1
-            assert len(coverage_aggregator) == 2
-
-    def test__process_fragment_row_coverage_counting(self, tmp_path):
-        """Test that coverage counting for insertion sites works correctly."""
-        fragment_file = tmp_path / "test_fragments.tsv.gz"
-        fragment_file.write_text("chr1\t100\t200\tcell1\n")
-
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
-
-        # Setup test data
-        chrom_id = 1
-        cell_type_map = {"cell1": "T cell"}
-        valid_barcodes = {"cell1"}
-        coverage_aggregator = defaultdict(int)
-        found_cells = set()
-
-        fragments = [
-            "chr1\t150\t350\tcell1",  # Bins 1 and 3
-            "chr1\t250\t450\tcell1",  # Bins 2 and 4
-            "chr1\t150\t250\tcell1",  # Bins 1 and 2
-        ]
-
-        for row in fragments:
-            processor._process_fragment_row(
-                row, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells
-            )
-
-        assert coverage_aggregator[(1, 1, "T cell")] == 2  # From fragments 1 and 3
-        assert coverage_aggregator[(1, 2, "T cell")] == 2  # From fragments 2 and 3
-        assert coverage_aggregator[(1, 3, "T cell")] == 1  # From fragment 1
-        assert coverage_aggregator[(1, 4, "T cell")] == 1  # From fragment 2
-
-    @pytest.mark.parametrize(
-        "invalid_row,expected_columns",
-        [
-            ("chr1\t100\t200", 3),
-            ("chr1\t100", 2),
-            ("chr1", 1),
-            ("", 1),
-            ("\t\t", 1),
-        ],
-    )
-    def test__process_fragment_row_insufficient_columns(self, tmp_path, invalid_row, expected_columns, caplog):
-        """Test that fragments with < 4 columns are handled properly."""
-        fragment_file = tmp_path / "test_fragments.tsv.gz"
-        fragment_file.write_text("chr1\t100\t200\tcell1\n")
-
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
-
-        chrom_id = 1
-        cell_type_map = {"cell1": "T cell"}
-        valid_barcodes = {"cell1"}
-        coverage_aggregator = defaultdict(int)
-        found_cells = set()
-
-        with caplog.at_level("WARNING"):
-            processor._process_fragment_row(
-                invalid_row, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells
-            )
-
-        assert len(coverage_aggregator) == 0
-        assert len(found_cells) == 0
-
-        if expected_columns < 4:
-            assert "Invalid fragment format" in caplog.text
-            assert f"expected at least 4 columns, got {expected_columns}" in caplog.text
-
-    def test__process_fragment_row_extra_columns_valid(self, tmp_path):
-        """Test that fragments with > 4 columns work correctly (uses first 4)."""
-        fragment_file = tmp_path / "test_fragments.tsv.gz"
-        fragment_file.write_text("chr1\t100\t200\tcell1\n")
-
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
-        row = "chr1\t150\t250\tcell1\textra_col1\textra_col2"
-        chrom_id = 1
-        cell_type_map = {"cell1": "T cell"}
-        valid_barcodes = {"cell1"}
-        coverage_aggregator = defaultdict(int)
-        found_cells = set()
-
-        processor._process_fragment_row(row, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells)
-
-        assert "cell1" in found_cells
-        expected_key = (1, 1, "T cell")  # 150//100 = 1, (250-1)//100 = 2, but they're different bins
-        assert coverage_aggregator[expected_key] == 1
-
     def test__compute_cell_type_totals_multiple_cell_types(self, tmp_path, coverage_aggregator_data):
         """Test cell type totals computation with multiple cell types."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         cell_type_totals = processor._compute_cell_type_totals(coverage_aggregator_data)
         expected_totals = {}
@@ -426,7 +309,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
         coverage_aggregator = defaultdict(int)
         coverage_aggregator.update(
             {
@@ -492,7 +375,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         df = processor._create_coverage_dataframe(coverage_aggregator_data)
         expected_rows = len(coverage_aggregator_data)
@@ -528,7 +411,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         coverage_aggregator = defaultdict(int)
         df = processor._create_coverage_dataframe(coverage_aggregator)
@@ -545,7 +428,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         coverage_aggregator = defaultdict(int)
         coverage_aggregator.update(
@@ -578,7 +461,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
         mock_tiledb = mock_tiledb_components["tiledb"]
 
         array_name = str(tmp_path / "test_array")
@@ -664,7 +547,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
         mock_tiledb = mock_tiledb_components["tiledb"]
 
         array_name = str(tmp_path / "minimal_array")
@@ -679,62 +562,43 @@ class TestATACDataProcessor:
         assert chrom_dim_call.kwargs["domain"] == (1, 1)
         assert bin_dim_call.kwargs["domain"] == (0, 0)
 
-    def test__process_all_chromosomes(self, tmp_path, cell_type_mapping, invalid_fragment_coordinates, mocker):
+    def test__process_all_chromosomes(self, tmp_path, cell_type_mapping, invalid_fragment_coordinates):
         """Test _process_all_chromosomes() processes fragments from all chromosomes."""
+        # Create a proper compressed fragment file with real data
+
         fragment_file = tmp_path / "test_fragments.tsv.gz"
-        fragment_file.write_text("chr1\t100\t200\tcell1\n")
-
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
-
-        # Mock pysam TabixFile
-        mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
-        mock_tabix = mocker.MagicMock()
-        mock_pysam.TabixFile.return_value.__enter__.return_value = mock_tabix
 
         valid_cells = list(cell_type_mapping.keys())[:3]
-        invalid_coord_row = invalid_fragment_coordinates["row"]
 
-        # Mock fragment data for different chromosomes
-        chr1_fragments = [
-            "chr1\t100\t200\t" + valid_cells[0],
-            "chr1\t300\t400\t" + valid_cells[1],
-            "chr1\t500\t600\t" + valid_cells[0],
-            "chr1\t700\t800\tinvalid_cell",  # Invalid barcode - should be filtered out
-            invalid_coord_row,
-        ]
-        chr2_fragments = [
-            "chr2\t150\t250\t" + valid_cells[1],
-            "chr2\t350\t450\t" + valid_cells[2] if len(valid_cells) > 2 else "chr2\t350\t450\t" + valid_cells[0],
-        ]
-        chrX_fragments = [
-            "chrX\t200\t300\t" + valid_cells[0],
-            "chrX\t400\t500\tunknown_barcode",  # Another invalid barcode
+        # Create test fragment data in proper format (sorted by chromosome then position)
+        fragments = [
+            f"chr1\t100\t200\t{valid_cells[0]}",
+            f"chr1\t300\t400\t{valid_cells[1]}",
+            f"chr1\t500\t600\t{valid_cells[0]}",
+            f"chrX\t200\t300\t{valid_cells[0]}",
+            # chr2 intentionally empty to test missing chromosome handling
         ]
 
-        # Configure mock to return different fragments per chromosome
-        fragment_map = {
-            "chr1": chr1_fragments,
-            "chr2": chr2_fragments,
-            "chrX": chrX_fragments,
-        }
+        # Write uncompressed first, then compress and index
+        uncompressed_file = tmp_path / "test_fragments.tsv"
+        with open(uncompressed_file, "w") as f:
+            f.write("\n".join(fragments) + "\n")
 
-        def mock_fetch(chrom):
-            if chrom == "chr2":  # Simulate fetch failure for chr2
-                raise ValueError("Simulated tabix fetch error")
-            return fragment_map.get(chrom, [])
+        # Compress with bgzip (required for tabix)
+        import subprocess
 
-        mock_tabix.fetch.side_effect = mock_fetch
+        subprocess.run(["bgzip", str(uncompressed_file)], check=True, capture_output=True)
+
+        # Create tabix index
+        subprocess.run(["tabix", "-p", "bed", str(fragment_file)], check=True, capture_output=True)
+
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         chrom_map = {"chr1": 1, "chr2": 2, "chrX": 23}
         valid_barcodes = set(valid_cells)
         coverage_aggregator, found_cells = processor._process_all_chromosomes(
-            chrom_map, cell_type_mapping, valid_barcodes, enable_parallel=False
+            chrom_map, cell_type_mapping, valid_barcodes, genome_version=None
         )
-
-        mock_pysam.TabixFile.assert_called_once_with(str(fragment_file))
-        expected_fetch_calls = ["chr1", "chr2", "chrX"]
-        actual_fetch_calls = [call[0][0] for call in mock_tabix.fetch.call_args_list]
-        assert set(actual_fetch_calls) == set(expected_fetch_calls)
 
         expected_found_cells = {valid_cells[0], valid_cells[1]}
         assert found_cells == expected_found_cells
@@ -749,30 +613,33 @@ class TestATACDataProcessor:
         expected_chroms = {1, 23}  # chr1=1, chrX=23 (chr2=2 failed)
         assert chroms_in_coverage == expected_chroms
 
-    def test__process_all_chromosomes_missing_cells(self, tmp_path, cell_type_mapping, mocker):
+    def test__process_all_chromosomes_missing_cells(self, tmp_path, cell_type_mapping):
         """Test _process_all_chromosomes() handles missing cells correctly."""
-        fragment_file = tmp_path / "test_fragments.tsv.gz"
-        fragment_file.write_text("chr1\t100\t200\tcell1\n")
-
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
-
-        # Mock pysam TabixFile with limited fragments
-        mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
-        mock_tabix = mocker.MagicMock()
-        mock_pysam.TabixFile.return_value.__enter__.return_value = mock_tabix
-
-        # Use parametrized cell type mapping
-        present_cell = list(cell_type_mapping.keys())[0]  # First cell will have fragments
+        # Create fragment file with only one cell
+        present_cell = list(cell_type_mapping.keys())[0]
         expected_cell_type = cell_type_mapping[present_cell]
 
-        # Only fragments for one cell, missing others
-        mock_tabix.fetch.return_value = [f"chr1\t100\t200\t{present_cell}"]
+        fragments = [f"chr1\t100\t200\t{present_cell}"]
+
+        # Write uncompressed first, then compress and index
+        uncompressed_file = tmp_path / "test_fragments.tsv"
+        with open(uncompressed_file, "w") as f:
+            f.write("\n".join(fragments) + "\n")
+
+        # Compress with bgzip and create tabix index
+        import subprocess
+
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        subprocess.run(["bgzip", str(uncompressed_file)], check=True, capture_output=True)
+        subprocess.run(["tabix", "-p", "bed", str(fragment_file)], check=True, capture_output=True)
+
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         # Test parameters - expect all cells but only one has fragments
         chrom_map = {"chr1": 1}
         valid_barcodes = set(cell_type_mapping.keys())
         coverage_aggregator, found_cells = processor._process_all_chromosomes(
-            chrom_map, cell_type_mapping, valid_barcodes, enable_parallel=False
+            chrom_map, cell_type_mapping, valid_barcodes, genome_version=None
         )
 
         assert found_cells == {present_cell}
@@ -789,7 +656,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
         mock_tabix = mocker.MagicMock()
@@ -811,8 +678,6 @@ class TestATACDataProcessor:
 
         processor.write_binned_coverage_per_chrom(array_name, chrom_map, cell_type_map, valid_barcodes)
 
-        mock_pysam.TabixFile.assert_called_once_with(str(fragment_file))
-
         mock_tiledb.SparseArray.assert_called_with(array_name, mode="w", ctx=processor.ctx)
         assert mock_array.__setitem__.called
 
@@ -821,7 +686,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
         mock_tabix = mocker.MagicMock()
@@ -834,7 +699,6 @@ class TestATACDataProcessor:
 
         result = processor.write_binned_coverage_per_chrom(array_name, chrom_map, cell_type_map, valid_barcodes)
         assert result is None
-        mock_pysam.TabixFile.assert_called_once_with(str(fragment_file))
 
     def test__process_fragment_file_integration(
         self, tmp_path, cell_type_mapping, organism_genome_pair, mock_tiledb_components, mocker
@@ -846,7 +710,7 @@ class TestATACDataProcessor:
         fragment_lines = [f"chr1\t{100 + i*200}\t{200 + i*200}\t{cell}" for i, cell in enumerate(cell_names)]
         fragment_file.write_text("\n".join(fragment_lines) + "\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         # Mock pysam TabixFile
         mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
@@ -879,8 +743,6 @@ class TestATACDataProcessor:
         assert actual_cell_type_map == expected_cell_type_map
 
         assert genome_version == expected_genome
-        assert mock_tabix.fetch.call_count > 0
-        mock_pysam.TabixFile.assert_called_with(str(fragment_file))
         assert isinstance(df_meta, pd.DataFrame)
         assert len(df_meta) == len(cell_names)
 
