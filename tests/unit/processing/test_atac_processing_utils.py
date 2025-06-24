@@ -171,7 +171,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
         assert processor.fragment_artifact_id == str(fragment_file)
         assert processor.ctx is None
         assert processor.bin_size == 100
@@ -182,14 +182,14 @@ class TestATACDataProcessor:
         non_existent_file = "/path/to/non/existent/file.tsv.gz"
 
         with pytest.raises(FileNotFoundError, match=f"Fragment file not found: {non_existent_file}"):
-            ATACDataProcessor(fragment_artifact_id=non_existent_file)
+            ATACDataProcessor(fragment_artifact_id=non_existent_file, enable_parallel=False)
 
     def test__extract_cell_metadata_valid_obs(self, tmp_path, cell_type_mapping, organism_genome_pair):
         """Test cell metadata extraction with valid obs DataFrame."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
         organism_id, expected_genome = organism_genome_pair
         cell_names = list(cell_type_mapping.keys())
         cell_types = list(cell_type_mapping.values())
@@ -212,7 +212,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
         organism_id, _ = organism_genome_pair
         obs = pd.DataFrame(
             {"other_column": ["value1", "value2"], "organism_ontology_term_id": [organism_id, organism_id]},
@@ -227,7 +227,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
 
         cell_names = list(cell_type_mapping.keys())[:2]
         cell_types = [cell_type_mapping[name] for name in cell_names]
@@ -241,7 +241,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
         obs = pd.DataFrame(
             {"cell_type": ["T cell", "B cell"], "organism_ontology_term_id": [None, None]},
             index=["cell1", "cell2"],
@@ -255,7 +255,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
         _, genome_version = organism_genome_pair
         max_chrom, chrom_map = processor.build_chrom_mapping(genome_version)
 
@@ -273,7 +273,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
         _, genome_version = organism_genome_pair
         max_bins = processor.calculate_max_bins(genome_version)
 
@@ -287,7 +287,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
 
         # Use parametrized test data
         row = fragment_coordinate_data["row"]
@@ -320,7 +320,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
 
         # Setup test data
         chrom_id = 1
@@ -360,7 +360,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
 
         chrom_id = 1
         cell_type_map = {"cell1": "T cell"}
@@ -385,7 +385,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
         row = "chr1\t150\t250\tcell1\textra_col1\textra_col2"
         chrom_id = 1
         cell_type_map = {"cell1": "T cell"}
@@ -404,7 +404,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
 
         cell_type_totals = processor._compute_cell_type_totals(coverage_aggregator_data)
         expected_totals = {}
@@ -426,7 +426,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
         coverage_aggregator = defaultdict(int)
         coverage_aggregator.update(
             {
@@ -492,7 +492,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
 
         df = processor._create_coverage_dataframe(coverage_aggregator_data)
         expected_rows = len(coverage_aggregator_data)
@@ -528,7 +528,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
 
         coverage_aggregator = defaultdict(int)
         df = processor._create_coverage_dataframe(coverage_aggregator)
@@ -545,7 +545,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
 
         coverage_aggregator = defaultdict(int)
         coverage_aggregator.update(
@@ -578,7 +578,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
         mock_tiledb = mock_tiledb_components["tiledb"]
 
         array_name = str(tmp_path / "test_array")
@@ -664,7 +664,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
         mock_tiledb = mock_tiledb_components["tiledb"]
 
         array_name = str(tmp_path / "minimal_array")
@@ -684,7 +684,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
 
         # Mock pysam TabixFile
         mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
@@ -728,7 +728,7 @@ class TestATACDataProcessor:
         chrom_map = {"chr1": 1, "chr2": 2, "chrX": 23}
         valid_barcodes = set(valid_cells)
         coverage_aggregator, found_cells = processor._process_all_chromosomes(
-            chrom_map, cell_type_mapping, valid_barcodes
+            chrom_map, cell_type_mapping, valid_barcodes, enable_parallel=False
         )
 
         mock_pysam.TabixFile.assert_called_once_with(str(fragment_file))
@@ -754,7 +754,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
 
         # Mock pysam TabixFile with limited fragments
         mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
@@ -772,7 +772,7 @@ class TestATACDataProcessor:
         chrom_map = {"chr1": 1}
         valid_barcodes = set(cell_type_mapping.keys())
         coverage_aggregator, found_cells = processor._process_all_chromosomes(
-            chrom_map, cell_type_mapping, valid_barcodes
+            chrom_map, cell_type_mapping, valid_barcodes, enable_parallel=False
         )
 
         assert found_cells == {present_cell}
@@ -789,7 +789,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
 
         mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
         mock_tabix = mocker.MagicMock()
@@ -821,7 +821,7 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
 
         mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
         mock_tabix = mocker.MagicMock()
@@ -846,7 +846,7 @@ class TestATACDataProcessor:
         fragment_lines = [f"chr1\t{100 + i*200}\t{200 + i*200}\t{cell}" for i, cell in enumerate(cell_names)]
         fragment_file.write_text("\n".join(fragment_lines) + "\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_parallel=False)
 
         # Mock pysam TabixFile
         mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")

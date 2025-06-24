@@ -1,6 +1,7 @@
 import logging
 import os
 from collections import defaultdict
+from multiprocessing import Pool, cpu_count
 from typing import Dict, Optional, Set, Tuple
 
 import numpy as np
@@ -14,6 +15,51 @@ from .config.genome_config import CHROM_LENGTHS
 logger = logging.getLogger(__name__)
 
 
+def _process_chromosome_worker(args):
+    """Worker function for parallel chromosome processing."""
+    fragment_file, chrom_str, chrom_id, cell_type_map, valid_barcodes, bin_size = args
+
+    coverage_aggregator = defaultdict(int)
+    found_cells = set()
+
+    try:
+        with pysam.TabixFile(fragment_file) as tabix:
+            for row in tabix.fetch(chrom_str):
+                try:
+                    fields = row.strip().split("\t")
+                    if len(fields) < 4:
+                        continue
+
+                    cell = fields[3]
+                    if cell not in valid_barcodes:
+                        continue
+
+                    found_cells.add(cell)
+
+                    start, end = int(fields[1]), int(fields[2])
+                    if start < 0 or end < 0 or start >= end:
+                        continue
+
+                    # Calculate bins and update coverage
+                    bin_start = start // bin_size
+                    bin_end = (end - 1) // bin_size
+                    cell_type = cell_type_map[cell]
+
+                    # Count both Tn5 insertion sites independently
+                    coverage_aggregator[(chrom_id, bin_start, cell_type)] += 1
+                    if bin_start != bin_end:
+                        coverage_aggregator[(chrom_id, bin_end, cell_type)] += 1
+
+                except ValueError:
+                    continue
+
+    except ValueError:
+        # Handle case where chromosome doesn't exist in tabix file
+        pass
+
+    return dict(coverage_aggregator), found_cells
+
+
 # Config
 BIN_SIZE = 100
 NORMALIZATION_FACTOR = 2_000_000
@@ -24,6 +70,7 @@ class ATACDataProcessor:
         self,
         fragment_artifact_id: Optional[str] = None,
         ctx: Optional[tiledb.Ctx] = None,
+        enable_parallel: bool = True,
     ) -> None:
         if fragment_artifact_id is not None and not os.path.exists(fragment_artifact_id):
             raise FileNotFoundError(f"Fragment file not found: {fragment_artifact_id}")
@@ -33,6 +80,7 @@ class ATACDataProcessor:
         self.bin_size = BIN_SIZE
         self.chrom_lengths = CHROM_LENGTHS
         self.normalization_factor = NORMALIZATION_FACTOR
+        self.enable_parallel = enable_parallel
 
     @staticmethod
     def get_genome_version(organism_ontology_term_id: str) -> str:
@@ -109,7 +157,9 @@ class ATACDataProcessor:
     ) -> None:
         """Main orchestration method for processing fragment data and writing to TileDB."""
         # Process all fragments and aggregate coverage
-        coverage_aggregator, found_cells = self._process_all_chromosomes(chrom_map, cell_type_map, valid_barcodes)
+        coverage_aggregator, found_cells = self._process_all_chromosomes(
+            chrom_map, cell_type_map, valid_barcodes, self.enable_parallel
+        )
 
         # Report missing cells
         self._report_missing_cells(valid_barcodes, found_cells)
@@ -125,19 +175,61 @@ class ATACDataProcessor:
         self._write_coverage_to_tiledb(array_name, coverage_df)
 
     def _process_all_chromosomes(
-        self, chrom_map: Dict[str, int], cell_type_map: Dict[str, str], valid_barcodes: Set[str]
+        self,
+        chrom_map: Dict[str, int],
+        cell_type_map: Dict[str, str],
+        valid_barcodes: Set[str],
+        enable_parallel: bool = True,
     ) -> Tuple[defaultdict, Set[str]]:
-        """Process fragments from all chromosomes and aggregate coverage counts."""
+        """Process fragments from all chromosomes and aggregate coverage counts using parallel processing."""
         coverage_aggregator = defaultdict(int)  # (chrom, bin, cell_type) -> coverage_count
         found_cells = set()
 
-        with pysam.TabixFile(self.fragment_artifact_id) as tabix:
-            for chrom_str in tqdm(chrom_map, desc="Processing chromosomes", unit="chrom"):
-                chrom_id = chrom_map[chrom_str]
-                logger.info(f"Processing {chrom_str}...")
-                self._process_chromosome(
-                    tabix, chrom_str, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells
+        # Determine number of processes to use
+        num_processes = min(cpu_count(), len(chrom_map)) if enable_parallel else 1
+
+        if num_processes > 1 and enable_parallel:
+            logger.info(f"Using {num_processes} processes for parallel chromosome processing")
+
+            # Prepare arguments for parallel processing
+            chrom_args = [
+                (
+                    self.fragment_artifact_id,
+                    chrom_str,
+                    chrom_map[chrom_str],
+                    cell_type_map,
+                    valid_barcodes,
+                    self.bin_size,
                 )
+                for chrom_str in chrom_map
+            ]
+
+            # Process chromosomes in parallel
+            with Pool(processes=num_processes) as pool:
+                results = list(
+                    tqdm(
+                        pool.imap(_process_chromosome_worker, chrom_args),
+                        total=len(chrom_args),
+                        desc="Processing chromosomes",
+                        unit="chrom",
+                    )
+                )
+
+            # Aggregate results from all processes
+            for chrom_coverage, chrom_found_cells in results:
+                for key, count in chrom_coverage.items():
+                    coverage_aggregator[key] += count
+                found_cells.update(chrom_found_cells)
+        else:
+            # Fallback to serial processing
+            logger.info("Using serial processing (single process)")
+            with pysam.TabixFile(self.fragment_artifact_id) as tabix:
+                for chrom_str in tqdm(chrom_map, desc="Processing chromosomes", unit="chrom"):
+                    chrom_id = chrom_map[chrom_str]
+                    logger.info(f"Processing {chrom_str}...")
+                    self._process_chromosome(
+                        tabix, chrom_str, chrom_id, cell_type_map, valid_barcodes, coverage_aggregator, found_cells
+                    )
 
         return coverage_aggregator, found_cells
 
@@ -308,9 +400,7 @@ class ATACDataProcessor:
             }
         logger.info("Successfully wrote coverage data to TileDB")
 
-    def process_fragment_file(
-        self, obs: pd.DataFrame, array_name: str
-    ) -> Tuple[pd.DataFrame, Dict[str, Dict[str, str]]]:
+    def process_fragment_file(self, obs: pd.DataFrame, array_name: str) -> None:
         df_meta, genome_version = self.extract_cell_metadata_from_h5ad(obs)
 
         valid_barcodes = set(df_meta["cell_name"])
