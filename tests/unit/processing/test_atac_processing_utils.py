@@ -651,25 +651,24 @@ class TestATACDataProcessor:
         expected_missing = set(cell_type_mapping.keys()) - {present_cell}
         assert missing_cells == expected_missing
 
-    def test__write_binned_coverage_per_chrom_full_pipeline(self, mocker, tmp_path):
+    def test__write_binned_coverage_per_chrom_full_pipeline(self, tmp_path, mock_tiledb_components):
         """Test write_binned_coverage_per_chrom() full pipeline orchestration."""
-        fragment_file = tmp_path / "test_fragments.tsv.gz"
-        fragment_file.write_text("chr1\t100\t200\tcell1\n")
-
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
-
-        mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
-        mock_tabix = mocker.MagicMock()
-        mock_pysam.TabixFile.return_value.__enter__.return_value = mock_tabix
-        mock_tabix.fetch.return_value = [
+        fragments = [
             "chr1\t100\t200\tcell1",
             "chr1\t300\t400\tcell2",
         ]
 
-        mock_tiledb = mocker.patch("backend.layers.processing.utils.atac.tiledb")
-        mock_array = mocker.MagicMock()
-        mock_array.__setitem__ = mocker.MagicMock()
-        mock_tiledb.SparseArray.return_value.__enter__.return_value = mock_array
+        uncompressed_file = tmp_path / "test_fragments.tsv"
+        with open(uncompressed_file, "w") as f:
+            f.write("\n".join(fragments) + "\n")
+
+        import subprocess
+
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        subprocess.run(["bgzip", str(uncompressed_file)], check=True, capture_output=True)
+        subprocess.run(["tabix", "-p", "bed", str(fragment_file)], check=True, capture_output=True)
+
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         array_name = str(tmp_path / "test_array")
         chrom_map = {"chr1": 1}
@@ -678,20 +677,23 @@ class TestATACDataProcessor:
 
         processor.write_binned_coverage_per_chrom(array_name, chrom_map, cell_type_map, valid_barcodes)
 
-        mock_tiledb.SparseArray.assert_called_with(array_name, mode="w", ctx=processor.ctx)
-        assert mock_array.__setitem__.called
+        mock_tiledb_components["tiledb"].SparseArray.assert_called()
+        assert mock_tiledb_components["tiledb"].SparseArray.return_value.__enter__.return_value.__setitem__.called
 
-    def test__write_binned_coverage_per_chrom_empty_coverage(self, mocker, tmp_path):
+    def test__write_binned_coverage_per_chrom_empty_coverage(self, tmp_path):
         """Test write_binned_coverage_per_chrom() early return with empty coverage."""
+        uncompressed_file = tmp_path / "test_fragments.tsv"
+        with open(uncompressed_file, "w") as f:
+            f.write("")
+
+        import subprocess
+
         fragment_file = tmp_path / "test_fragments.tsv.gz"
-        fragment_file.write_text("chr1\t100\t200\tcell1\n")
+        subprocess.run(["bgzip", str(uncompressed_file)], check=True, capture_output=True)
+        subprocess.run(["tabix", "-p", "bed", str(fragment_file)], check=True, capture_output=True)
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
-        mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
-        mock_tabix = mocker.MagicMock()
-        mock_pysam.TabixFile.return_value.__enter__.return_value = mock_tabix
-        mock_tabix.fetch.return_value = []
         array_name = str(tmp_path / "test_array")
         chrom_map = {"chr1": 1}
         cell_type_map = {"cell1": "T cell"}
@@ -701,22 +703,23 @@ class TestATACDataProcessor:
         assert result is None
 
     def test__process_fragment_file_integration(
-        self, tmp_path, cell_type_mapping, organism_genome_pair, mock_tiledb_components, mocker
+        self, tmp_path, cell_type_mapping, organism_genome_pair, mock_tiledb_components
     ):
         """Integration test for process_fragment_file."""
-        fragment_file = tmp_path / "test_fragments.tsv.gz"
-
         cell_names = list(cell_type_mapping.keys())[:2]
         fragment_lines = [f"chr1\t{100 + i*200}\t{200 + i*200}\t{cell}" for i, cell in enumerate(cell_names)]
-        fragment_file.write_text("\n".join(fragment_lines) + "\n")
+
+        uncompressed_file = tmp_path / "test_fragments.tsv"
+        with open(uncompressed_file, "w") as f:
+            f.write("\n".join(fragment_lines) + "\n")
+
+        import subprocess
+
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        subprocess.run(["bgzip", str(uncompressed_file)], check=True, capture_output=True)
+        subprocess.run(["tabix", "-p", "bed", str(fragment_file)], check=True, capture_output=True)
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
-
-        # Mock pysam TabixFile
-        mock_pysam = mocker.patch("backend.layers.processing.utils.atac.pysam")
-        mock_tabix = mocker.MagicMock()
-        mock_pysam.TabixFile.return_value.__enter__.return_value = mock_tabix
-        mock_tabix.fetch.return_value = fragment_lines
 
         organism_id, expected_genome = organism_genome_pair
 

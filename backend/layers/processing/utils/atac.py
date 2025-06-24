@@ -15,103 +15,11 @@ from .config.genome_config import CHROM_LENGTHS
 logger = logging.getLogger(__name__)
 
 
-def _process_chromosome_worker(args):
-    """Worker function for parallel chromosome processing."""
-    fragment_file, chrom_str, chrom_id, cell_type_map, valid_barcodes, bin_size = args
-
-    coverage_aggregator = defaultdict(int)
-    found_cells = set()
-
-    try:
-        with pysam.TabixFile(fragment_file) as tabix:
-            for row in tabix.fetch(chrom_str):
-                try:
-                    fields = row.strip().split("\t")
-                    if len(fields) < 4:
-                        continue
-
-                    cell = fields[3]
-                    if cell not in valid_barcodes:
-                        continue
-
-                    found_cells.add(cell)
-
-                    start, end = int(fields[1]), int(fields[2])
-                    if start < 0 or end < 0 or start >= end:
-                        continue
-
-                    # Calculate bins and update coverage
-                    bin_start = start // bin_size
-                    bin_end = (end - 1) // bin_size
-                    cell_type = cell_type_map[cell]
-
-                    # Count both Tn5 insertion sites independently for ATAC-seq accessibility
-                    # Fragment intervals represent accessible chromatin between insertion sites
-                    # See: https://www.10xgenomics.com/support/software/cell-ranger-atac/latest/analysis/outputs/fragments-file#fragment-interval-5b7699
-                    coverage_aggregator[(chrom_id, bin_start, cell_type)] += 1
-                    if bin_start != bin_end:
-                        coverage_aggregator[(chrom_id, bin_end, cell_type)] += 1
-
-                except ValueError:
-                    continue
-
-    except ValueError:
-        pass
-
-    return dict(coverage_aggregator), found_cells
-
-
-def _process_chromosome_window_worker(args):
-    """Worker function for parallel chromosome window processing."""
-    fragment_file, chrom_str, chrom_id, window_start, window_end, cell_type_map, valid_barcodes, bin_size = args
-
-    coverage_aggregator = defaultdict(int)
-    found_cells = set()
-
-    try:
-        with pysam.TabixFile(fragment_file) as tabix:
-            for row in tabix.fetch(chrom_str, window_start, window_end):
-                try:
-                    fields = row.strip().split("\t")
-                    if len(fields) < 4:
-                        continue
-
-                    cell = fields[3]
-                    if cell not in valid_barcodes:
-                        continue
-
-                    found_cells.add(cell)
-
-                    start, end = int(fields[1]), int(fields[2])
-                    if start < 0 or end < 0 or start >= end:
-                        continue
-
-                    if end < window_start or start > window_end:
-                        continue
-                    bin_start = start // bin_size
-                    bin_end = (end - 1) // bin_size
-                    cell_type = cell_type_map[cell]
-
-                    # Count both Tn5 insertion sites independently for ATAC-seq accessibility
-                    # Fragment intervals represent accessible chromatin between insertion sites
-                    # See: https://www.10xgenomics.com/support/software/cell-ranger-atac/latest/analysis/outputs/fragments-file#fragment-interval-5b7699
-                    coverage_aggregator[(chrom_id, bin_start, cell_type)] += 1
-                    if bin_start != bin_end:
-                        coverage_aggregator[(chrom_id, bin_end, cell_type)] += 1
-
-                except ValueError:
-                    continue
-
-    except ValueError:
-        pass
-
-    return dict(coverage_aggregator), found_cells
-
-
-# Config
 BIN_SIZE = 100
 NORMALIZATION_FACTOR = 2_000_000
 WINDOW_SIZE = 10_000_000
+CHROMOSOME_BATCH_SIZE = 5
+BATCH_PROCESSING_THRESHOLD = 1000
 
 
 class ATACDataProcessor:
@@ -129,6 +37,8 @@ class ATACDataProcessor:
         self.chrom_lengths = CHROM_LENGTHS
         self.normalization_factor = NORMALIZATION_FACTOR
         self.window_size = WINDOW_SIZE
+        self.chromosome_batch_size = CHROMOSOME_BATCH_SIZE
+        self.batch_processing_threshold = BATCH_PROCESSING_THRESHOLD
 
     @staticmethod
     def get_genome_version(organism_ontology_term_id: str) -> str:
@@ -140,6 +50,61 @@ class ATACDataProcessor:
         if organism_ontology_term_id not in mapping:
             raise ValueError(f"Unknown organism ontology term ID: {organism_ontology_term_id}")
         return mapping[organism_ontology_term_id]
+
+    @staticmethod
+    def _process_chromosome_worker(args):
+        """Worker function for parallel chromosome processing."""
+        if len(args) == 6:
+            fragment_file, chrom_str, chrom_id, cell_type_map, valid_barcodes, bin_size = args
+            window_start = window_end = None
+        else:
+            fragment_file, chrom_str, chrom_id, window_start, window_end, cell_type_map, valid_barcodes, bin_size = args
+
+        coverage_aggregator = defaultdict(int)
+        found_cells = set()
+
+        try:
+            with pysam.TabixFile(fragment_file) as tabix:
+                if window_start is None:
+                    fragment_iter = tabix.fetch(chrom_str)
+                else:
+                    fragment_iter = tabix.fetch(chrom_str, window_start, window_end)
+
+                for row in fragment_iter:
+                    try:
+                        fields = row.strip().split("\t")
+                        if len(fields) < 4:
+                            continue
+
+                        cell = fields[3]
+                        if cell not in valid_barcodes:
+                            continue
+
+                        found_cells.add(cell)
+
+                        start, end = int(fields[1]), int(fields[2])
+                        if start < 0 or end < 0 or start >= end:
+                            continue
+
+                        if window_start is not None and (end < window_start or start > window_end):
+                            continue
+
+                        bin_start = start // bin_size
+                        bin_end = (end - 1) // bin_size
+                        cell_type = cell_type_map[cell]
+
+                        # Count both Tn5 insertion sites independently for ATAC-seq accessibility
+                        coverage_aggregator[(chrom_id, bin_start, cell_type)] += 1
+                        if bin_start != bin_end:
+                            coverage_aggregator[(chrom_id, bin_end, cell_type)] += 1
+
+                    except ValueError:
+                        continue
+
+        except ValueError:
+            pass
+
+        return dict(coverage_aggregator), found_cells
 
     def extract_cell_metadata_from_h5ad(
         self, obs: pd.DataFrame, obs_column: str = "cell_type"
@@ -225,17 +190,27 @@ class ATACDataProcessor:
         genome_version: Optional[str] = None,
     ) -> None:
         """Main orchestration method for processing fragment data and writing to TileDB."""
-        coverage_aggregator, found_cells = self._process_all_chromosomes(
-            chrom_map, cell_type_map, valid_barcodes, genome_version
-        )
+        if genome_version:
+            all_windows = self._create_chromosome_windows(chrom_map, genome_version)
+        else:
+            all_windows = [(chrom_str, chrom_map[chrom_str], None, None) for chrom_str in chrom_map]
 
-        self._report_missing_cells(valid_barcodes, found_cells)
+        if len(all_windows) > self.batch_processing_threshold:
+            logger.info(f"Using batch processing for {len(all_windows)} windows")
+            self._process_chromosomes_in_batches(array_name, chrom_map, cell_type_map, valid_barcodes, genome_version)
+        else:
+            logger.info(f"Using single-pass processing for {len(all_windows)} windows")
+            coverage_aggregator, found_cells = self._process_all_chromosomes(
+                chrom_map, cell_type_map, valid_barcodes, genome_version
+            )
 
-        if not coverage_aggregator:
-            return
+            self._report_missing_cells(valid_barcodes, found_cells)
 
-        coverage_df = self._create_coverage_dataframe(coverage_aggregator)
-        self._write_coverage_to_tiledb(array_name, coverage_df)
+            if not coverage_aggregator:
+                return
+
+            coverage_df = self._create_coverage_dataframe(coverage_aggregator)
+            self._write_coverage_to_tiledb(array_name, coverage_df)
 
     def _process_all_chromosomes(
         self,
@@ -282,31 +257,14 @@ class ATACDataProcessor:
                     )
 
             with Pool(processes=num_processes) as pool:
-                full_chrom_args = [args for args in window_args if len(args) == 6]
-                windowed_args = [args for args in window_args if len(args) == 8]
-
-                results = []
-                if full_chrom_args:
-                    full_results = list(
-                        tqdm(
-                            pool.imap(_process_chromosome_worker, full_chrom_args),
-                            total=len(full_chrom_args),
-                            desc="Processing small chromosomes",
-                            unit="chrom",
-                        )
+                results = list(
+                    tqdm(
+                        pool.imap(self._process_chromosome_worker, window_args),
+                        total=len(window_args),
+                        desc="Processing chromosomes/windows",
+                        unit="task",
                     )
-                    results.extend(full_results)
-
-                if windowed_args:
-                    window_results = list(
-                        tqdm(
-                            pool.imap(_process_chromosome_window_worker, windowed_args),
-                            total=len(windowed_args),
-                            desc="Processing chromosome windows",
-                            unit="window",
-                        )
-                    )
-                    results.extend(window_results)
+                )
         else:
             chrom_args = [
                 (
@@ -323,7 +281,7 @@ class ATACDataProcessor:
             with Pool(processes=num_processes) as pool:
                 results = list(
                     tqdm(
-                        pool.imap(_process_chromosome_worker, chrom_args),
+                        pool.imap(self._process_chromosome_worker, chrom_args),
                         total=len(chrom_args),
                         desc="Processing chromosomes",
                         unit="chrom",
@@ -341,6 +299,190 @@ class ATACDataProcessor:
         missing_cells = len(valid_barcodes - found_cells)
         if missing_cells:
             logger.warning(f"{missing_cells} barcodes in .h5ad were not found in fragment file.")
+
+    def _process_chromosomes_in_batches(
+        self,
+        array_name: str,
+        chrom_map: Dict[str, int],
+        cell_type_map: Dict[str, str],
+        valid_barcodes: Set[str],
+        genome_version: Optional[str] = None,
+    ) -> None:
+        """Process chromosomes in batches to reduce memory usage."""
+        all_found_cells = set()
+
+        if genome_version:
+            all_windows = self._create_chromosome_windows(chrom_map, genome_version)
+        else:
+            all_windows = [(chrom_str, chrom_map[chrom_str], None, None) for chrom_str in chrom_map]
+
+        window_batches = []
+        for i in range(0, len(all_windows), self.chromosome_batch_size):
+            batch = all_windows[i : i + self.chromosome_batch_size]
+            window_batches.append(batch)
+
+        logger.info(f"Processing {len(all_windows)} chromosome windows in {len(window_batches)} batches")
+
+        logger.info("Computing global cell type totals for normalization...")
+        global_cell_type_totals = self._compute_global_cell_type_totals(window_batches, cell_type_map, valid_barcodes)
+
+        for batch_idx, window_batch in enumerate(window_batches):
+            logger.info(f"Processing batch {batch_idx + 1}/{len(window_batches)} with {len(window_batch)} windows")
+
+            batch_coverage_aggregator, batch_found_cells = self._process_chromosome_batch(
+                window_batch, cell_type_map, valid_barcodes
+            )
+
+            all_found_cells.update(batch_found_cells)
+
+            if not batch_coverage_aggregator:
+                logger.info(f"Batch {batch_idx + 1} had no coverage data, skipping")
+                continue
+
+            coverage_df = self._create_coverage_dataframe_with_totals(
+                batch_coverage_aggregator, global_cell_type_totals
+            )
+            self._write_coverage_to_tiledb(array_name, coverage_df, mode="a" if batch_idx > 0 else "w")
+
+        self._report_missing_cells(valid_barcodes, all_found_cells)
+
+    def _process_chromosome_batch(
+        self,
+        window_batch: List[Tuple],
+        cell_type_map: Dict[str, str],
+        valid_barcodes: Set[str],
+    ) -> Tuple[defaultdict, Set[str]]:
+        """Process a batch of chromosome windows using multiprocessing."""
+        coverage_aggregator = defaultdict(int)
+        found_cells = set()
+
+        num_processes = min(cpu_count(), max(1, len(window_batch)))
+        logger.info(f"Using {num_processes} processes for batch processing")
+        window_args = []
+        for chrom_str, chrom_id, window_start, window_end in window_batch:
+            if window_start is None:
+                window_args.append(
+                    (
+                        self.fragment_artifact_id,
+                        chrom_str,
+                        chrom_id,
+                        cell_type_map,
+                        valid_barcodes,
+                        self.bin_size,
+                    )
+                )
+            else:
+                window_args.append(
+                    (
+                        self.fragment_artifact_id,
+                        chrom_str,
+                        chrom_id,
+                        window_start,
+                        window_end,
+                        cell_type_map,
+                        valid_barcodes,
+                        self.bin_size,
+                    )
+                )
+
+        with Pool(processes=num_processes) as pool:
+            results = list(
+                tqdm(
+                    pool.imap(self._process_chromosome_worker, window_args),
+                    total=len(window_args),
+                    desc="Processing batch",
+                    unit="task",
+                )
+            )
+
+        for chrom_coverage, chrom_found_cells in results:
+            for key, count in chrom_coverage.items():
+                coverage_aggregator[key] += count
+            found_cells.update(chrom_found_cells)
+
+        return coverage_aggregator, found_cells
+
+    def _compute_global_cell_type_totals(
+        self,
+        window_batches: List[List[Tuple]],
+        cell_type_map: Dict[str, str],
+        valid_barcodes: Set[str],
+    ) -> Dict[str, int]:
+        """Compute global cell type totals across all batches for normalization."""
+        global_cell_type_totals = defaultdict(int)
+
+        for batch_idx, window_batch in enumerate(window_batches):
+            logger.info(f"Computing totals for batch {batch_idx + 1}/{len(window_batches)}")
+
+            batch_coverage_aggregator, _ = self._process_chromosome_batch(window_batch, cell_type_map, valid_barcodes)
+
+            for (_, _, cell_type), count in batch_coverage_aggregator.items():
+                global_cell_type_totals[cell_type] += count
+
+        return dict(global_cell_type_totals)
+
+    def _create_coverage_dataframe_with_totals(
+        self,
+        coverage_aggregator: defaultdict,
+        global_cell_type_totals: Dict[str, int],
+        chunk_size: int = 50000,
+    ) -> pd.DataFrame:
+        """Convert aggregated coverage data to normalized DataFrame using pre-computed global totals."""
+        # Store as instance variables temporarily
+        self._chunks = []
+        self._current_chunk = []
+        self._dataframe_chunk_size = chunk_size
+
+        total_records = len(coverage_aggregator)
+        logger.info(f"Processing {total_records:,} records for DataFrame creation...")
+
+        for _, ((chrom, bin_id, cell_type), count) in enumerate(
+            tqdm(coverage_aggregator.items(), desc="Processing DataFrame creation", unit="records")
+        ):
+            total_coverage = global_cell_type_totals.get(cell_type, 0)
+            normalized_coverage = (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
+
+            record = {
+                "chrom": chrom,
+                "bin": bin_id,
+                "cell_type": cell_type,
+                "coverage": count,
+                "total_coverage": total_coverage,
+                "normalized_coverage": normalized_coverage,
+            }
+
+            self._current_chunk.append(record)
+
+            if len(self._current_chunk) >= self._dataframe_chunk_size:
+                self._chunks.append(pd.DataFrame(self._current_chunk))
+                self._current_chunk.clear()
+
+        if self._current_chunk:
+            self._chunks.append(pd.DataFrame(self._current_chunk))
+
+        logger.info("Concatenating chunks...")
+        if not self._chunks:
+            del self._chunks
+            del self._current_chunk
+            del self._dataframe_chunk_size
+            return pd.DataFrame(
+                columns=["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
+            )
+
+        df = pd.concat(self._chunks, ignore_index=True, copy=False)
+
+        del self._chunks
+        del self._current_chunk
+        del self._dataframe_chunk_size
+
+        df["chrom"] = df["chrom"].astype("int32")
+        df["bin"] = df["bin"].astype("int32")
+        df["coverage"] = df["coverage"].astype("int32")
+        df["total_coverage"] = df["total_coverage"].astype("int32")
+        df["normalized_coverage"] = df["normalized_coverage"].astype("float32")
+
+        logger.info(f"Created DataFrame with {len(df):,} records")
+        return df
 
     def _compute_cell_type_totals(self, coverage_aggregator: defaultdict) -> Dict[str, int]:
         """Compute total coverage per cell type for normalization."""
@@ -425,10 +567,10 @@ class ATACDataProcessor:
         logger.info(f"Created DataFrame with {len(df):,} records")
         return df
 
-    def _write_coverage_to_tiledb(self, array_name: str, coverage_df: pd.DataFrame) -> None:
+    def _write_coverage_to_tiledb(self, array_name: str, coverage_df: pd.DataFrame, mode: str = "w") -> None:
         """Write coverage DataFrame to TileDB array."""
-        logger.info(f"Writing {len(coverage_df):,} coverage records to TileDB...")
-        with tiledb.SparseArray(array_name, mode="w", ctx=self.ctx) as A:
+        logger.info(f"Writing {len(coverage_df):,} coverage records to TileDB in {mode} mode...")
+        with tiledb.SparseArray(array_name, mode=mode, ctx=self.ctx) as A:
             A[
                 (
                     coverage_df["chrom"].astype("int32").to_numpy(),
