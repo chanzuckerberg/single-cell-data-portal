@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2025-06-25T03:12:05.025Z", "name": "backend.layers.processing.utils.atac", "message": "Using 1 processes for chromosome processing", "lineno": 189, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
