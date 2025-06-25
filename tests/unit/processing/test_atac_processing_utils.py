@@ -775,3 +775,233 @@ class TestATACDataProcessor:
 
         expected_array_name = f"{cxg_container}/{group_metadata_name}"
         mock_atac_processor.process_fragment_file.assert_called_once_with(metadata_dict, expected_array_name)
+
+    def test__process_chromosome_worker_valid_fragments(self, tmp_path):
+        """Test _process_chromosome_worker processes valid fragments correctly."""
+        fragments = [
+            "chr1\t100\t200\tcell1",
+            "chr1\t250\t350\tcell3",
+            "chr1\t300\t400\tcell1",
+            "chr1\t500\t600\tcell2",
+        ]
+
+        uncompressed_file = tmp_path / "test_fragments.tsv"
+        with open(uncompressed_file, "w") as f:
+            f.write("\n".join(fragments) + "\n")
+
+        import subprocess
+
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        subprocess.run(["bgzip", str(uncompressed_file)], check=True, capture_output=True)
+        subprocess.run(["tabix", "-p", "bed", str(fragment_file)], check=True, capture_output=True)
+
+        chrom_str = "chr1"
+        chrom_id = 1
+        cell_type_map = {"cell1": "T cell", "cell2": "B cell"}
+        valid_barcodes = {"cell1", "cell2"}
+        bin_size = 100
+
+        args = (str(fragment_file), chrom_str, chrom_id, cell_type_map, valid_barcodes, bin_size)
+
+        coverage_aggregator, found_cells = ATACDataProcessor._process_chromosome_worker(args)
+
+        assert found_cells == {"cell1", "cell2"}
+        assert len(coverage_aggregator) > 0
+        assert (chrom_id, 1, "T cell") in coverage_aggregator
+        assert (chrom_id, 3, "T cell") in coverage_aggregator
+        assert (chrom_id, 5, "B cell") in coverage_aggregator
+
+        cell_types_in_coverage = {key[2] for key in coverage_aggregator}
+        assert len(cell_types_in_coverage) == 2
+
+        for count in coverage_aggregator.values():
+            assert count > 0
+
+    def test__process_chromosome_worker_spanning_bins(self, tmp_path):
+        """Test _process_chromosome_worker handles fragments spanning multiple bins."""
+        fragments = ["chr1\t150\t350\tcell1"]
+
+        uncompressed_file = tmp_path / "test_fragments.tsv"
+        with open(uncompressed_file, "w") as f:
+            f.write("\n".join(fragments) + "\n")
+
+        import subprocess
+
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        subprocess.run(["bgzip", str(uncompressed_file)], check=True, capture_output=True)
+        subprocess.run(["tabix", "-p", "bed", str(fragment_file)], check=True, capture_output=True)
+
+        chrom_str = "chr1"
+        chrom_id = 1
+        cell_type_map = {"cell1": "T cell"}
+        valid_barcodes = {"cell1"}
+        bin_size = 100
+
+        args = (str(fragment_file), chrom_str, chrom_id, cell_type_map, valid_barcodes, bin_size)
+
+        coverage_aggregator, found_cells = ATACDataProcessor._process_chromosome_worker(args)
+
+        assert found_cells == {"cell1"}
+        assert (chrom_id, 1, "T cell") in coverage_aggregator
+        assert (chrom_id, 3, "T cell") in coverage_aggregator
+        assert coverage_aggregator[(chrom_id, 1, "T cell")] == 1
+        assert coverage_aggregator[(chrom_id, 3, "T cell")] == 1
+
+    def test__process_chromosome_worker_invalid_coordinates(self, tmp_path):
+        """Test _process_chromosome_worker handles invalid coordinates gracefully."""
+        fragments = [
+            "chr1\t100\t200\tcell1",
+            "chr1\t500\t600\tcell1",
+        ]
+
+        uncompressed_file = tmp_path / "test_fragments.tsv"
+        with open(uncompressed_file, "w") as f:
+            f.write("\n".join(fragments) + "\n")
+
+        import subprocess
+
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        subprocess.run(["bgzip", str(uncompressed_file)], check=True, capture_output=True)
+        subprocess.run(["tabix", "-p", "bed", str(fragment_file)], check=True, capture_output=True)
+
+        chrom_str = "chr1"
+        chrom_id = 1
+        cell_type_map = {"cell1": "T cell"}
+        valid_barcodes = {"cell1"}
+        bin_size = 100
+
+        args = (str(fragment_file), chrom_str, chrom_id, cell_type_map, valid_barcodes, bin_size)
+
+        coverage_aggregator, found_cells = ATACDataProcessor._process_chromosome_worker(args)
+
+        assert found_cells == {"cell1"}
+
+        expected_bins = {1, 5}
+        actual_bins = {key[1] for key in coverage_aggregator}
+        assert actual_bins == expected_bins
+
+    def test__process_chromosome_worker_malformed_rows(self, tmp_path):
+        """Test _process_chromosome_worker handles malformed rows gracefully."""
+        fragments = [
+            "chr1\t100\t200\tcell1",
+            "chr1\t400\t500\tcell1",
+        ]
+
+        uncompressed_file = tmp_path / "test_fragments.tsv"
+        with open(uncompressed_file, "w") as f:
+            f.write("\n".join(fragments) + "\n")
+
+        import subprocess
+
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        subprocess.run(["bgzip", str(uncompressed_file)], check=True, capture_output=True)
+        subprocess.run(["tabix", "-p", "bed", str(fragment_file)], check=True, capture_output=True)
+
+        chrom_str = "chr1"
+        chrom_id = 1
+        cell_type_map = {"cell1": "T cell"}
+        valid_barcodes = {"cell1"}
+        bin_size = 100
+
+        args = (str(fragment_file), chrom_str, chrom_id, cell_type_map, valid_barcodes, bin_size)
+
+        coverage_aggregator, found_cells = ATACDataProcessor._process_chromosome_worker(args)
+
+        assert found_cells == {"cell1"}
+
+        expected_bins = {1, 4}
+        actual_bins = {key[1] for key in coverage_aggregator}
+        assert actual_bins == expected_bins
+
+    def test__process_chromosome_worker_empty_file(self, tmp_path):
+        """Test _process_chromosome_worker handles empty fragment file."""
+        uncompressed_file = tmp_path / "test_fragments.tsv"
+        with open(uncompressed_file, "w") as f:
+            f.write("")
+
+        import subprocess
+
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        subprocess.run(["bgzip", str(uncompressed_file)], check=True, capture_output=True)
+        subprocess.run(["tabix", "-p", "bed", str(fragment_file)], check=True, capture_output=True)
+
+        chrom_str = "chr1"
+        chrom_id = 1
+        cell_type_map = {"cell1": "T cell"}
+        valid_barcodes = {"cell1"}
+        bin_size = 100
+
+        args = (str(fragment_file), chrom_str, chrom_id, cell_type_map, valid_barcodes, bin_size)
+
+        coverage_aggregator, found_cells = ATACDataProcessor._process_chromosome_worker(args)
+
+        assert len(coverage_aggregator) == 0
+        assert len(found_cells) == 0
+
+    def test__process_chromosome_worker_no_valid_cells(self, tmp_path):
+        """Test _process_chromosome_worker when no fragments match valid barcodes."""
+        fragments = [
+            "chr1\t100\t200\tinvalid_cell1",
+            "chr1\t300\t400\tinvalid_cell2",
+        ]
+
+        uncompressed_file = tmp_path / "test_fragments.tsv"
+        with open(uncompressed_file, "w") as f:
+            f.write("\n".join(fragments) + "\n")
+
+        import subprocess
+
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        subprocess.run(["bgzip", str(uncompressed_file)], check=True, capture_output=True)
+        subprocess.run(["tabix", "-p", "bed", str(fragment_file)], check=True, capture_output=True)
+
+        chrom_str = "chr1"
+        chrom_id = 1
+        cell_type_map = {"valid_cell": "T cell"}
+        valid_barcodes = {"valid_cell"}
+        bin_size = 100
+
+        args = (str(fragment_file), chrom_str, chrom_id, cell_type_map, valid_barcodes, bin_size)
+
+        coverage_aggregator, found_cells = ATACDataProcessor._process_chromosome_worker(args)
+
+        assert len(coverage_aggregator) == 0
+        assert len(found_cells) == 0
+
+    def test__process_chromosome_worker_coordinate_validation(self, mocker):
+        """Test _process_chromosome_worker coordinate validation logic using mocks."""
+        mock_tabix_file = mocker.MagicMock()
+        mock_tabix = mocker.MagicMock()
+        mock_tabix.__enter__.return_value = mock_tabix_file
+
+        mock_tabix_file.fetch.return_value = [
+            "chr1\t100\t200\tcell1",
+            "chr1\t-50\t100\tcell1",
+            "chr1\t300\t300\tcell1",
+            "chr1\t400\t350\tcell1",
+            "chr1\tabc\t200\tcell1",
+            "chr1\t500\t600\tcell1",
+            "chr1\t200\t300",
+            "incomplete",
+        ]
+
+        mocker.patch("pysam.TabixFile", return_value=mock_tabix)
+
+        fragment_file = "/fake/path/fragments.tsv.gz"
+        chrom_str = "chr1"
+        chrom_id = 1
+        cell_type_map = {"cell1": "T cell"}
+        valid_barcodes = {"cell1"}
+        bin_size = 100
+
+        args = (fragment_file, chrom_str, chrom_id, cell_type_map, valid_barcodes, bin_size)
+
+        coverage_aggregator, found_cells = ATACDataProcessor._process_chromosome_worker(args)
+
+        assert found_cells == {"cell1"}
+
+        expected_bins = {1, 5}
+        actual_bins = {key[1] for key in coverage_aggregator}
+        assert actual_bins == expected_bins
+
+        mock_tabix_file.fetch.assert_called_once_with(chrom_str)
