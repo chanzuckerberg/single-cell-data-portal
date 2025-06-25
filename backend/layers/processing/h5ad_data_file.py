@@ -98,7 +98,7 @@ class H5ADDataFile:
             # Set the index of the obs dataframe to the obs_index_column_name
             # This is necessary for the coverage conversion to work correctly.
             # The obs_index_column_name is set in the transform_dataframe_index_into_column method.
-            self.obs.set_index(self.obs_index_column_name, inplace=True)
+            self.obs = self.obs.set_index(self.obs_index_column_name)
 
             convert_coverage_to_cxg_array(output_cxg_directory, self.obs, fragment_artifact_id, "coverage", ctx)
             logging.info("\t...dataset coverage dataframe saved")
