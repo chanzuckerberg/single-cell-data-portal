@@ -4,20 +4,18 @@ from collections import defaultdict
 from multiprocessing import Pool, cpu_count
 from typing import Dict, List, Optional, Set, Tuple
 
+import cellxgene_schema.atac_seq as atac_seq
 import numpy as np
 import pandas as pd
 import pysam
 import tiledb
 from tqdm import tqdm
 
-from .config.genome_config import CHROM_LENGTHS
-
 logger = logging.getLogger(__name__)
 
 
 BIN_SIZE = 100
 NORMALIZATION_FACTOR = 2_000_000
-CHROMOSOME_BATCH_SIZE = 5
 
 
 class ATACDataProcessor:
@@ -32,20 +30,7 @@ class ATACDataProcessor:
         self.fragment_artifact_id = fragment_artifact_id
         self.ctx = ctx
         self.bin_size = BIN_SIZE
-        self.chrom_lengths = CHROM_LENGTHS
         self.normalization_factor = NORMALIZATION_FACTOR
-        self.chromosome_batch_size = CHROMOSOME_BATCH_SIZE
-
-    @staticmethod
-    def get_genome_version(organism_ontology_term_id: str) -> str:
-        mapping = {
-            "NCBITaxon:9606": "hg38",
-            "NCBITaxon:10090": "mm39",
-        }
-
-        if organism_ontology_term_id not in mapping:
-            raise ValueError(f"Unknown organism ontology term ID: {organism_ontology_term_id}")
-        return mapping[organism_ontology_term_id]
 
     @staticmethod
     def _process_chromosome_worker(args):
@@ -92,32 +77,39 @@ class ATACDataProcessor:
         return dict(coverage_aggregator), found_cells
 
     def extract_cell_metadata_from_h5ad(
-        self, obs: pd.DataFrame, obs_column: str = "cell_type"
+        self, obs: pd.DataFrame, obs_column: str = "cell_type", uns: Optional[Dict] = None
     ) -> Tuple[pd.DataFrame, str]:
         if obs_column not in obs.columns:
             raise ValueError(f"Column {obs_column} not found in obs DataFrame.")
 
-        if "organism_ontology_term_id" not in obs.columns:
-            raise ValueError("Column 'organism_ontology_term_id' is required but not found in obs DataFrame.")
+        organism_ontology_term_id = None
 
-        organism_ontology_term_id = obs["organism_ontology_term_id"].iloc[0]
+        if uns is not None and "organism_ontology_term_id" in uns:
+            organism_ontology_term_id = uns["organism_ontology_term_id"]
+        elif "organism_ontology_term_id" in obs.columns:
+            organism_ontology_term_id = obs["organism_ontology_term_id"].iloc[0]
+        else:
+            raise ValueError(
+                "Column 'organism_ontology_term_id' is required but not found in obs DataFrame or uns dict."
+            )
+
         if pd.isna(organism_ontology_term_id):
             raise ValueError("organism_ontology_term_id cannot be null/NaN.")
 
         df = obs[[obs_column]].copy()
         df = df.rename_axis("cell_name").reset_index()
-        genome_version = self.get_genome_version(organism_ontology_term_id)
-        return df, genome_version
+        chromosome_by_length = atac_seq.organism_ontology_term_id_by_chromosome_length_table.get(
+            organism_ontology_term_id
+        )
+        return df, chromosome_by_length
 
-    def calculate_max_bins(self, genome_version: str) -> int:
-        bins_per_chrom = {
-            chrom: int(length / self.bin_size) + 1 for chrom, length in self.chrom_lengths[genome_version].items()
-        }
+    def calculate_max_bins(self, chromosome_by_length: Dict) -> int:
+        bins_per_chrom = {chrom: int(length / self.bin_size) + 1 for chrom, length in chromosome_by_length.items()}
         return max(bins_per_chrom.values()) - 1
 
-    def build_chrom_mapping(self, genome_version: str) -> Tuple[int, Dict[str, int]]:
+    def build_chrom_mapping(self, chromosome_by_length: Dict) -> Tuple[int, Dict[str, int]]:
         chrom_map = defaultdict(lambda: 0)
-        for i, chrom in enumerate(self.chrom_lengths[genome_version], 1):
+        for i, chrom in enumerate(chromosome_by_length, 1):
             chrom_map[chrom] = i
         max_chrom = max(chrom_map.values())
         return max_chrom, chrom_map
@@ -156,14 +148,20 @@ class ATACDataProcessor:
         chrom_map: Dict[str, int],
         cell_type_map: Dict[str, str],
         valid_barcodes: Set[str],
-        genome_version: Optional[str] = None,
     ) -> None:
         """Main orchestration method for processing fragment data and writing to TileDB."""
-        if len(chrom_map) > self.chromosome_batch_size:
-            logger.info(f"Using batch processing for {len(chrom_map)} chromosomes")
-            self._process_chromosomes_in_batches(array_name, chrom_map, cell_type_map, valid_barcodes)
+        num_chromosomes = len(chrom_map)
+        chromosome_batch_size = cpu_count()
+
+        if num_chromosomes > chromosome_batch_size:
+            logger.info(
+                f"Using batch processing for {num_chromosomes} chromosomes with batch size {chromosome_batch_size}"
+            )
+            self._process_chromosomes_in_batches(
+                array_name, chrom_map, cell_type_map, valid_barcodes, chromosome_batch_size
+            )
         else:
-            logger.info(f"Using single-pass processing for {len(chrom_map)} chromosomes")
+            logger.info(f"Using single-pass processing for {num_chromosomes} chromosomes")
             coverage_aggregator, found_cells = self._process_all_chromosomes(chrom_map, cell_type_map, valid_barcodes)
 
             self._report_missing_cells(valid_barcodes, found_cells)
@@ -229,6 +227,7 @@ class ATACDataProcessor:
         chrom_map: Dict[str, int],
         cell_type_map: Dict[str, str],
         valid_barcodes: Set[str],
+        chromosome_batch_size: int,
     ) -> None:
         """Process chromosomes in batches to reduce memory usage."""
         all_found_cells = set()
@@ -236,8 +235,8 @@ class ATACDataProcessor:
 
         chrom_list = list(chrom_map.items())
         chrom_batches = []
-        for i in range(0, len(chrom_list), self.chromosome_batch_size):
-            batch = chrom_list[i : i + self.chromosome_batch_size]
+        for i in range(0, len(chrom_list), chromosome_batch_size):
+            batch = chrom_list[i : i + chromosome_batch_size]
             chrom_batches.append(batch)
 
         logger.info(f"Processing {len(chrom_list)} chromosomes in {len(chrom_batches)} batches")
@@ -373,14 +372,14 @@ class ATACDataProcessor:
             }
         logger.info("Successfully wrote data to TileDB")
 
-    def process_fragment_file(self, obs: pd.DataFrame, array_name: str) -> None:
-        df_meta, genome_version = self.extract_cell_metadata_from_h5ad(obs)
+    def process_fragment_file(self, obs: pd.DataFrame, array_name: str, uns: Optional[Dict] = None) -> None:
+        df_meta, chromosome_by_length = self.extract_cell_metadata_from_h5ad(obs, uns=uns)
 
         valid_barcodes = set(df_meta["cell_name"])
         cell_type_map = dict(zip(df_meta["cell_name"], df_meta["cell_type"], strict=False))
 
-        max_chrom, chrom_map = self.build_chrom_mapping(genome_version)
-        max_bins = self.calculate_max_bins(genome_version)
+        max_chrom, chrom_map = self.build_chrom_mapping(chromosome_by_length)
+        max_bins = self.calculate_max_bins(chromosome_by_length)
 
         self.create_dataframe_array(array_name, max_chrom, max_bins)
-        self.write_binned_coverage_per_chrom(array_name, chrom_map, cell_type_map, valid_barcodes, genome_version)
+        self.write_binned_coverage_per_chrom(array_name, chrom_map, cell_type_map, valid_barcodes)

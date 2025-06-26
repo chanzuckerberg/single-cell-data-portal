@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+import cellxgene_schema.atac_seq as atac_seq
 import numpy as np
 import pandas as pd
 import pytest
@@ -155,17 +156,6 @@ def mock_tiledb_components(mocker):
 class TestATACDataProcessor:
     """Test suite for ATACDataProcessor class."""
 
-    def test__get_genome_version_valid_organisms(self, organism_genome_pair):
-        """Test genome version mapping for valid organisms."""
-        organism_id, expected_genome = organism_genome_pair
-        result = ATACDataProcessor.get_genome_version(organism_id)
-        assert result == expected_genome
-
-    def test__get_genome_version_invalid_organism(self):
-        """Test ValueError is raised for unknown organism ontology term ID."""
-        with pytest.raises(ValueError, match="Unknown organism ontology term ID"):
-            ATACDataProcessor.get_genome_version("NCBITaxon:12345")
-
     def test__constructor_valid_file_path(self, tmp_path):
         """Test ATACDataProcessor initialization with valid fragment file path."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
@@ -201,11 +191,15 @@ class TestATACDataProcessor:
             index=cell_names,
         )
 
-        df_meta, genome_version = processor.extract_cell_metadata_from_h5ad(obs)
+        df_meta, chromosome_by_length = processor.extract_cell_metadata_from_h5ad(obs)
 
         expected_df = pd.DataFrame({"cell_name": cell_names, "cell_type": cell_types})
         pd.testing.assert_frame_equal(df_meta, expected_df)
-        assert genome_version == expected_genome
+        assert chromosome_by_length is not None
+        assert isinstance(chromosome_by_length, dict)
+        # Check that we have common chromosomes
+        assert "chr1" in chromosome_by_length
+        assert "chr2" in chromosome_by_length
 
     def test__extract_cell_metadata_missing_obs_column(self, tmp_path, organism_genome_pair):
         """Test ValueError when obs_column is missing from DataFrame."""
@@ -256,8 +250,9 @@ class TestATACDataProcessor:
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
-        _, genome_version = organism_genome_pair
-        max_chrom, chrom_map = processor.build_chrom_mapping(genome_version)
+        organism_id, _ = organism_genome_pair
+        chromosome_by_length = atac_seq.organism_ontology_term_id_by_chromosome_length_table.get(organism_id)
+        max_chrom, chrom_map = processor.build_chrom_mapping(chromosome_by_length)
 
         assert chrom_map["chr1"] == 1
         assert chrom_map["chr2"] == 2
@@ -274,8 +269,9 @@ class TestATACDataProcessor:
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
-        _, genome_version = organism_genome_pair
-        max_bins = processor.calculate_max_bins(genome_version)
+        organism_id, _ = organism_genome_pair
+        chromosome_by_length = atac_seq.organism_ontology_term_id_by_chromosome_length_table.get(organism_id)
+        max_bins = processor.calculate_max_bins(chromosome_by_length)
 
         assert isinstance(max_bins, int)
         assert max_bins > 0
@@ -728,7 +724,7 @@ class TestATACDataProcessor:
 
         processor.process_fragment_file(obs, array_name)
 
-        df_meta, genome_version = processor.extract_cell_metadata_from_h5ad(obs)
+        df_meta, chromosome_by_length = processor.extract_cell_metadata_from_h5ad(obs)
 
         expected_valid_barcodes = set(cell_names)
         assert set(df_meta["cell_name"]) == expected_valid_barcodes
@@ -737,7 +733,8 @@ class TestATACDataProcessor:
         actual_cell_type_map = dict(zip(df_meta["cell_name"], df_meta["cell_type"], strict=False))
         assert actual_cell_type_map == expected_cell_type_map
 
-        assert genome_version == expected_genome
+        assert chromosome_by_length is not None
+        assert isinstance(chromosome_by_length, dict)
         assert isinstance(df_meta, pd.DataFrame)
         assert len(df_meta) == len(cell_names)
 
@@ -774,7 +771,7 @@ class TestATACDataProcessor:
         mock_atac_processor_class.assert_called_once_with(fragment_artifact_id, ctx)
 
         expected_array_name = f"{cxg_container}/{group_metadata_name}"
-        mock_atac_processor.process_fragment_file.assert_called_once_with(metadata_dict, expected_array_name)
+        mock_atac_processor.process_fragment_file.assert_called_once_with(metadata_dict, expected_array_name, uns=None)
 
     def test__process_chromosome_worker_valid_fragments(self, tmp_path):
         """Test _process_chromosome_worker processes valid fragments correctly."""
