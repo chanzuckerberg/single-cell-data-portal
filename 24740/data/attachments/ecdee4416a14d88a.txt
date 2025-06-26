@@ -1,2 +1,0 @@
-{"levelname": "INFO", "asctime": "2025-06-18T23:03:25.018Z", "name": "backend.layers.processing.utils.atac", "message": "Processing chr1...", "lineno": 137, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
-{"levelname": "WARNING", "asctime": "2025-06-18T23:03:25.018Z", "name": "backend.layers.processing.utils.atac", "message": "1 barcodes in .h5ad were not found in fragment file.", "lineno": 209, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
