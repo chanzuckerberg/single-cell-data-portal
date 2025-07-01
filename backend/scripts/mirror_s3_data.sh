@@ -138,6 +138,6 @@ else  # i.e., if DEST_ENV != 'rdev'
   AWS_SESSION_TOKEN=`jq -r '.SessionToken' <<< $SYNC_ROLE_CREDENTIALS` \
   AWS_SECRET_ACCESS_KEY=`jq -r '.SecretAccessKey' <<< $SYNC_ROLE_CREDENTIALS` \
   AWS_ACCESS_KEY_ID=`jq -r '.AccessKeyId' <<< $SYNC_ROLE_CREDENTIALS` \
-  $PARALLEL_CMD $S3_SYNC_CMD s3://dataset-assets-public-${SRC_ENV}/ s3://dataset-assets-public-${DEST_ENV}/ --exclude "'*'" --include "'{}*'" ::: $hex_chars
+  $PARALLEL_CMD $S3_SYNC_CMD s3://dataset-assets-public-${SRC_ENV}/ s3://dataset-assets-public-${DEST_ENV}/ --acl bucket-owner-full-control --exclude "'*'" --include "'{}*'" ::: $hex_chars
   set +x
 fi
