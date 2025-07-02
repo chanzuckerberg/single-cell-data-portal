@@ -1,5 +1,4 @@
 import logging
-import os
 import sys
 from contextlib import suppress
 
@@ -11,7 +10,8 @@ logger = logging.getLogger("processing")
 
 
 def configure_logging(level=None):
-    level = getattr(logging, os.environ.get("LOG_LEVEL", "INFO").upper())
+    # level = getattr(logging, os.environ.get("LOG_LEVEL", "INFO").upper())
+    level = "DEBUG"
     log_stdout_handler = logging.StreamHandler(stream=sys.stdout)
     formatter = jsonlogger.JsonFormatter(LOG_FORMAT, DATETIME_FORMAT)
     log_stdout_handler.setFormatter(formatter)
