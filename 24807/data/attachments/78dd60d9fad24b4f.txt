@@ -1,0 +1,67 @@
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': 7ae61478-11cd-49c4-8fab-6f339d1208a9, 'manifest': IngestionManifest(anndata=HttpUrl('https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     processing:process.py:109 Processing dataset version f91dcb60-800d-4b6f-bcfd-3becfa647aba
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:26 Start download_from_source_uri
+DEBUG    urllib3.connectionpool:connectionpool.py:1049 Starting new HTTPS connection (1): www.dropbox.com:443
+DEBUG    urllib3.connectionpool:connectionpool.py:544 https://www.dropbox.com:443 "HEAD /s/ow84zm4h0wkl409/test.h5ad?dl=1 HTTP/1.1" 302 0
+DEBUG    urllib3.connectionpool:connectionpool.py:544 https://www.dropbox.com:443 "HEAD /scl/fi/xllyuw73r6mhjqou7nxqw/test.h5ad?rlkey=9hbqjo0buuys7m1tv2l7aeu5l&dl=1 HTTP/1.1" 302 0
+DEBUG    urllib3.connectionpool:connectionpool.py:1049 Starting new HTTPS connection (1): uc996748f10740d3fa83d3f54cd5.dl.dropboxusercontent.com:443
+DEBUG    urllib3.connectionpool:connectionpool.py:544 https://uc996748f10740d3fa83d3f54cd5.dl.dropboxusercontent.com:443 "HEAD /cd/0/get/Csu_4MVcM8OfCyX7Lp1-iHzhcOIS9c_AjmHxxGmTqhi8KvxcqSPZEHPaDK_7F1AlA0XataqLqTsC_WC4jGbtjCDQcLY4eQZ3ga4ffe89yaXRT-GdJh08ALyTifNdYPGkUhatJTQsi2GvCa5vgAmrJkIn/file?dl=1 HTTP/1.1" 200 0
+DEBUG    urllib3.connectionpool:connectionpool.py:1049 Starting new HTTPS connection (1): www.dropbox.com:443
+DEBUG    urllib3.connectionpool:connectionpool.py:544 https://www.dropbox.com:443 "GET /s/ow84zm4h0wkl409/test.h5ad?dl=1 HTTP/1.1" 302 126
+DEBUG    urllib3.connectionpool:connectionpool.py:544 https://www.dropbox.com:443 "GET /scl/fi/xllyuw73r6mhjqou7nxqw/test.h5ad?rlkey=9hbqjo0buuys7m1tv2l7aeu5l&dl=1 HTTP/1.1" 302 17
+DEBUG    urllib3.connectionpool:connectionpool.py:1049 Starting new HTTPS connection (1): uc67af0d2e6e5c9d6126debff89b.dl.dropboxusercontent.com:443
+DEBUG    urllib3.connectionpool:connectionpool.py:544 https://uc67af0d2e6e5c9d6126debff89b.dl.dropboxusercontent.com:443 "GET /cd/0/get/CsvmfvtDRYghhdcVagNwzlSCPXvp9yYnOLiV6vrqpOvm0o6Bl-lC9rK2U_Ees31Zx6zihTF05MfP_TG3zY-qrw8AQwkkfhuvvSfTu0OIhhfuWSzqYnK7Ut3yVaJCr3ED6aQpQg1LfQQ2csPbrdJ1NGGe/file?dl=1 HTTP/1.1" 200 20
+DEBUG    processing:downloader.py:27 Starting download.
+DEBUG    processing:downloader.py:32 chunk size: 20
+INFO     processing:logger.py:28 Complete download_from_source_uri
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:100 Uploaded [f91dcb60-800d-4b6f-bcfd-3becfa647aba/raw.h5ad] to s3://fake_bucket_name/f91dcb60-800d-4b6f-bcfd-3becfa647aba/raw.h5ad
+INFO     processing:process_logic.py:102 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:26 Start validate_h5ad_file
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:28 Complete validate_h5ad_file
+INFO     processing:process.py:109 Processing dataset version f91dcb60-800d-4b6f-bcfd-3becfa647aba
+INFO     processing:logger.py:26 Start download_from_source_uri
+DEBUG    urllib3.connectionpool:connectionpool.py:1049 Starting new HTTPS connection (1): www.dropbox.com:443
+DEBUG    urllib3.connectionpool:connectionpool.py:544 https://www.dropbox.com:443 "HEAD /s/ow84zm4h0wkl409/test.h5ad?dl=1 HTTP/1.1" 302 0
+DEBUG    urllib3.connectionpool:connectionpool.py:544 https://www.dropbox.com:443 "HEAD /scl/fi/xllyuw73r6mhjqou7nxqw/test.h5ad?rlkey=9hbqjo0buuys7m1tv2l7aeu5l&dl=1 HTTP/1.1" 302 0
+DEBUG    urllib3.connectionpool:connectionpool.py:1049 Starting new HTTPS connection (1): uc55908f8f20a96ecc9a2c853047.dl.dropboxusercontent.com:443
+DEBUG    urllib3.connectionpool:connectionpool.py:544 https://uc55908f8f20a96ecc9a2c853047.dl.dropboxusercontent.com:443 "HEAD /cd/0/get/CsumCOUh3O6kGGV98XdIYD_xNaU76GMCT2EFiWwZvgk1i3g3J_CTVMZgz3sqcs_E08sMU_MLTFl-mfuqOJy-9g473GAYRDi3AKh8eQf5vm_4fy0F8gvB5eHKUTgjgkvhRYd4BEDORyOGBRpQgHu49Lzz/file?dl=1 HTTP/1.1" 200 0
+DEBUG    urllib3.connectionpool:connectionpool.py:1049 Starting new HTTPS connection (1): www.dropbox.com:443
+DEBUG    urllib3.connectionpool:connectionpool.py:544 https://www.dropbox.com:443 "GET /s/ow84zm4h0wkl409/test.h5ad?dl=1 HTTP/1.1" 302 126
+DEBUG    urllib3.connectionpool:connectionpool.py:544 https://www.dropbox.com:443 "GET /scl/fi/xllyuw73r6mhjqou7nxqw/test.h5ad?rlkey=9hbqjo0buuys7m1tv2l7aeu5l&dl=1 HTTP/1.1" 302 17
+DEBUG    urllib3.connectionpool:connectionpool.py:1049 Starting new HTTPS connection (1): ucf336c3e3cb3f6f6cfbb422adce.dl.dropboxusercontent.com:443
+DEBUG    urllib3.connectionpool:connectionpool.py:544 https://ucf336c3e3cb3f6f6cfbb422adce.dl.dropboxusercontent.com:443 "GET /cd/0/get/Css2tLvpZPtCwVUcqEwLv1cWgbom4qwTxfNYDy-XikPJiE5eLuGe15UXv2QdwlvuMhQpaVLGSJPcFVUpbjkSvA1S80nfXNYx6y9eX82SIMfN-MHJWsz8ZCGn-NEUH4qUfAI_MW6n_xuH6QzVEXWCbT0A/file?dl=1 HTTP/1.1" 200 20
+DEBUG    processing:downloader.py:27 Starting download.
+DEBUG    processing:downloader.py:32 chunk size: 20
+INFO     processing:logger.py:28 Complete download_from_source_uri
+INFO     processing:process_validate_atac.py:112 Fragment is optional and not present. Skipping fragment validation.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process.py:109 Processing dataset version f91dcb60-800d-4b6f-bcfd-3becfa647aba
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:26 Start add_labels
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:28 Complete add_labels
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:100 Uploaded [f91dcb60-800d-4b6f-bcfd-3becfa647aba/local.h5ad] to s3://fake_bucket_name/f91dcb60-800d-4b6f-bcfd-3becfa647aba/local.h5ad
+INFO     processing:process_logic.py:102 Updated database with h5ad.
+INFO     processing:process_logic.py:106 Uploaded [f91dcb60-800d-4b6f-bcfd-3becfa647aba/local.h5ad] to s3://fake_datasets_bucket/f91dcb60-800d-4b6f-bcfd-3becfa647aba.h5ad
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process.py:109 Processing dataset version f91dcb60-800d-4b6f-bcfd-3becfa647aba
+INFO     processing:process_logic.py:119 Converting local.h5ad
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:125 Finished converting <MagicMock name='make_cxg' id='140538207041760'> in 0:00:00.000520
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_cxg.py:107 Updating database with cxg artifact for dataset f91dcb60-800d-4b6f-bcfd-3becfa647aba. s3_uri is s3://fake_cxg_bucket/f91dcb60-800d-4b6f-bcfd-3becfa647aba.cxg/
+INFO     processing:process_logic.py:49 Updating processing status
