@@ -1,0 +1,3 @@
+DEBUG    h5py._conv:attrs.py:205 Creating converter from 5 to 3
+INFO     processing:logger.py:26 Start extract_metadata
+INFO     processing:logger.py:28 Complete extract_metadata

@@ -1,0 +1,9 @@
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': a5939c2a-7d27-412a-8179-f906b4688023, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': a5939c2a-7d27-412a-8179-f906b4688023, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': 92314299-9cc7-425c-b5c1-5b2d9f3b518f}
+INFO     processing:dataset_metadata_update.py:262 Main: Raw h5ad update required
+INFO     processing:dataset_metadata_update.py:278 Main: Starting thread for h5ad update
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:dataset_metadata_update.py:301 Main: Starting thread for cxg update
+INFO     processing:dataset_metadata_update.py:333 Main: No ATAC fragment found, copying status from current dataset version
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:49 Updating processing status
