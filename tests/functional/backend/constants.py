@@ -21,8 +21,8 @@ DATASET_URI = (
 )
 
 VISIUM_DATASET_URI = (
-    "https://www.dropbox.com/scl/fi/x4d6q17xbj4zfqks9m908/small_visium.h5ad?rlkey"
-    "=rp26hrukecie474209farkezc&st=d7vtgcfm&dl=0"
+    "https://www.dropbox.com/scl/fi/3lf2fhqopyy2lxhruody3/visium_small.h5ad?rlkey"
+    "=uft7b1t5tr1ka19p7jyfwjikd&st=13ly0raj&dl=0"
 )
 
 DATASET_MANIFEST = {"anndata": DATASET_URI}
