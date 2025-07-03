@@ -1,7 +1,7 @@
 anndata # uses the version supplied by cellxgene-schema
 awscli
 boto3>=1.11.17
-cellxgene-schema @ git+https://github.com/chanzuckerberg/single-cell-curation.git@221bd738ad2cc464ce77277849261516e3aafe41#subdirectory=cellxgene_schema_cli
+cellxgene-schema==6.0.0
 dask==2024.12.0
 dataclasses-json
 ddtrace==2.1.4

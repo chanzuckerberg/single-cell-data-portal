@@ -15,7 +15,7 @@ def configure_logging(level=None):
     log_stdout_handler = logging.StreamHandler(stream=sys.stdout)
     formatter = jsonlogger.JsonFormatter(LOG_FORMAT, DATETIME_FORMAT)
     log_stdout_handler.setFormatter(formatter)
-    logging.basicConfig(handlers=[log_stdout_handler], level=logging.DEBUG, force=True)
+    logging.basicConfig(handlers=[log_stdout_handler], level=level, force=True)
     logging.getLogger("botocore").setLevel(max([logging.INFO, level]))  # don't set boto3 less than INFO
     logging.getLogger("s3transfer").setLevel(max([logging.INFO, level]))
 
