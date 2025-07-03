@@ -1,0 +1,3 @@
+{"levelname": "DEBUG", "asctime": "2025-07-03T14:14:15.003Z", "name": "h5py._conv", "message": "Creating converter from 5 to 3", "lineno": 205, "pathname": "/opt/venv/lib/python3.10/site-packages/h5py/_hl/attrs.py"}
+{"levelname": "INFO", "asctime": "2025-07-03T14:14:15.003Z", "name": "processing", "message": "Start extract_metadata", "lineno": 26, "pathname": "/single-cell-data-portal/backend/layers/processing/logger.py", "type": "METRIC"}
+{"levelname": "INFO", "asctime": "2025-07-03T14:14:16.003Z", "name": "processing", "message": "Complete extract_metadata", "lineno": 28, "pathname": "/single-cell-data-portal/backend/layers/processing/logger.py", "type": "METRIC"}
