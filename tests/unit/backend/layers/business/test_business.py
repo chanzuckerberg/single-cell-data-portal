@@ -1,3 +1,4 @@
+import itertools
 import os
 import unittest
 import uuid
@@ -219,6 +220,28 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         )
         return version
 
+    def add_dataset_to_collection(
+        self,
+        collection_version_id: CollectionVersionId,
+        dataset_version_id: DatasetVersionId = None,
+        complete_dataset_ingestion: bool = True,
+    ) -> None:
+        """
+        Links a dataset to a collection version
+        """
+        dataset_version_id = (
+            self.database_provider.create_canonical_dataset(
+                collection_version_id,
+            ).version_id
+            if dataset_version_id is None
+            else dataset_version_id
+        )
+        self.database_provider.set_dataset_metadata(dataset_version_id, self.sample_dataset_metadata)
+        self.database_provider.add_dataset_to_collection_version_mapping(collection_version_id, dataset_version_id)
+        if complete_dataset_ingestion:
+            self.complete_dataset_processing_with_success(dataset_version_id)
+        return dataset_version_id
+
     def initialize_unpublished_collection(
         self,
         owner: str = test_user_name,
@@ -234,15 +257,9 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         """
         version = self.initialize_empty_unpublished_collection(owner, curator_name, links)
         for _ in range(num_datasets):
-            dataset_version = self.database_provider.create_canonical_dataset(
-                version.version_id,
+            self.add_dataset_to_collection(
+                collection_version_id=version.version_id, complete_dataset_ingestion=complete_dataset_ingestion
             )
-            self.database_provider.set_dataset_metadata(dataset_version.version_id, self.sample_dataset_metadata)
-            self.database_provider.add_dataset_to_collection_version_mapping(
-                version.version_id, dataset_version.version_id
-            )
-            if complete_dataset_ingestion:
-                self.complete_dataset_processing_with_success(dataset_version.version_id)
         return self.database_provider.get_collection_version_with_datasets(version.version_id)
 
     def initialize_published_collection(
@@ -303,7 +320,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             self.database_provider.get_collection_version_with_datasets(revision.version_id),
         )
 
-    def complete_dataset_processing_with_success(self, dataset_version_id: DatasetVersionId) -> None:
+    def complete_dataset_processing_with_success(self, dataset_version_id: DatasetVersionId, skip_atac=False) -> None:
         """
         Test method that "completes" a dataset processing. This is necessary since dataset ingestion
         is a complex process which happens asynchronously, and cannot be easily mocked.
@@ -322,12 +339,13 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         _add_artifact("cellxgene", f"{dataset_version_id}", DatasetArtifactType.CXG)
 
         # special case for atac artifacts
-        artifact_id = DatasetArtifactId()
-        bucket = "datasets"
+        if not skip_atac:
+            artifact_id = DatasetArtifactId()
+            bucket = "datasets"
 
-        key_name = f"{artifact_id}-fragment"
-        _add_artifact(bucket, key_name, DatasetArtifactType.ATAC_FRAGMENT)
-        _add_artifact(bucket, key_name, DatasetArtifactType.ATAC_INDEX)
+            key_name = f"{artifact_id}-fragment"
+            _add_artifact(bucket, key_name, DatasetArtifactType.ATAC_FRAGMENT)
+            _add_artifact(bucket, key_name, DatasetArtifactType.ATAC_INDEX)
 
         self.database_provider.update_dataset_upload_status(dataset_version_id, DatasetUploadStatus.UPLOADED)
         self.database_provider.update_dataset_validation_status(dataset_version_id, DatasetValidationStatus.VALID)
@@ -1333,38 +1351,76 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         """
         Outdated, unused Dataset assets and rows in private Collection not deleted until after Collection is published
         """
-        collection = self.initialize_unpublished_collection(complete_dataset_ingestion=True)
-        dataset_to_replace = collection.datasets[0]
+        collection = self.initialize_unpublished_collection(complete_dataset_ingestion=True, num_datasets=3)
+        # This dataset will be kept
         dataset_to_keep = collection.datasets[1]
+
+        # Thisdataset will be replaced
+        dataset_to_replace = collection.datasets[0]
         new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
             collection.version_id, dataset_to_replace.version_id
         )
         self.business_logic.set_dataset_metadata(new_dataset_version.version_id, self.sample_dataset_metadata)
         self.complete_dataset_processing_with_success(new_dataset_version.version_id)
+        new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version.version_id)
 
-        self.assertIsNotNone(self.business_logic.get_dataset_version(dataset_to_replace.version_id))
+        # This dataset will be checked for artifact retention across dataset versions
+        dataset_to_check_artifact_retention = collection.datasets[2]
+        new_atac_dataset_version = self.database_provider.replace_dataset_in_collection_version(
+            collection.version_id, dataset_to_check_artifact_retention.version_id
+        )
+        self.business_logic.set_dataset_metadata(new_atac_dataset_version.version_id, self.sample_dataset_metadata)
+        self.complete_dataset_processing_with_success(new_atac_dataset_version.version_id, skip_atac=True)
+        # add fragment and index artifacts to the new_ATAC_dataset from the dataset_to_check_artifact_retention
+        fragment_id = [
+            a for a in dataset_to_check_artifact_retention.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT
+        ][0].id
+        self.database_provider.add_artifact_to_dataset_version(new_atac_dataset_version.version_id, fragment_id)
+        fragment_index_id = [
+            a for a in dataset_to_check_artifact_retention.artifacts if a.type == DatasetArtifactType.ATAC_INDEX
+        ][0].id
+        self.database_provider.add_artifact_to_dataset_version(new_atac_dataset_version.version_id, fragment_index_id)
+        new_atac_dataset_version = self.business_logic.get_dataset_version(new_atac_dataset_version.version_id)
 
+        # Get Updates collection
         updated_collection = self.business_logic.get_collection_version(collection.version_id)
+
+        # Verify that the old datasets have been replaced in the collection
         dataset_version_id_strs = [dv.version_id.id for dv in updated_collection.datasets]
         self.assertNotIn(dataset_to_replace.version_id.id, dataset_version_id_strs)
+        self.assertNotIn(dataset_to_check_artifact_retention.version_id.id, dataset_version_id_strs)
 
-        # Artifacts for dataset_to_replace should exist
-        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_replace.artifacts]
-        # Artifacts for dataset_to_keep should exist
-        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_keep.artifacts]
-        # Artifacts for new_dataset_version should exist
-        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
+        # Verify that the the old datasets are still present in the database
+        self.assertIsNotNone(self.business_logic.get_dataset_version(dataset_to_replace.version_id))
+        self.assertIsNotNone(self.business_logic.get_dataset_version(dataset_to_check_artifact_retention.version_id))
 
+        # Verify all artifacts for the datasets exist before publication
+        for artifact in itertools.chain(
+            dataset_to_replace.artifacts,
+            dataset_to_keep.artifacts,
+            dataset_to_check_artifact_retention.artifacts,
+            new_dataset_version.artifacts,
+            new_atac_dataset_version.artifacts,
+        ):
+            self.assertTrue(self.s3_provider.uri_exists(artifact.uri))
+
+        # Publish the collection
         self.business_logic.publish_collection_version(collection.version_id)
 
+        # After publication, these dataset should be gone
         self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_replace.version_id))
-
+        self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_check_artifact_retention.version_id))
         # Artifacts for dataset_to_replace should be gone
-        [self.assertFalse(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_replace.artifacts]
+        [self.assertFalse(self.s3_provider.uri_exists(a.uri), f"Found {a.uri}") for a in dataset_to_replace.artifacts]
         # Artifacts for dataset_to_keep should remain
-        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in dataset_to_keep.artifacts]
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri), f"Missing {a.uri}") for a in dataset_to_keep.artifacts]
         # Artifacts for new_dataset_version should remain
-        [self.assertTrue(self.s3_provider.uri_exists(a.uri)) for a in new_dataset_version.artifacts]
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri), f"Missing {a.uri}") for a in new_dataset_version.artifacts]
+        # Artifacts for new_atac_dataset_version should remain
+        [
+            self.assertTrue(self.s3_provider.uri_exists(a.uri), f"Missing {a.uri}")
+            for a in new_atac_dataset_version.artifacts
+        ]
 
     def test_cleanup_occurs_after_revision_is_canceled(self):
         """
