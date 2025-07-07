@@ -49,6 +49,8 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
 
 - **Dataset-level metadata in uns**:
   - **title**
+  - **organism_ontology_term_id**
+    - [NCBITaxon] See [the schema](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#organism_ontology_term_id) for specific values
   - **batch_condition** _optional_
     - list of obs fields that define “batches” that a normalization or integration algorithm should be aware of
   - **default_embedding** _optional_
@@ -59,8 +61,6 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
   - raw counts should be in raw.X if normalized counts are in .X
   - if there is no normalized matrix, raw counts should be in .X
 - **Cell metadata in obs** (ontology term IDs MUST be the most specific term available from the specified ontology):
-  - **organism_ontology_term_id**
-    - [NCBITaxon] See [the schema](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#organism_ontology_term_id) for specific values
   - **donor_id**
     - free-text identifier that distinguishes the unique individual that data were derived from
   - **development_stage_ontology_term_id**
