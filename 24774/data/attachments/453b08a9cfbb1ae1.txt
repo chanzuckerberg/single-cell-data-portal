@@ -1,2 +1,0 @@
-Processing chromosomes/windows:   0%|          | 0/286 [00:00<?, ?task/s]Processing chromosomes/windows: 100%|██████████| 286/286 [00:00<00:00, 12247.77task/s]
-Processing DataFrame creation:   0%|          | 0/2 [00:00<?, ?records/s]Processing DataFrame creation: 100%|██████████| 2/2 [00:00<00:00, 43690.67records/s]
