@@ -1013,42 +1013,49 @@ class BusinessLogic(BusinessLogicInterface):
             # Collection was never published; delete CollectionTable row
             self.database_provider.delete_unpublished_collection(collection_version.collection_id)
 
-    def get_atac_fragment_uris_from_dataset_version(
-        self, dataset_version: DatasetVersion, artifacts_to_save: Set[DatasetArtifactId] = None
-    ) -> List[str]:
+    def get_atac_fragment_uris_from_dataset_version(self, dataset_version: DatasetVersion) -> List[str]:
         """
         get all atac fragment files associated with a dataset version from the public bucket
         """
-        object_keys = set()
-        artifacts_to_save = artifacts_to_save if artifacts_to_save else set()
-        object_keys.update(
-            [
-                a.uri.rsplit("/", 1)[-1]
-                for a in dataset_version.artifacts
-                if a.type == DatasetArtifactType.ATAC_FRAGMENT and a.id not in artifacts_to_save
-            ]
-        )
-        object_keys.update(
-            [
-                a.uri.rsplit("/", 1)[-1]
-                for a in dataset_version.artifacts
-                if a.type == DatasetArtifactType.ATAC_INDEX and a.id not in artifacts_to_save
-            ]
-        )
-        return list(object_keys)
+        object_keys = []
+        for a in self.filter_artifacts_from_dataset_version(
+            dataset_version, [DatasetArtifactType.ATAC_FRAGMENT, DatasetArtifactType.ATAC_INDEX]
+        ):
+            object_keys.append(a.uri.rsplit("/", 1)[-1])
+        return object_keys
+
+    def filter_artifacts_from_dataset_version(
+        self, dataset_version: DatasetVersion, artifact_types: List[DatasetArtifactType]
+    ) -> Iterable[DatasetArtifact]:
+        """
+        Returns a list of artifact URIs for a given dataset version and artifact type.
+        """
+        if not dataset_version.artifacts:
+            return []
+
+        for a in dataset_version.artifacts:
+            if a.type in artifact_types:
+                yield a
 
     def delete_dataset_versions_from_public_bucket(
-        self, dataset_versions: List[DatasetVersion], artifact_to_save: Set[str] = None
+        self, dataset_versions: List[DatasetVersion], artifact_to_save: List[DatasetArtifact] = None
     ) -> List[str]:
         rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
         object_keys = set()
+        artifact_to_save = artifact_to_save or []
         for d_v in dataset_versions:
             for file_type in ("h5ad", "rds"):
                 dataset_version_s3_object_key = f"{d_v.version_id}.{file_type}"
                 if rdev_prefix:
                     dataset_version_s3_object_key = f"{rdev_prefix}/{dataset_version_s3_object_key}"
                 object_keys.add(dataset_version_s3_object_key)
-            object_keys.update(self.get_atac_fragment_uris_from_dataset_version(d_v, artifact_to_save))
+            for a in self.filter_artifacts_from_dataset_version(
+                d_v, [DatasetArtifactType.ATAC_FRAGMENT, DatasetArtifactType.ATAC_INDEX]
+            ):
+                if a in artifact_to_save:
+                    continue
+                else:
+                    object_keys.add(a.uri.rsplit("/", 1)[-1])
         try:
             self.s3_provider.delete_files(os.getenv("DATASETS_BUCKET"), list(object_keys))
         except S3DeleteException as e:
@@ -1082,23 +1089,20 @@ class BusinessLogic(BusinessLogicInterface):
             )
         )
 
-    def delete_dataset_versions(
-        self, dataset_versions: List[DatasetVersion], artifacts_to_save: Set[DatasetArtifactId] = None
-    ) -> None:
+    def delete_dataset_versions(self, dataset_versions: List[DatasetVersion], **kwargs) -> None:
         """
         Deletes a list of dataset versions and associated dataset artifact rows from the database, as well
         as kicking off deletion of their corresponding assets from S3
         """
-        self.delete_dataset_version_assets(dataset_versions, artifacts_to_save)
+        self.delete_dataset_version_assets(dataset_versions, **kwargs)
         self.database_provider.delete_dataset_versions(dataset_versions)
 
     def delete_dataset_version_assets(
-        self, dataset_versions: List[DatasetVersion], artifact_to_save: Set[DatasetArtifactId] = None
+        self, dataset_versions: List[DatasetVersion], artifacts_to_save: Set[DatasetArtifact] = None
     ) -> None:
-        self.delete_dataset_versions_from_public_bucket(dataset_versions, artifact_to_save)
-
-        artifact_to_save = artifact_to_save or set()
-        artifacts = [a for dv in dataset_versions for a in dv.artifacts if a.id not in artifact_to_save]
+        self.delete_dataset_versions_from_public_bucket(dataset_versions, artifacts_to_save)
+        artifact_to_save = artifacts_to_save or []
+        artifacts = [a for dv in dataset_versions for a in dv.artifacts if a not in artifact_to_save]
         self.delete_artifacts(artifacts)
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:
@@ -1224,15 +1228,15 @@ class BusinessLogic(BusinessLogicInterface):
         versions_to_delete = list(filter(lambda dv: dv.version_id.id not in versions_to_keep, dataset_versions))
 
         # Collect artifact ids from dataset versions to keep
-        artifacts_to_keep = {
-            artifact.id for dv in dataset_versions if dv.version_id.id in versions_to_keep for artifact in dv.artifacts
-        }
+        artifacts_to_keep = [
+            artifact for dv in dataset_versions if dv.version_id.id in versions_to_keep for artifact in dv.artifacts
+        ]
         # Collect artifact ids from dataset versions to delete
-        artifacts_to_delete = {artifact.id for dv in versions_to_delete for artifact in dv.artifacts}
+        artifacts_to_delete = [artifact for dv in versions_to_delete for artifact in dv.artifacts]
         # Artifacts present in both sets should be saved
-        artifacts_to_save = artifacts_to_keep & artifacts_to_delete
+        artifacts_to_save = [artifact for artifact in artifacts_to_keep if artifact in artifacts_to_delete]
 
-        self.delete_dataset_versions(versions_to_delete, artifacts_to_save)
+        self.delete_dataset_versions(versions_to_delete, artifacts_to_save=artifacts_to_save)
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
         """
