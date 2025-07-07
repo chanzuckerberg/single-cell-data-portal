@@ -1,1 +1,0 @@
-{"levelname": "INFO", "asctime": "2025-06-24T18:32:15.024Z", "name": "backend.layers.processing.utils.atac", "message": "Computing cell type totals for normalization...", "lineno": 347, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
