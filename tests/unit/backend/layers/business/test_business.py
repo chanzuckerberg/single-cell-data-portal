@@ -1412,6 +1412,18 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_check_artifact_retention.version_id))
         # Artifacts for dataset_to_replace should be gone
         [self.assertFalse(self.s3_provider.uri_exists(a.uri), f"Found {a.uri}") for a in dataset_to_replace.artifacts]
+        # Some Artifact for dataset_to_check_artifact_retention should be gone
+        retained_artifacts = [DatasetArtifactType.ATAC_FRAGMENT, DatasetArtifactType.ATAC_INDEX]
+        [
+            self.assertFalse(self.s3_provider.uri_exists(a.uri), f"Found {a.uri}")
+            for a in dataset_to_check_artifact_retention.artifacts
+            if a.type not in retained_artifacts
+        ]
+        [
+            self.assertTrue(self.s3_provider.uri_exists(a.uri), f"Missing {a.uri}")
+            for a in dataset_to_check_artifact_retention.artifacts
+            if a.type in retained_artifacts
+        ]
         # Artifacts for dataset_to_keep should remain
         [self.assertTrue(self.s3_provider.uri_exists(a.uri), f"Missing {a.uri}") for a in dataset_to_keep.artifacts]
         # Artifacts for new_dataset_version should remain

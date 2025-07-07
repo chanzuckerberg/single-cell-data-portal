@@ -137,6 +137,9 @@ class EntityId:
     def __repr__(self) -> str:
         return self.id
 
+    def __hash__(self):
+        return hash(self.id)
+
 
 class CollectionId(EntityId):
     pass
