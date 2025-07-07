@@ -1,3 +1,0 @@
-{"levelname": "INFO", "asctime": "2025-06-24T17:13:08.024Z", "name": "backend.layers.processing.utils.atac", "message": "Using serial processing (single process)", "lineno": 225, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
-{"levelname": "INFO", "asctime": "2025-06-24T17:13:08.024Z", "name": "backend.layers.processing.utils.atac", "message": "Processing chr1...", "lineno": 229, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
-{"levelname": "WARNING", "asctime": "2025-06-24T17:13:08.024Z", "name": "backend.layers.processing.utils.atac", "message": "1 barcodes in .h5ad were not found in fragment file.", "lineno": 301, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
