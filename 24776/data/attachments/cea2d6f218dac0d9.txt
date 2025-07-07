@@ -1,11 +1,0 @@
-Processing chromosomes:   0%|          | 0/5 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 5/5 [00:00<00:00, 1953.38chrom/s]
-Processing chromosomes:   0%|          | 0/5 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 5/5 [00:00<00:00, 1809.76chrom/s]
-Processing chromosomes:   0%|          | 0/5 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 5/5 [00:00<00:00, 3544.28chrom/s]
-Processing chromosomes:   0%|          | 0/5 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 5/5 [00:00<00:00, 3608.31chrom/s]
-Processing chromosomes:   0%|          | 0/2 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 2/2 [00:00<00:00, 1237.26chrom/s]
-Processing chromosomes:   0%|          | 0/5 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 5/5 [00:00<00:00, 3444.16chrom/s]
-Processing chromosomes:   0%|          | 0/5 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 5/5 [00:00<00:00, 2678.36chrom/s]
-Processing chromosomes:   0%|          | 0/5 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 5/5 [00:00<00:00, 2423.89chrom/s]
-Processing chromosomes:   0%|          | 0/5 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 5/5 [00:00<00:00, 2950.83chrom/s]
-Processing chromosomes:   0%|          | 0/2 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 2/2 [00:00<00:00, 1499.04chrom/s]
-Processing DataFrame creation:   0%|          | 0/2 [00:00<?, ?records/s]Processing DataFrame creation: 100%|██████████| 2/2 [00:00<00:00, 44858.87records/s]
