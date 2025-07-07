@@ -1013,29 +1013,24 @@ class BusinessLogic(BusinessLogicInterface):
             # Collection was never published; delete CollectionTable row
             self.database_provider.delete_unpublished_collection(collection_version.collection_id)
 
-    def get_atac_fragment_uris_from_dataset_version(self, dataset_version: DatasetVersion) -> List[str]:
+    def get_atac_fragment_uris_from_dataset_version(self, dataset_version: DatasetVersion) -> Iterable[str]:
         """
         get all atac fragment files associated with a dataset version from the public bucket
         """
-        object_keys = []
         for a in self.filter_artifacts_from_dataset_version(
             dataset_version, [DatasetArtifactType.ATAC_FRAGMENT, DatasetArtifactType.ATAC_INDEX]
         ):
-            object_keys.append(a.uri.rsplit("/", 1)[-1])
-        return object_keys
+            yield a.uri.rsplit("/", 1)[-1]
 
     def filter_artifacts_from_dataset_version(
         self, dataset_version: DatasetVersion, artifact_types: List[DatasetArtifactType]
     ) -> Iterable[DatasetArtifact]:
         """
-        Returns a list of artifact URIs for a given dataset version and artifact type.
+        Yields artifacts from the given dataset version that match any of the specified artifact types.
         """
-        if not dataset_version.artifacts:
-            return []
-
-        for a in dataset_version.artifacts:
-            if a.type in artifact_types:
-                yield a
+        if not dataset_version.artifacts or not artifact_types:
+            return
+        yield from (a for a in dataset_version.artifacts if a.type in artifact_types)
 
     def delete_dataset_versions_from_public_bucket(
         self, dataset_versions: List[DatasetVersion], artifact_to_save: List[DatasetArtifact] = None
@@ -1052,10 +1047,9 @@ class BusinessLogic(BusinessLogicInterface):
             for a in self.filter_artifacts_from_dataset_version(
                 d_v, [DatasetArtifactType.ATAC_FRAGMENT, DatasetArtifactType.ATAC_INDEX]
             ):
-                if a in artifact_to_save:
-                    continue
-                else:
+                if a not in artifact_to_save:
                     object_keys.add(a.uri.rsplit("/", 1)[-1])
+
         try:
             self.s3_provider.delete_files(os.getenv("DATASETS_BUCKET"), list(object_keys))
         except S3DeleteException as e:
