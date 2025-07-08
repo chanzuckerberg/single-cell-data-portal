@@ -75,13 +75,13 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
     - `PATO:0000384` for male, `PATO:0000383` for female, `PATO:0001340` for hermaphrodite, or `unknown` if unavailable
   - **self_reported_ethnicity_ontology_term_id**
     - human [HANCESTRO]
-    - multiple ` || `-delimited terms may be used if more than one ethnicity is reported
+    - multiple <code>&nbsp;||&nbsp;</code>-delimited terms may be used if more than one ethnicity is reported
     - `unknown` if information unavailable
     - other organisms `na`
   - **disease_ontology_term_id**
     - should describe any known disease thought to, or being tested to, have an impact on the measurement being taken, _not_ necessarily any known disease of the donor
     - [MONDO] or `PATO:0000461` for normal
-    - multiple ` || `-delimited terms may be used if appropriate
+    - multiple <code>&nbsp;||&nbsp;</code>-delimited terms may be used if appropriate
   - **tissue_type**
     - `tissue`, `organoid`, or `cell culture`
   - **tissue_ontology_term_id**
@@ -120,7 +120,7 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
   - **uns['spatial'][library_id]['scalefactors']['spot_diameter_fullres']**
   - **uns['spatial'][library_id]['scalefactors']['tissue_hires_scalef']**
   - multiple-capture area Visium datasets are permitted if each capture area is also submitted individually
-    - the addtional Visium standards do not apply to these
+    - the additional Visium standards do not apply to these
 - **Additional standards for single-puck Slide-seq datasets**:
   - **obsm['spatial']**
   - multiple-puck Slide-seq datasets are permitted if each puck is also submitted individually
