@@ -1,3 +1,0 @@
-{"levelname": "INFO", "asctime": "2025-06-25T03:25:41.025Z", "name": "backend.layers.processing.utils.atac", "message": "Processing 5 records for DataFrame creation...", "lineno": 302, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
-{"levelname": "INFO", "asctime": "2025-06-25T03:25:41.025Z", "name": "backend.layers.processing.utils.atac", "message": "Concatenating chunks...", "lineno": 328, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
-{"levelname": "INFO", "asctime": "2025-06-25T03:25:41.025Z", "name": "backend.layers.processing.utils.atac", "message": "Created DataFrame with 5 records", "lineno": 349, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
