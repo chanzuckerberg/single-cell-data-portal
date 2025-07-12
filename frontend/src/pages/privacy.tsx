@@ -30,7 +30,7 @@ const Privacy = (): JSX.Element => {
 
           <div>
             <h1>Privacy Policy</h1>
-            <p>Last updated: July 25, 2023.</p>
+            <p>Last updated: April 23, 2025.</p>
             {/* Introduction */}
             <>
               <h2>Introduction</h2>
@@ -94,13 +94,14 @@ const Privacy = (): JSX.Element => {
             <>
               <h2 id="data-we-collect">Data We Collect</h2>
               <p>
-                Cellxgene is a tool that enables fast visualizations of curated
-                single-cell transcriptomics datasets. It takes data submitted by
-                researchers (<em>gene expression matrices</em> that indicate
-                counts of how often genes are expressed in certain cell types
-                and <em>metadata</em> detailing how those matrices were
-                generated) and helps you visualize it for faster analysis,
-                exploration, and – hopefully – insight.
+                Chan Zuckerberg CELL by GENE (CZ CELLxGENE) is a tool that
+                enables fast visualizations of curated single-cell
+                transcriptomics datasets. It takes data submitted by researchers
+                (<em>gene expression matrices</em> that indicate counts of how
+                often genes are expressed in certain cell types and{" "}
+                <em>metadata</em> detailing how those matrices were generated)
+                and helps you visualize it for faster analysis, exploration, and
+                – hopefully – insight.
               </p>
               <p>
                 The datasets available on the Site are not personally
@@ -148,17 +149,15 @@ const Privacy = (): JSX.Element => {
                       legitimate interests in improving our Site.
                     </li>
                     <li>
-                      <h5>Cookies and Other Similar Technologies.</h5> We, and
-                      our form vendor Hubspot, use essential/necessary cookies
-                      (small text files sent by your computer each time you
-                      access the Site that are unique to your account or your
-                      browser) to enable user logins and help prevent fraudulent
-                      form submissions. We also use local storage to save your
-                      preferences (e.g., to remember that you blocked a pop-up).
-                      For web analytics, we do not use Google Analytics.
-                      Instead, we use the privacy-friendly Plausible as our
-                      website analytic tool. Learn more about Plausible’s data
-                      and privacy practices{" "}
+                      <h5>Cookies and Other Similar Technologies.</h5> For
+                      certain users that need to log into CZ CELLxGENE Discover
+                      to publish data, we use essential cookies (small text
+                      files sent by your computer each time you access the Site
+                      that are unique to your account or your browser) to enable
+                      that use. For web analytics, we do not use Google
+                      Analytics. Instead, we use the privacy-friendly Plausible
+                      as our website analytic tool. Learn more about Plausible’s
+                      data and privacy practices{" "}
                       <a
                         href="https://plausible.io/data-policy"
                         rel="noopener"
@@ -396,7 +395,12 @@ const Privacy = (): JSX.Element => {
                 Site, you are sending personal data into the United States which
                 may have different data protection rules than those of your
                 country. We process data both inside and outside of the United
-                States.
+                States. For those located in the European Economic Area (EEA) or
+                the United Kingdom (UK), if we transfer your personal data
+                outside of the EU or UK to a place that does not have a similar
+                degree of protection for personal data (as described under
+                GDPR), we will use other measures to protect your data such as
+                Standard Contractual Clauses (SCCs).
               </p>
             </>
             {/* Our Legal Bases */}
@@ -637,6 +641,12 @@ const Privacy = (): JSX.Element => {
                     privacy@chanzuckerberg.com
                   </a>
                   .
+                  <address>
+                    Chan Zuckerberg Initiative <br />
+                    2682 Middlefield Road, Suite i <br />
+                    Redwood City, CA 94063
+                    <br />
+                  </address>
                   <div>
                     To comply with article 27 of the GDPR and the UK-GDPR, we
                     have appointed a representative who can accept

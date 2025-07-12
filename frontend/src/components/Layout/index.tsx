@@ -16,18 +16,7 @@ const Layout = ({ children }: Props) => {
   if (pathname === ROUTES.HOMEPAGE || pathname === ROUTES.SITEMAP) {
     return (
       <>
-        <LandingHeader
-          data-testid="landing-footer"
-          banner={true}
-          bannerOptions={{
-            content: (
-              <p>
-                Review our updated <a href="/tos-new/">Terms of Service</a> and{" "}
-                <a href="/privacy-new/">Privacy Policy.</a>
-              </p>
-            ),
-          }}
-        />
+        <LandingHeader data-testid="landing-footer" banner={false} />
         {children}
         <LandingFooter />
       </>
