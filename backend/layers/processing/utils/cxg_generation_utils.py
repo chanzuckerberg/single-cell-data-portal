@@ -178,7 +178,7 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
     """
     number_of_rows = matrix.shape[0]
     number_of_columns = matrix.shape[1]
-    compression = 22
+    compression = 7
 
     logging.info(f"create {matrix_name}")
     dim_filters = tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=compression)])

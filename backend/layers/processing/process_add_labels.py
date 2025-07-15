@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 import h5py
 import numpy
-from cellxgene_schema.utils import read_h5ad
+from cellxgene_schema.utils import count_matrix_nonzero, read_h5ad
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
@@ -117,7 +117,7 @@ class ProcessAddLabels(ProcessingLogic):
         # as opposed to `spike-in`
         filter_gene_vars = numpy.where(adata.var.feature_biotype == "gene")[0]
         filtered_matrix = layer_for_mean_genes_per_cell[:, filter_gene_vars]
-        nnz_gene_exp = self.schema_validator.count_matrix_nonzero(filtered_matrix)
+        nnz_gene_exp = count_matrix_nonzero(filtered_matrix)
         total_cells = layer_for_mean_genes_per_cell.shape[0]
         mean_genes_per_cell = nnz_gene_exp / total_cells
 
