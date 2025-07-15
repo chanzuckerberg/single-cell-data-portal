@@ -1,9 +1,11 @@
 import logging
 import os
+import tempfile
 from collections import defaultdict
 from multiprocessing import Pool, cpu_count
 from typing import Dict, List, Optional, Set, Tuple
 
+import boto3
 import cellxgene_schema.atac_seq as atac_seq
 import numpy as np
 import pandas as pd
@@ -24,13 +26,92 @@ class ATACDataProcessor:
         fragment_artifact_id: Optional[str] = None,
         ctx: Optional[tiledb.Ctx] = None,
     ) -> None:
-        if fragment_artifact_id is not None and not os.path.exists(fragment_artifact_id):
+        if fragment_artifact_id is not None and not self._file_exists(fragment_artifact_id):
             raise FileNotFoundError(f"Fragment file not found: {fragment_artifact_id}")
 
         self.fragment_artifact_id = fragment_artifact_id
         self.ctx = ctx
         self.bin_size = BIN_SIZE
         self.normalization_factor = NORMALIZATION_FACTOR
+        self._local_fragment_file = None
+        self._local_fragment_index = None
+
+    def _file_exists(self, file_path: str) -> bool:
+        """Check if a file exists, supporting both local paths and S3 URLs."""
+        if file_path.startswith("s3://"):
+            s3_path = file_path[5:]
+            bucket, key = s3_path.split("/", 1)
+
+            try:
+                s3_client = boto3.client("s3")
+                s3_client.head_object(Bucket=bucket, Key=key)
+                return True
+            except Exception:
+                return False
+        else:
+            return os.path.exists(file_path)
+
+    def _download_s3_file(self, s3_path: str) -> str:
+        """Download S3 file and its index to local temporary files and return local path."""
+        if not s3_path.startswith("s3://"):
+            return s3_path
+
+        s3_url = s3_path[5:]
+        bucket, key = s3_url.split("/", 1)
+
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".bgz")
+        temp_path = temp_file.name
+        temp_file.close()
+
+        temp_index_path = temp_path + ".tbi"
+
+        try:
+            logger.info(f"Downloading S3 file {s3_path} to {temp_path}")
+            s3_client = boto3.client("s3")
+
+            s3_client.download_file(bucket, key, temp_path)
+            logger.info(f"Successfully downloaded S3 file to {temp_path}")
+
+            index_key = key + ".tbi"
+            logger.info(f"Downloading S3 index file s3://{bucket}/{index_key} to {temp_index_path}")
+            s3_client.download_file(bucket, index_key, temp_index_path)
+            logger.info(f"Successfully downloaded S3 index file to {temp_index_path}")
+
+            return temp_path
+        except Exception as e:
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+            if os.path.exists(temp_index_path):
+                os.unlink(temp_index_path)
+            raise RuntimeError(f"Failed to download S3 file {s3_path}: {str(e)}") from e
+
+    def _get_fragment_file_path(self) -> str:
+        """Get the fragment file path, downloading from S3 if necessary."""
+        if self.fragment_artifact_id is None:
+            raise ValueError("Fragment artifact ID is not set")
+
+        if self._local_fragment_file is None:
+            self._local_fragment_file = self._download_s3_file(self.fragment_artifact_id)
+            if self._local_fragment_file != self.fragment_artifact_id:
+                self._local_fragment_index = self._local_fragment_file + ".tbi"
+
+        return self._local_fragment_file
+
+    def _cleanup_temp_files(self) -> None:
+        """Clean up temporary downloaded files."""
+        if (
+            self._local_fragment_file
+            and self._local_fragment_file != self.fragment_artifact_id
+            and os.path.exists(self._local_fragment_file)
+        ):
+            logger.info(f"Cleaning up temporary file: {self._local_fragment_file}")
+            os.unlink(self._local_fragment_file)
+            self._local_fragment_file = None
+
+        if self._local_fragment_index and os.path.exists(self._local_fragment_index):
+            logger.info(f"Cleaning up temporary index file: {self._local_fragment_index}")
+            os.unlink(self._local_fragment_index)
+            self._local_fragment_index = None
 
     @staticmethod
     def _process_chromosome_worker(args):
@@ -186,9 +267,11 @@ class ATACDataProcessor:
         num_processes = min(cpu_count(), max(1, len(chrom_map)))
         logger.info(f"Using {num_processes} processes for chromosome processing")
 
+        fragment_file_path = self._get_fragment_file_path()
+
         chrom_args = [
             (
-                self.fragment_artifact_id,
+                fragment_file_path,
                 chrom_str,
                 chrom_map[chrom_str],
                 cell_type_map,
@@ -373,13 +456,16 @@ class ATACDataProcessor:
         logger.info("Successfully wrote data to TileDB")
 
     def process_fragment_file(self, obs: pd.DataFrame, array_name: str, uns: Optional[Dict] = None) -> None:
-        df_meta, chromosome_by_length = self.extract_cell_metadata_from_h5ad(obs, uns=uns)
+        try:
+            df_meta, chromosome_by_length = self.extract_cell_metadata_from_h5ad(obs, uns=uns)
 
-        valid_barcodes = set(df_meta["cell_name"])
-        cell_type_map = dict(zip(df_meta["cell_name"], df_meta["cell_type"], strict=False))
+            valid_barcodes = set(df_meta["cell_name"])
+            cell_type_map = dict(zip(df_meta["cell_name"], df_meta["cell_type"], strict=False))
 
-        max_chrom, chrom_map = self.build_chrom_mapping(chromosome_by_length)
-        max_bins = self.calculate_max_bins(chromosome_by_length)
+            max_chrom, chrom_map = self.build_chrom_mapping(chromosome_by_length)
+            max_bins = self.calculate_max_bins(chromosome_by_length)
 
-        self.create_dataframe_array(array_name, max_chrom, max_bins)
-        self.write_binned_coverage_per_chrom(array_name, chrom_map, cell_type_map, valid_barcodes)
+            self.create_dataframe_array(array_name, max_chrom, max_bins)
+            self.write_binned_coverage_per_chrom(array_name, chrom_map, cell_type_map, valid_barcodes)
+        finally:
+            self._cleanup_temp_files()

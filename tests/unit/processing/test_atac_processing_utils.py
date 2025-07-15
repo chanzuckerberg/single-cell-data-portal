@@ -1,3 +1,4 @@
+import os
 from collections import defaultdict
 
 import cellxgene_schema.atac_seq as atac_seq
@@ -1002,3 +1003,210 @@ class TestATACDataProcessor:
         assert actual_bins == expected_bins
 
         mock_tabix_file.fetch.assert_called_once_with(chrom_str)
+
+    def test__file_exists_local_file_exists(self, tmp_path):
+        """Test _file_exists returns True for existing local file."""
+        test_file = tmp_path / "test_file.txt"
+        test_file.write_text("test content")
+
+        processor = ATACDataProcessor()
+        assert processor._file_exists(str(test_file)) is True
+
+    def test__file_exists_local_file_not_exists(self):
+        """Test _file_exists returns False for non-existing local file."""
+        processor = ATACDataProcessor()
+        assert processor._file_exists("/non/existent/file.txt") is False
+
+    def test__file_exists_s3_file_exists(self, mocker):
+        """Test _file_exists returns True for existing S3 file."""
+        mock_s3_client = mocker.MagicMock()
+        mock_boto3 = mocker.patch("backend.layers.processing.utils.atac.boto3")
+        mock_boto3.client.return_value = mock_s3_client
+        mock_s3_client.head_object.return_value = {}
+
+        processor = ATACDataProcessor()
+        result = processor._file_exists("s3://test-bucket/test-key.txt")
+
+        assert result is True
+        mock_boto3.client.assert_called_once_with("s3")
+        mock_s3_client.head_object.assert_called_once_with(Bucket="test-bucket", Key="test-key.txt")
+
+    def test__file_exists_s3_file_not_exists(self, mocker):
+        """Test _file_exists returns False when S3 file doesn't exist."""
+        mock_s3_client = mocker.MagicMock()
+        mock_boto3 = mocker.patch("backend.layers.processing.utils.atac.boto3")
+        mock_boto3.client.return_value = mock_s3_client
+        mock_s3_client.head_object.side_effect = Exception("NoSuchKey")
+
+        processor = ATACDataProcessor()
+        result = processor._file_exists("s3://test-bucket/nonexistent-key.txt")
+
+        assert result is False
+        mock_boto3.client.assert_called_once_with("s3")
+        mock_s3_client.head_object.assert_called_once_with(Bucket="test-bucket", Key="nonexistent-key.txt")
+
+    def test__download_s3_file_local_path(self):
+        """Test _download_s3_file returns same path for local files."""
+        processor = ATACDataProcessor()
+        local_path = "/local/path/file.txt"
+        result = processor._download_s3_file(local_path)
+        assert result == local_path
+
+    def test__download_s3_file_s3_success(self, mocker, tmp_path):
+        """Test _download_s3_file successfully downloads S3 file and index."""
+        mock_s3_client = mocker.MagicMock()
+        mock_boto3 = mocker.patch("backend.layers.processing.utils.atac.boto3")
+        mock_boto3.client.return_value = mock_s3_client
+
+        mock_tempfile = mocker.patch("backend.layers.processing.utils.atac.tempfile")
+        mock_temp = mocker.MagicMock()
+        mock_temp.name = str(tmp_path / "temp_file.bgz")
+        mock_tempfile.NamedTemporaryFile.return_value = mock_temp
+
+        processor = ATACDataProcessor()
+        s3_path = "s3://test-bucket/fragments.tsv.gz"
+
+        result = processor._download_s3_file(s3_path)
+
+        assert result == mock_temp.name
+        mock_boto3.client.assert_called_once_with("s3")
+        mock_s3_client.download_file.assert_any_call("test-bucket", "fragments.tsv.gz", mock_temp.name)
+        mock_s3_client.download_file.assert_any_call("test-bucket", "fragments.tsv.gz.tbi", mock_temp.name + ".tbi")
+        mock_temp.close.assert_called_once()
+
+    def test__download_s3_file_download_failure(self, mocker, tmp_path):
+        """Test _download_s3_file handles download failure and cleans up temp files."""
+        mock_s3_client = mocker.MagicMock()
+        mock_boto3 = mocker.patch("backend.layers.processing.utils.atac.boto3")
+        mock_boto3.client.return_value = mock_s3_client
+        mock_s3_client.download_file.side_effect = Exception("Download failed")
+
+        mock_tempfile = mocker.patch("backend.layers.processing.utils.atac.tempfile")
+        mock_temp = mocker.MagicMock()
+        temp_path = str(tmp_path / "temp_file.bgz")
+        mock_temp.name = temp_path
+        mock_tempfile.NamedTemporaryFile.return_value = mock_temp
+
+        with open(temp_path, "w") as f:
+            f.write("temp")
+        with open(temp_path + ".tbi", "w") as f:
+            f.write("temp_index")
+
+        processor = ATACDataProcessor()
+        s3_path = "s3://test-bucket/fragments.tsv.gz"
+
+        with pytest.raises(RuntimeError, match="Failed to download S3 file"):
+            processor._download_s3_file(s3_path)
+
+        assert not os.path.exists(temp_path)
+        assert not os.path.exists(temp_path + ".tbi")
+
+    def test__get_fragment_file_path_none_artifact_id(self):
+        """Test _get_fragment_file_path raises ValueError when fragment_artifact_id is None."""
+        processor = ATACDataProcessor()
+
+        with pytest.raises(ValueError, match="Fragment artifact ID is not set"):
+            processor._get_fragment_file_path()
+
+    def test__get_fragment_file_path_local_file(self, tmp_path):
+        """Test _get_fragment_file_path with local file path."""
+        test_file = tmp_path / "fragments.tsv.gz"
+        test_file.write_text("test")
+
+        processor = ATACDataProcessor(fragment_artifact_id=str(test_file))
+        result = processor._get_fragment_file_path()
+
+        assert result == str(test_file)
+        assert processor._local_fragment_file == str(test_file)
+
+    def test__get_fragment_file_path_s3_file(self, mocker, tmp_path):
+        """Test _get_fragment_file_path with S3 file path."""
+        mock_file_exists = mocker.patch.object(ATACDataProcessor, "_file_exists", return_value=True)
+        mock_download = mocker.patch.object(ATACDataProcessor, "_download_s3_file")
+        temp_path = str(tmp_path / "downloaded_file.bgz")
+        mock_download.return_value = temp_path
+
+        s3_path = "s3://test-bucket/fragments.tsv.gz"
+        processor = ATACDataProcessor(fragment_artifact_id=s3_path)
+
+        result = processor._get_fragment_file_path()
+
+        assert result == temp_path
+        assert processor._local_fragment_file == temp_path
+        assert processor._local_fragment_index == temp_path + ".tbi"
+        mock_download.assert_called_once_with(s3_path)
+        mock_file_exists.assert_called_once_with(s3_path)
+
+    def test__get_fragment_file_path_cached(self, mocker, tmp_path):
+        """Test _get_fragment_file_path returns cached path on subsequent calls."""
+        mocker.patch.object(ATACDataProcessor, "_file_exists", return_value=True)
+        mock_download = mocker.patch.object(ATACDataProcessor, "_download_s3_file")
+        temp_path = str(tmp_path / "downloaded_file.bgz")
+        mock_download.return_value = temp_path
+
+        s3_path = "s3://test-bucket/fragments.tsv.gz"
+        processor = ATACDataProcessor(fragment_artifact_id=s3_path)
+
+        result1 = processor._get_fragment_file_path()
+        result2 = processor._get_fragment_file_path()
+
+        assert result1 == result2 == temp_path
+        mock_download.assert_called_once()
+
+    def test__cleanup_temp_files_no_temp_files(self):
+        """Test _cleanup_temp_files when no temp files exist."""
+        processor = ATACDataProcessor()
+        processor._cleanup_temp_files()
+
+    def test__cleanup_temp_files_local_file_no_cleanup(self, tmp_path):
+        """Test _cleanup_temp_files doesn't delete original local files."""
+        test_file = tmp_path / "fragments.tsv.gz"
+        test_file.write_text("test")
+
+        processor = ATACDataProcessor(fragment_artifact_id=str(test_file))
+        processor._local_fragment_file = str(test_file)
+
+        processor._cleanup_temp_files()
+
+        assert test_file.exists()
+        assert processor._local_fragment_file == str(test_file)
+
+    def test__cleanup_temp_files_temp_files(self, tmp_path):
+        """Test _cleanup_temp_files removes downloaded temp files."""
+        s3_path = "s3://test-bucket/fragments.tsv.gz"
+        temp_file = tmp_path / "temp_fragment.bgz"
+        temp_index = tmp_path / "temp_fragment.bgz.tbi"
+
+        temp_file.write_text("temp fragment")
+        temp_index.write_text("temp index")
+
+        processor = ATACDataProcessor()
+        processor.fragment_artifact_id = s3_path
+        processor._local_fragment_file = str(temp_file)
+        processor._local_fragment_index = str(temp_index)
+
+        processor._cleanup_temp_files()
+
+        assert not temp_file.exists()
+        assert not temp_index.exists()
+        assert processor._local_fragment_file is None
+        assert processor._local_fragment_index is None
+
+    def test__cleanup_temp_files_partial_cleanup(self, tmp_path):
+        """Test _cleanup_temp_files handles missing files gracefully."""
+        s3_path = "s3://test-bucket/fragments.tsv.gz"
+        temp_file = tmp_path / "temp_fragment.bgz"
+        temp_index = tmp_path / "temp_fragment.bgz.tbi"
+
+        temp_file.write_text("temp fragment")
+
+        processor = ATACDataProcessor()
+        processor.fragment_artifact_id = s3_path
+        processor._local_fragment_file = str(temp_file)
+        processor._local_fragment_index = str(temp_index)
+
+        processor._cleanup_temp_files()
+
+        assert not temp_file.exists()
+        assert processor._local_fragment_file is None
+        assert processor._local_fragment_index == str(temp_index)

@@ -1,4 +1,3 @@
-import logging
 from typing import Optional
 
 from backend.layers.business.business_interface import BusinessLogicInterface
@@ -13,8 +12,6 @@ from backend.layers.processing.logger import logit
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
-
-logger = logging.getLogger(__name__)
 
 
 class ProcessCxg(ProcessingLogic):
@@ -75,9 +72,10 @@ class ProcessCxg(ProcessingLogic):
 
         # Get fragment file S3 URL if fragment_artifact_id is provided
         fragment_file_path = None
+        self.logger.info(f"Fragment artifact ID: {fragment_artifact_id}")
         if fragment_artifact_id:
             fragment_file_path = self.get_fragment_file_s3_url(fragment_artifact_id, artifact_bucket, current_artifacts)
-            logger.info(f"Using fragment file S3 URL: {fragment_file_path}")
+            self.logger.info(f"Using fragment file S3 URL: {fragment_file_path}")
 
         # Convert the labeled dataset to CXG and upload it to the cellxgene bucket
         self.process_cxg(

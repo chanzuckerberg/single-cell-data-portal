@@ -341,6 +341,10 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
               "Value.$": "$.dataset_version_id"
             },
             {
+              "Name": "FRAGMENT_ARTIFACT_ID",
+              "Value.$": "$.fragment_artifact_id"
+            },
+            {
               "Name": "STEP_NAME",
               "Value": "cxg_remaster"
             }

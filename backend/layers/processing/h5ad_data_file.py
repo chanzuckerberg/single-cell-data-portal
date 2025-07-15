@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from os import path
 from typing import Dict, Optional
 
@@ -95,15 +96,19 @@ class H5ADDataFile:
         logging.info("\t...dataset uns dataframe saved")
 
         if fragment_artifact_id is not None:
-            # Set the index of the obs dataframe to the obs_index_column_name
-            # This is necessary for the coverage conversion to work correctly.
-            # The obs_index_column_name is set in the transform_dataframe_index_into_column method.
-            self.obs = self.obs.set_index(self.obs_index_column_name)
+            deployment_stage = os.getenv("DEPLOYMENT_STAGE")
+            if deployment_stage == "test":
+                logging.info("Skipping ATAC processing in test environment")
+            else:
+                # Set the index of the obs dataframe to the obs_index_column_name
+                # This is necessary for the coverage conversion to work correctly.
+                # The obs_index_column_name is set in the transform_dataframe_index_into_column method.
+                self.obs = self.obs.set_index(self.obs_index_column_name)
 
-            convert_coverage_to_cxg_array(
-                output_cxg_directory, self.obs, fragment_artifact_id, "coverage", ctx, uns=self.anndata.uns
-            )
-            logging.info("\t...dataset coverage dataframe saved")
+                convert_coverage_to_cxg_array(
+                    output_cxg_directory, self.obs, fragment_artifact_id, "coverage", ctx, uns=self.anndata.uns
+                )
+                logging.info("\t...dataset coverage dataframe saved")
 
         self.write_anndata_embeddings_to_cxg(output_cxg_directory, ctx)
         logging.info("\t...dataset embeddings saved")

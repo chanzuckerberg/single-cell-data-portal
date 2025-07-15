@@ -184,6 +184,7 @@ class ProcessMain(ProcessingLogic):
             rv = self.schema_migrate.migrate(step_name)
         else:
             dataset_version_id = os.environ["DATASET_VERSION_ID"]
+            fragment_artifact_id = os.environ.get("FRAGMENT_ARTIFACT_ID")
             collection_version_id = os.environ.get("COLLECTION_VERSION_ID")
             if manifest := os.environ.get("MANIFEST"):
                 manifest = IngestionManifest.model_validate_json(manifest)
@@ -200,6 +201,7 @@ class ProcessMain(ProcessingLogic):
                 artifact_bucket=artifact_bucket,
                 datasets_bucket=datasets_bucket,
                 cxg_bucket=cxg_bucket,
+                fragment_artifact_id=fragment_artifact_id,
             )
         return 0 if rv else 1
 
