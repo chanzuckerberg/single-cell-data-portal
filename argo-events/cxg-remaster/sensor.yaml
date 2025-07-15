@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: cxg-remaster-sensor
+spec:
+  dependencies:
+    - name: s3-upload
+      eventSourceName: cxg-s3-upload
+      eventName: cxg
+  triggers:
+    - template:
+        name: cxg-remaster-trigger
+        aws:
+          stepFunction:
+            stateMachineArn: arn:aws:states:us-west-2:YOUR_ACCOUNT_ID:stateMachine:dp-${ENV}-${STACK}-cxg-remaster-v2-sfn
+            roleARN: arn:aws:iam::YOUR_ACCOUNT_ID:role/StepFunctionExecutionRole
+            input:
+              dataset_version_id: "{{`{{ event.body.object.key | split('.') | first }}`}}"

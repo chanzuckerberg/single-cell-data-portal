@@ -277,6 +277,34 @@ resource aws_batch_job_definition rollback {
 })
 }
 
+resource "aws_s3_hosted_cellxgene_upload_eventbridge" "cxg_upload" {
+  bucket = "hosted-cellxgene-dev"
+
+  eventbridge {
+    events = ["s3:ObjectCreated:*"]
+  }
+}
+
+resource "aws_s3_hosted_cellxgene_upload_rule" "cxg_upload_rule" {
+  name        = "NewCxgDatasetVersion"
+  description = "Triggers when new .cxg file is uploaded to S3"
+  event_pattern = jsonencode({
+    "source": ["aws.s3"],
+    "detail-type": ["Object Created"],
+    "detail": {
+      "bucket": {
+        "name": ["hosted-cellxgene-dev"]
+      },
+      "object": {
+        "key": [{
+          "prefix": "",
+          "suffix": ".cxg"
+        }]
+      }
+    }
+  })
+}
+
 resource aws_cloudwatch_log_group cloud_watch_logs_group {
   retention_in_days = 365
   name              = "/dp/${var.deployment_stage}/${var.custom_stack_name}/upload"
