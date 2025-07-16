@@ -1,0 +1,57 @@
+INFO     backend.layers.processing.utils.atac:atac.py:157 Using batch processing for 39 chromosomes with batch size 4
+INFO     backend.layers.processing.utils.atac:atac.py:242 Processing 39 chromosomes in 10 batches
+INFO     backend.layers.processing.utils.atac:atac.py:244 Computing global cell type totals for normalization...
+INFO     backend.layers.processing.utils.atac:atac.py:279 Computing totals for batch 1/10
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:279 Computing totals for batch 2/10
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:279 Computing totals for batch 3/10
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:279 Computing totals for batch 4/10
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:279 Computing totals for batch 5/10
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:279 Computing totals for batch 6/10
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:279 Computing totals for batch 7/10
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:279 Computing totals for batch 8/10
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:279 Computing totals for batch 9/10
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:279 Computing totals for batch 10/10
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 3 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:248 Processing batch 1/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:248 Processing batch 2/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:261 Batch 2 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:248 Processing batch 3/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:261 Batch 3 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:248 Processing batch 4/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:261 Batch 4 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:248 Processing batch 5/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:261 Batch 5 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:248 Processing batch 6/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:261 Batch 6 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:248 Processing batch 7/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:261 Batch 7 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:248 Processing batch 8/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:261 Batch 8 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:248 Processing batch 9/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:261 Batch 9 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:248 Processing batch 10/10 with 3 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:187 Using 3 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:261 Batch 10 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:301 Processing 2 records for DataFrame creation...
+INFO     backend.layers.processing.utils.atac:atac.py:327 Concatenating chunks...
+INFO     backend.layers.processing.utils.atac:atac.py:348 Created DataFrame with 2 records
+INFO     backend.layers.processing.utils.atac:atac.py:360 Writing 2 records to TileDB in w mode...
+INFO     backend.layers.processing.utils.atac:atac.py:373 Successfully wrote data to TileDB
