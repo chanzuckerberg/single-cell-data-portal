@@ -365,7 +365,7 @@ class TestSkipATACValidation:
         assert (
             setup.business_logic.get_dataset_status(dataset_version_id).atac_status == DatasetConversionStatus.SKIPPED
         )
-        assert dataset_status.validation_message == "Fragment is optional and not present."
+        assert dataset_status.validation_message is None
 
     def test_optional_and_fragment(self, process_validate_atac, unpublished_dataset, setup, manifest_with_fragment):
         """A manifest is provided without a fragment, and the anndata has an optional fragment. This will pass
