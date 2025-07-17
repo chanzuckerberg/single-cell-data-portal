@@ -8,6 +8,7 @@ import tiledb
 from cellxgene_schema.utils import get_matrix_format
 
 from backend.common.constants import IS_SINGLE, UNS_SPATIAL_KEY
+from backend.layers.processing.utils.atac import ATACDataProcessor
 from backend.layers.processing.utils.dask_utils import TileDBSparseArrayWriteWrapper
 from backend.layers.processing.utils.spatial import SpatialDataProcessor
 from backend.layers.processing.utils.type_conversion_utils import get_dtype_and_schema_of_array
@@ -58,6 +59,17 @@ def convert_uns_to_cxg_group(cxg_container, metadata_dict, dataset_version_id, g
                         spatial_processor.create_deep_zoom_assets(cxg_container, content, dataset_version_id)
 
                 metadata_array.meta[key] = json.dumps(object_filtered)
+
+
+def convert_coverage_to_cxg_array(
+    cxg_container, metadata_dict, fragment_artifact_id, group_metadata_name, ctx, uns=None
+):
+
+    atac_processor = ATACDataProcessor(fragment_artifact_id, ctx)
+
+    array_name = f"{cxg_container}/{group_metadata_name}"
+
+    atac_processor.process_fragment_file(metadata_dict, array_name, uns=uns)
 
 
 def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, index_column_name, ctx):
