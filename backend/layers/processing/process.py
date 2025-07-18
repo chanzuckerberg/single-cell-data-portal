@@ -102,7 +102,6 @@ class ProcessMain(ProcessingLogic):
         artifact_bucket: Optional[str],
         datasets_bucket: Optional[str],
         cxg_bucket: Optional[str],
-        fragment_artifact_id: Optional[str] = None,
     ):
         """
         Gets called by the step function at every different step, as defined by `step_name`
@@ -112,7 +111,7 @@ class ProcessMain(ProcessingLogic):
             if step_name == "validate_anndata":
                 self.process_validate_h5ad.process(dataset_version_id, manifest, artifact_bucket)
             elif step_name == "validate_atac":
-                fragment_artifact_id = self.process_validate_atac_seq.process(
+                self.process_validate_atac_seq.process(
                     collection_version_id,
                     dataset_version_id,
                     manifest,
@@ -123,11 +122,9 @@ class ProcessMain(ProcessingLogic):
                     collection_version_id, dataset_version_id, artifact_bucket, datasets_bucket
                 )
             elif step_name == "cxg":
-                self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket, fragment_artifact_id)
+                self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket)
             elif step_name == "cxg_remaster":
-                self.process_cxg.process(
-                    dataset_version_id, artifact_bucket, cxg_bucket, fragment_artifact_id, is_reprocess=True
-                )
+                self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket, is_reprocess=True)
             else:
                 self.logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 
@@ -184,7 +181,6 @@ class ProcessMain(ProcessingLogic):
             rv = self.schema_migrate.migrate(step_name)
         else:
             dataset_version_id = os.environ["DATASET_VERSION_ID"]
-            fragment_artifact_id = os.environ.get("FRAGMENT_ARTIFACT_ID")
             collection_version_id = os.environ.get("COLLECTION_VERSION_ID")
             if manifest := os.environ.get("MANIFEST"):
                 manifest = IngestionManifest.model_validate_json(manifest)
@@ -201,7 +197,6 @@ class ProcessMain(ProcessingLogic):
                 artifact_bucket=artifact_bucket,
                 datasets_bucket=datasets_bucket,
                 cxg_bucket=cxg_bucket,
-                fragment_artifact_id=fragment_artifact_id,
             )
         return 0 if rv else 1
 
