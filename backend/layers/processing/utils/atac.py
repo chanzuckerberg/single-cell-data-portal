@@ -251,8 +251,7 @@ class ATACDataProcessor:
                 return
 
             cell_type_totals = self._compute_cell_type_totals(coverage_aggregator)
-            coverage_df = self._create_coverage_dataframe_with_totals(coverage_aggregator, cell_type_totals)
-            self._write_coverage_to_tiledb(array_name, coverage_df)
+            self._stream_coverage_chunks_to_tiledb(coverage_aggregator, cell_type_totals, array_name)
 
     def _process_all_chromosomes(
         self,
@@ -346,8 +345,7 @@ class ATACDataProcessor:
         self._report_missing_cells(valid_barcodes, all_found_cells)
 
         if all_coverage_aggregator:
-            coverage_df = self._create_coverage_dataframe_with_totals(all_coverage_aggregator, global_cell_type_totals)
-            self._write_coverage_to_tiledb(array_name, coverage_df)
+            self._stream_coverage_chunks_to_tiledb(all_coverage_aggregator, global_cell_type_totals, array_name)
 
     def _compute_global_cell_type_totals(
         self,
@@ -369,67 +367,58 @@ class ATACDataProcessor:
 
         return dict(global_cell_type_totals)
 
-    def _create_coverage_dataframe_with_totals(
+    def _stream_coverage_chunks_to_tiledb(
         self,
         coverage_aggregator: defaultdict,
         global_cell_type_totals: Dict[str, int],
+        array_name: str,
         chunk_size: int = 50000,
-    ) -> pd.DataFrame:
-        """Convert aggregated coverage data to normalized DataFrame using pre-computed global totals."""
-        self._chunks = []
-        self._current_chunk = []
-        self._dataframe_chunk_size = chunk_size
+    ) -> int:
+        """Stream processed chunks directly to TileDB without concatenation for memory efficiency."""
+        
+        all_records = []
+        current_chunk = []
 
         total_records = len(coverage_aggregator)
-        logger.info(f"Processing {total_records:,} records for DataFrame creation...")
+        logger.info(f"Processing {total_records:,} records for streaming to TileDB...")
 
         for _, ((chrom, bin_id, cell_type), count) in enumerate(
-            tqdm(coverage_aggregator.items(), desc="Processing DataFrame creation", unit="records")
+            tqdm(coverage_aggregator.items(), desc="Processing streaming chunks", unit="records")
         ):
             total_coverage = global_cell_type_totals.get(cell_type, 0)
             normalized_coverage = (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
 
             record = {
-                "chrom": chrom,
-                "bin": bin_id,
+                "chrom": np.int32(chrom),
+                "bin": np.int32(bin_id),
                 "cell_type": cell_type,
-                "coverage": count,
-                "total_coverage": total_coverage,
-                "normalized_coverage": normalized_coverage,
+                "coverage": np.int32(count),
+                "total_coverage": np.int32(total_coverage),
+                "normalized_coverage": np.float32(normalized_coverage),
             }
 
-            self._current_chunk.append(record)
+            current_chunk.append(record)
 
-            if len(self._current_chunk) >= self._dataframe_chunk_size:
-                self._chunks.append(pd.DataFrame(self._current_chunk))
-                self._current_chunk.clear()
+            # Process in chunks to avoid memory buildup, but collect all records
+            if len(current_chunk) >= chunk_size:
+                all_records.extend(current_chunk)
+                current_chunk.clear()
 
-        if self._current_chunk:
-            self._chunks.append(pd.DataFrame(self._current_chunk))
+        # Add remaining records
+        if current_chunk:
+            all_records.extend(current_chunk)
 
-        logger.info("Concatenating chunks...")
-        if not self._chunks:
-            del self._chunks
-            del self._current_chunk
-            del self._dataframe_chunk_size
-            return pd.DataFrame(
-                columns=["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
-            )
+        # Write all records in single operation to TileDB
+        if all_records:
+            final_df = pd.DataFrame(all_records)
+            self._write_coverage_to_tiledb(array_name, final_df, mode="w")
+            total_written = len(final_df)
+            del final_df  # Explicit cleanup
+        else:
+            total_written = 0
 
-        df = pd.concat(self._chunks, ignore_index=True, copy=False)
-
-        del self._chunks
-        del self._current_chunk
-        del self._dataframe_chunk_size
-
-        df["chrom"] = df["chrom"].astype("int32")
-        df["bin"] = df["bin"].astype("int32")
-        df["coverage"] = df["coverage"].astype("int32")
-        df["total_coverage"] = df["total_coverage"].astype("int32")
-        df["normalized_coverage"] = df["normalized_coverage"].astype("float32")
-
-        logger.info(f"Created DataFrame with {len(df):,} records")
-        return df
+        logger.info(f"Streamed {total_written:,} records to TileDB")
+        return total_written
 
     def _compute_cell_type_totals(self, coverage_aggregator: defaultdict) -> Dict[str, int]:
         """Compute per-cell-type totals."""

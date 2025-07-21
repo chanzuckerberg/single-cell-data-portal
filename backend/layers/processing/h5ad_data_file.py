@@ -9,6 +9,13 @@ import numpy as np
 import tiledb
 from cellxgene_schema.utils import read_h5ad
 
+# Memory profiling imports
+try:
+    import psutil
+    MEMORY_PROFILING_AVAILABLE = True
+except ImportError:
+    MEMORY_PROFILING_AVAILABLE = False
+
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.cxg_constants import CxgConstants
 from backend.common.utils.tiledb import consolidation_buffer_size
@@ -25,6 +32,41 @@ from backend.layers.processing.utils.cxg_generation_utils import (
     convert_uns_to_cxg_group,
 )
 from backend.layers.processing.utils.matrix_utils import is_matrix_sparse
+
+
+def log_memory_usage_h5ad(checkpoint_name: str = "", peak_monitor=None):
+    """Log current memory usage at critical checkpoints for H5AD processing."""
+    if MEMORY_PROFILING_AVAILABLE:
+        process = psutil.Process()
+        memory_info = process.memory_info()
+        memory_mb = memory_info.rss / 1024 / 1024
+        memory_percent = process.memory_percent()
+        
+        # Add peak info if monitoring
+        peak_info = ""
+        if peak_monitor and hasattr(peak_monitor, 'peak_memory') and peak_monitor.peak_memory > 0:
+            peak_info = f" (Peak: {peak_monitor.peak_memory:.1f} MB)"
+        
+        logging.info(f"H5AD_MEMORY_CHECKPOINT[{checkpoint_name}]: {memory_mb:.1f} MB RSS ({memory_percent:.1f}%){peak_info}")
+        return memory_mb
+    return 0
+
+
+# Import peak monitoring if available
+try:
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+    from peak_memory_monitor import monitor_peak_memory, PeakMemoryMonitor
+    PEAK_MONITORING_AVAILABLE = True
+except ImportError:
+    PEAK_MONITORING_AVAILABLE = False
+    def monitor_peak_memory(name):
+        from contextlib import contextmanager
+        @contextmanager
+        def dummy():
+            yield None
+        return dummy()
 
 
 class H5ADDataFile:
@@ -119,24 +161,43 @@ class H5ADDataFile:
         logging.info("Completed writing to CXG.")
 
     def write_anndata_x_matrices_to_cxg(self, output_cxg_directory, ctx, sparse_threshold):
+        log_memory_usage_h5ad("X_MATRIX_PROCESSING_START")
+        
         matrix_container = f"{output_cxg_directory}/X"
         x_matrix_data = self.anndata.X
+        
+        logging.info(f"X matrix shape: {x_matrix_data.shape}, dtype: {x_matrix_data.dtype}")
+        log_memory_usage_h5ad("PRE_SPARSITY_CHECK")
+        
         with dask.config.set(
             {
                 "num_workers": 1,  # a single worker with as many threads as vCPUs is more memory efficient
                 "threads_per_worker": 2,  # match the number of vCPUs
-                "distributed.worker.memory.limit": "12GB",
+                "distributed.worker.memory.limit": "28GB",
                 "scheduler": "threads",
             }
         ):
             is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)
             logging.info(f"is_sparse: {is_sparse}")
-            convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, self.tile_db_ctx_config)
+            log_memory_usage_h5ad("PRE_MATRIX_CONVERSION")
+            
+            # Monitor peak memory during X matrix conversion
+            with monitor_peak_memory("X_MATRIX_CONVERSION") as matrix_monitor:
+                convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, self.tile_db_ctx_config)
+            log_memory_usage_h5ad("POST_MATRIX_CONVERSION", matrix_monitor)
 
         logging.info("start consolidating")
-        tiledb.consolidate(matrix_container, ctx=ctx)
+        log_memory_usage_h5ad("PRE_TILEDB_CONSOLIDATE")
+        
+        # Monitor peak memory during consolidation
+        with monitor_peak_memory("TILEDB_CONSOLIDATE") as consolidate_monitor:
+            tiledb.consolidate(matrix_container, ctx=ctx)
+        log_memory_usage_h5ad("POST_TILEDB_CONSOLIDATE", consolidate_monitor)
+        
         if hasattr(tiledb, "vacuum"):
-            tiledb.vacuum(matrix_container)
+            with monitor_peak_memory("TILEDB_VACUUM") as vacuum_monitor:
+                tiledb.vacuum(matrix_container)
+            log_memory_usage_h5ad("POST_TILEDB_VACUUM", vacuum_monitor)
 
     def write_anndata_embeddings_to_cxg(self, output_cxg_directory, ctx):
         def is_valid_embedding(adata, embedding_name, embedding_array):
