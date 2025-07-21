@@ -1,11 +1,11 @@
 # This is used for environment (dev, staging, prod) deployments
 locals {
-  h5ad_timeout = 86400 # 24 hours
-  atac_timeout = 86400 # 24 hours
-  cxg_timeout = 172800 # 48 hours
+  h5ad_timeout = 86400  # 24 hours
+  atac_timeout = 86400  # 24 hours
+  cxg_timeout  = 172800 # 48 hours
 }
 
-data aws_region current {}
+data "aws_region" "current" {}
 
 resource "aws_sfn_state_machine" "state_machine" {
   name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-sfn"
@@ -354,7 +354,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
 EOF
 }
 
-resource aws_cloudwatch_log_group cloud_watch_logs_group {
+resource "aws_cloudwatch_log_group" "cloud_watch_logs_group" {
   retention_in_days = 365
   name              = "/dp/${var.deployment_stage}/${var.custom_stack_name}/upload-sfn"
 }

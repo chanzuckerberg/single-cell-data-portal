@@ -114,13 +114,14 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         converter: Callable,
         local_filename: str,
         dataset_version_id: DatasetVersionId,
+        fragment_artifact_id: Optional[str],
         processing_status_key: DatasetStatusKey,
     ) -> str:
         self.logger.info(f"Converting {local_filename}")
         start = datetime.now()
         try:
             self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.CONVERTING)
-            file_dir = converter(local_filename, dataset_version_id)
+            file_dir = converter(local_filename, dataset_version_id, fragment_artifact_id)
             self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.CONVERTED)
             self.logger.info(f"Finished converting {converter} in {datetime.now() - start}")
         except Exception:
