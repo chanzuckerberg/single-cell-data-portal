@@ -1,3 +1,5 @@
+from typing import Optional
+
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
     DatasetArtifactType,
@@ -35,7 +37,11 @@ class ProcessCxg(ProcessingLogic):
         self.s3_provider = s3_provider
 
     def process(
-        self, dataset_version_id: DatasetVersionId, artifact_bucket: str, cellxgene_bucket: str, is_reprocess=False
+        self,
+        dataset_version_id: DatasetVersionId,
+        artifact_bucket: str,
+        cellxgene_bucket: str,
+        is_reprocess=False,
     ):
         """
         1. Download the labeled dataset from the artifact bucket
@@ -52,9 +58,8 @@ class ProcessCxg(ProcessingLogic):
 
         # Download the labeled dataset from the artifact bucket
         object_key = None
-        current_artifacts = None
+        current_artifacts = self.business_logic.get_dataset_artifacts(dataset_version_id)
         if is_reprocess:
-            current_artifacts = self.business_logic.get_dataset_artifacts(dataset_version_id)
             existing_h5ad = [artifact for artifact in current_artifacts if artifact.type == DatasetArtifactType.H5AD][0]
             if existing_h5ad:
                 _, object_key = self.s3_provider.parse_s3_uri(existing_h5ad.uri)
@@ -63,11 +68,22 @@ class ProcessCxg(ProcessingLogic):
             object_key = f"{key_prefix}/{labeled_h5ad_filename}"
         self.download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
+        # Get fragment file S3 URL
+        fragment_file_path = None
+        fragment_artifacts = [
+            artifact for artifact in current_artifacts if artifact.type == DatasetArtifactType.ATAC_FRAGMENT
+        ]
+        if fragment_artifacts:
+            fragment_file_path = fragment_artifacts[0].uri
+            self.logger.info(f"Using fragment file S3 URL: {fragment_file_path}")
+
         # Convert the labeled dataset to CXG and upload it to the cellxgene bucket
-        self.process_cxg(labeled_h5ad_filename, dataset_version_id, cellxgene_bucket, current_artifacts)
+        self.process_cxg(
+            labeled_h5ad_filename, dataset_version_id, cellxgene_bucket, fragment_file_path, current_artifacts
+        )
 
     @logit
-    def make_cxg(self, local_filename, dataset_version_id: DatasetVersionId):
+    def make_cxg(self, local_filename, dataset_version_id: DatasetVersionId, fragment_file_path: Optional[str] = None):
         """
         Convert the uploaded H5AD file to the CXG format servicing the cellxgene Explorer.
         """
@@ -75,7 +91,12 @@ class ProcessCxg(ProcessingLogic):
         cxg_output_container = local_filename.replace(".h5ad", ".cxg")
         try:
             h5ad_data_file = H5ADDataFile(local_filename)
-            h5ad_data_file.to_cxg(cxg_output_container, sparse_threshold=25.0, dataset_version_id=dataset_version_id.id)
+            h5ad_data_file.to_cxg(
+                cxg_output_container,
+                sparse_threshold=25.0,
+                dataset_version_id=dataset_version_id.id,
+                fragment_artifact_id=fragment_file_path,
+            )
         except Exception as ex:
             # TODO use a specialized exception
             msg = "CXG conversion failed."
@@ -90,13 +111,20 @@ class ProcessCxg(ProcessingLogic):
         """
         self.s3_provider.upload_directory(cxg_dir, s3_uri)
 
-    def process_cxg(self, local_filename, dataset_version_id, cellxgene_bucket, current_artifacts=None):
-        cxg_dir = self.convert_file(self.make_cxg, local_filename, dataset_version_id, DatasetStatusKey.CXG)
+    def process_cxg(
+        self, local_filename, dataset_version_id, cellxgene_bucket, fragment_file_path=None, current_artifacts=None
+    ):
+        cxg_dir = self.convert_file(
+            self.make_cxg, local_filename, dataset_version_id, fragment_file_path, DatasetStatusKey.CXG
+        )
         s3_uri = None
+        existing_cxg_artifacts = []
         if current_artifacts:
-            existing_cxg = [artifact for artifact in current_artifacts if artifact.type == DatasetArtifactType.CXG][0]
-            if existing_cxg:
-                s3_uri = existing_cxg.uri
+            existing_cxg_artifacts = [
+                artifact for artifact in current_artifacts if artifact.type == DatasetArtifactType.CXG
+            ]
+            if existing_cxg_artifacts:
+                s3_uri = existing_cxg_artifacts[0].uri
 
         if s3_uri is None:
             key_prefix = self.get_key_prefix(dataset_version_id.id)
@@ -106,7 +134,7 @@ class ProcessCxg(ProcessingLogic):
         self.copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)
         self.logger.info(f"Updating database with cxg artifact for dataset {dataset_version_id}. s3_uri is {s3_uri}")
 
-        if not current_artifacts:
+        if not existing_cxg_artifacts:
             self.business_logic.add_dataset_artifact(dataset_version_id, DatasetArtifactType.CXG, s3_uri)
 
         self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.UPLOADED)
