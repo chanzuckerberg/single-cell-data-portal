@@ -85,9 +85,9 @@ const ToS = (): JSX.Element => {
               provide medical advice, diagnosis, or treatment.
             </li>
             <li>
-              The data made available in the service is{" "}
-              <strong>publicly available</strong> and is{" "}
-              <strong>not personally identifiable</strong>.
+              The datasets made available in the service are{" "}
+              <strong>publicly available</strong> and should{" "}
+              <strong>not be personally identifiable</strong>.
             </li>
             <li>
               We use the privacy-friendly Plausible service to collect{" "}
