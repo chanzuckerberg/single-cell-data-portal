@@ -251,10 +251,8 @@ class ATACDataProcessor:
                 return
 
             # For single-pass processing, compute totals directly
-            cell_type_totals = defaultdict(int)
-            for (_, _, cell_type), count in coverage_aggregator.items():
-                cell_type_totals[cell_type] += count
-            self._stream_coverage_chunks_to_tiledb(coverage_aggregator, dict(cell_type_totals), array_name)
+            cell_type_totals = self._compute_cell_type_totals_from_aggregator(coverage_aggregator)
+            self._stream_coverage_chunks_to_tiledb(coverage_aggregator, cell_type_totals, array_name)
 
     def _process_all_chromosomes(
         self,
@@ -370,6 +368,13 @@ class ATACDataProcessor:
 
         return dict(global_cell_type_totals)
 
+    def _compute_cell_type_totals_from_aggregator(self, coverage_aggregator: defaultdict) -> Dict[str, int]:
+        """Compute cell type totals from coverage aggregator data."""
+        cell_type_totals = defaultdict(int)
+        for (_, _, cell_type), count in coverage_aggregator.items():
+            cell_type_totals[cell_type] += count
+        return dict(cell_type_totals)
+
     def _stream_coverage_chunks_to_tiledb(
         self,
         coverage_aggregator: defaultdict,
@@ -437,6 +442,7 @@ class ATACDataProcessor:
 
     def process_fragment_file(self, obs: pd.DataFrame, array_name: str, uns: Optional[Dict] = None) -> None:
         try:
+            logger.info(f"Starting ATAC fragment processing for array: {array_name}")
             df_meta, chromosome_by_length = self.extract_cell_metadata_from_h5ad(obs, uns=uns)
 
             valid_barcodes = set(df_meta["cell_name"])
@@ -445,7 +451,17 @@ class ATACDataProcessor:
             max_chrom, chrom_map = self.build_chrom_mapping(chromosome_by_length)
             max_bins = self.calculate_max_bins(chromosome_by_length)
 
+            logger.info(f"Creating TileDB array with {max_chrom} chromosomes and {max_bins} max bins")
             self.create_dataframe_array(array_name, max_chrom, max_bins)
+
+            logger.info(f"Processing {len(chrom_map)} chromosomes with {len(valid_barcodes)} valid barcodes")
             self.write_binned_coverage_per_chrom(array_name, chrom_map, cell_type_map, valid_barcodes)
+
+            logger.info("ATAC fragment processing completed successfully")
+
+        except Exception as e:
+            logger.error(f"ATAC fragment processing failed: {e}")
+            raise
+
         finally:
             self._cleanup_temp_files()

@@ -1,3 +1,4 @@
+import gc
 import json
 import logging
 import os
@@ -142,7 +143,20 @@ class H5ADDataFile:
             tiledb.vacuum(matrix_container)
 
     def _consolidate_tiledb_with_memory_optimization(self, matrix_container: str, ctx: tiledb.Ctx):
-        """Consolidate TileDB array with memory optimization."""
+        """
+        Consolidate TileDB array with memory-aware optimization strategies.
+
+        Automatically selects between chunked and standard consolidation approaches
+        based on available system memory. Uses chunked consolidation for low-memory
+        environments (<8GB) and applies a safety buffer to prevent memory exhaustion.
+
+        Args:
+            matrix_container: Path to the TileDB array container to consolidate
+            ctx: TileDB context for array operations
+
+        Note:
+            Memory safety buffer is set to 5% of available memory (min 128MB, max 1GB)
+        """
         available_memory_mb = psutil.virtual_memory().available / 1024 / 1024
         safe_buffer_mb = max(128, min(1024, int(available_memory_mb * 0.05)))
         safe_buffer_bytes = safe_buffer_mb * 1024 * 1024
@@ -232,11 +246,7 @@ class H5ADDataFile:
                     logging.info(f"Consolidation pass {pass_idx + 1}/{passes_needed}")
                     tiledb.consolidate(matrix_container, ctx=ctx, config=pass_config)
 
-                    # Brief pause between passes to allow memory cleanup
-                    import time
-
-                    time.sleep(0.5)
-
+                    gc.collect()
                 logging.info("Chunked consolidation completed (multi-pass)")
 
         except Exception as e:
