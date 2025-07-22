@@ -250,9 +250,9 @@ class ATACDataProcessor:
             if not coverage_aggregator:
                 return
 
-            cell_type_totals = self._compute_cell_type_totals(coverage_aggregator)
-            coverage_df = self._create_coverage_dataframe_with_totals(coverage_aggregator, cell_type_totals)
-            self._write_coverage_to_tiledb(array_name, coverage_df)
+            # For single-pass processing, compute totals directly
+            cell_type_totals = self._compute_cell_type_totals_from_aggregator(coverage_aggregator)
+            self._stream_coverage_chunks_to_tiledb(coverage_aggregator, cell_type_totals, array_name)
 
     def _process_all_chromosomes(
         self,
@@ -346,8 +346,7 @@ class ATACDataProcessor:
         self._report_missing_cells(valid_barcodes, all_found_cells)
 
         if all_coverage_aggregator:
-            coverage_df = self._create_coverage_dataframe_with_totals(all_coverage_aggregator, global_cell_type_totals)
-            self._write_coverage_to_tiledb(array_name, coverage_df)
+            self._stream_coverage_chunks_to_tiledb(all_coverage_aggregator, global_cell_type_totals, array_name)
 
     def _compute_global_cell_type_totals(
         self,
@@ -369,94 +368,81 @@ class ATACDataProcessor:
 
         return dict(global_cell_type_totals)
 
-    def _create_coverage_dataframe_with_totals(
-        self,
-        coverage_aggregator: defaultdict,
-        global_cell_type_totals: Dict[str, int],
-        chunk_size: int = 50000,
-    ) -> pd.DataFrame:
-        """Convert aggregated coverage data to normalized DataFrame using pre-computed global totals."""
-        self._chunks = []
-        self._current_chunk = []
-        self._dataframe_chunk_size = chunk_size
-
-        total_records = len(coverage_aggregator)
-        logger.info(f"Processing {total_records:,} records for DataFrame creation...")
-
-        for _, ((chrom, bin_id, cell_type), count) in enumerate(
-            tqdm(coverage_aggregator.items(), desc="Processing DataFrame creation", unit="records")
-        ):
-            total_coverage = global_cell_type_totals.get(cell_type, 0)
-            normalized_coverage = (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
-
-            record = {
-                "chrom": chrom,
-                "bin": bin_id,
-                "cell_type": cell_type,
-                "coverage": count,
-                "total_coverage": total_coverage,
-                "normalized_coverage": normalized_coverage,
-            }
-
-            self._current_chunk.append(record)
-
-            if len(self._current_chunk) >= self._dataframe_chunk_size:
-                self._chunks.append(pd.DataFrame(self._current_chunk))
-                self._current_chunk.clear()
-
-        if self._current_chunk:
-            self._chunks.append(pd.DataFrame(self._current_chunk))
-
-        logger.info("Concatenating chunks...")
-        if not self._chunks:
-            del self._chunks
-            del self._current_chunk
-            del self._dataframe_chunk_size
-            return pd.DataFrame(
-                columns=["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
-            )
-
-        df = pd.concat(self._chunks, ignore_index=True, copy=False)
-
-        del self._chunks
-        del self._current_chunk
-        del self._dataframe_chunk_size
-
-        df["chrom"] = df["chrom"].astype("int32")
-        df["bin"] = df["bin"].astype("int32")
-        df["coverage"] = df["coverage"].astype("int32")
-        df["total_coverage"] = df["total_coverage"].astype("int32")
-        df["normalized_coverage"] = df["normalized_coverage"].astype("float32")
-
-        logger.info(f"Created DataFrame with {len(df):,} records")
-        return df
-
-    def _compute_cell_type_totals(self, coverage_aggregator: defaultdict) -> Dict[str, int]:
-        """Compute per-cell-type totals."""
+    def _compute_cell_type_totals_from_aggregator(self, coverage_aggregator: defaultdict) -> Dict[str, int]:
+        """Compute cell type totals from coverage aggregator data."""
         cell_type_totals = defaultdict(int)
         for (_, _, cell_type), count in coverage_aggregator.items():
             cell_type_totals[cell_type] += count
         return dict(cell_type_totals)
 
-    def _write_coverage_to_tiledb(self, array_name: str, coverage_df: pd.DataFrame, mode: str = "w") -> None:
-        """Write DataFrame to TileDB."""
-        logger.info(f"Writing {len(coverage_df):,} records to TileDB in {mode} mode...")
-        with tiledb.SparseArray(array_name, mode=mode, ctx=self.ctx) as A:
-            A[
-                (
-                    coverage_df["chrom"].astype("int32").to_numpy(),
-                    coverage_df["bin"].astype("int32").to_numpy(),
-                    coverage_df["cell_type"].to_numpy(),
-                )
-            ] = {
-                "coverage": coverage_df["coverage"].astype("int32").to_numpy(),
-                "total_coverage": coverage_df["total_coverage"].astype("int32").to_numpy(),
-                "normalized_coverage": coverage_df["normalized_coverage"].to_numpy(),
+    def _stream_coverage_chunks_to_tiledb(
+        self,
+        coverage_aggregator: defaultdict,
+        global_cell_type_totals: Dict[str, int],
+        array_name: str,
+        chunk_size: int = 50000,
+    ) -> int:
+        """Streaming approach: process directly into pre-allocated numpy arrays, write once."""
+
+        total_records = len(coverage_aggregator)
+        logger.info(f"Processing {total_records:,} records with direct array assignment...")
+
+        chroms = np.zeros(total_records, dtype=np.int32)
+        bins = np.zeros(total_records, dtype=np.int32)
+        cell_types = np.empty(total_records, dtype=object)
+        coverages = np.zeros(total_records, dtype=np.int32)
+        total_coverages = np.zeros(total_records, dtype=np.int32)
+        normalized_coverages = np.zeros(total_records, dtype=np.float32)
+
+        array_index = 0
+
+        for (chrom, bin_id, cell_type), count in tqdm(
+            coverage_aggregator.items(), desc="Processing directly to arrays", unit="records"
+        ):
+            total_coverage = global_cell_type_totals.get(cell_type, 0)
+            normalized_coverage = (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
+
+            # Assign directly to pre-allocated arrays
+            chroms[array_index] = chrom
+            bins[array_index] = bin_id
+            cell_types[array_index] = cell_type
+            coverages[array_index] = count
+            total_coverages[array_index] = total_coverage
+            normalized_coverages[array_index] = normalized_coverage
+
+            array_index += 1
+
+        logger.info(f"Writing {array_index:,} records to TileDB as single fragment...")
+        self._write_arrays_to_tiledb(
+            array_name, chroms, bins, cell_types, coverages, total_coverages, normalized_coverages
+        )
+
+        logger.info(f"Streamed {array_index:,} records directly to TileDB as single fragment")
+        return array_index
+
+    def _write_arrays_to_tiledb(
+        self,
+        array_name: str,
+        chroms: np.ndarray,
+        bins: np.ndarray,
+        cell_types: np.ndarray,
+        coverages: np.ndarray,
+        total_coverages: np.ndarray,
+        normalized_coverages: np.ndarray,
+    ) -> None:
+        """Write numpy arrays directly to TileDB for maximum efficiency."""
+        logger.info(f"Writing {len(chroms):,} records to TileDB from numpy arrays...")
+        with tiledb.SparseArray(array_name, mode="w", ctx=self.ctx) as A:
+            A[(chroms, bins, cell_types)] = {
+                "coverage": coverages,
+                "total_coverage": total_coverages,
+                "normalized_coverage": normalized_coverages,
             }
-        logger.info("Successfully wrote data to TileDB")
+        logger.info("Successfully wrote numpy arrays to TileDB")
 
     def process_fragment_file(self, obs: pd.DataFrame, array_name: str, uns: Optional[Dict] = None) -> None:
         try:
+            logger.info(f"Starting ATAC fragment processing for array: {array_name}")
             df_meta, chromosome_by_length = self.extract_cell_metadata_from_h5ad(obs, uns=uns)
 
             valid_barcodes = set(df_meta["cell_name"])
@@ -465,7 +451,17 @@ class ATACDataProcessor:
             max_chrom, chrom_map = self.build_chrom_mapping(chromosome_by_length)
             max_bins = self.calculate_max_bins(chromosome_by_length)
 
+            logger.info(f"Creating TileDB array with {max_chrom} chromosomes and {max_bins} max bins")
             self.create_dataframe_array(array_name, max_chrom, max_bins)
+
+            logger.info(f"Processing {len(chrom_map)} chromosomes with {len(valid_barcodes)} valid barcodes")
             self.write_binned_coverage_per_chrom(array_name, chrom_map, cell_type_map, valid_barcodes)
+
+            logger.info("ATAC fragment processing completed successfully")
+
+        except Exception as e:
+            logger.error(f"ATAC fragment processing failed: {e}")
+            raise
+
         finally:
             self._cleanup_temp_files()

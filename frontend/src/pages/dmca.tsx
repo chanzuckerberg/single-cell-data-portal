@@ -233,8 +233,8 @@ const DMCA = (): JSX.Element => {
                     <br />
                     Attn: General Counsel <br />
                     Email: courtesy copy:{" "}
-                    <a href="mailto:cellxgene@chanzuckerberg.com">
-                      cellxgene@chanzuckerberg.com
+                    <a href="mailto:privacy@chanzuckerberg.com">
+                      privacy@chanzuckerberg.com
                     </a>
                   </address>
                   <p>
