@@ -150,12 +150,7 @@ class H5ADDataFile:
         based on available system memory. Uses chunked consolidation for low-memory
         environments (<8GB) and applies a safety buffer to prevent memory exhaustion.
 
-        Args:
-            matrix_container: Path to the TileDB array container to consolidate
-            ctx: TileDB context for array operations
-
-        Note:
-            Memory safety buffer is set to 5% of available memory (min 128MB, max 1GB)
+        Memory safety buffer is set to 5% of available memory (min 128MB, max 1GB)
         """
         available_memory_mb = psutil.virtual_memory().available / 1024 / 1024
         safe_buffer_mb = max(128, min(1024, int(available_memory_mb * 0.05)))
