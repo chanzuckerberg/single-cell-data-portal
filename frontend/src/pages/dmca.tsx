@@ -29,7 +29,7 @@ const DMCA = (): JSX.Element => {
 
           <div>
             <h1>Digital Millennium Copyright Act (DMCA) Policy</h1>
-            <p>Last updated: February 15, 2025.</p>
+            <p>Last Updated: April 23, 2025.</p>
             {/* Introduction */}
             <>
               <p>
@@ -233,8 +233,8 @@ const DMCA = (): JSX.Element => {
                     <br />
                     Attn: General Counsel <br />
                     Email: courtesy copy:{" "}
-                    <a href="mailto:cellxgene@chanzuckerberg.com">
-                      cellxgene@chanzuckerberg.com
+                    <a href="mailto:privacy@chanzuckerberg.com">
+                      privacy@chanzuckerberg.com
                     </a>
                   </address>
                   <p>

@@ -2,6 +2,7 @@ import json
 import unittest
 from os import path, remove
 from shutil import rmtree
+from unittest.mock import Mock, patch
 from uuid import uuid4
 
 import anndata
@@ -190,6 +191,155 @@ class TestH5ADDataFile(unittest.TestCase):
                 # if we get here we're good
         finally:
             rmtree("foo")
+
+    @patch("psutil.virtual_memory")
+    @patch("tiledb.Config")
+    @patch("tiledb.consolidate")
+    def test_consolidate_tiledb_memory_optimization_buffer_sizing(self, mock_consolidate, mock_config, mock_memory):
+        """Test dynamic buffer sizing based on available memory."""
+        h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
+
+        # Test high memory scenario (>8GB available)
+        mock_memory.return_value = Mock(available=10 * 1024**3)  # 10GB available
+        mock_ctx = Mock()
+
+        h5ad_file._consolidate_tiledb_with_memory_optimization("test_matrix", mock_ctx)
+
+        # Should use standard consolidation with appropriate buffer size
+        mock_config.assert_called_once()
+        config_dict = mock_config.call_args[0][0]
+
+        # Buffer should be 5% of available memory, capped between 128MB and 1GB
+        expected_buffer = min(1024, max(128, int(10 * 1024 * 0.05))) * 1024 * 1024  # 512MB
+        self.assertEqual(config_dict["sm.consolidation.buffer_size"], expected_buffer)
+        self.assertEqual(config_dict["sm.memory_budget"], expected_buffer * 2)
+
+        mock_consolidate.assert_called_once_with("test_matrix", ctx=mock_ctx, config=mock_config.return_value)
+
+    @patch("psutil.virtual_memory")
+    @patch("tiledb.Config")
+    @patch("tiledb.consolidate")
+    def test_consolidate_tiledb_low_memory_chunked_approach(self, mock_consolidate, mock_config, mock_memory):
+        """Test chunked consolidation is triggered when available memory < 8GB."""
+        h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
+
+        # Test low memory scenario (<8GB available)
+        mock_memory.return_value = Mock(available=6 * 1024**3)  # 6GB available
+        mock_ctx = Mock()
+
+        # Mock array_fragments to return few fragments (single pass scenario)
+        with patch("tiledb.array_fragments", return_value=[1, 2, 3]):  # 3 fragments
+            h5ad_file._consolidate_tiledb_with_memory_optimization("test_matrix", mock_ctx)
+
+        # Should use chunked consolidation
+        mock_config.assert_called_once()
+        config_dict = mock_config.call_args[0][0]
+
+        # Buffer should be 5% of available memory divided by 4 for chunked approach
+        expected_buffer = max(128, int(6 * 1024 * 0.05)) * 1024 * 1024  # 307MB
+        self.assertEqual(config_dict["sm.consolidation.buffer_size"], expected_buffer // 4)
+        self.assertEqual(config_dict["sm.memory_budget"], expected_buffer // 2)
+        self.assertEqual(config_dict["sm.consolidation.step_max_frags"], 5)
+
+        mock_consolidate.assert_called_once_with("test_matrix", ctx=mock_ctx, config=mock_config.return_value)
+
+    @patch("psutil.virtual_memory")
+    @patch("tiledb.Config")
+    @patch("tiledb.consolidate")
+    @patch("tiledb.array_fragments")
+    def test_consolidate_tiledb_multi_pass_chunking(self, mock_fragments, mock_consolidate, mock_config, mock_memory):
+        """Test multi-pass consolidation with many fragments."""
+        h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
+
+        # Test low memory scenario with many fragments
+        mock_memory.return_value = Mock(available=4 * 1024**3)  # 4GB available
+        mock_fragments.return_value = list(range(20))  # 20 fragments
+        mock_ctx = Mock()
+
+        h5ad_file._consolidate_tiledb_with_memory_optimization("test_matrix", mock_ctx)
+
+        # Should perform multiple consolidation passes
+        # 20 fragments with max 8 per pass = 3 passes needed
+        expected_passes = 3
+        self.assertEqual(mock_consolidate.call_count, expected_passes)
+
+        # Verify each pass used correct fragment limits
+        for call_args in mock_config.call_args_list:
+            config_dict = call_args[0][0]
+            self.assertEqual(config_dict["sm.consolidation.step_max_frags"], 8)
+
+    @patch("psutil.virtual_memory")
+    @patch("tiledb.Config")
+    @patch("tiledb.consolidate")
+    def test_consolidate_tiledb_fallback_handling(self, mock_consolidate, mock_config, mock_memory):
+        """Test fallback behavior when memory-optimized consolidation fails."""
+        h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
+
+        mock_memory.return_value = Mock(available=10 * 1024**3)  # 10GB available
+        mock_ctx = Mock()
+
+        # First consolidation call fails, second should succeed with fallback config
+        mock_consolidate.side_effect = [Exception("Memory error"), None]
+
+        h5ad_file._consolidate_tiledb_with_memory_optimization("test_matrix", mock_ctx)
+
+        # Should have been called twice - once for standard, once for fallback
+        self.assertEqual(mock_consolidate.call_count, 2)
+        self.assertEqual(mock_config.call_count, 2)
+
+        # Verify fallback config has reduced buffer size
+        fallback_config = mock_config.call_args_list[1][0][0]
+        standard_config = mock_config.call_args_list[0][0][0]
+
+        self.assertEqual(
+            fallback_config["sm.consolidation.buffer_size"], standard_config["sm.consolidation.buffer_size"] // 2
+        )
+        self.assertEqual(fallback_config["sm.consolidation.steps_size_ratio"], 0.05)
+
+    @patch("psutil.virtual_memory")
+    @patch("tiledb.Config")
+    @patch("tiledb.consolidate")
+    def test_consolidate_tiledb_config_validation(self, mock_consolidate, mock_config, mock_memory):
+        """Test that TileDB config objects are properly created from dictionaries."""
+        h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
+
+        mock_memory.return_value = Mock(available=10 * 1024**3)  # 10GB available
+        mock_ctx = Mock()
+
+        h5ad_file._consolidate_tiledb_with_memory_optimization("test_matrix", mock_ctx)
+
+        # Verify tiledb.Config was called with dictionary
+        mock_config.assert_called_once()
+        config_dict = mock_config.call_args[0][0]
+
+        # Verify expected config parameters are present
+        expected_keys = {
+            "sm.consolidation.buffer_size",
+            "sm.consolidation.steps_size_ratio",
+            "sm.memory_budget",
+            "sm.consolidation.step_min_frags",
+            "sm.consolidation.step_max_frags",
+        }
+        self.assertTrue(expected_keys.issubset(config_dict.keys()))
+
+        # Verify consolidate was called with Config object, not dictionary
+        mock_consolidate.assert_called_once_with("test_matrix", ctx=mock_ctx, config=mock_config.return_value)
+
+    @patch("psutil.virtual_memory")
+    @patch("tiledb.array_fragments")
+    def test_consolidate_tiledb_zero_fragments_handling(self, mock_fragments, mock_memory):
+        """Test consolidation behavior when TileDB array has no fragments."""
+        h5ad_file = H5ADDataFile(self.sample_h5ad_filename)
+
+        mock_memory.return_value = Mock(available=4 * 1024**3)  # 4GB available (triggers chunked)
+        mock_fragments.return_value = []  # No fragments
+        mock_ctx = Mock()
+
+        with patch("tiledb.Config"), patch("tiledb.consolidate") as mock_consolidate:
+            h5ad_file._consolidate_tiledb_with_memory_optimization("test_matrix", mock_ctx)
+
+            # Should still attempt consolidation even with no fragments
+            mock_consolidate.assert_called_once()
 
     def _validate_cxg_and_h5ad_content_match(self, h5ad_filename, cxg_directory, is_sparse, has_column_encoding=False):
         anndata_object = anndata.read_h5ad(h5ad_filename)
