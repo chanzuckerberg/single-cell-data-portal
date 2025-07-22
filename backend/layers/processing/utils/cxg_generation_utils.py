@@ -10,6 +10,7 @@ from cellxgene_schema.utils import get_matrix_format
 # Memory profiling imports
 try:
     import psutil
+
     MEMORY_PROFILING_AVAILABLE = True
 except ImportError:
     MEMORY_PROFILING_AVAILABLE = False
@@ -196,9 +197,11 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
     number of elements in the matrix, only the number of nonzero elements.
     """
     log_memory_usage_cxg("MATRIX_CONVERSION_START")
-    logging.info(f"Converting matrix {matrix_name}: shape={matrix.shape}, dtype={matrix.dtype}, sparse={encode_as_sparse_array}")
+    logging.info(
+        f"Converting matrix {matrix_name}: shape={matrix.shape}, dtype={matrix.dtype}, sparse={encode_as_sparse_array}"
+    )
     logging.info(f"Matrix chunks: {matrix.chunks}")
-    
+
     number_of_rows = matrix.shape[0]
     number_of_columns = matrix.shape[1]
     compression = 7
@@ -264,10 +267,10 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
             log_memory_usage_cxg("PRE_DTYPE_CONVERSION")
             matrix = matrix.map_blocks(lambda x: x.astype(np.float32), dtype=np.float32)
             log_memory_usage_cxg("POST_DTYPE_CONVERSION")
-        
+
         log_memory_usage_cxg("PRE_DENSE_TILEDB_WRITE")
         with tiledb.open(matrix_name, "w") as A:
             matrix.to_tiledb(A, storage_options={"ctx": ctx})
         log_memory_usage_cxg("POST_DENSE_TILEDB_WRITE")
-    
+
     log_memory_usage_cxg("MATRIX_CONVERSION_END")

@@ -15,6 +15,54 @@ from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
+# Memory profiling imports for peak monitoring
+try:
+    import psutil
+
+    MEMORY_PROFILING_AVAILABLE = True
+except ImportError:
+    MEMORY_PROFILING_AVAILABLE = False
+
+# Import peak monitoring if available
+try:
+    import sys
+
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+    from peak_memory_monitor import monitor_peak_memory
+
+    PEAK_MONITORING_AVAILABLE = True
+except ImportError:
+    PEAK_MONITORING_AVAILABLE = False
+
+    def monitor_peak_memory(name):
+        from contextlib import contextmanager
+
+        @contextmanager
+        def dummy():
+            yield None
+
+        return dummy()
+
+
+def log_memory_usage_atac(checkpoint_name: str = "", peak_monitor=None):
+    """Log current memory usage at critical checkpoints for ATAC processing."""
+    if MEMORY_PROFILING_AVAILABLE:
+        process = psutil.Process()
+        memory_info = process.memory_info()
+        memory_mb = memory_info.rss / 1024 / 1024
+        memory_percent = process.memory_percent()
+
+        # Add peak info if monitoring
+        peak_info = ""
+        if peak_monitor and hasattr(peak_monitor, "peak_memory") and peak_monitor.peak_memory > 0:
+            peak_info = f" (Peak: {peak_monitor.peak_memory:.1f} MB)"
+
+        logger.info(
+            f"ATAC_MEMORY_CHECKPOINT[{checkpoint_name}]: {memory_mb:.1f} MB RSS ({memory_percent:.1f}%){peak_info}"
+        )
+        return memory_mb
+    return 0
+
 
 BIN_SIZE = 100
 NORMALIZATION_FACTOR = 2_000_000
@@ -375,48 +423,67 @@ class ATACDataProcessor:
         chunk_size: int = 50000,
     ) -> int:
         """Stream processed chunks directly to TileDB without concatenation for memory efficiency."""
-        
+
+        log_memory_usage_atac("ATAC_STREAM_START")
+
         all_records = []
         current_chunk = []
 
         total_records = len(coverage_aggregator)
         logger.info(f"Processing {total_records:,} records for streaming to TileDB...")
 
-        for _, ((chrom, bin_id, cell_type), count) in enumerate(
-            tqdm(coverage_aggregator.items(), desc="Processing streaming chunks", unit="records")
-        ):
-            total_coverage = global_cell_type_totals.get(cell_type, 0)
-            normalized_coverage = (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
+        # Monitor peak memory during record processing
+        with monitor_peak_memory("ATAC_RECORD_PROCESSING") as record_monitor:
+            log_memory_usage_atac("PRE_RECORD_PROCESSING", record_monitor)
 
-            record = {
-                "chrom": np.int32(chrom),
-                "bin": np.int32(bin_id),
-                "cell_type": cell_type,
-                "coverage": np.int32(count),
-                "total_coverage": np.int32(total_coverage),
-                "normalized_coverage": np.float32(normalized_coverage),
-            }
+            for _, ((chrom, bin_id, cell_type), count) in enumerate(
+                tqdm(coverage_aggregator.items(), desc="Processing streaming chunks", unit="records")
+            ):
+                total_coverage = global_cell_type_totals.get(cell_type, 0)
+                normalized_coverage = (
+                    (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
+                )
 
-            current_chunk.append(record)
+                record = {
+                    "chrom": np.int32(chrom),
+                    "bin": np.int32(bin_id),
+                    "cell_type": cell_type,
+                    "coverage": np.int32(count),
+                    "total_coverage": np.int32(total_coverage),
+                    "normalized_coverage": np.float32(normalized_coverage),
+                }
 
-            # Process in chunks to avoid memory buildup, but collect all records
-            if len(current_chunk) >= chunk_size:
+                current_chunk.append(record)
+
+                # Process in chunks to avoid memory buildup, but collect all records
+                if len(current_chunk) >= chunk_size:
+                    all_records.extend(current_chunk)
+                    current_chunk.clear()
+
+            # Add remaining records
+            if current_chunk:
                 all_records.extend(current_chunk)
-                current_chunk.clear()
 
-        # Add remaining records
-        if current_chunk:
-            all_records.extend(current_chunk)
+        log_memory_usage_atac("POST_RECORD_PROCESSING", record_monitor)
 
-        # Write all records in single operation to TileDB
-        if all_records:
-            final_df = pd.DataFrame(all_records)
-            self._write_coverage_to_tiledb(array_name, final_df, mode="w")
-            total_written = len(final_df)
-            del final_df  # Explicit cleanup
-        else:
-            total_written = 0
+        # Monitor peak memory during DataFrame creation and TileDB write
+        with monitor_peak_memory("ATAC_DATAFRAME_AND_WRITE") as df_monitor:
+            log_memory_usage_atac("PRE_DATAFRAME_CREATION", df_monitor)
 
+            # Write all records in single operation to TileDB
+            if all_records:
+                final_df = pd.DataFrame(all_records)
+                log_memory_usage_atac("POST_DATAFRAME_CREATION", df_monitor)
+
+                self._write_coverage_to_tiledb(array_name, final_df, mode="w")
+                log_memory_usage_atac("POST_TILEDB_WRITE", df_monitor)
+
+                total_written = len(final_df)
+                del final_df  # Explicit cleanup
+            else:
+                total_written = 0
+
+        log_memory_usage_atac("ATAC_STREAM_END")
         logger.info(f"Streamed {total_written:,} records to TileDB")
         return total_written
 

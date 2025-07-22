@@ -107,67 +107,20 @@ def monitor_peak_memory(operation_name: str, interval_seconds: float = 0.5):
         stats = monitor.stop_monitoring()
 
 
-# Integration functions for existing codebase
-def log_memory_usage_with_peak_monitoring(checkpoint_name: str = "", monitor: Optional[PeakMemoryMonitor] = None):
-    """Enhanced memory logging that also shows current peak if monitoring."""
-    if not MEMORY_PROFILING_AVAILABLE:
-        return 0
-        
-    process = psutil.Process()
-    memory_info = process.memory_info()
-    memory_mb = memory_info.rss / 1024 / 1024
-    memory_percent = process.memory_percent()
-    
-    if monitor and monitor.monitoring:
-        peak_info = f" (Peak so far: {monitor.peak_memory:.1f} MB)"
-    else:
-        peak_info = ""
-    
-    logging.info(f"MEMORY_CHECKPOINT[{checkpoint_name}]: {memory_mb:.1f} MB RSS ({memory_percent:.1f}%){peak_info}")
-    return memory_mb
-
-
-# Example usage functions
-def enhanced_tiledb_consolidate(array_path: str, ctx, **kwargs):
-    """TileDB consolidate with peak memory monitoring."""
-    import tiledb
-    
-    with monitor_peak_memory("TILEDB_CONSOLIDATE") as monitor:
-        log_memory_usage_with_peak_monitoring("PRE_CONSOLIDATE", monitor)
-        tiledb.consolidate(array_path, ctx=ctx, **kwargs)
-        log_memory_usage_with_peak_monitoring("POST_CONSOLIDATE", monitor)
-
-
-def enhanced_tiledb_vacuum(array_path: str, **kwargs):
-    """TileDB vacuum with peak memory monitoring."""
-    import tiledb
-    
-    with monitor_peak_memory("TILEDB_VACUUM") as monitor:
-        log_memory_usage_with_peak_monitoring("PRE_VACUUM", monitor)
-        tiledb.vacuum(array_path, **kwargs)
-        log_memory_usage_with_peak_monitoring("POST_VACUUM", monitor)
-
-
 if __name__ == "__main__":
     # Example usage
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     
     # Simulate a memory-intensive operation
     with monitor_peak_memory("TEST_OPERATION") as monitor:
-        log_memory_usage_with_peak_monitoring("START", monitor)
-        
         # Simulate work
         import numpy as np
         data = np.random.random((10000, 1000))  # Allocate some memory
         time.sleep(2)
         
-        log_memory_usage_with_peak_monitoring("MID", monitor)
-        
         # Simulate more work
         data2 = np.random.random((20000, 1000))  # More memory
         time.sleep(2)
-        
-        log_memory_usage_with_peak_monitoring("END", monitor)
         
         del data, data2  # Cleanup
     
