@@ -197,15 +197,151 @@ class H5ADDataFile:
         logging.info("start consolidating")
         log_memory_usage_h5ad("PRE_TILEDB_CONSOLIDATE")
 
-        # Monitor peak memory during consolidation
+        # Monitor peak memory during consolidation with memory-conscious configuration
         with monitor_peak_memory("TILEDB_CONSOLIDATE") as consolidate_monitor:
-            tiledb.consolidate(matrix_container, ctx=ctx)
+            self._consolidate_tiledb_with_memory_optimization(matrix_container, ctx)
         log_memory_usage_h5ad("POST_TILEDB_CONSOLIDATE", consolidate_monitor)
 
         if hasattr(tiledb, "vacuum"):
             with monitor_peak_memory("TILEDB_VACUUM") as vacuum_monitor:
                 tiledb.vacuum(matrix_container)
             log_memory_usage_h5ad("POST_TILEDB_VACUUM", vacuum_monitor)
+
+    def _consolidate_tiledb_with_memory_optimization(self, matrix_container: str, ctx: tiledb.Ctx):
+        """
+        Consolidate TileDB array with memory-conscious configuration to avoid OOM.
+
+        Based on analysis showing consolidation peaks at 5.7GB, this reduces memory usage
+        by configuring smaller buffer sizes and consolidation parameters.
+        """
+        # Get current memory info for dynamic sizing
+        if MEMORY_PROFILING_AVAILABLE:
+            available_memory_mb = psutil.virtual_memory().available / 1024 / 1024
+            # Use 5% of available memory for buffer, with min 128MB and max 1GB
+            safe_buffer_mb = max(128, min(1024, int(available_memory_mb * 0.05)))
+        else:
+            # Conservative default if psutil not available
+            safe_buffer_mb = 512
+
+        safe_buffer_bytes = safe_buffer_mb * 1024 * 1024
+
+        # Check if we should use chunked consolidation based on available memory
+        if MEMORY_PROFILING_AVAILABLE and available_memory_mb < 8192:  # Less than 8GB available
+            logging.info(f"Low memory detected ({available_memory_mb:.0f}MB), using chunked consolidation approach")
+            self._consolidate_tiledb_chunked(matrix_container, ctx, safe_buffer_bytes)
+        else:
+            # Standard memory-conscious consolidation
+            self._consolidate_tiledb_standard(matrix_container, ctx, safe_buffer_bytes, safe_buffer_mb)
+
+    def _consolidate_tiledb_standard(
+        self, matrix_container: str, ctx: tiledb.Ctx, safe_buffer_bytes: int, safe_buffer_mb: int
+    ):
+        """Standard consolidation with memory-conscious configuration."""
+        # Memory-conscious TileDB consolidation configuration
+        config_dict = {
+            "sm.consolidation.buffer_size": safe_buffer_bytes,
+            "sm.consolidation.steps_size_ratio": 0.1,  # Smaller steps for memory efficiency
+            "sm.memory_budget": safe_buffer_bytes * 2,  # Overall memory budget
+            "sm.consolidation.step_min_frags": 2,  # Consolidate with fewer fragments
+            "sm.consolidation.step_max_frags": 10,  # Limit max fragments per step
+        }
+
+        if MEMORY_PROFILING_AVAILABLE:
+            available_memory_mb = psutil.virtual_memory().available / 1024 / 1024
+            logging.info(
+                f"TileDB consolidation config: buffer={safe_buffer_mb}MB, "
+                f"memory_budget={safe_buffer_mb * 2}MB, available_memory={available_memory_mb:.0f}MB"
+            )
+
+        try:
+            # Create TileDB Config object from dictionary
+            config = tiledb.Config(config_dict)
+            # Attempt consolidation with memory-conscious settings
+            tiledb.consolidate(matrix_container, ctx=ctx, config=config)
+            logging.info("TileDB consolidation completed successfully with memory optimization")
+        except Exception as e:
+            logging.warning(f"Memory-optimized consolidation failed: {e}")
+            # Fallback to even more conservative settings
+            fallback_config_dict = {
+                "sm.consolidation.buffer_size": safe_buffer_bytes // 2,
+                "sm.memory_budget": safe_buffer_bytes,
+                "sm.consolidation.steps_size_ratio": 0.05,  # Even smaller steps
+            }
+            fallback_config = tiledb.Config(fallback_config_dict)
+            logging.info(f"Retrying consolidation with fallback config: buffer={safe_buffer_mb//2}MB")
+            tiledb.consolidate(matrix_container, ctx=ctx, config=fallback_config)
+
+    def _consolidate_tiledb_chunked(self, matrix_container: str, ctx: tiledb.Ctx, safe_buffer_bytes: int):
+        """
+        Chunked consolidation approach that processes TileDB array subsets separately.
+
+        This method divides the consolidation work into smaller chunks to reduce peak memory usage,
+        especially useful when available memory is limited.
+        """
+        safe_buffer_mb = safe_buffer_bytes / (1024 * 1024)
+
+        # Ultra-conservative settings for chunked approach
+        chunk_config_dict = {
+            "sm.consolidation.buffer_size": safe_buffer_bytes // 4,  # Even smaller buffer
+            "sm.memory_budget": safe_buffer_bytes // 2,  # Tighter memory budget
+            "sm.consolidation.steps_size_ratio": 0.05,  # Very small steps
+            "sm.consolidation.step_min_frags": 2,
+            "sm.consolidation.step_max_frags": 5,  # Fewer fragments per step
+        }
+
+        logging.info(
+            f"Chunked consolidation config: buffer={safe_buffer_mb/4:.0f}MB, " f"memory_budget={safe_buffer_mb/2:.0f}MB"
+        )
+
+        try:
+            # Get array info to determine if chunking is beneficial
+            array_info = tiledb.array_fragments(matrix_container, ctx=ctx)
+            num_fragments = len(array_info)
+
+            logging.info(f"Array has {num_fragments} fragments, consolidating in small batches")
+
+            if num_fragments <= 5:
+                # Few fragments, use standard approach with conservative settings
+                chunk_config = tiledb.Config(chunk_config_dict)
+                tiledb.consolidate(matrix_container, ctx=ctx, config=chunk_config)
+                logging.info("Chunked consolidation completed (single pass)")
+            else:
+                # Many fragments, consolidate in multiple passes with fragment limits
+                max_fragments_per_pass = 8
+                passes_needed = max(1, (num_fragments + max_fragments_per_pass - 1) // max_fragments_per_pass)
+
+                logging.info(
+                    f"Performing {passes_needed} consolidation passes with max {max_fragments_per_pass} fragments per pass"
+                )
+
+                for pass_idx in range(passes_needed):
+                    # Configure each pass to limit fragment count
+                    pass_config_dict = chunk_config_dict.copy()
+                    pass_config_dict["sm.consolidation.step_max_frags"] = max_fragments_per_pass
+                    pass_config = tiledb.Config(pass_config_dict)
+
+                    logging.info(f"Consolidation pass {pass_idx + 1}/{passes_needed}")
+                    tiledb.consolidate(matrix_container, ctx=ctx, config=pass_config)
+
+                    # Brief pause between passes to allow memory cleanup
+                    import time
+
+                    time.sleep(0.5)
+
+                logging.info("Chunked consolidation completed (multi-pass)")
+
+        except Exception as e:
+            logging.warning(f"Chunked consolidation failed: {e}")
+            # Last resort: minimal consolidation
+            minimal_config_dict = {
+                "sm.consolidation.buffer_size": safe_buffer_bytes // 8,
+                "sm.memory_budget": safe_buffer_bytes // 4,
+                "sm.consolidation.steps_size_ratio": 0.02,
+                "sm.consolidation.step_max_frags": 3,
+            }
+            minimal_config = tiledb.Config(minimal_config_dict)
+            logging.info("Attempting minimal consolidation as last resort")
+            tiledb.consolidate(matrix_container, ctx=ctx, config=minimal_config)
 
     def write_anndata_embeddings_to_cxg(self, output_cxg_directory, ctx):
         def is_valid_embedding(adata, embedding_name, embedding_array):
