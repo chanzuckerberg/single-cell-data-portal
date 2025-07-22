@@ -1,0 +1,4 @@
+INFO     backend.layers.processing.utils.atac:atac.py:69 Downloading S3 file s3://test-bucket/fragments.tsv.gz to /tmp/pytest-of-root/pytest-0/test__download_s3_file_s3_succ0/temp_file.bgz
+INFO     backend.layers.processing.utils.atac:atac.py:73 Successfully downloaded S3 file to /tmp/pytest-of-root/pytest-0/test__download_s3_file_s3_succ0/temp_file.bgz
+INFO     backend.layers.processing.utils.atac:atac.py:76 Downloading S3 index file s3://test-bucket/fragments.tsv.gz.tbi to /tmp/pytest-of-root/pytest-0/test__download_s3_file_s3_succ0/temp_file.bgz.tbi
+INFO     backend.layers.processing.utils.atac:atac.py:78 Successfully downloaded S3 index file to /tmp/pytest-of-root/pytest-0/test__download_s3_file_s3_succ0/temp_file.bgz.tbi
