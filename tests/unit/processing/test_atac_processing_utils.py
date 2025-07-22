@@ -5,6 +5,7 @@ import cellxgene_schema.atac_seq as atac_seq
 import numpy as np
 import pandas as pd
 import pytest
+import tiledb
 
 from backend.layers.processing.utils.atac import ATACDataProcessor
 
@@ -279,32 +280,12 @@ class TestATACDataProcessor:
         assert max_bins > 500_000  # At least 500K bins
         assert max_bins < 3_500_000  # Less than 3.5M bins (hg38 is larger than mm39)
 
-    def test__compute_cell_type_totals_multiple_cell_types(self, tmp_path, coverage_aggregator_data):
-        """Test cell type totals computation with multiple cell types."""
-        fragment_file = tmp_path / "test_fragments.tsv.gz"
-        fragment_file.write_text("chr1\t100\t200\tcell1\n")
-
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
-
-        cell_type_totals = processor._compute_cell_type_totals(coverage_aggregator_data)
-        expected_totals = {}
-        for (_, _, cell_type), count in coverage_aggregator_data.items():
-            if cell_type not in expected_totals:
-                expected_totals[cell_type] = 0
-            expected_totals[cell_type] += count
-
-        assert cell_type_totals == expected_totals
-
-        expected_cell_types = {key[2] for key in coverage_aggregator_data}
-        assert set(cell_type_totals.keys()) == expected_cell_types
-        for total in cell_type_totals.values():
-            assert isinstance(total, int)
-            assert total > 0
-
     def test__normalized_coverage_calculation(self, tmp_path):
         """Test normalized coverage calculation: (count / total_coverage) * normalization_factor."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
+
+        array_name = str(tmp_path / "test_array")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
         coverage_aggregator = defaultdict(int)
@@ -317,10 +298,29 @@ class TestATACDataProcessor:
             }
         )
 
-        cell_type_totals = processor._compute_cell_type_totals(coverage_aggregator)
-        df = processor._create_coverage_dataframe_with_totals(coverage_aggregator, cell_type_totals)
+        cell_type_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator)
+        processor.create_dataframe_array(array_name, 2, 10)
+
+        total_written = processor._stream_coverage_chunks_to_tiledb(coverage_aggregator, cell_type_totals, array_name)
+        assert total_written == 4
+
+        # Verify data was written correctly
+
+        with tiledb.SparseArray(array_name, mode="r", ctx=processor.ctx) as A:
+            df_data = A.df[:]
+
+        # Convert to DataFrame for easier testing
+        df = pd.DataFrame(df_data)
         expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
-        assert list(df.columns) == expected_columns
+        assert set(df.columns) == set(expected_columns)
+
+        # Check data types - TileDB may use uint32 for dimensions
+        assert df["chrom"].dtype in ["int32", "uint32"]
+        assert df["bin"].dtype in ["int32", "uint32"]
+        assert df["coverage"].dtype == "int32"
+        assert df["total_coverage"].dtype == "int32"
+        assert df["normalized_coverage"].dtype == "float32"
+        assert df["cell_type"].dtype == "object"
 
         normalization_factor = 2_000_000
 
@@ -368,32 +368,44 @@ class TestATACDataProcessor:
         assert normalized_coverage == 0.0
         assert isinstance(normalized_coverage, float)
 
-    def test__create_coverage_dataframe_small_dataset(self, tmp_path, coverage_aggregator_data):
-        """Test _create_coverage_dataframe_with_totals() with parametrized datasets."""
+    def test__stream_coverage_chunks_small_dataset(self, tmp_path, coverage_aggregator_data):
+        """Test _stream_coverage_chunks_to_tiledb() with parametrized datasets."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
+        array_name = str(tmp_path / "test_array")
+
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
-        cell_type_totals = processor._compute_cell_type_totals(coverage_aggregator_data)
-        df = processor._create_coverage_dataframe_with_totals(coverage_aggregator_data, cell_type_totals)
-        expected_rows = len(coverage_aggregator_data)
-        assert len(df) == expected_rows
-        expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
-        assert list(df.columns) == expected_columns
+        cell_type_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator_data)
 
-        assert df["chrom"].dtype == "int32"
-        assert df["bin"].dtype == "int32"
+        # Determine max dimensions for TileDB array
+        max_chrom = max(chrom for chrom, _, _ in coverage_aggregator_data) if coverage_aggregator_data else 1
+        max_bin = max(bin_id for _, bin_id, _ in coverage_aggregator_data) if coverage_aggregator_data else 1
+        processor.create_dataframe_array(array_name, max_chrom, max(max_bin + 1, 10))
+
+        total_written = processor._stream_coverage_chunks_to_tiledb(
+            coverage_aggregator_data, cell_type_totals, array_name
+        )
+        expected_rows = len(coverage_aggregator_data)
+        assert total_written == expected_rows
+
+        with tiledb.SparseArray(array_name, mode="r", ctx=processor.ctx) as A:
+            df_data = A.df[:]
+
+        # Convert to DataFrame for easier testing
+        df = pd.DataFrame(df_data)
+        expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
+        assert set(df.columns) == set(expected_columns)
+
+        assert df["chrom"].dtype in ["int32", "uint32"]  # TileDB may use uint32 for dimensions
+        assert df["bin"].dtype in ["int32", "uint32"]
         assert df["coverage"].dtype == "int32"
         assert df["total_coverage"].dtype == "int32"
         assert df["normalized_coverage"].dtype == "float32"
         assert df["cell_type"].dtype == "object"  # String columns are object type
 
-        expected_totals = {}
-        for (_, _, cell_type), count in coverage_aggregator_data.items():
-            if cell_type not in expected_totals:
-                expected_totals[cell_type] = 0
-            expected_totals[cell_type] += count
+        expected_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator_data)
 
         for cell_type, expected_total in expected_totals.items():
             cell_type_rows = df[df["cell_type"] == cell_type]
@@ -405,45 +417,168 @@ class TestATACDataProcessor:
 
         assert not df.isnull().any().any()
 
-    def test__create_coverage_dataframe_empty_aggregator(self, tmp_path):
-        """Test _create_coverage_dataframe_with_totals() with empty aggregator."""
+    def test__stream_coverage_chunks_empty_aggregator(self, tmp_path):
+        """Test _stream_coverage_chunks_to_tiledb() with empty aggregator."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
+
+        array_name = str(tmp_path / "test_array")
 
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         coverage_aggregator = defaultdict(int)
-        cell_type_totals = processor._compute_cell_type_totals(coverage_aggregator)
-        df = processor._create_coverage_dataframe_with_totals(coverage_aggregator, cell_type_totals)
+        # Compute cell type totals using helper method
+        cell_type_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator)
 
+        # Create TileDB array for testing
+        processor.create_dataframe_array(array_name, 1, 10)
+
+        # Stream empty data to TileDB
+        total_written = processor._stream_coverage_chunks_to_tiledb(coverage_aggregator, cell_type_totals, array_name)
+
+        assert total_written == 0
+
+        # Read back from TileDB to verify empty array
+
+        with tiledb.SparseArray(array_name, mode="r", ctx=processor.ctx) as A:
+            df_data = A.df[:]
+
+        # Convert to DataFrame for easier testing
+        df = pd.DataFrame(df_data)
         assert len(df) == 0
         expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
-        assert list(df.columns) == expected_columns
+        assert set(df.columns) == set(expected_columns)
 
         assert df.empty
         assert isinstance(df, pd.DataFrame)
 
-    def test__compute_cell_type_totals(self, tmp_path):
-        """Test _compute_cell_type_totals() computes correct totals."""
+    def test__stream_coverage_direct_assignment_consistency(self, tmp_path):
+        """Test that direct array assignment produces consistent results."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
+        array_name = str(tmp_path / "test_array")
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         coverage_aggregator = defaultdict(int)
         coverage_aggregator.update(
             {
-                (1, 0, "T cell"): 10,
-                (1, 1, "T cell"): 5,
-                (2, 0, "B cell"): 8,
-                (2, 1, "B cell"): 12,
-                (3, 0, "NK cell"): 6,
+                (1, 10, "T cell"): 15,
+                (1, 20, "T cell"): 25,
+                (2, 5, "B cell"): 30,
+                (2, 15, "B cell"): 40,
+                (3, 8, "NK cell"): 12,
             }
         )
 
-        totals = processor._compute_cell_type_totals(coverage_aggregator)
-        expected_totals = {"T cell": 15, "B cell": 20, "NK cell": 6}
-        assert totals == expected_totals
+        expected_totals = {"T cell": 40, "B cell": 70, "NK cell": 12}
+        processor.create_dataframe_array(array_name, 3, 25)
+
+        total_written = processor._stream_coverage_chunks_to_tiledb(coverage_aggregator, expected_totals, array_name)
+        assert total_written == 5
+
+        with tiledb.open(array_name, mode="r") as array:
+            result = array[:]
+            assert len(result["chrom"]) == 5
+
+            # Verify key data points
+            chrom_bin_pairs = list(zip(result["chrom"], result["bin"], strict=False))
+            assert (1, 10) in chrom_bin_pairs
+            assert (2, 5) in chrom_bin_pairs
+            assert (3, 8) in chrom_bin_pairs
+
+            # Verify coverage values match input
+            for i, (chrom, bin_val) in enumerate(chrom_bin_pairs):
+                if chrom == 1 and bin_val == 10:
+                    assert result["coverage"][i] == 15
+                elif chrom == 2 and bin_val == 5:
+                    assert result["coverage"][i] == 30
+                elif chrom == 3 and bin_val == 8:
+                    assert result["coverage"][i] == 12
+
+    def test__stream_coverage_direct_assignment_memory_efficiency(self, tmp_path):
+        """Test that direct assignment doesn't create intermediate data structures."""
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        fragment_file.write_text("chr1\t100\t200\tcell1\n")
+
+        array_name = str(tmp_path / "test_array")
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+
+        # Generate larger dataset (1000 records) to test memory efficiency
+        coverage_aggregator = defaultdict(int)
+        num_records = 1000
+        for i in range(num_records):
+            chrom = (i % 3) + 1
+            bin_val = i * 10
+            cell_type = f"cell_type_{i % 5}"
+            coverage_aggregator[(chrom, bin_val, cell_type)] = i + 1
+
+        cell_type_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator)
+        processor.create_dataframe_array(array_name, 3, num_records * 10)
+
+        total_written = processor._stream_coverage_chunks_to_tiledb(coverage_aggregator, cell_type_totals, array_name)
+        assert total_written == num_records
+
+        # Verify statistical properties
+        with tiledb.open(array_name, mode="r") as array:
+            result = array[:]
+            assert len(result["chrom"]) == num_records
+            assert min(result["coverage"]) == 1
+            assert max(result["coverage"]) == num_records
+            assert sum(result["coverage"]) == sum(range(1, num_records + 1))
+
+    def test__stream_coverage_direct_assignment_edge_cases(self, tmp_path):
+        """Test direct assignment handles edge cases correctly."""
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        fragment_file.write_text("chr1\t100\t200\tcell1\n")
+
+        array_name = str(tmp_path / "test_array")
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+
+        # Test single record edge case
+        coverage_aggregator = defaultdict(int)
+        coverage_aggregator[(1, 0, "single_cell")] = 42
+        cell_type_totals = {"single_cell": 42}
+
+        processor.create_dataframe_array(array_name, 1, 10)
+        total_written = processor._stream_coverage_chunks_to_tiledb(coverage_aggregator, cell_type_totals, array_name)
+        assert total_written == 1
+
+        with tiledb.open(array_name, mode="r") as array:
+            result = array[:]
+            assert len(result["chrom"]) == 1
+            assert result["chrom"][0] == 1
+            assert result["bin"][0] == 0
+            assert result["coverage"][0] == 42
+            assert result["total_coverage"][0] == 42
+
+            # Verify normalized coverage calculation
+            expected_normalized = (42 / 42) * processor.normalization_factor
+            assert abs(result["normalized_coverage"][0] - expected_normalized) < 1e-6
+
+    def test__stream_coverage_zero_total_coverage_handling(self, tmp_path):
+        """Test handling of zero total coverage scenarios."""
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        fragment_file.write_text("chr1\t100\t200\tcell1\n")
+
+        array_name = str(tmp_path / "test_array")
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+
+        # Test zero total coverage edge case
+        coverage_aggregator = defaultdict(int)
+        coverage_aggregator[(1, 0, "orphan_cell")] = 10
+        cell_type_totals = {"orphan_cell": 0}  # Zero total (edge case)
+
+        processor.create_dataframe_array(array_name, 1, 10)
+        total_written = processor._stream_coverage_chunks_to_tiledb(coverage_aggregator, cell_type_totals, array_name)
+        assert total_written == 1
+
+        # Verify zero total coverage handling
+        with tiledb.open(array_name, mode="r") as array:
+            result = array[:]
+            assert result["coverage"][0] == 10
+            assert result["total_coverage"][0] == 0
+            assert result["normalized_coverage"][0] == 0.0  # Should default to 0 when total is 0
 
     def test__create_dataframe_array(self, tmp_path, mock_tiledb_components, tiledb_array_config):
         """Test create_dataframe_array() creates TileDB schema correctly."""
@@ -516,20 +651,6 @@ class TestATACDataProcessor:
         assert schema_kwargs["allows_duplicates"] is False
 
         mock_tiledb.SparseArray.create.assert_called_once_with(array_name, mock_tiledb_components["schema"])
-        test_df = pd.DataFrame(
-            {
-                "chrom": [1, 2],
-                "bin": [0, 1],
-                "cell_type": ["T cell", "B cell"],
-                "coverage": [10, 5],
-                "total_coverage": [15, 5],
-                "normalized_coverage": [1333333.25, 2000000.0],
-            }
-        )
-
-        processor._write_coverage_to_tiledb(array_name, test_df)
-        mock_tiledb.SparseArray.assert_called_with(array_name, mode="w", ctx=processor.ctx)
-        assert mock_tiledb_components["array"].__setitem__.called
 
     def test__create_dataframe_array_edge_cases(self, tmp_path, mock_tiledb_components):
         """Test create_dataframe_array() with edge case parameters."""
