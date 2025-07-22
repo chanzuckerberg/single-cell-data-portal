@@ -15,54 +15,6 @@ from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
-# Memory profiling imports for peak monitoring
-try:
-    import psutil
-
-    MEMORY_PROFILING_AVAILABLE = True
-except ImportError:
-    MEMORY_PROFILING_AVAILABLE = False
-
-# Import peak monitoring if available
-try:
-    import sys
-
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
-    from peak_memory_monitor import monitor_peak_memory
-
-    PEAK_MONITORING_AVAILABLE = True
-except ImportError:
-    PEAK_MONITORING_AVAILABLE = False
-
-    def monitor_peak_memory(name):
-        from contextlib import contextmanager
-
-        @contextmanager
-        def dummy():
-            yield None
-
-        return dummy()
-
-
-def log_memory_usage_atac(checkpoint_name: str = "", peak_monitor=None):
-    """Log current memory usage at critical checkpoints for ATAC processing."""
-    if MEMORY_PROFILING_AVAILABLE:
-        process = psutil.Process()
-        memory_info = process.memory_info()
-        memory_mb = memory_info.rss / 1024 / 1024
-        memory_percent = process.memory_percent()
-
-        # Add peak info if monitoring
-        peak_info = ""
-        if peak_monitor and hasattr(peak_monitor, "peak_memory") and peak_monitor.peak_memory > 0:
-            peak_info = f" (Peak: {peak_monitor.peak_memory:.1f} MB)"
-
-        logger.info(
-            f"ATAC_MEMORY_CHECKPOINT[{checkpoint_name}]: {memory_mb:.1f} MB RSS ({memory_percent:.1f}%){peak_info}"
-        )
-        return memory_mb
-    return 0
-
 
 BIN_SIZE = 100
 NORMALIZATION_FACTOR = 2_000_000
@@ -298,8 +250,11 @@ class ATACDataProcessor:
             if not coverage_aggregator:
                 return
 
-            cell_type_totals = self._compute_cell_type_totals(coverage_aggregator)
-            self._stream_coverage_chunks_to_tiledb(coverage_aggregator, cell_type_totals, array_name)
+            # For single-pass processing, compute totals directly
+            cell_type_totals = defaultdict(int)
+            for (_, _, cell_type), count in coverage_aggregator.items():
+                cell_type_totals[cell_type] += count
+            self._stream_coverage_chunks_to_tiledb(coverage_aggregator, dict(cell_type_totals), array_name)
 
     def _process_all_chromosomes(
         self,
@@ -422,15 +377,11 @@ class ATACDataProcessor:
         array_name: str,
         chunk_size: int = 50000,
     ) -> int:
-        """Hybrid streaming approach: process in small batches, accumulate efficiently, write once."""
+        """Streaming approach: process directly into pre-allocated numpy arrays, write once."""
 
-        log_memory_usage_atac("ATAC_STREAM_START")
-
-        # Pre-allocate numpy arrays for efficient memory usage
         total_records = len(coverage_aggregator)
-        logger.info(f"Processing {total_records:,} records with hybrid streaming approach...")
+        logger.info(f"Processing {total_records:,} records with direct array assignment...")
 
-        # Pre-allocate arrays to avoid repeated memory allocation
         chroms = np.zeros(total_records, dtype=np.int32)
         bins = np.zeros(total_records, dtype=np.int32)
         cell_types = np.empty(total_records, dtype=object)
@@ -438,102 +389,31 @@ class ATACDataProcessor:
         total_coverages = np.zeros(total_records, dtype=np.int32)
         normalized_coverages = np.zeros(total_records, dtype=np.float32)
 
-        current_chunk = []
-        array_index = 0  # Separate counter for array indexing
+        array_index = 0
 
-        # Monitor peak memory during hybrid processing
-        with monitor_peak_memory("ATAC_HYBRID_PROCESSING") as stream_monitor:
-            log_memory_usage_atac("PRE_HYBRID_PROCESSING", stream_monitor)
+        for (chrom, bin_id, cell_type), count in tqdm(
+            coverage_aggregator.items(), desc="Processing directly to arrays", unit="records"
+        ):
+            total_coverage = global_cell_type_totals.get(cell_type, 0)
+            normalized_coverage = (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
 
-            for record_idx, ((chrom, bin_id, cell_type), count) in enumerate(
-                tqdm(coverage_aggregator.items(), desc="Hybrid processing to arrays", unit="records")
-            ):
-                total_coverage = global_cell_type_totals.get(cell_type, 0)
-                normalized_coverage = (
-                    (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
-                )
+            # Assign directly to pre-allocated arrays
+            chroms[array_index] = chrom
+            bins[array_index] = bin_id
+            cell_types[array_index] = cell_type
+            coverages[array_index] = count
+            total_coverages[array_index] = total_coverage
+            normalized_coverages[array_index] = normalized_coverage
 
-                # Add to current processing chunk with proper array index
-                current_chunk.append(
-                    {
-                        "array_idx": array_index,  # Array position
-                        "chrom": chrom,  # Actual chromosome ID (1-47)
-                        "bin": bin_id,
-                        "cell_type": cell_type,
-                        "coverage": count,
-                        "total_coverage": total_coverage,
-                        "normalized_coverage": normalized_coverage,
-                    }
-                )
-                array_index += 1
+            array_index += 1
 
-                # Process chunk when it reaches target size
-                if len(current_chunk) >= chunk_size:
-                    # Write chunk data to pre-allocated arrays
-                    for item in current_chunk:
-                        idx = item["array_idx"]
-                        chroms[idx] = item["chrom"]  # This should be 1-47, not 0
-                        bins[idx] = item["bin"]
-                        cell_types[idx] = item["cell_type"]
-                        coverages[idx] = item["coverage"]
-                        total_coverages[idx] = item["total_coverage"]
-                        normalized_coverages[idx] = item["normalized_coverage"]
+        logger.info(f"Writing {array_index:,} records to TileDB as single fragment...")
+        self._write_arrays_to_tiledb(
+            array_name, chroms, bins, cell_types, coverages, total_coverages, normalized_coverages
+        )
 
-                    current_chunk.clear()  # Clear the chunk
-
-                    # Memory checkpoint every 10 chunks
-                    if (record_idx + 1) % (chunk_size * 10) == 0:
-                        log_memory_usage_atac(f"PROCESSED_{array_index:,}_RECORDS", stream_monitor)
-
-            # Process final chunk
-            if current_chunk:
-                for item in current_chunk:
-                    idx = item["array_idx"]
-                    chroms[idx] = item["chrom"]
-                    bins[idx] = item["bin"]
-                    cell_types[idx] = item["cell_type"]
-                    coverages[idx] = item["coverage"]
-                    total_coverages[idx] = item["total_coverage"]
-                    normalized_coverages[idx] = item["normalized_coverage"]
-
-                current_chunk.clear()
-
-            log_memory_usage_atac("POST_ARRAY_POPULATION", stream_monitor)
-
-            # Now write all data to TileDB in a single operation (single fragment)
-            logger.info(f"Writing {array_index:,} records to TileDB as single fragment...")
-            self._write_arrays_to_tiledb(
-                array_name, chroms, bins, cell_types, coverages, total_coverages, normalized_coverages
-            )
-            log_memory_usage_atac("POST_TILEDB_WRITE", stream_monitor)
-
-        log_memory_usage_atac("ATAC_STREAM_END")
-        logger.info(f"Hybrid streamed {array_index:,} records to TileDB as single fragment")
+        logger.info(f"Streamed {array_index:,} records directly to TileDB as single fragment")
         return array_index
-
-    def _compute_cell_type_totals(self, coverage_aggregator: defaultdict) -> Dict[str, int]:
-        """Compute per-cell-type totals."""
-        cell_type_totals = defaultdict(int)
-        for (_, _, cell_type), count in coverage_aggregator.items():
-            cell_type_totals[cell_type] += count
-        return dict(cell_type_totals)
-
-    def _write_coverage_to_tiledb(self, array_name: str, coverage_df: pd.DataFrame, mode: str = "w") -> None:
-        """Write DataFrame to TileDB."""
-        logger.info(f"Writing {len(coverage_df):,} records to TileDB in {mode} mode...")
-        with tiledb.SparseArray(array_name, mode=mode, ctx=self.ctx) as A:
-            A[
-                (
-                    coverage_df["chrom"].astype("int32").to_numpy(),
-                    coverage_df["bin"].astype("int32").to_numpy(),
-                    coverage_df["cell_type"].to_numpy(),
-                )
-            ] = {
-                "coverage": coverage_df["coverage"].astype("int32").to_numpy(),
-                "total_coverage": coverage_df["total_coverage"].astype("int32").to_numpy(),
-                "normalized_coverage": coverage_df["normalized_coverage"].to_numpy(),
-            }
-        logger.info("Successfully wrote data to TileDB")
 
     def _write_arrays_to_tiledb(
         self,

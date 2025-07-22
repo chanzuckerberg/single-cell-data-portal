@@ -7,31 +7,11 @@ import pandas as pd
 import tiledb
 from cellxgene_schema.utils import get_matrix_format
 
-# Memory profiling imports
-try:
-    import psutil
-
-    MEMORY_PROFILING_AVAILABLE = True
-except ImportError:
-    MEMORY_PROFILING_AVAILABLE = False
-
 from backend.common.constants import IS_SINGLE, UNS_SPATIAL_KEY
 from backend.layers.processing.utils.atac import ATACDataProcessor
 from backend.layers.processing.utils.dask_utils import TileDBSparseArrayWriteWrapper
 from backend.layers.processing.utils.spatial import SpatialDataProcessor
 from backend.layers.processing.utils.type_conversion_utils import get_dtype_and_schema_of_array
-
-
-def log_memory_usage_cxg(checkpoint_name: str = ""):
-    """Log current memory usage at critical checkpoints for CXG generation."""
-    if MEMORY_PROFILING_AVAILABLE:
-        process = psutil.Process()
-        memory_info = process.memory_info()
-        memory_mb = memory_info.rss / 1024 / 1024
-        memory_percent = process.memory_percent()
-        logging.info(f"CXG_MEMORY_CHECKPOINT[{checkpoint_name}]: {memory_mb:.1f} MB RSS ({memory_percent:.1f}%)")
-        return memory_mb
-    return 0
 
 
 def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata_name="cxg_group_metadata", ctx=None):
@@ -196,12 +176,6 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
     nonzero. This means that if you count the number of elements in the SparseArray, it will not equal the total
     number of elements in the matrix, only the number of nonzero elements.
     """
-    log_memory_usage_cxg("MATRIX_CONVERSION_START")
-    logging.info(
-        f"Converting matrix {matrix_name}: shape={matrix.shape}, dtype={matrix.dtype}, sparse={encode_as_sparse_array}"
-    )
-    logging.info(f"Matrix chunks: {matrix.chunks}")
-
     number_of_rows = matrix.shape[0]
     number_of_columns = matrix.shape[1]
     compression = 7
@@ -246,31 +220,17 @@ def convert_matrices_to_cxg_arrays(matrix_name: str, matrix: da.Array, encode_as
         **array_schema_params,
     )
     tiledb.Array.create(matrix_name, schema)
-    log_memory_usage_cxg("TILEDB_SCHEMA_CREATED")
 
     if encode_as_sparse_array:
-        log_memory_usage_cxg("SPARSE_ARRAY_PATH_START")
         matrix_write = TileDBSparseArrayWriteWrapper(matrix_name, ctx=ctx)
-        log_memory_usage_cxg("PRE_SPARSE_STORE")
         matrix.store(matrix_write, lock=False, compute=True)
-        log_memory_usage_cxg("POST_SPARSE_STORE")
     else:
-        log_memory_usage_cxg("DENSE_ARRAY_PATH_START")
         # if matrix is a scipy sparse matrix but encode_as_sparse_array is False, convert to dense array
         if get_matrix_format(matrix) != "dense":
-            log_memory_usage_cxg("PRE_SPARSE_TO_DENSE_CONVERSION")
             matrix = matrix.map_blocks(
                 lambda x: x.toarray().astype(np.float32), dtype=np.float32, meta=np.array([], dtype=np.float32)
             )
-            log_memory_usage_cxg("POST_SPARSE_TO_DENSE_CONVERSION")
         elif matrix.dtype != np.float32:
-            log_memory_usage_cxg("PRE_DTYPE_CONVERSION")
             matrix = matrix.map_blocks(lambda x: x.astype(np.float32), dtype=np.float32)
-            log_memory_usage_cxg("POST_DTYPE_CONVERSION")
-
-        log_memory_usage_cxg("PRE_DENSE_TILEDB_WRITE")
         with tiledb.open(matrix_name, "w") as A:
             matrix.to_tiledb(A, storage_options={"ctx": ctx})
-        log_memory_usage_cxg("POST_DENSE_TILEDB_WRITE")
-
-    log_memory_usage_cxg("MATRIX_CONVERSION_END")
