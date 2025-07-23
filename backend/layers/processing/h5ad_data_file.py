@@ -127,7 +127,7 @@ class H5ADDataFile:
             {
                 "num_workers": 1,  # a single worker with as many threads as vCPUs is more memory efficient
                 "threads_per_worker": 2,  # match the number of vCPUs
-                "distributed.worker.memory.limit": "14GB",
+                "distributed.worker.memory.limit": "28GB",
                 "scheduler": "threads",
             }
         ):
