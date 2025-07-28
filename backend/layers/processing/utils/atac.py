@@ -398,12 +398,13 @@ class ATACDataProcessor:
                 )
                 yield chrom, bin_id, cell_type, count, total_coverage, normalized_coverage
 
+        coverage_records = generate_coverage_records()
         while True:
-            chunk = list(itertools.islice(generate_coverage_records(), chunk_size))
+            chunk = list(itertools.islice(coverage_records, chunk_size))
             array_index += len(chunk)
             if not chunk:
                 break
-                write_range = f"{array_index-len(chunk):,}-{array_index:,}"
+            write_range = f"{array_index-len(chunk):,}-{array_index:,}"
             logger.info(f"Writing {write_range} records to TileDB as single fragment...")
             self._write_arrays_to_tiledb(array_name, *zip(*chunk, strict=False))
         return array_index
