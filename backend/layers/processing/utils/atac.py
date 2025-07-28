@@ -406,7 +406,7 @@ class ATACDataProcessor:
                 break
             write_range = f"{array_index-len(chunk):,}-{array_index:,}"
             logger.info(f"Writing {write_range} records to TileDB as single fragment...")
-            self._write_arrays_to_tiledb(array_name, *zip(*chunk, strict=False))
+            self._write_arrays_to_tiledb(array_name, *zip(*chunk, strict=True))
         return array_index
 
     def _write_arrays_to_tiledb(
