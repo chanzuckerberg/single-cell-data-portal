@@ -1,3 +1,4 @@
+import itertools
 import logging
 import os
 import tempfile
@@ -386,38 +387,25 @@ class ATACDataProcessor:
 
         total_records = len(coverage_aggregator)
         logger.info(f"Processing {total_records:,} records with direct array assignment...")
-
-        chroms = np.zeros(total_records, dtype=np.int32)
-        bins = np.zeros(total_records, dtype=np.int32)
-        cell_types = np.empty(total_records, dtype=object)
-        coverages = np.zeros(total_records, dtype=np.int32)
-        total_coverages = np.zeros(total_records, dtype=np.int32)
-        normalized_coverages = np.zeros(total_records, dtype=np.float32)
-
         array_index = 0
 
-        for (chrom, bin_id, cell_type), count in tqdm(
-            coverage_aggregator.items(), desc="Processing directly to arrays", unit="records"
-        ):
-            total_coverage = global_cell_type_totals.get(cell_type, 0)
-            normalized_coverage = (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
+        def generate_coverage_records():
+            """Generator to yield coverage records for direct array assignment."""
+            for (chrom, bin_id, cell_type), count in coverage_aggregator.items():
+                total_coverage = global_cell_type_totals.get(cell_type, 0)
+                normalized_coverage = (
+                    (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
+                )
+                yield chrom, bin_id, cell_type, count, total_coverage, normalized_coverage
 
-            # Assign directly to pre-allocated arrays
-            chroms[array_index] = chrom
-            bins[array_index] = bin_id
-            cell_types[array_index] = cell_type
-            coverages[array_index] = count
-            total_coverages[array_index] = total_coverage
-            normalized_coverages[array_index] = normalized_coverage
-
-            array_index += 1
-
-        logger.info(f"Writing {array_index:,} records to TileDB as single fragment...")
-        self._write_arrays_to_tiledb(
-            array_name, chroms, bins, cell_types, coverages, total_coverages, normalized_coverages
-        )
-
-        logger.info(f"Streamed {array_index:,} records directly to TileDB as single fragment")
+        while True:
+            chunk = list(itertools.islice(generate_coverage_records(), chunk_size))
+            array_index += len(chunk)
+            if not chunk:
+                break
+                write_range = f"{array_index-len(chunk):,}-{array_index:,}"
+            logger.info(f"Writing {write_range} records to TileDB as single fragment...")
+            self._write_arrays_to_tiledb(array_name, *zip(*chunk, strict=False))
         return array_index
 
     def _write_arrays_to_tiledb(
