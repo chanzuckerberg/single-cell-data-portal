@@ -1,0 +1,2 @@
+Processing chromosomes:   0%|          | 0/1 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 1/1 [00:00<00:00, 644.48chrom/s]
+Processing directly to arrays:   0%|          | 0/2 [00:00<?, ?records/s]Processing directly to arrays: 100%|██████████| 2/2 [00:00<00:00, 41943.04records/s]
