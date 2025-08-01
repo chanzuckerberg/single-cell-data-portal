@@ -381,7 +381,7 @@ class ATACDataProcessor:
         coverage_aggregator: defaultdict,
         global_cell_type_totals: Dict[str, int],
         array_name: str,
-        chunk_size: int = 50000,
+        chunk_size: int = 10_000_000,
     ) -> int:
         """Streaming approach: process directly into pre-allocated numpy arrays, write once."""
 
