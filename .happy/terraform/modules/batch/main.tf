@@ -43,6 +43,16 @@ resource aws_batch_job_definition batch_job_def {
     }
   ],
   "vcpus": 2,
+  "retryStrategy": {
+    "attempts": 1,
+    "evaluateOnExit": [
+      {
+        "onStatusReason": "Essential container in task exited",
+        "action": "RETRY",
+        "exitCode": "137"
+      }
+    ]
+  },
   "logConfiguration": {
     "logDriver": "awslogs",
     "options": {
@@ -59,7 +69,7 @@ resource aws_batch_job_definition cxg_job_def {
   container_properties = jsonencode({
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
-  "memory": 64000,
+  "memory": 32000,
   "environment": [
     {
       "name": "ARTIFACT_BUCKET",
@@ -108,6 +118,7 @@ resource aws_batch_job_definition atac_job_def {
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
   "memory": 128000,
+  "vcpus": 16,
   "environment": [
     {
       "name": "ARTIFACT_BUCKET",
@@ -138,7 +149,16 @@ resource aws_batch_job_definition atac_job_def {
       "value": "${var.frontend_url}"
     }
   ],
-  "vcpus": 16,
+  "retryStrategy": {
+  "attempts": 1,
+    "evaluateOnExit": [
+      {
+        "onStatusReason": "Essential container in task exited",
+        "action": "RETRY",
+        "exitCode": "137"
+      }
+    ]
+  },
   "logConfiguration": {
     "logDriver": "awslogs",
     "options": {
