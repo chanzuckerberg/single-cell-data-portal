@@ -1,0 +1,60 @@
+INFO     backend.layers.processing.utils.atac:atac.py:434 Starting ATAC fragment processing for array: /tmp/pytest-of-root/pytest-0/test__process_fragment_file_in3/test_array
+INFO     backend.layers.processing.utils.atac:atac.py:443 Creating TileDB array with 39 chromosomes and 1951542 max bins
+INFO     backend.layers.processing.utils.atac:atac.py:446 Processing 39 chromosomes with 2 valid barcodes
+INFO     backend.layers.processing.utils.atac:atac.py:239 Using batch processing for 39 chromosomes with batch size 4
+INFO     backend.layers.processing.utils.atac:atac.py:326 Processing 39 chromosomes in 10 batches
+INFO     backend.layers.processing.utils.atac:atac.py:328 Computing global cell type totals for normalization...
+INFO     backend.layers.processing.utils.atac:atac.py:362 Computing totals for batch 1/10
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:362 Computing totals for batch 2/10
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:362 Computing totals for batch 3/10
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:362 Computing totals for batch 4/10
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:362 Computing totals for batch 5/10
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:362 Computing totals for batch 6/10
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:362 Computing totals for batch 7/10
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:362 Computing totals for batch 8/10
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:362 Computing totals for batch 9/10
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:362 Computing totals for batch 10/10
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 3 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:332 Processing batch 1/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:332 Processing batch 2/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:345 Batch 2 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:332 Processing batch 3/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:345 Batch 3 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:332 Processing batch 4/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:345 Batch 4 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:332 Processing batch 5/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:345 Batch 5 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:332 Processing batch 6/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:345 Batch 6 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:332 Processing batch 7/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:345 Batch 7 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:332 Processing batch 8/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:345 Batch 8 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:332 Processing batch 9/10 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 4 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:345 Batch 9 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:332 Processing batch 10/10 with 3 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:269 Using 3 processes for chromosome processing
+INFO     backend.layers.processing.utils.atac:atac.py:345 Batch 10 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:389 Processing 2 records with direct array assignment...
+INFO     backend.layers.processing.utils.atac:atac.py:408 Writing 0-2 records to TileDB as single fragment...
+INFO     backend.layers.processing.utils.atac:atac.py:423 Writing 2 records to TileDB from numpy arrays...
+INFO     backend.layers.processing.utils.atac:atac.py:430 Successfully wrote numpy arrays to TileDB
+INFO     backend.layers.processing.utils.atac:atac.py:449 ATAC fragment processing completed successfully
