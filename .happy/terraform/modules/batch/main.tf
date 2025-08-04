@@ -43,6 +43,16 @@ resource aws_batch_job_definition batch_job_def {
     }
   ],
   "vcpus": 2,
+  "retryStrategy": {
+  "attempts": 1,
+    "evaluateOnExit": [
+      {
+        "onStatusReason": "Essential container in task exited",
+        "action": "RETRY",
+        "exitCode": "137"
+      }
+    ]
+  },
   "logConfiguration": {
     "logDriver": "awslogs",
     "options": {
@@ -139,6 +149,16 @@ resource aws_batch_job_definition atac_job_def {
       "value": "${var.frontend_url}"
     }
   ],
+      "retryStrategy": {
+  "attempts": 1,
+    "evaluateOnExit": [
+      {
+        "onStatusReason": "Essential container in task exited",
+        "action": "RETRY",
+        "exitCode": "137"
+      }
+    ]
+  },
   "logConfiguration": {
     "logDriver": "awslogs",
     "options": {
