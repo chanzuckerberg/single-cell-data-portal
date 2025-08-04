@@ -46,6 +46,16 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "JobDefinition": "${var.job_definition_arn}",
                 "JobName": "validate_anndata",
                 "JobQueue.$": "$.job_queue",
+                "retryStrategy": {
+                  "attempts": 2,
+                  "evaluateOnExit": [
+                    {
+                      "onStatusReason": "Essential container in task exited",
+                      "action": "RETRY",
+                      "exitCode": "137"  // Exit code 137 indicates a container killed due to OOM
+                    }
+                  ]
+                },
                 "ContainerOverrides": {
                   "Environment": [
                     {
@@ -97,6 +107,16 @@ resource "aws_sfn_state_machine" "state_machine" {
                 "JobDefinition": "${var.atac_definition_arn}",
                 "JobName": "validate_atac",
                 "JobQueue.$": "$.job_queue",
+                "retryStrategy": {
+                  "attempts": 2,
+                  "evaluateOnExit": [
+                    {
+                      "onStatusReason": "Essential container in task exited",
+                      "action": "RETRY",
+                      "exitCode": "137"  // Exit code 137 indicates a container killed due to OOM
+                    }
+                  ]
+                },
                 "ContainerOverrides": {
                   "Environment": [
                     {
