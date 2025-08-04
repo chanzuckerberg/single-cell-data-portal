@@ -1,2 +1,0 @@
-Processing chromosomes:   0%|          | 0/1 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 1/1 [00:00<00:00, 120.44chrom/s]
-Hybrid processing to arrays:   0%|          | 0/2 [00:00<?, ?records/s]Hybrid processing to arrays: 100%|██████████| 2/2 [00:00<00:00, 43919.41records/s]
