@@ -108,6 +108,7 @@ resource aws_batch_job_definition atac_job_def {
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
   "memory": 128000,
+  "vcpus": 16,
   "environment": [
     {
       "name": "ARTIFACT_BUCKET",
@@ -138,7 +139,6 @@ resource aws_batch_job_definition atac_job_def {
       "value": "${var.frontend_url}"
     }
   ],
-  "vcpus": 16,
   "logConfiguration": {
     "logDriver": "awslogs",
     "options": {
