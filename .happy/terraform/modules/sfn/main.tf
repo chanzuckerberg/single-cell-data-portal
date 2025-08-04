@@ -52,7 +52,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                     {
                       "onStatusReason": "Essential container in task exited",
                       "action": "RETRY",
-                      "exitCode": "137"  // Exit code 137 indicates a container killed due to OOM
+                      "exitCode": "137"
                     }
                   ]
                 },
@@ -113,7 +113,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                     {
                       "onStatusReason": "Essential container in task exited",
                       "action": "RETRY",
-                      "exitCode": "137"  // Exit code 137 indicates a container killed due to OOM
+                      "exitCode": "137"
                     }
                   ]
                 },
