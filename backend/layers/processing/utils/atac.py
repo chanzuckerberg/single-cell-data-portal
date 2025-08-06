@@ -1,10 +1,9 @@
-import itertools
 import logging
 import os
 import tempfile
 from collections import defaultdict
 from multiprocessing import Pool, cpu_count
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, Optional, Set, Tuple
 
 import boto3
 import cellxgene_schema.atac_seq as atac_seq
@@ -38,7 +37,6 @@ class ATACDataProcessor:
         self._local_fragment_index = None
 
     def _file_exists(self, file_path: str) -> bool:
-        """Check if a file exists, supporting both local paths and S3 URLs."""
         if file_path.startswith("s3://"):
             s3_path = file_path[5:]
             bucket, key = s3_path.split("/", 1)
@@ -53,7 +51,6 @@ class ATACDataProcessor:
             return os.path.exists(file_path)
 
     def _download_s3_file(self, s3_path: str) -> str:
-        """Download S3 file and its index to local temporary files and return local path."""
         if not s3_path.startswith("s3://"):
             return s3_path
 
@@ -99,7 +96,6 @@ class ATACDataProcessor:
         return self._local_fragment_file
 
     def _cleanup_temp_files(self) -> None:
-        """Clean up temporary downloaded files."""
         if (
             self._local_fragment_file
             and self._local_fragment_file != self.fragment_artifact_id
@@ -265,7 +261,7 @@ class ATACDataProcessor:
         coverage_aggregator = defaultdict(int)
         found_cells = set()
 
-        # Calculate memory-aware process count based on actual fragment file size
+        # Memory-aware process limiting to prevent OOM
         fragment_file_path = self._get_fragment_file_path()
         fragment_file_size_gb = os.path.getsize(fragment_file_path) / (1024**3)
         available_memory_gb = 28  # Dask memory limit
@@ -275,8 +271,6 @@ class ATACDataProcessor:
         logger.info(
             f"Fragment file size: {fragment_file_size_gb:.2f}GB, using {num_processes} processes (memory-limited from {cpu_count()})"
         )
-
-        fragment_file_path = self._get_fragment_file_path()
 
         chrom_args = [
             (
@@ -308,7 +302,6 @@ class ATACDataProcessor:
         return coverage_aggregator, found_cells
 
     def _report_missing_cells(self, valid_barcodes: Set[str], found_cells: Set[str]) -> None:
-        """Log warning about cells not found in fragment file."""
         missing_cells = len(valid_barcodes - found_cells)
         if missing_cells:
             logger.warning(f"{missing_cells} barcodes in .h5ad were not found in fragment file.")
@@ -347,7 +340,7 @@ class ATACDataProcessor:
             all_found_cells.update(batch_found_cells)
 
             if batch_coverage_aggregator:
-                # Compute totals incrementally during processing to avoid double-pass
+                # Compute totals incrementally to avoid double-pass
                 for key, count in batch_coverage_aggregator.items():
                     chrom, bin_id, cell_type = key
                     global_cell_type_totals[cell_type] += count
@@ -360,28 +353,7 @@ class ATACDataProcessor:
         if all_coverage_aggregator:
             self._stream_coverage_chunks_to_tiledb(all_coverage_aggregator, dict(global_cell_type_totals), array_name)
 
-    def _compute_global_cell_type_totals(
-        self,
-        chrom_batches: List[List[Tuple[str, int]]],
-        cell_type_map: Dict[str, str],
-        valid_barcodes: Set[str],
-    ) -> Dict[str, int]:
-        """Compute global cell type totals across all batches for normalization."""
-        global_cell_type_totals = defaultdict(int)
-
-        for batch_idx, chrom_batch in enumerate(chrom_batches):
-            logger.info(f"Computing totals for batch {batch_idx + 1}/{len(chrom_batches)}")
-
-            batch_chrom_map = dict(chrom_batch)
-            batch_coverage_aggregator, _ = self._process_all_chromosomes(batch_chrom_map, cell_type_map, valid_barcodes)
-
-            for (_, _, cell_type), count in batch_coverage_aggregator.items():
-                global_cell_type_totals[cell_type] += count
-
-        return dict(global_cell_type_totals)
-
     def _compute_cell_type_totals_from_aggregator(self, coverage_aggregator: defaultdict) -> Dict[str, int]:
-        """Compute cell type totals from coverage aggregator data."""
         cell_type_totals = defaultdict(int)
         for (_, _, cell_type), count in coverage_aggregator.items():
             cell_type_totals[cell_type] += count
@@ -392,16 +364,15 @@ class ATACDataProcessor:
         coverage_aggregator: defaultdict,
         global_cell_type_totals: Dict[str, int],
         array_name: str,
-        chunk_size: int = 500000,  # Reduced chunk size for large datasets
+        chunk_size: int = 500000,
     ) -> int:
         """Generator approach: process chunks on-the-fly within single TileDB session."""
 
         total_records = len(coverage_aggregator)
         logger.info(f"Processing {total_records:,} records with generator-based chunked streaming...")
 
-        # Write all chunks in a single TileDB session using generator
         records_processed = self._write_chunks_generator_to_tiledb(
-            array_name, self._generate_chunks(coverage_aggregator, global_cell_type_totals, chunk_size), total_records
+            array_name, self._generate_chunks(coverage_aggregator, global_cell_type_totals, chunk_size)
         )
 
         logger.info(f"Successfully processed {records_processed:,} records to TileDB as single fragment")
@@ -410,7 +381,6 @@ class ATACDataProcessor:
     def _generate_chunks(
         self, coverage_aggregator: defaultdict, global_cell_type_totals: Dict[str, int], chunk_size: int
     ):
-        """Generator that yields chunks of processed data without storing all in memory."""
         current_chunk = []
 
         for (chrom, bin_id, cell_type), count in coverage_aggregator.items():
@@ -428,12 +398,10 @@ class ATACDataProcessor:
                 }
             )
 
-            # Yield chunk when it reaches chunk_size
             if len(current_chunk) >= chunk_size:
                 yield current_chunk
                 current_chunk = []
 
-        # Yield remaining data
         if current_chunk:
             yield current_chunk
 
@@ -441,19 +409,13 @@ class ATACDataProcessor:
         self,
         array_name: str,
         chunk_generator,
-        total_records: int,
     ) -> int:
-        """Write chunks from generator to TileDB, then close and consolidate."""
-
         records_written = 0
-
-        # Write all chunks to TileDB
         with tiledb.SparseArray(array_name, mode="w", ctx=self.ctx) as A:
             for chunk_idx, chunk_data in enumerate(tqdm(chunk_generator, desc="Writing chunks to TileDB")):
                 chunk_size = len(chunk_data)
                 logger.debug(f"Writing chunk {chunk_idx + 1} ({chunk_size:,} records)...")
 
-                # Convert chunk data to numpy arrays
                 chroms = np.array([record["chrom"] for record in chunk_data], dtype=np.int32)
                 bins = np.array([record["bin_id"] for record in chunk_data], dtype=np.int32)
                 cell_types = np.array([record["cell_type"] for record in chunk_data], dtype=object)
@@ -463,7 +425,6 @@ class ATACDataProcessor:
                     [record["normalized_coverage"] for record in chunk_data], dtype=np.float32
                 )
 
-                # Write chunk to TileDB
                 A[(chroms, bins, cell_types)] = {
                     "coverage": coverages,
                     "total_coverage": total_coverages,
