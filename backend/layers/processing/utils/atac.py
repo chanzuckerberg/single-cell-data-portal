@@ -264,8 +264,14 @@ class ATACDataProcessor:
         coverage_aggregator = defaultdict(int)
         found_cells = set()
 
-        num_processes = min(cpu_count(), max(1, len(chrom_map)))
-        logger.info(f"Using {num_processes} processes for chromosome processing")
+        # Calculate memory-aware process count based on actual fragment file size
+        fragment_file_path = self._get_fragment_file_path()
+        fragment_file_size_gb = os.path.getsize(fragment_file_path) / (1024**3)
+        available_memory_gb = 28  # Dask memory limit
+        max_memory_processes = max(1, int(available_memory_gb / fragment_file_size_gb))
+        
+        num_processes = min(cpu_count(), len(chrom_map), max_memory_processes)
+        logger.info(f"Fragment file size: {fragment_file_size_gb:.2f}GB, using {num_processes} processes (memory-limited from {cpu_count()})")
 
         fragment_file_path = self._get_fragment_file_path()
 
@@ -324,8 +330,8 @@ class ATACDataProcessor:
 
         logger.info(f"Processing {len(chrom_list)} chromosomes in {len(chrom_batches)} batches")
 
-        logger.info("Computing global cell type totals for normalization...")
-        global_cell_type_totals = self._compute_global_cell_type_totals(chrom_batches, cell_type_map, valid_barcodes)
+        logger.info("Processing chromosomes with single-pass totals computation...")
+        global_cell_type_totals = defaultdict(int)
 
         for batch_idx, chrom_batch in enumerate(chrom_batches):
             logger.info(f"Processing batch {batch_idx + 1}/{len(chrom_batches)} with {len(chrom_batch)} chromosomes")
@@ -338,7 +344,10 @@ class ATACDataProcessor:
             all_found_cells.update(batch_found_cells)
 
             if batch_coverage_aggregator:
+                # Compute totals incrementally during processing to avoid double-pass
                 for key, count in batch_coverage_aggregator.items():
+                    chrom, bin_id, cell_type = key
+                    global_cell_type_totals[cell_type] += count
                     all_coverage_aggregator[key] += count
             else:
                 logger.info(f"Batch {batch_idx + 1} had no coverage data, skipping")
@@ -346,7 +355,7 @@ class ATACDataProcessor:
         self._report_missing_cells(valid_barcodes, all_found_cells)
 
         if all_coverage_aggregator:
-            self._stream_coverage_chunks_to_tiledb(all_coverage_aggregator, global_cell_type_totals, array_name)
+            self._stream_coverage_chunks_to_tiledb(all_coverage_aggregator, dict(global_cell_type_totals), array_name)
 
     def _compute_global_cell_type_totals(
         self,
@@ -380,7 +389,7 @@ class ATACDataProcessor:
         coverage_aggregator: defaultdict,
         global_cell_type_totals: Dict[str, int],
         array_name: str,
-        chunk_size: int = 1000000,
+        chunk_size: int = 500000,  # Reduced chunk size for large datasets
     ) -> int:
         """Generator approach: process chunks on-the-fly within single TileDB session."""
 
