@@ -112,6 +112,19 @@ class H5ADDataFile:
                 )
                 logging.info("\t...dataset coverage dataframe saved")
 
+                # Consolidate coverage array fragments
+                coverage_container = f"{output_cxg_directory}/coverage"
+                logging.info("Consolidating coverage array fragments...")
+                self._consolidate_tiledb_with_memory_optimization(coverage_container, ctx)
+
+                # Vacuum to physically remove old fragments
+                if hasattr(tiledb, "vacuum"):
+                    logging.info("Vacuuming coverage array to remove old fragments...")
+                    tiledb.vacuum(coverage_container, ctx=ctx)
+                    logging.info("\t...coverage array vacuumed")
+
+                logging.info("\t...coverage array consolidated")
+
         self.write_anndata_embeddings_to_cxg(output_cxg_directory, ctx)
         logging.info("\t...dataset embeddings saved")
 

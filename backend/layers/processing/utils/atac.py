@@ -269,9 +269,11 @@ class ATACDataProcessor:
         fragment_file_size_gb = os.path.getsize(fragment_file_path) / (1024**3)
         available_memory_gb = 28  # Dask memory limit
         max_memory_processes = max(1, int(available_memory_gb / fragment_file_size_gb))
-        
+
         num_processes = min(cpu_count(), len(chrom_map), max_memory_processes)
-        logger.info(f"Fragment file size: {fragment_file_size_gb:.2f}GB, using {num_processes} processes (memory-limited from {cpu_count()})")
+        logger.info(
+            f"Fragment file size: {fragment_file_size_gb:.2f}GB, using {num_processes} processes (memory-limited from {cpu_count()})"
+        )
 
         fragment_file_path = self._get_fragment_file_path()
 
@@ -398,40 +400,38 @@ class ATACDataProcessor:
 
         # Write all chunks in a single TileDB session using generator
         records_processed = self._write_chunks_generator_to_tiledb(
-            array_name, 
-            self._generate_chunks(coverage_aggregator, global_cell_type_totals, chunk_size),
-            total_records
+            array_name, self._generate_chunks(coverage_aggregator, global_cell_type_totals, chunk_size), total_records
         )
-        
-        # Consolidate fragments into single fragment for optimal read performance
-        logger.info(f"Consolidating {records_processed:,} records into single fragment...")
-        tiledb.consolidate(array_name, ctx=self.ctx)
-        
+
         logger.info(f"Successfully processed {records_processed:,} records to TileDB as single fragment")
         return records_processed
 
-    def _generate_chunks(self, coverage_aggregator: defaultdict, global_cell_type_totals: Dict[str, int], chunk_size: int):
+    def _generate_chunks(
+        self, coverage_aggregator: defaultdict, global_cell_type_totals: Dict[str, int], chunk_size: int
+    ):
         """Generator that yields chunks of processed data without storing all in memory."""
         current_chunk = []
-        
+
         for (chrom, bin_id, cell_type), count in coverage_aggregator.items():
             total_coverage = global_cell_type_totals.get(cell_type, 0)
             normalized_coverage = (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
 
-            current_chunk.append({
-                'chrom': chrom,
-                'bin_id': bin_id,
-                'cell_type': cell_type,
-                'coverage': count,
-                'total_coverage': total_coverage,
-                'normalized_coverage': normalized_coverage,
-            })
-            
+            current_chunk.append(
+                {
+                    "chrom": chrom,
+                    "bin_id": bin_id,
+                    "cell_type": cell_type,
+                    "coverage": count,
+                    "total_coverage": total_coverage,
+                    "normalized_coverage": normalized_coverage,
+                }
+            )
+
             # Yield chunk when it reaches chunk_size
             if len(current_chunk) >= chunk_size:
                 yield current_chunk
                 current_chunk = []
-        
+
         # Yield remaining data
         if current_chunk:
             yield current_chunk
@@ -442,34 +442,36 @@ class ATACDataProcessor:
         chunk_generator,
         total_records: int,
     ) -> int:
-        """Write chunks from generator to TileDB in a single session."""
-        
+        """Write chunks from generator to TileDB, then close and consolidate."""
+
         records_written = 0
-        
+
+        # Write all chunks to TileDB
         with tiledb.SparseArray(array_name, mode="w", ctx=self.ctx) as A:
             for chunk_idx, chunk_data in enumerate(tqdm(chunk_generator, desc="Writing chunks to TileDB")):
                 chunk_size = len(chunk_data)
                 logger.debug(f"Writing chunk {chunk_idx + 1} ({chunk_size:,} records)...")
-                
+
                 # Convert chunk data to numpy arrays
-                chroms = np.array([record['chrom'] for record in chunk_data], dtype=np.int32)
-                bins = np.array([record['bin_id'] for record in chunk_data], dtype=np.int32)
-                cell_types = np.array([record['cell_type'] for record in chunk_data], dtype=object)
-                coverages = np.array([record['coverage'] for record in chunk_data], dtype=np.int32)
-                total_coverages = np.array([record['total_coverage'] for record in chunk_data], dtype=np.int32)
-                normalized_coverages = np.array([record['normalized_coverage'] for record in chunk_data], dtype=np.float32)
-                
+                chroms = np.array([record["chrom"] for record in chunk_data], dtype=np.int32)
+                bins = np.array([record["bin_id"] for record in chunk_data], dtype=np.int32)
+                cell_types = np.array([record["cell_type"] for record in chunk_data], dtype=object)
+                coverages = np.array([record["coverage"] for record in chunk_data], dtype=np.int32)
+                total_coverages = np.array([record["total_coverage"] for record in chunk_data], dtype=np.int32)
+                normalized_coverages = np.array(
+                    [record["normalized_coverage"] for record in chunk_data], dtype=np.float32
+                )
+
                 # Write chunk to TileDB
                 A[(chroms, bins, cell_types)] = {
                     "coverage": coverages,
                     "total_coverage": total_coverages,
                     "normalized_coverage": normalized_coverages,
                 }
-                
+
                 records_written += chunk_size
                 logger.debug(f"Successfully wrote chunk {chunk_idx + 1} of {chunk_size:,} records")
-        
-        logger.info(f"Successfully wrote {records_written:,} records to TileDB as single fragment")
+
         return records_written
 
     def process_fragment_file(self, obs: pd.DataFrame, array_name: str, uns: Optional[Dict] = None) -> None:
