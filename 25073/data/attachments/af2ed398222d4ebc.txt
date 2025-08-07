@@ -1,0 +1,2 @@
+INFO     backend.layers.processing.utils.atac:atac.py:142 Cleaning up temporary file: /tmp/pytest-of-root/pytest-0/test__cleanup_temp_files_temp_0/temp_fragment.bgz
+INFO     backend.layers.processing.utils.atac:atac.py:147 Cleaning up temporary index file: /tmp/pytest-of-root/pytest-0/test__cleanup_temp_files_temp_0/temp_fragment.bgz.tbi
