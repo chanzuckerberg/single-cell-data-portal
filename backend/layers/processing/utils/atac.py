@@ -302,7 +302,7 @@ class ATACDataProcessor:
         # Memory-aware process limiting to prevent OOM
         fragment_file_path = self._get_fragment_file_path()
         fragment_file_size_gb = os.path.getsize(fragment_file_path) / (1024**3)
-        available_memory_gb = 28  # Dask memory limit
+        available_memory_gb = psutil.virtual_memory().total * 0.7 / (1024**3)  # Use 70% of available memory
         max_memory_processes = max(1, int(available_memory_gb / fragment_file_size_gb))
 
         num_processes = min(cpu_count(), len(chrom_map), max_memory_processes)
