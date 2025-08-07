@@ -5,6 +5,10 @@
 
 CELLxGENE Discover enables the publication, discovery and exploration of interoperable single-cell datasets. Data contributors can upload, review and publish datasets for private or public use. Via Discover, data consumers are able to discover, download and connect data to visualization tools such as [CELLxGENE Explorer](https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/README.md) to perform further analysis. The goal of Discover is to catalyze distributed collaboration of single-cell research by providing a large, well-labeled repository of interoperable datasets.
 
+## Code of Conduct
+
+This project adheres to the Contributor Covenant [code of conduct](https://github.com/chanzuckerberg/.github/blob/master/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [opensource@chanzuckerberg.com](mailto:opensource@chanzuckerberg.com).
+
 ## Developer Guidelines
 
 ### FE Setup

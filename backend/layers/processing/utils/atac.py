@@ -4,12 +4,13 @@ import os
 import tempfile
 from collections import defaultdict
 from multiprocessing import Pool, cpu_count
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, Optional, Set, Tuple
 
 import boto3
 import cellxgene_schema.atac_seq as atac_seq
 import numpy as np
 import pandas as pd
+import psutil
 import pysam
 import tiledb
 from tqdm import tqdm
@@ -19,6 +20,42 @@ logger = logging.getLogger(__name__)
 
 BIN_SIZE = 100
 NORMALIZATION_FACTOR = 2_000_000
+
+
+def get_dynamic_chunk_size(memory_factor: float = 0.1, min_chunk_size: int = 100_000, max_chunk_size: int = 50_000_000):
+    """
+    Calculate dynamic chunk size based on available memory.
+
+    Args:
+        memory_factor: Fraction of available memory to use for chunk sizing
+        min_chunk_size: Minimum chunk size regardless of memory
+        max_chunk_size: Maximum chunk size to prevent excessive memory usage
+
+    Returns:
+        Optimal chunk size for the current system
+    """
+    available_memory = psutil.virtual_memory().available
+
+    # Use available memory to be more conservative
+    memory_for_chunks = int(available_memory * memory_factor)
+
+    # Estimate memory per record (for ATAC data):
+    # - chromosome name: ~10 bytes
+    # - bin_id: 8 bytes (int64)
+    # - cell_type: ~20 bytes average
+    # - coverage: 8 bytes (int64)
+    # - total_coverage: 8 bytes (int64)
+    # - normalized_coverage: 8 bytes (float64)
+    # - dict overhead: ~100 bytes
+    # Total: ~162 bytes per record
+    bytes_per_record = 162
+
+    calculated_chunk_size = memory_for_chunks // bytes_per_record
+
+    # Apply min/max constraints
+    chunk_size = max(min_chunk_size, min(calculated_chunk_size, max_chunk_size))
+
+    return chunk_size
 
 
 class ATACDataProcessor:
@@ -38,7 +75,6 @@ class ATACDataProcessor:
         self._local_fragment_index = None
 
     def _file_exists(self, file_path: str) -> bool:
-        """Check if a file exists, supporting both local paths and S3 URLs."""
         if file_path.startswith("s3://"):
             s3_path = file_path[5:]
             bucket, key = s3_path.split("/", 1)
@@ -53,7 +89,6 @@ class ATACDataProcessor:
             return os.path.exists(file_path)
 
     def _download_s3_file(self, s3_path: str) -> str:
-        """Download S3 file and its index to local temporary files and return local path."""
         if not s3_path.startswith("s3://"):
             return s3_path
 
@@ -99,7 +134,6 @@ class ATACDataProcessor:
         return self._local_fragment_file
 
     def _cleanup_temp_files(self) -> None:
-        """Clean up temporary downloaded files."""
         if (
             self._local_fragment_file
             and self._local_fragment_file != self.fragment_artifact_id
@@ -265,10 +299,16 @@ class ATACDataProcessor:
         coverage_aggregator = defaultdict(int)
         found_cells = set()
 
-        num_processes = min(cpu_count(), max(1, len(chrom_map)))
-        logger.info(f"Using {num_processes} processes for chromosome processing")
-
+        # Memory-aware process limiting to prevent OOM
         fragment_file_path = self._get_fragment_file_path()
+        fragment_file_size_gb = os.path.getsize(fragment_file_path) / (1024**3)
+        available_memory_gb = psutil.virtual_memory().total * 0.7 / (1024**3)  # Use 70% of available memory
+        max_memory_processes = max(1, int(available_memory_gb / fragment_file_size_gb))
+
+        num_processes = min(cpu_count(), len(chrom_map), max_memory_processes)
+        logger.info(
+            f"Fragment file size: {fragment_file_size_gb:.2f}GB, using {num_processes} processes (memory-limited from {cpu_count()})"
+        )
 
         chrom_args = [
             (
@@ -300,7 +340,6 @@ class ATACDataProcessor:
         return coverage_aggregator, found_cells
 
     def _report_missing_cells(self, valid_barcodes: Set[str], found_cells: Set[str]) -> None:
-        """Log warning about cells not found in fragment file."""
         missing_cells = len(valid_barcodes - found_cells)
         if missing_cells:
             logger.warning(f"{missing_cells} barcodes in .h5ad were not found in fragment file.")
@@ -325,8 +364,8 @@ class ATACDataProcessor:
 
         logger.info(f"Processing {len(chrom_list)} chromosomes in {len(chrom_batches)} batches")
 
-        logger.info("Computing global cell type totals for normalization...")
-        global_cell_type_totals = self._compute_global_cell_type_totals(chrom_batches, cell_type_map, valid_barcodes)
+        logger.info("Processing chromosomes with single-pass totals computation...")
+        global_cell_type_totals = defaultdict(int)
 
         for batch_idx, chrom_batch in enumerate(chrom_batches):
             logger.info(f"Processing batch {batch_idx + 1}/{len(chrom_batches)} with {len(chrom_batch)} chromosomes")
@@ -339,7 +378,10 @@ class ATACDataProcessor:
             all_found_cells.update(batch_found_cells)
 
             if batch_coverage_aggregator:
+                # Compute totals incrementally to avoid double-pass
                 for key, count in batch_coverage_aggregator.items():
+                    _, _, cell_type = key
+                    global_cell_type_totals[cell_type] += count
                     all_coverage_aggregator[key] += count
             else:
                 logger.info(f"Batch {batch_idx + 1} had no coverage data, skipping")
@@ -347,30 +389,9 @@ class ATACDataProcessor:
         self._report_missing_cells(valid_barcodes, all_found_cells)
 
         if all_coverage_aggregator:
-            self._stream_coverage_chunks_to_tiledb(all_coverage_aggregator, global_cell_type_totals, array_name)
-
-    def _compute_global_cell_type_totals(
-        self,
-        chrom_batches: List[List[Tuple[str, int]]],
-        cell_type_map: Dict[str, str],
-        valid_barcodes: Set[str],
-    ) -> Dict[str, int]:
-        """Compute global cell type totals across all batches for normalization."""
-        global_cell_type_totals = defaultdict(int)
-
-        for batch_idx, chrom_batch in enumerate(chrom_batches):
-            logger.info(f"Computing totals for batch {batch_idx + 1}/{len(chrom_batches)}")
-
-            batch_chrom_map = dict(chrom_batch)
-            batch_coverage_aggregator, _ = self._process_all_chromosomes(batch_chrom_map, cell_type_map, valid_barcodes)
-
-            for (_, _, cell_type), count in batch_coverage_aggregator.items():
-                global_cell_type_totals[cell_type] += count
-
-        return dict(global_cell_type_totals)
+            self._stream_coverage_chunks_to_tiledb(all_coverage_aggregator, dict(global_cell_type_totals), array_name)
 
     def _compute_cell_type_totals_from_aggregator(self, coverage_aggregator: defaultdict) -> Dict[str, int]:
-        """Compute cell type totals from coverage aggregator data."""
         cell_type_totals = defaultdict(int)
         for (_, _, cell_type), count in coverage_aggregator.items():
             cell_type_totals[cell_type] += count
@@ -381,53 +402,81 @@ class ATACDataProcessor:
         coverage_aggregator: defaultdict,
         global_cell_type_totals: Dict[str, int],
         array_name: str,
-        chunk_size: int = 10_000_000,
+        chunk_size: int = None,
     ) -> int:
-        """Streaming approach: process directly into pre-allocated numpy arrays, write once."""
+        """Generator approach: process chunks on-the-fly within single TileDB session."""
+
+        if chunk_size is None:
+            chunk_size = get_dynamic_chunk_size()
 
         total_records = len(coverage_aggregator)
-        logger.info(f"Processing {total_records:,} records with direct array assignment...")
-        array_index = 0
+        logger.info(
+            f"Processing {total_records:,} records with generator-based chunked streaming (chunk_size: {chunk_size:,})..."
+        )
 
-        def generate_coverage_records():
-            """Generator to yield coverage records for direct array assignment."""
+        records_processed = self._write_chunks_generator_to_tiledb(
+            array_name, self._generate_chunks(coverage_aggregator, global_cell_type_totals, chunk_size)
+        )
+
+        logger.info(f"Successfully processed {records_processed:,} records to TileDB as single fragment")
+        return records_processed
+
+    def _generate_chunks(
+        self, coverage_aggregator: defaultdict, global_cell_type_totals: Dict[str, int], chunk_size: int
+    ):
+        def transform_items():
             for (chrom, bin_id, cell_type), count in coverage_aggregator.items():
                 total_coverage = global_cell_type_totals.get(cell_type, 0)
                 normalized_coverage = (
                     (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
                 )
-                yield chrom, bin_id, cell_type, count, total_coverage, normalized_coverage
 
-        coverage_records = generate_coverage_records()
+                yield {
+                    "chrom": chrom,
+                    "bin_id": bin_id,
+                    "cell_type": cell_type,
+                    "coverage": count,
+                    "total_coverage": total_coverage,
+                    "normalized_coverage": normalized_coverage,
+                }
+
+        items = transform_items()
         while True:
-            chunk = list(itertools.islice(coverage_records, chunk_size))
-            array_index += len(chunk)
+            chunk = list(itertools.islice(items, chunk_size))
             if not chunk:
                 break
-            write_range = f"{array_index-len(chunk):,}-{array_index:,}"
-            logger.info(f"Writing {write_range} records to TileDB as single fragment...")
-            self._write_arrays_to_tiledb(array_name, *zip(*chunk, strict=True))
-        return array_index
+            yield chunk
 
-    def _write_arrays_to_tiledb(
+    def _write_chunks_generator_to_tiledb(
         self,
         array_name: str,
-        chroms: np.ndarray,
-        bins: np.ndarray,
-        cell_types: np.ndarray,
-        coverages: np.ndarray,
-        total_coverages: np.ndarray,
-        normalized_coverages: np.ndarray,
-    ) -> None:
-        """Write numpy arrays directly to TileDB for maximum efficiency."""
-        logger.info(f"Writing {len(chroms):,} records to TileDB from numpy arrays...")
+        chunk_generator,
+    ) -> int:
+        records_written = 0
         with tiledb.SparseArray(array_name, mode="w", ctx=self.ctx) as A:
-            A[(chroms, bins, cell_types)] = {
-                "coverage": coverages,
-                "total_coverage": total_coverages,
-                "normalized_coverage": normalized_coverages,
-            }
-        logger.info("Successfully wrote numpy arrays to TileDB")
+            for chunk_idx, chunk_data in enumerate(tqdm(chunk_generator, desc="Writing chunks to TileDB")):
+                chunk_size = len(chunk_data)
+                logger.debug(f"Writing chunk {chunk_idx + 1} ({chunk_size:,} records)...")
+
+                chroms = np.array([record["chrom"] for record in chunk_data], dtype=np.int32)
+                bins = np.array([record["bin_id"] for record in chunk_data], dtype=np.int32)
+                cell_types = np.array([record["cell_type"] for record in chunk_data], dtype=object)
+                coverages = np.array([record["coverage"] for record in chunk_data], dtype=np.int32)
+                total_coverages = np.array([record["total_coverage"] for record in chunk_data], dtype=np.int32)
+                normalized_coverages = np.array(
+                    [record["normalized_coverage"] for record in chunk_data], dtype=np.float32
+                )
+
+                A[(chroms, bins, cell_types)] = {
+                    "coverage": coverages,
+                    "total_coverage": total_coverages,
+                    "normalized_coverage": normalized_coverages,
+                }
+
+                records_written += chunk_size
+                logger.debug(f"Successfully wrote chunk {chunk_idx + 1} of {chunk_size:,} records")
+
+        return records_written
 
     def process_fragment_file(self, obs: pd.DataFrame, array_name: str, uns: Optional[Dict] = None) -> None:
         try:
