@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2025-08-07T14:57:14.007Z", "name": "backend.layers.processing.utils.atac", "message": "Fragment file size: 0.00GB, using 1 processes (memory-limited from 4)", "lineno": 271, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}

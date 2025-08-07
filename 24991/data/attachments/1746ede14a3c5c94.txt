@@ -1,1 +1,0 @@
-Processing directly to arrays:   0%|          | 0/3 [00:00<?, ?records/s]Processing directly to arrays: 100%|██████████| 3/3 [00:00<00:00, 66225.85records/s]

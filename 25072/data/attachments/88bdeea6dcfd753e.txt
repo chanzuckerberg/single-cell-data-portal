@@ -1,0 +1,2 @@
+{"levelname": "INFO", "asctime": "2025-08-07T14:57:13.007Z", "name": "backend.layers.processing.utils.atac", "message": "Processing 4 records with generator-based chunked streaming...", "lineno": 372, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
+{"levelname": "INFO", "asctime": "2025-08-07T14:57:13.007Z", "name": "backend.layers.processing.utils.atac", "message": "Successfully processed 4 records to TileDB as single fragment", "lineno": 378, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
