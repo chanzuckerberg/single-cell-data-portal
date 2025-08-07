@@ -1,3 +1,4 @@
+import itertools
 import logging
 import os
 import tempfile
@@ -9,6 +10,7 @@ import boto3
 import cellxgene_schema.atac_seq as atac_seq
 import numpy as np
 import pandas as pd
+import psutil
 import pysam
 import tiledb
 from tqdm import tqdm
@@ -18,6 +20,42 @@ logger = logging.getLogger(__name__)
 
 BIN_SIZE = 100
 NORMALIZATION_FACTOR = 2_000_000
+
+
+def get_dynamic_chunk_size(memory_factor: float = 0.1, min_chunk_size: int = 100_000, max_chunk_size: int = 50_000_000):
+    """
+    Calculate dynamic chunk size based on available memory.
+
+    Args:
+        memory_factor: Fraction of available memory to use for chunk sizing
+        min_chunk_size: Minimum chunk size regardless of memory
+        max_chunk_size: Maximum chunk size to prevent excessive memory usage
+
+    Returns:
+        Optimal chunk size for the current system
+    """
+    available_memory = psutil.virtual_memory().available
+
+    # Use available memory to be more conservative
+    memory_for_chunks = int(available_memory * memory_factor)
+
+    # Estimate memory per record (for ATAC data):
+    # - chromosome name: ~10 bytes
+    # - bin_id: 8 bytes (int64)
+    # - cell_type: ~20 bytes average
+    # - coverage: 8 bytes (int64)
+    # - total_coverage: 8 bytes (int64)
+    # - normalized_coverage: 8 bytes (float64)
+    # - dict overhead: ~100 bytes
+    # Total: ~162 bytes per record
+    bytes_per_record = 162
+
+    calculated_chunk_size = memory_for_chunks // bytes_per_record
+
+    # Apply min/max constraints
+    chunk_size = max(min_chunk_size, min(calculated_chunk_size, max_chunk_size))
+
+    return chunk_size
 
 
 class ATACDataProcessor:
@@ -342,7 +380,7 @@ class ATACDataProcessor:
             if batch_coverage_aggregator:
                 # Compute totals incrementally to avoid double-pass
                 for key, count in batch_coverage_aggregator.items():
-                    chrom, bin_id, cell_type = key
+                    _, _, cell_type = key
                     global_cell_type_totals[cell_type] += count
                     all_coverage_aggregator[key] += count
             else:
@@ -364,12 +402,17 @@ class ATACDataProcessor:
         coverage_aggregator: defaultdict,
         global_cell_type_totals: Dict[str, int],
         array_name: str,
-        chunk_size: int = 500000,
+        chunk_size: int = None,
     ) -> int:
         """Generator approach: process chunks on-the-fly within single TileDB session."""
 
+        if chunk_size is None:
+            chunk_size = get_dynamic_chunk_size()
+
         total_records = len(coverage_aggregator)
-        logger.info(f"Processing {total_records:,} records with generator-based chunked streaming...")
+        logger.info(
+            f"Processing {total_records:,} records with generator-based chunked streaming (chunk_size: {chunk_size:,})..."
+        )
 
         records_processed = self._write_chunks_generator_to_tiledb(
             array_name, self._generate_chunks(coverage_aggregator, global_cell_type_totals, chunk_size)
@@ -381,14 +424,14 @@ class ATACDataProcessor:
     def _generate_chunks(
         self, coverage_aggregator: defaultdict, global_cell_type_totals: Dict[str, int], chunk_size: int
     ):
-        current_chunk = []
+        def transform_items():
+            for (chrom, bin_id, cell_type), count in coverage_aggregator.items():
+                total_coverage = global_cell_type_totals.get(cell_type, 0)
+                normalized_coverage = (
+                    (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
+                )
 
-        for (chrom, bin_id, cell_type), count in coverage_aggregator.items():
-            total_coverage = global_cell_type_totals.get(cell_type, 0)
-            normalized_coverage = (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
-
-            current_chunk.append(
-                {
+                yield {
                     "chrom": chrom,
                     "bin_id": bin_id,
                     "cell_type": cell_type,
@@ -396,14 +439,13 @@ class ATACDataProcessor:
                     "total_coverage": total_coverage,
                     "normalized_coverage": normalized_coverage,
                 }
-            )
 
-            if len(current_chunk) >= chunk_size:
-                yield current_chunk
-                current_chunk = []
-
-        if current_chunk:
-            yield current_chunk
+        items = transform_items()
+        while True:
+            chunk = list(itertools.islice(items, chunk_size))
+            if not chunk:
+                break
+            yield chunk
 
     def _write_chunks_generator_to_tiledb(
         self,

@@ -29,6 +29,15 @@ from backend.layers.processing.utils.cxg_generation_utils import (
 from backend.layers.processing.utils.matrix_utils import is_matrix_sparse
 
 
+def get_memory_config():
+    """Calculate memory configuration based on available system memory."""
+    total_memory = psutil.virtual_memory().total
+    # Use 70% of available memory, leaving buffer for OS and other processes
+    memory_limit_bytes = int(total_memory * 0.7)
+    memory_limit_gb = memory_limit_bytes // (1024**3)
+    return f"{memory_limit_gb}GB"
+
+
 class H5ADDataFile:
     """
     Class encapsulating required information about an H5AD datafile that ultimately will be transformed into
@@ -140,7 +149,7 @@ class H5ADDataFile:
             {
                 "num_workers": 1,  # a single worker with as many threads as vCPUs is more memory efficient
                 "threads_per_worker": 2,  # match the number of vCPUs
-                "distributed.worker.memory.limit": "28GB",
+                "distributed.worker.memory.limit": get_memory_config(),
                 "scheduler": "threads",
             }
         ):
