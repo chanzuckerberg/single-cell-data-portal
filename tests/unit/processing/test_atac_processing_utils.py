@@ -135,6 +135,9 @@ def mock_tiledb_components(mocker):
     mock_tiledb.BitShuffleFilter.return_value = mocker.MagicMock()
     mock_tiledb.ByteShuffleFilter.return_value = mocker.MagicMock()
     mock_tiledb.DictionaryFilter.return_value = mocker.MagicMock()
+    mock_tiledb.BitWidthReductionFilter.return_value = mocker.MagicMock()  # NEW
+    mock_tiledb.DoubleDeltaFilter.return_value = mocker.MagicMock()        # NEW
+    mock_tiledb.XORFilter.return_value = mocker.MagicMock()                # NEW
     mock_tiledb.ZstdFilter.return_value = mocker.MagicMock()
     mock_tiledb.Domain.return_value = mock_domain
     mock_tiledb.Dim.return_value = mock_dim
@@ -504,7 +507,8 @@ class TestATACDataProcessor:
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         array_name = str(tmp_path / "test_array")
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        # Use min_coverage_threshold=1 to prevent pruning in this memory efficiency test
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), min_coverage_threshold=1)
 
         # Generate larger dataset (1000 records) to test memory efficiency
         coverage_aggregator = defaultdict(int)
@@ -564,7 +568,8 @@ class TestATACDataProcessor:
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         array_name = str(tmp_path / "test_array")
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        # Use threshold of 0 to disable pruning for this edge case test
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), min_coverage_threshold=0)
 
         # Test zero total coverage edge case
         coverage_aggregator = defaultdict(int)
@@ -597,18 +602,22 @@ class TestATACDataProcessor:
 
         processor.create_dataframe_array(array_name, max_chrom, max_bins)
 
-        # Updated assertions for new compression strategy
-        assert mock_tiledb.FilterList.call_count >= 3  # coverage_compression, categorical_compression, dim_filters
-        mock_tiledb.ByteShuffleFilter.assert_called()  # Used in coverage and dimension compression
+        # Updated assertions for advanced compression strategy
+        assert mock_tiledb.FilterList.call_count >= 4  # coverage_int, coverage_float, categorical, dims
+        mock_tiledb.ByteShuffleFilter.assert_called()  # Used in all filter combinations
         mock_tiledb.DictionaryFilter.assert_called_once()  # Used for categorical compression
-        assert mock_tiledb.ZstdFilter.call_count >= 3  # Called for coverage (level=5), categorical (level=19), and dimensions (level=5)
+        mock_tiledb.BitWidthReductionFilter.assert_called()  # NEW: Used for integer compression
+        mock_tiledb.DoubleDeltaFilter.assert_called_once()  # NEW: Used for coordinate compression
+        
+        # Verify ZStd calls with updated compression levels
+        assert mock_tiledb.ZstdFilter.call_count >= 4  # coverage_int (level=6), coverage_float (level=6), categorical (level=22), dims (level=6)
         zstd_calls = mock_tiledb.ZstdFilter.call_args_list
         
         # Verify we have calls with different compression levels
-        level_5_calls = [call for call in zstd_calls if call.kwargs.get("level") == 5]
-        level_19_calls = [call for call in zstd_calls if call.kwargs.get("level") == 19]
-        assert len(level_5_calls) >= 2  # Coverage compression and dimension filters
-        assert len(level_19_calls) == 1  # Categorical compression
+        level_6_calls = [call for call in zstd_calls if call.kwargs.get("level") == 6]
+        level_22_calls = [call for call in zstd_calls if call.kwargs.get("level") == 22]
+        assert len(level_6_calls) >= 3  # coverage_int, coverage_float, and dimension filters
+        assert len(level_22_calls) == 1  # Categorical compression
 
         mock_tiledb.Domain.assert_called_once()
         domain_args = mock_tiledb.Domain.call_args[0]
@@ -1343,24 +1352,28 @@ class TestATACDataProcessor:
         assert processor._local_fragment_index == str(temp_index)
 
     def test__sparse_data_pruning(self, tmp_path):
-        """Test sparse data pruning removes low-coverage records below threshold."""
+        """Test sparse data pruning removes low normalized coverage records below threshold."""
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        # Test with custom threshold
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), min_coverage_threshold=3)
+        # Test with normalized coverage threshold (500000 to prune low values)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), min_coverage_threshold=500000)
         
-        # Create test data with mix of high and low coverage
+        # Create test data with specific coverage values to test normalized pruning
+        # T cell total: 5 + 3 + 1 = 9
+        # B cell total: 10 + 2 = 12  
+        # NK cell total: 1
         coverage_aggregator = defaultdict(int)
         coverage_aggregator.update({
-            # These should be KEPT (≥ threshold of 3)
-            (1, 0, "T cell"): 5,    # Keep
-            (1, 1, "T cell"): 3,    # Keep (exactly at threshold)
-            (2, 0, "B cell"): 10,   # Keep
-            # These should be PRUNED (< threshold of 3)
-            (2, 1, "B cell"): 2,    # Prune
-            (3, 0, "NK cell"): 1,   # Prune  
-            (4, 0, "T cell"): 1,    # Prune
+            # T cell records (total = 9)
+            (1, 0, "T cell"): 5,    # normalized = (5/9)*2000000 ≈ 1111111 (keep)
+            (1, 1, "T cell"): 3,    # normalized = (3/9)*2000000 ≈ 666667 (keep)
+            (4, 0, "T cell"): 1,    # normalized = (1/9)*2000000 ≈ 222222 (prune < 500000)
+            # B cell records (total = 12)
+            (2, 0, "B cell"): 10,   # normalized = (10/12)*2000000 ≈ 1666667 (keep)
+            (2, 1, "B cell"): 2,    # normalized = (2/12)*2000000 ≈ 333333 (prune < 500000)
+            # NK cell records (total = 1) 
+            (3, 0, "NK cell"): 1,   # normalized = (1/1)*2000000 = 2000000 (keep)
         })
         
         cell_type_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator)
@@ -1370,15 +1383,15 @@ class TestATACDataProcessor:
         assert len(chunks) == 1  # Should fit in one chunk
         
         chunk_data = chunks[0]
-        assert len(chunk_data) == 3  # Only 3 records should be kept (≥ 3)
+        assert len(chunk_data) == 4  # Should keep 4 records with normalized coverage ≥ 500000
         
-        # Verify correct records were kept
+        # Verify correct records were kept (those with high normalized coverage)
         kept_coverages = {record["coverage"] for record in chunk_data}
-        assert kept_coverages == {5, 3, 10}  # Only these should remain
+        assert kept_coverages == {5, 3, 10, 1}  # Raw coverage values of kept records (T cell 5&3, B cell 10, NK cell 1)
         
-        # Verify all kept records meet threshold
+        # Verify all kept records meet normalized threshold
         for record in chunk_data:
-            assert record["coverage"] >= processor.min_coverage_threshold
+            assert record["normalized_coverage"] >= processor.min_coverage_threshold
 
     def test__sparse_data_pruning_threshold_zero(self, tmp_path):
         """Test that threshold=0 disables pruning."""

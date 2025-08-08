@@ -63,7 +63,7 @@ class ATACDataProcessor:
         self,
         fragment_artifact_id: Optional[str] = None,
         ctx: Optional[tiledb.Ctx] = None,
-        min_coverage_threshold: int = 2,
+        min_coverage_threshold: float = 0.1,  # Set to 0 to disable pruning entirely
     ) -> None:
         if fragment_artifact_id is not None and not self._file_exists(fragment_artifact_id):
             raise FileNotFoundError(f"Fragment file not found: {fragment_artifact_id}")
@@ -233,22 +233,30 @@ class ATACDataProcessor:
         return max_chrom, chrom_map
 
     def create_dataframe_array(self, array_name: str, max_chrom: int, max_bins: int) -> None:
-        # High-performance compression for coverage data
-        coverage_compression = tiledb.FilterList([
-            tiledb.ByteShuffleFilter(),  # Better than BitShuffle for performance
-            tiledb.ZstdFilter(level=5),  # Higher compression like other genomic data
+        # Advanced compression for integer coverage data
+        coverage_int_compression = tiledb.FilterList([
+            tiledb.BitWidthReductionFilter(),  # NEW: Automatically reduce bit width for small integers
+            tiledb.ByteShuffleFilter(),        # Better than BitShuffle for performance
+            tiledb.ZstdFilter(level=6),        # Slightly higher compression
+        ])
+        
+        # Advanced compression for float data (normalized coverage)
+        coverage_float_compression = tiledb.FilterList([
+            tiledb.ByteShuffleFilter(),
+            tiledb.ZstdFilter(level=6),        # Slightly higher compression
         ])
 
         # Specialized compression for cell types (categorical data)
         categorical_compression = tiledb.FilterList([
-            tiledb.DictionaryFilter(),    # Excellent for repeated cell types
-            tiledb.ZstdFilter(level=19),  # Maximum compression for dictionaries
+            tiledb.DictionaryFilter(),         # Excellent for repeated cell types
+            tiledb.ZstdFilter(level=22),       # Even higher compression for dictionaries
         ])
 
-        # Optimized dimension filters
+        # Advanced dimension filters with coordinate optimization
         dim_filters = tiledb.FilterList([
-            tiledb.ByteShuffleFilter(),
-            tiledb.ZstdFilter(level=5),
+            tiledb.DoubleDeltaFilter(),        # NEW: Excellent for sequential genomic coordinates
+            tiledb.BitWidthReductionFilter(),  # NEW: Reduce coordinate bit width
+            tiledb.ZstdFilter(level=6),        # Higher compression
         ])
 
         # Adaptive tile sizing based on dataset characteristics
@@ -268,25 +276,27 @@ class ATACDataProcessor:
             tiledb.Dim(name="cell_type", dtype="ascii", filters=categorical_compression),
         )
 
-        # Optimized data types for memory efficiency
-        # coverage: uint16 (0-65,535) - covers typical ATAC-seq bin counts with 50% memory reduction  
-        # total_coverage: uint32 (0-4.3B) - handles large sums across genome while reducing memory by ~12%
-        # normalized_coverage: float32 - TileDB doesn't support float16, keeping float32 for precision
-        logger.info("Using optimized data types: uint16 for coverage, uint32 for total_coverage, float32 for normalized_coverage")
+        # Advanced data types with optimized compression filters
+        # coverage: uint16 (0-65,535) with BitWidthReduction + ByteShuffle + ZStd-6
+        # total_coverage: uint32 (0-4.3B) with BitWidthReduction + ByteShuffle + ZStd-6  
+        # normalized_coverage: float32 with ByteShuffle + ZStd-6
+        logger.info("Using advanced compression filters: BitWidthReduction+ByteShuffle+ZStd for integers, "
+                   "DoubleDelta+BitWidthReduction+ZStd for coordinates")
         
         schema = tiledb.ArraySchema(
             domain=domain,
             attrs=[
-                tiledb.Attr(name="coverage", dtype=np.uint16, filters=coverage_compression),
-                tiledb.Attr(name="total_coverage", dtype=np.uint32, filters=coverage_compression),
-                tiledb.Attr(name="normalized_coverage", dtype=np.float32, filters=coverage_compression),
+                tiledb.Attr(name="coverage", dtype=np.uint16, filters=coverage_int_compression),
+                tiledb.Attr(name="total_coverage", dtype=np.uint32, filters=coverage_int_compression),
+                tiledb.Attr(name="normalized_coverage", dtype=np.float32, filters=coverage_float_compression),
             ],
             sparse=True,
             allows_duplicates=False,
         )
         tiledb.SparseArray.create(array_name, schema)
-        logger.info(f"Created TileDB array {array_name} with enhanced compression: "
-                    f"ByteShuffle+ZStd(level=5) for coverage, DictionaryFilter+ZStd(level=19) for cell types")
+        logger.info(f"Created TileDB array {array_name} with advanced filter compression: "
+                    f"BitWidth+ByteShuffle+ZStd(level=6) for coverage, DoubleDelta+BitWidth+ZStd(level=6) for coordinates, "
+                    f"Dictionary+ZStd(level=22) for cell types")
 
     def write_binned_coverage_per_chrom(
         self,
@@ -460,15 +470,15 @@ class ATACDataProcessor:
         filtered_items = []
         
         for (chrom, bin_id, cell_type), count in coverage_aggregator.items():
-            # Apply sparse data pruning - skip bins with coverage below threshold
-            if count < self.min_coverage_threshold:
-                pruned_records += 1
-                continue
-                
             total_coverage = global_cell_type_totals.get(cell_type, 0)
             normalized_coverage = (
                 (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
             )
+            
+            # Apply sparse data pruning - skip bins with normalized coverage below threshold
+            if normalized_coverage < self.min_coverage_threshold:
+                pruned_records += 1
+                continue
 
             filtered_items.append({
                 "chrom": chrom,
@@ -483,7 +493,7 @@ class ATACDataProcessor:
         if total_records > 0:
             pruning_percent = (pruned_records / total_records) * 100
             kept_records = total_records - pruned_records
-            logger.info(f"Sparse data pruning (threshold ≥{self.min_coverage_threshold}): "
+            logger.info(f"Sparse data pruning (normalized coverage threshold ≥{self.min_coverage_threshold}): "
                        f"{pruned_records:,}/{total_records:,} records ({pruning_percent:.1f}%) removed, "
                        f"{kept_records:,} records kept")
         
