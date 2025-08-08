@@ -63,6 +63,7 @@ class ATACDataProcessor:
         self,
         fragment_artifact_id: Optional[str] = None,
         ctx: Optional[tiledb.Ctx] = None,
+        min_coverage_threshold: int = 2,
     ) -> None:
         if fragment_artifact_id is not None and not self._file_exists(fragment_artifact_id):
             raise FileNotFoundError(f"Fragment file not found: {fragment_artifact_id}")
@@ -71,6 +72,7 @@ class ATACDataProcessor:
         self.ctx = ctx
         self.bin_size = BIN_SIZE
         self.normalization_factor = NORMALIZATION_FACTOR
+        self.min_coverage_threshold = min_coverage_threshold
         self._local_fragment_file = None
         self._local_fragment_index = None
 
@@ -452,23 +454,41 @@ class ATACDataProcessor:
     def _generate_chunks(
         self, coverage_aggregator: defaultdict, global_cell_type_totals: Dict[str, int], chunk_size: int
     ):
-        def transform_items():
-            for (chrom, bin_id, cell_type), count in coverage_aggregator.items():
-                total_coverage = global_cell_type_totals.get(cell_type, 0)
-                normalized_coverage = (
-                    (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
-                )
+        # First pass: collect statistics and filter data
+        total_records = len(coverage_aggregator)
+        pruned_records = 0
+        filtered_items = []
+        
+        for (chrom, bin_id, cell_type), count in coverage_aggregator.items():
+            # Apply sparse data pruning - skip bins with coverage below threshold
+            if count < self.min_coverage_threshold:
+                pruned_records += 1
+                continue
+                
+            total_coverage = global_cell_type_totals.get(cell_type, 0)
+            normalized_coverage = (
+                (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
+            )
 
-                yield {
-                    "chrom": chrom,
-                    "bin_id": bin_id,
-                    "cell_type": cell_type,
-                    "coverage": count,
-                    "total_coverage": total_coverage,
-                    "normalized_coverage": normalized_coverage,
-                }
-
-        items = transform_items()
+            filtered_items.append({
+                "chrom": chrom,
+                "bin_id": bin_id,
+                "cell_type": cell_type,
+                "coverage": count,
+                "total_coverage": total_coverage,
+                "normalized_coverage": normalized_coverage,
+            })
+        
+        # Log pruning statistics
+        if total_records > 0:
+            pruning_percent = (pruned_records / total_records) * 100
+            kept_records = total_records - pruned_records
+            logger.info(f"Sparse data pruning (threshold ≥{self.min_coverage_threshold}): "
+                       f"{pruned_records:,}/{total_records:,} records ({pruning_percent:.1f}%) removed, "
+                       f"{kept_records:,} records kept")
+        
+        # Generate chunks from filtered data
+        items = iter(filtered_items)
         while True:
             chunk = list(itertools.islice(items, chunk_size))
             if not chunk:

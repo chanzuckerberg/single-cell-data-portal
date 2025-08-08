@@ -787,7 +787,8 @@ class TestATACDataProcessor:
         subprocess.run(["bgzip", str(uncompressed_file)], check=True, capture_output=True)
         subprocess.run(["tabix", "-p", "bed", str(fragment_file)], check=True, capture_output=True)
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        # Use threshold=1 to ensure test data isn't pruned (coverage values will be 1)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), min_coverage_threshold=1)
 
         array_name = str(tmp_path / "test_array")
         chrom_map = {"chr1": 1}
@@ -1340,3 +1341,66 @@ class TestATACDataProcessor:
         assert not temp_file.exists()
         assert processor._local_fragment_file is None
         assert processor._local_fragment_index == str(temp_index)
+
+    def test__sparse_data_pruning(self, tmp_path):
+        """Test sparse data pruning removes low-coverage records below threshold."""
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        fragment_file.write_text("chr1\t100\t200\tcell1\n")
+
+        # Test with custom threshold
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), min_coverage_threshold=3)
+        
+        # Create test data with mix of high and low coverage
+        coverage_aggregator = defaultdict(int)
+        coverage_aggregator.update({
+            # These should be KEPT (≥ threshold of 3)
+            (1, 0, "T cell"): 5,    # Keep
+            (1, 1, "T cell"): 3,    # Keep (exactly at threshold)
+            (2, 0, "B cell"): 10,   # Keep
+            # These should be PRUNED (< threshold of 3)
+            (2, 1, "B cell"): 2,    # Prune
+            (3, 0, "NK cell"): 1,   # Prune  
+            (4, 0, "T cell"): 1,    # Prune
+        })
+        
+        cell_type_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator)
+        
+        # Generate chunks and verify pruning
+        chunks = list(processor._generate_chunks(coverage_aggregator, cell_type_totals, 1000))
+        assert len(chunks) == 1  # Should fit in one chunk
+        
+        chunk_data = chunks[0]
+        assert len(chunk_data) == 3  # Only 3 records should be kept (≥ 3)
+        
+        # Verify correct records were kept
+        kept_coverages = {record["coverage"] for record in chunk_data}
+        assert kept_coverages == {5, 3, 10}  # Only these should remain
+        
+        # Verify all kept records meet threshold
+        for record in chunk_data:
+            assert record["coverage"] >= processor.min_coverage_threshold
+
+    def test__sparse_data_pruning_threshold_zero(self, tmp_path):
+        """Test that threshold=0 disables pruning."""
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        fragment_file.write_text("chr1\t100\t200\tcell1\n")
+
+        # Test with threshold of 0 (no pruning)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), min_coverage_threshold=0)
+        
+        coverage_aggregator = defaultdict(int)
+        coverage_aggregator.update({
+            (1, 0, "T cell"): 5,
+            (2, 0, "B cell"): 1,    # This should be kept with threshold=0
+            (3, 0, "NK cell"): 0,   # Even 0 coverage should be kept
+        })
+        
+        cell_type_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator)
+        chunks = list(processor._generate_chunks(coverage_aggregator, cell_type_totals, 1000))
+        
+        assert len(chunks) == 1
+        chunk_data = chunks[0] 
+        assert len(chunk_data) == 3  # All records should be kept
+        
+        kept_coverages = {record["coverage"] for record in chunk_data}
+        assert kept_coverages == {5, 1, 0}  # All values should remain
