@@ -249,9 +249,20 @@ class ATACDataProcessor:
             tiledb.ZstdFilter(level=5),
         ])
 
+        # Adaptive tile sizing based on dataset characteristics
+        # For ATAC-seq data, optimize for typical query patterns (1-50kb genomic regions)
+        # Larger datasets benefit from larger tiles for better compression and fewer tile reads
+        # TileDB constraint: tile extent cannot exceed domain range
+        calculated_tile = min(max(max_bins // 1000, 100), 10000)  # Between 100-10K bins
+        optimal_bin_tile = min(calculated_tile, max_bins)  # Cannot exceed domain range
+        genomic_window_kb = (optimal_bin_tile * self.bin_size) // 1000  # Convert to kb for logging
+        
+        logger.info(f"Adaptive tiling: {optimal_bin_tile} bins per tile ({genomic_window_kb}kb genomic windows) "
+                   f"for dataset with {max_bins:,} total bins")
+
         domain = tiledb.Domain(
             tiledb.Dim(name="chrom", domain=(1, max_chrom), tile=1, dtype=np.uint32, filters=dim_filters),
-            tiledb.Dim(name="bin", domain=(0, max_bins), tile=10, dtype=np.uint32, filters=dim_filters),
+            tiledb.Dim(name="bin", domain=(0, max_bins), tile=optimal_bin_tile, dtype=np.uint32, filters=dim_filters),
             tiledb.Dim(name="cell_type", dtype="ascii", filters=categorical_compression),
         )
 

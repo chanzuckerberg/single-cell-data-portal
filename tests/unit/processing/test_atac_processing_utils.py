@@ -625,7 +625,10 @@ class TestATACDataProcessor:
         bin_dim_call = dim_calls[1]
         assert bin_dim_call.kwargs["name"] == "bin"
         assert bin_dim_call.kwargs["domain"] == (0, max_bins)
-        assert bin_dim_call.kwargs["tile"] == 10
+        # Verify adaptive tile sizing: between 100 and 10000, but cannot exceed domain range
+        calculated_tile = min(max(max_bins // 1000, 100), 10000)
+        expected_tile = min(calculated_tile, max_bins)  # Cannot exceed domain range
+        assert bin_dim_call.kwargs["tile"] == expected_tile
         assert bin_dim_call.kwargs["dtype"] == np.uint32
 
         cell_type_dim_call = dim_calls[2]
