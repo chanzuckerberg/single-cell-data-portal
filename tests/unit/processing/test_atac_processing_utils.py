@@ -316,12 +316,12 @@ class TestATACDataProcessor:
         expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
         assert set(df.columns) == set(expected_columns)
 
-        # Check data types - TileDB may use uint32 for dimensions
+        # Check optimized data types - TileDB may use uint32 for dimensions
         assert df["chrom"].dtype in ["int32", "uint32"]
         assert df["bin"].dtype in ["int32", "uint32"]
-        assert df["coverage"].dtype == "int32"
-        assert df["total_coverage"].dtype == "int32"
-        assert df["normalized_coverage"].dtype == "float32"
+        assert df["coverage"].dtype == "uint16"  # Optimized from int32
+        assert df["total_coverage"].dtype == "uint32"  # Optimized from int32  
+        assert df["normalized_coverage"].dtype == "float32"  # TileDB doesn't support float16
         assert df["cell_type"].dtype == "object"
 
         normalization_factor = 2_000_000
@@ -402,9 +402,9 @@ class TestATACDataProcessor:
 
         assert df["chrom"].dtype in ["int32", "uint32"]  # TileDB may use uint32 for dimensions
         assert df["bin"].dtype in ["int32", "uint32"]
-        assert df["coverage"].dtype == "int32"
-        assert df["total_coverage"].dtype == "int32"
-        assert df["normalized_coverage"].dtype == "float32"
+        assert df["coverage"].dtype == "uint16"  # Optimized from int32
+        assert df["total_coverage"].dtype == "uint32"  # Optimized from int32
+        assert df["normalized_coverage"].dtype == "float32"  # TileDB doesn't support float16
         assert df["cell_type"].dtype == "object"  # String columns are object type
 
         expected_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator_data)
@@ -644,13 +644,13 @@ class TestATACDataProcessor:
         assert "normalized_coverage" in attr_names
 
         coverage_attr = next(call for call in attr_calls if call.kwargs["name"] == "coverage")
-        assert coverage_attr.kwargs["dtype"] == np.int32
+        assert coverage_attr.kwargs["dtype"] == np.uint16  # Optimized from int32
 
         total_coverage_attr = next(call for call in attr_calls if call.kwargs["name"] == "total_coverage")
-        assert total_coverage_attr.kwargs["dtype"] == np.int32
+        assert total_coverage_attr.kwargs["dtype"] == np.uint32  # Optimized from int32
 
         normalized_attr = next(call for call in attr_calls if call.kwargs["name"] == "normalized_coverage")
-        assert normalized_attr.kwargs["dtype"] == np.float32
+        assert normalized_attr.kwargs["dtype"] == np.float32  # TileDB doesn't support float16
 
         mock_tiledb.ArraySchema.assert_called_once()
         schema_kwargs = mock_tiledb.ArraySchema.call_args.kwargs
