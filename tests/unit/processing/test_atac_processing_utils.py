@@ -10,7 +10,6 @@ import tiledb
 from backend.layers.processing.utils.atac import ATACDataProcessor
 
 
-# Parametrized fixtures and test data
 @pytest.fixture(
     params=[
         {"cell1": "T cell", "cell2": "B cell", "cell3": "NK cell"},
@@ -36,13 +35,11 @@ def organism_genome_pair(request):
 
 @pytest.fixture(
     params=[
-        # Small coverage aggregator
         {
             (1, 0, "T cell"): 5,
             (1, 1, "T cell"): 3,
             (2, 0, "B cell"): 4,
         },
-        # Multi-cell type coverage
         {
             (1, 0, "T cell"): 10,
             (1, 1, "T cell"): 20,
@@ -50,7 +47,6 @@ def organism_genome_pair(request):
             (2, 1, "B cell"): 50,
             (3, 0, "NK cell"): 15,
         },
-        # Single cell type
         {
             (1, 0, "T cell"): 100,
             (1, 1, "T cell"): 200,
@@ -67,12 +63,10 @@ def coverage_aggregator_data(request):
 
 @pytest.fixture(
     params=[
-        # Valid coordinates
         ("chr1\t100\t200\tcell1", 100, 199, 1, 1),
         ("chr1\t0\t99\tcell1", 0, 99, 0, 0),
         ("chr1\t199\t300\tcell1", 199, 299, 1, 2),
         ("chr1\t250\t350\tcell1", 250, 349, 2, 3),
-        # Edge cases
         ("chr1\t99\t100\tcell1", 99, 99, 0, 0),
     ]
 )
@@ -122,30 +116,25 @@ def mock_tiledb_components(mocker):
     """Fixture that provides mocked TileDB components for testing."""
     mock_tiledb = mocker.patch("backend.layers.processing.utils.atac.tiledb")
 
-    # Create mock objects
     mock_filter_list = mocker.MagicMock()
     mock_domain = mocker.MagicMock()
     mock_dim = mocker.MagicMock()
     mock_attr = mocker.MagicMock()
     mock_schema = mocker.MagicMock()
     mock_array = mocker.MagicMock()
-
-    # Configure mock returns
     mock_tiledb.FilterList.return_value = mock_filter_list
     mock_tiledb.BitShuffleFilter.return_value = mocker.MagicMock()
     mock_tiledb.ByteShuffleFilter.return_value = mocker.MagicMock()
     mock_tiledb.DictionaryFilter.return_value = mocker.MagicMock()
-    mock_tiledb.BitWidthReductionFilter.return_value = mocker.MagicMock()  # NEW
-    mock_tiledb.DoubleDeltaFilter.return_value = mocker.MagicMock()        # NEW
-    mock_tiledb.XORFilter.return_value = mocker.MagicMock()                # NEW
+    mock_tiledb.BitWidthReductionFilter.return_value = mocker.MagicMock()
+    mock_tiledb.DoubleDeltaFilter.return_value = mocker.MagicMock()
+    mock_tiledb.XORFilter.return_value = mocker.MagicMock()
     mock_tiledb.ZstdFilter.return_value = mocker.MagicMock()
     mock_tiledb.Domain.return_value = mock_domain
     mock_tiledb.Dim.return_value = mock_dim
     mock_tiledb.Attr.return_value = mock_attr
     mock_tiledb.ArraySchema.return_value = mock_schema
     mock_tiledb.SparseArray.create = mocker.MagicMock()
-
-    # Configure array for writing
     mock_array.__setitem__ = mocker.MagicMock()
     mock_tiledb.SparseArray.return_value.__enter__.return_value = mock_array
 
@@ -296,9 +285,9 @@ class TestATACDataProcessor:
         coverage_aggregator = defaultdict(int)
         coverage_aggregator.update(
             {
-                (1, 0, "T cell"): 10,  # T cell total will be 30
+                (1, 0, "T cell"): 10,
                 (1, 1, "T cell"): 20,
-                (2, 0, "B cell"): 50,  # B cell total will be 100
+                (2, 0, "B cell"): 50,
                 (2, 1, "B cell"): 50,
             }
         )
@@ -319,12 +308,11 @@ class TestATACDataProcessor:
         expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
         assert set(df.columns) == set(expected_columns)
 
-        # Check optimized data types - TileDB may use uint32 for dimensions
         assert df["chrom"].dtype in ["int32", "uint32"]
         assert df["bin"].dtype in ["int32", "uint32"]
-        assert df["coverage"].dtype == "uint16"  # Optimized from int32
-        assert df["total_coverage"].dtype == "uint32"  # Optimized from int32  
-        assert df["normalized_coverage"].dtype == "float32"  # TileDB doesn't support float16
+        assert df["coverage"].dtype == "uint16"
+        assert df["total_coverage"].dtype == "uint32"
+        assert df["normalized_coverage"].dtype == "float32"
         assert df["cell_type"].dtype == "object"
 
         normalization_factor = 2_000_000
@@ -432,23 +420,16 @@ class TestATACDataProcessor:
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         coverage_aggregator = defaultdict(int)
-        # Compute cell type totals using helper method
         cell_type_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator)
 
-        # Create TileDB array for testing
         processor.create_dataframe_array(array_name, 1, 10)
-
-        # Stream empty data to TileDB
         total_written = processor._stream_coverage_chunks_to_tiledb(coverage_aggregator, cell_type_totals, array_name)
 
         assert total_written == 0
 
-        # Read back from TileDB to verify empty array
-
         with tiledb.SparseArray(array_name, mode="r", ctx=processor.ctx) as A:
             df_data = A.df[:]
 
-        # Convert to DataFrame for easier testing
         df = pd.DataFrame(df_data)
         assert len(df) == 0
         expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
@@ -592,7 +573,8 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        # Disable quantization for this test to check float32 dtype
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_quantization=False)
         mock_tiledb = mock_tiledb_components["tiledb"]
 
         array_name = str(tmp_path / "test_array")
@@ -602,26 +584,23 @@ class TestATACDataProcessor:
 
         processor.create_dataframe_array(array_name, max_chrom, max_bins)
 
-        # Updated assertions for advanced compression strategy
-        assert mock_tiledb.FilterList.call_count >= 4  # coverage_int, coverage_float, categorical, dims
-        mock_tiledb.ByteShuffleFilter.assert_called()  # Used in all filter combinations
-        mock_tiledb.DictionaryFilter.assert_called_once()  # Used for categorical compression
-        mock_tiledb.BitWidthReductionFilter.assert_called()  # NEW: Used for integer compression
-        mock_tiledb.DoubleDeltaFilter.assert_called_once()  # NEW: Used for coordinate compression
+        assert mock_tiledb.FilterList.call_count >= 4
+        mock_tiledb.ByteShuffleFilter.assert_called()
+        mock_tiledb.DictionaryFilter.assert_called_once()
+        mock_tiledb.BitWidthReductionFilter.assert_called()
+        mock_tiledb.DoubleDeltaFilter.assert_called_once()
         
-        # Verify ZStd calls with updated compression levels
-        assert mock_tiledb.ZstdFilter.call_count >= 4  # coverage_int (level=6), coverage_float (level=6), categorical (level=22), dims (level=6)
+        assert mock_tiledb.ZstdFilter.call_count >= 4
         zstd_calls = mock_tiledb.ZstdFilter.call_args_list
         
-        # Verify we have calls with different compression levels
         level_6_calls = [call for call in zstd_calls if call.kwargs.get("level") == 6]
         level_22_calls = [call for call in zstd_calls if call.kwargs.get("level") == 22]
-        assert len(level_6_calls) >= 3  # coverage_int, coverage_float, and dimension filters
-        assert len(level_22_calls) == 1  # Categorical compression
+        assert len(level_6_calls) >= 3
+        assert len(level_22_calls) == 1
 
         mock_tiledb.Domain.assert_called_once()
         domain_args = mock_tiledb.Domain.call_args[0]
-        assert len(domain_args) == 3  # chrom, bin, cell_type dimensions
+        assert len(domain_args) == 3
         dim_calls = mock_tiledb.Dim.call_args_list
         assert len(dim_calls) == 3
 
@@ -653,13 +632,13 @@ class TestATACDataProcessor:
         assert "normalized_coverage" in attr_names
 
         coverage_attr = next(call for call in attr_calls if call.kwargs["name"] == "coverage")
-        assert coverage_attr.kwargs["dtype"] == np.uint16  # Optimized from int32
+        assert coverage_attr.kwargs["dtype"] == np.uint16
 
         total_coverage_attr = next(call for call in attr_calls if call.kwargs["name"] == "total_coverage")
-        assert total_coverage_attr.kwargs["dtype"] == np.uint32  # Optimized from int32
+        assert total_coverage_attr.kwargs["dtype"] == np.uint32
 
         normalized_attr = next(call for call in attr_calls if call.kwargs["name"] == "normalized_coverage")
-        assert normalized_attr.kwargs["dtype"] == np.float32  # TileDB doesn't support float16
+        assert normalized_attr.kwargs["dtype"] == np.float32
 
         mock_tiledb.ArraySchema.assert_called_once()
         schema_kwargs = mock_tiledb.ArraySchema.call_args.kwargs
@@ -1356,8 +1335,8 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        # Test with normalized coverage threshold (500000 to prune low values)
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), min_coverage_threshold=500000)
+        # Test with normalized coverage threshold (500000 to prune low values), disable quantization for this test
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), min_coverage_threshold=500000, enable_quantization=False)
         
         # Create test data with specific coverage values to test normalized pruning
         # T cell total: 5 + 3 + 1 = 9
