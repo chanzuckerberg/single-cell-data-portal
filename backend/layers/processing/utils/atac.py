@@ -231,32 +231,43 @@ class ATACDataProcessor:
         return max_chrom, chrom_map
 
     def create_dataframe_array(self, array_name: str, max_chrom: int, max_bins: int) -> None:
-        compression = tiledb.FilterList(
-            [
-                tiledb.BitShuffleFilter(),
-                tiledb.ZstdFilter(level=3),
-            ]
-        )
+        # High-performance compression for coverage data
+        coverage_compression = tiledb.FilterList([
+            tiledb.ByteShuffleFilter(),  # Better than BitShuffle for performance
+            tiledb.ZstdFilter(level=5),  # Higher compression like other genomic data
+        ])
 
-        dim_filters = tiledb.FilterList([tiledb.ZstdFilter(level=3)])
+        # Specialized compression for cell types (categorical data)
+        categorical_compression = tiledb.FilterList([
+            tiledb.DictionaryFilter(),    # Excellent for repeated cell types
+            tiledb.ZstdFilter(level=19),  # Maximum compression for dictionaries
+        ])
+
+        # Optimized dimension filters
+        dim_filters = tiledb.FilterList([
+            tiledb.ByteShuffleFilter(),
+            tiledb.ZstdFilter(level=5),
+        ])
 
         domain = tiledb.Domain(
             tiledb.Dim(name="chrom", domain=(1, max_chrom), tile=1, dtype=np.uint32, filters=dim_filters),
             tiledb.Dim(name="bin", domain=(0, max_bins), tile=10, dtype=np.uint32, filters=dim_filters),
-            tiledb.Dim(name="cell_type", dtype="ascii", filters=dim_filters),
+            tiledb.Dim(name="cell_type", dtype="ascii", filters=categorical_compression),
         )
 
         schema = tiledb.ArraySchema(
             domain=domain,
             attrs=[
-                tiledb.Attr(name="coverage", dtype=np.int32, filters=compression),
-                tiledb.Attr(name="total_coverage", dtype=np.int32, filters=compression),
-                tiledb.Attr(name="normalized_coverage", dtype=np.float32, filters=compression),
+                tiledb.Attr(name="coverage", dtype=np.int32, filters=coverage_compression),
+                tiledb.Attr(name="total_coverage", dtype=np.int32, filters=coverage_compression),
+                tiledb.Attr(name="normalized_coverage", dtype=np.float32, filters=coverage_compression),
             ],
             sparse=True,
             allows_duplicates=False,
         )
         tiledb.SparseArray.create(array_name, schema)
+        logger.info(f"Created TileDB array {array_name} with enhanced compression: "
+                    f"ByteShuffle+ZStd(level=5) for coverage, DictionaryFilter+ZStd(level=19) for cell types")
 
     def write_binned_coverage_per_chrom(
         self,

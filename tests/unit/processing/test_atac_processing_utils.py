@@ -133,6 +133,8 @@ def mock_tiledb_components(mocker):
     # Configure mock returns
     mock_tiledb.FilterList.return_value = mock_filter_list
     mock_tiledb.BitShuffleFilter.return_value = mocker.MagicMock()
+    mock_tiledb.ByteShuffleFilter.return_value = mocker.MagicMock()
+    mock_tiledb.DictionaryFilter.return_value = mocker.MagicMock()
     mock_tiledb.ZstdFilter.return_value = mocker.MagicMock()
     mock_tiledb.Domain.return_value = mock_domain
     mock_tiledb.Dim.return_value = mock_dim
@@ -595,14 +597,18 @@ class TestATACDataProcessor:
 
         processor.create_dataframe_array(array_name, max_chrom, max_bins)
 
-        assert mock_tiledb.FilterList.call_count >= 2  # One for compression, one for dimensions
-        mock_tiledb.BitShuffleFilter.assert_called_once()
-        assert mock_tiledb.ZstdFilter.call_count >= 1  # Called for both compression and dimensions
+        # Updated assertions for new compression strategy
+        assert mock_tiledb.FilterList.call_count >= 3  # coverage_compression, categorical_compression, dim_filters
+        mock_tiledb.ByteShuffleFilter.assert_called()  # Used in coverage and dimension compression
+        mock_tiledb.DictionaryFilter.assert_called_once()  # Used for categorical compression
+        assert mock_tiledb.ZstdFilter.call_count >= 3  # Called for coverage (level=5), categorical (level=19), and dimensions (level=5)
         zstd_calls = mock_tiledb.ZstdFilter.call_args_list
-        compression_call = next(
-            (call for call in zstd_calls if call.kwargs.get("level") == expected_compression_level), None
-        )
-        assert compression_call is not None
+        
+        # Verify we have calls with different compression levels
+        level_5_calls = [call for call in zstd_calls if call.kwargs.get("level") == 5]
+        level_19_calls = [call for call in zstd_calls if call.kwargs.get("level") == 19]
+        assert len(level_5_calls) >= 2  # Coverage compression and dimension filters
+        assert len(level_19_calls) == 1  # Categorical compression
 
         mock_tiledb.Domain.assert_called_once()
         domain_args = mock_tiledb.Domain.call_args[0]
