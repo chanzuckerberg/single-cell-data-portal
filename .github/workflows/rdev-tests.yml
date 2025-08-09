@@ -27,13 +27,13 @@ jobs:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
       # TODO: Wait until the deployment is complete and return 200 responses from the version endpoint.
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.13"
       - name: Run functional test
         run: |
           pip3 install -r tests/functional/requirements.txt
@@ -49,12 +49,12 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.13"
       - name: Seed database for e2e tests
         run: |
           pip3 install -r scripts/smoke_tests/requirements.txt
@@ -79,7 +79,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v4
         with:
-          node-version: "20.10.0"
+          node-version: "22.18.0"
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -157,17 +157,17 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
-          node-version: "20.10.0"
+          node-version: "22.18.0"
       - name: Install dependencies
         run: npm ci
 
       - name: Download blob reports from GitHub Actions Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: all-blob-reports-*
           path: frontend/blob-reports
@@ -214,8 +214,8 @@ jobs:
     steps:
       - uses: actions/setup-node@v4
         with:
-          node-version: "20.10.0"
-      - uses: actions/checkout@v3
+          node-version: "22.18.0"
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 2
       - name: Configure AWS Credentials
