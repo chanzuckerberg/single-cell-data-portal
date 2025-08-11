@@ -1,0 +1,1 @@
+INFO     backend.layers.processing.utils.atac:atac.py:552 Sparse data pruning (normalized coverage threshold ≥500000): 2/6 records (33.3%) removed, 4 records kept
