@@ -64,7 +64,7 @@ class ATACDataProcessor:
         fragment_artifact_id: Optional[str] = None,
         ctx: Optional[tiledb.Ctx] = None,
         min_coverage_threshold: float = 0.1,  # Set to 0 to disable pruning entirely
-        enable_quantization: bool = True,    # Enable normalized coverage quantization for better compression
+        enable_quantization: bool = True,  # Enable normalized coverage quantization for better compression
     ) -> None:
         if fragment_artifact_id is not None and not self._file_exists(fragment_artifact_id):
             raise FileNotFoundError(f"Fragment file not found: {fragment_artifact_id}")
@@ -81,38 +81,38 @@ class ATACDataProcessor:
     def _quantize_normalized_coverage(self, normalized_coverage: float) -> int:
         """
         Quantize normalized coverage to uint8 for better compression.
-        
+
         Uses linear quantization mapping 0-10 range to 0-255 (uint8).
         Precision: ~0.04 units, Mean error: ~0.02 units.
         Provides ~6x total compression improvement.
-        
+
         Args:
             normalized_coverage: Float value to quantize
-            
+
         Returns:
             Quantized integer value (0-255)
         """
         if not self.enable_quantization:
             return normalized_coverage
-            
+
         # Linear quantization: 0-10 range -> 0-255 (uint8)
         # Clip extreme values to prevent overflow
         quantized = np.clip(normalized_coverage * 25.5, 0, 255)
         return int(quantized)
-    
+
     def _dequantize_normalized_coverage(self, quantized_value: int) -> float:
         """
         Convert quantized uint8 back to normalized coverage.
-        
+
         Args:
             quantized_value: Quantized integer (0-255)
-            
+
         Returns:
             Reconstructed float value
         """
         if not self.enable_quantization:
             return float(quantized_value)
-            
+
         # Reverse linear quantization: 0-255 -> 0-10 range
         return quantized_value / 25.5
 
@@ -273,35 +273,45 @@ class ATACDataProcessor:
         return max_chrom, chrom_map
 
     def create_dataframe_array(self, array_name: str, max_chrom: int, max_bins: int) -> None:
-        coverage_int_compression = tiledb.FilterList([
-            tiledb.BitWidthReductionFilter(),
-            tiledb.ByteShuffleFilter(),
-            tiledb.ZstdFilter(level=6),
-        ])
-        
-        coverage_float_compression = tiledb.FilterList([
-            tiledb.ByteShuffleFilter(),
-            tiledb.ZstdFilter(level=6),
-        ])
+        coverage_int_compression = tiledb.FilterList(
+            [
+                tiledb.BitWidthReductionFilter(),
+                tiledb.ByteShuffleFilter(),
+                tiledb.ZstdFilter(level=6),
+            ]
+        )
 
-        categorical_compression = tiledb.FilterList([
-            tiledb.DictionaryFilter(),
-            tiledb.ZstdFilter(level=22),
-        ])
+        coverage_float_compression = tiledb.FilterList(
+            [
+                tiledb.ByteShuffleFilter(),
+                tiledb.ZstdFilter(level=6),
+            ]
+        )
 
-        dim_filters = tiledb.FilterList([
-            tiledb.DoubleDeltaFilter(),
-            tiledb.BitWidthReductionFilter(),
-            tiledb.ZstdFilter(level=6),
-        ])
+        categorical_compression = tiledb.FilterList(
+            [
+                tiledb.DictionaryFilter(),
+                tiledb.ZstdFilter(level=22),
+            ]
+        )
+
+        dim_filters = tiledb.FilterList(
+            [
+                tiledb.DoubleDeltaFilter(),
+                tiledb.BitWidthReductionFilter(),
+                tiledb.ZstdFilter(level=6),
+            ]
+        )
 
         # Adaptive tile sizing: optimize for dataset size and query patterns
         calculated_tile = min(max(max_bins // 1000, 100), 10000)
         optimal_bin_tile = min(calculated_tile, max_bins)
         genomic_window_kb = (optimal_bin_tile * self.bin_size) // 1000
-        
-        logger.info(f"Adaptive tiling: {optimal_bin_tile} bins per tile ({genomic_window_kb}kb genomic windows) "
-                   f"for dataset with {max_bins:,} total bins")
+
+        logger.info(
+            f"Adaptive tiling: {optimal_bin_tile} bins per tile ({genomic_window_kb}kb genomic windows) "
+            f"for dataset with {max_bins:,} total bins"
+        )
 
         domain = tiledb.Domain(
             tiledb.Dim(name="chrom", domain=(1, max_chrom), tile=1, dtype=np.uint32, filters=dim_filters),
@@ -309,9 +319,11 @@ class ATACDataProcessor:
             tiledb.Dim(name="cell_type", dtype="ascii", filters=categorical_compression),
         )
 
-        logger.info("Using advanced compression filters: BitWidthReduction+ByteShuffle+ZStd for integers, "
-                   "DoubleDelta+BitWidthReduction+ZStd for coordinates")
-        
+        logger.info(
+            "Using advanced compression filters: BitWidthReduction+ByteShuffle+ZStd for integers, "
+            "DoubleDelta+BitWidthReduction+ZStd for coordinates"
+        )
+
         # Choose storage type based on quantization setting
         if self.enable_quantization:
             normalized_dtype = np.uint8
@@ -320,7 +332,7 @@ class ATACDataProcessor:
         else:
             normalized_dtype = np.float32
             normalized_filters = coverage_float_compression
-        
+
         schema = tiledb.ArraySchema(
             domain=domain,
             attrs=[
@@ -332,9 +344,11 @@ class ATACDataProcessor:
             allows_duplicates=False,
         )
         tiledb.SparseArray.create(array_name, schema)
-        logger.info(f"Created TileDB array {array_name} with advanced filter compression: "
-                    f"BitWidth+ByteShuffle+ZStd(level=6) for coverage, DoubleDelta+BitWidth+ZStd(level=6) for coordinates, "
-                    f"Dictionary+ZStd(level=22) for cell types")
+        logger.info(
+            f"Created TileDB array {array_name} with advanced filter compression: "
+            f"BitWidth+ByteShuffle+ZStd(level=6) for coverage, DoubleDelta+BitWidth+ZStd(level=6) for coordinates, "
+            f"Dictionary+ZStd(level=22) for cell types"
+        )
 
     def write_binned_coverage_per_chrom(
         self,
@@ -505,13 +519,11 @@ class ATACDataProcessor:
         total_records = len(coverage_aggregator)
         pruned_records = 0
         filtered_items = []
-        
+
         for (chrom, bin_id, cell_type), count in coverage_aggregator.items():
             total_coverage = global_cell_type_totals.get(cell_type, 0)
-            normalized_coverage = (
-                (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
-            )
-            
+            normalized_coverage = (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
+
             # Apply sparse data pruning - skip bins with normalized coverage below threshold
             if normalized_coverage < self.min_coverage_threshold:
                 pruned_records += 1
@@ -522,23 +534,27 @@ class ATACDataProcessor:
             else:
                 stored_normalized_coverage = normalized_coverage
 
-            filtered_items.append({
-                "chrom": chrom,
-                "bin_id": bin_id,
-                "cell_type": cell_type,
-                "coverage": count,
-                "total_coverage": total_coverage,
-                "normalized_coverage": stored_normalized_coverage,
-            })
-        
+            filtered_items.append(
+                {
+                    "chrom": chrom,
+                    "bin_id": bin_id,
+                    "cell_type": cell_type,
+                    "coverage": count,
+                    "total_coverage": total_coverage,
+                    "normalized_coverage": stored_normalized_coverage,
+                }
+            )
+
         # Log pruning statistics
         if total_records > 0:
             pruning_percent = (pruned_records / total_records) * 100
             kept_records = total_records - pruned_records
-            logger.info(f"Sparse data pruning (normalized coverage threshold ≥{self.min_coverage_threshold}): "
-                       f"{pruned_records:,}/{total_records:,} records ({pruning_percent:.1f}%) removed, "
-                       f"{kept_records:,} records kept")
-        
+            logger.info(
+                f"Sparse data pruning (normalized coverage threshold ≥{self.min_coverage_threshold}): "
+                f"{pruned_records:,}/{total_records:,} records ({pruning_percent:.1f}%) removed, "
+                f"{kept_records:,} records kept"
+            )
+
         items = iter(filtered_items)
         while True:
             chunk = list(itertools.islice(items, chunk_size))
@@ -560,27 +576,31 @@ class ATACDataProcessor:
                 chroms = np.array([record["chrom"] for record in chunk_data], dtype=np.int32)
                 bins = np.array([record["bin_id"] for record in chunk_data], dtype=np.int32)
                 cell_types = np.array([record["cell_type"] for record in chunk_data], dtype=object)
-                
+
                 # Apply optimized data types with overflow protection
                 coverage_values = [record["coverage"] for record in chunk_data]
                 total_coverage_values = [record["total_coverage"] for record in chunk_data]
                 normalized_coverage_values = [record["normalized_coverage"] for record in chunk_data]
-                
+
                 # Check for potential overflows and log warnings
                 max_coverage = max(coverage_values) if coverage_values else 0
                 max_total_coverage = max(total_coverage_values) if total_coverage_values else 0
-                
+
                 if max_coverage > 65535:  # uint16 max
-                    logger.warning(f"Coverage value {max_coverage} exceeds uint16 range (65535), clipping to prevent overflow")
+                    logger.warning(
+                        f"Coverage value {max_coverage} exceeds uint16 range (65535), clipping to prevent overflow"
+                    )
                     coverage_values = [min(val, 65535) for val in coverage_values]
-                
-                if max_total_coverage > 4294967295:  # uint32 max  
-                    logger.warning(f"Total coverage value {max_total_coverage} exceeds uint32 range (4.3B), clipping to prevent overflow")
+
+                if max_total_coverage > 4294967295:  # uint32 max
+                    logger.warning(
+                        f"Total coverage value {max_total_coverage} exceeds uint32 range (4.3B), clipping to prevent overflow"
+                    )
                     total_coverage_values = [min(val, 4294967295) for val in total_coverage_values]
-                
+
                 coverages = np.array(coverage_values, dtype=np.uint16)
                 total_coverages = np.array(total_coverage_values, dtype=np.uint32)
-                
+
                 if self.enable_quantization:
                     normalized_coverages = np.array(normalized_coverage_values, dtype=np.uint8)
                 else:
