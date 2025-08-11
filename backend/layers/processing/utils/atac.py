@@ -1,4 +1,3 @@
-import itertools
 import logging
 import os
 import tempfile
@@ -99,22 +98,6 @@ class ATACDataProcessor:
         # Clip extreme values to prevent overflow
         quantized = np.clip(normalized_coverage * 25.5, 0, 255)
         return int(quantized)
-
-    def _dequantize_normalized_coverage(self, quantized_value: int) -> float:
-        """
-        Convert quantized uint8 back to normalized coverage.
-
-        Args:
-            quantized_value: Quantized integer (0-255)
-
-        Returns:
-            Reconstructed float value
-        """
-        if not self.enable_quantization:
-            return float(quantized_value)
-
-        # Reverse linear quantization: 0-255 -> 0-10 range
-        return quantized_value / 25.5
 
     def _file_exists(self, file_path: str) -> bool:
         if file_path.startswith("s3://"):
@@ -518,7 +501,8 @@ class ATACDataProcessor:
     ):
         total_records = len(coverage_aggregator)
         pruned_records = 0
-        filtered_items = []
+        kept_records = 0
+        current_chunk = []
 
         for (chrom, bin_id, cell_type), count in coverage_aggregator.items():
             total_coverage = global_cell_type_totals.get(cell_type, 0)
@@ -534,33 +518,35 @@ class ATACDataProcessor:
             else:
                 stored_normalized_coverage = normalized_coverage
 
-            filtered_items.append(
-                {
-                    "chrom": chrom,
-                    "bin_id": bin_id,
-                    "cell_type": cell_type,
-                    "coverage": count,
-                    "total_coverage": total_coverage,
-                    "normalized_coverage": stored_normalized_coverage,
-                }
-            )
+            record = {
+                "chrom": chrom,
+                "bin_id": bin_id,
+                "cell_type": cell_type,
+                "coverage": count,
+                "total_coverage": total_coverage,
+                "normalized_coverage": stored_normalized_coverage,
+            }
+
+            current_chunk.append(record)
+            kept_records += 1
+
+            # Yield chunk when it reaches the desired size
+            if len(current_chunk) >= chunk_size:
+                yield current_chunk
+                current_chunk = []
+
+        # Yield any remaining records in the final chunk
+        if current_chunk:
+            yield current_chunk
 
         # Log pruning statistics
         if total_records > 0:
             pruning_percent = (pruned_records / total_records) * 100
-            kept_records = total_records - pruned_records
             logger.info(
                 f"Sparse data pruning (normalized coverage threshold ≥{self.min_coverage_threshold}): "
                 f"{pruned_records:,}/{total_records:,} records ({pruning_percent:.1f}%) removed, "
                 f"{kept_records:,} records kept"
             )
-
-        items = iter(filtered_items)
-        while True:
-            chunk = list(itertools.islice(items, chunk_size))
-            if not chunk:
-                break
-            yield chunk
 
     def _write_chunks_generator_to_tiledb(
         self,
