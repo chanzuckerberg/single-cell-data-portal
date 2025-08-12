@@ -63,7 +63,7 @@ class ATACDataProcessor:
         fragment_artifact_id: Optional[str] = None,
         ctx: Optional[tiledb.Ctx] = None,
         min_coverage_threshold: float = 0.1,  # Set to 0 to disable pruning entirely
-        enable_quantization: bool = True,  # Enable normalized coverage quantization for better compression
+        enable_quantization: bool = True,
     ) -> None:
         if fragment_artifact_id is not None and not self._file_exists(fragment_artifact_id):
             raise FileNotFoundError(f"Fragment file not found: {fragment_artifact_id}")
@@ -286,7 +286,7 @@ class ATACDataProcessor:
             ]
         )
 
-        # Adaptive tile sizing: optimize for dataset size and query patterns
+        # Adaptive tile sizing optimized for dataset size
         calculated_tile = min(max(max_bins // 1000, 100), 10000)
         optimal_bin_tile = min(calculated_tile, max_bins)
         genomic_window_kb = (optimal_bin_tile * self.bin_size) // 1000
@@ -307,7 +307,6 @@ class ATACDataProcessor:
             "DoubleDelta+BitWidthReduction+ZStd for coordinates"
         )
 
-        # Choose storage type based on quantization setting
         if self.enable_quantization:
             normalized_dtype = np.uint8
             normalized_filters = coverage_int_compression
@@ -508,7 +507,6 @@ class ATACDataProcessor:
             total_coverage = global_cell_type_totals.get(cell_type, 0)
             normalized_coverage = (count / total_coverage) * self.normalization_factor if total_coverage > 0 else 0.0
 
-            # Apply sparse data pruning - skip bins with normalized coverage below threshold
             if normalized_coverage < self.min_coverage_threshold:
                 pruned_records += 1
                 continue
@@ -530,16 +528,13 @@ class ATACDataProcessor:
             current_chunk.append(record)
             kept_records += 1
 
-            # Yield chunk when it reaches the desired size
             if len(current_chunk) >= chunk_size:
                 yield current_chunk
                 current_chunk = []
 
-        # Yield any remaining records in the final chunk
         if current_chunk:
             yield current_chunk
 
-        # Log pruning statistics
         if total_records > 0:
             pruning_percent = (pruned_records / total_records) * 100
             logger.info(
@@ -563,22 +558,20 @@ class ATACDataProcessor:
                 bins = np.array([record["bin_id"] for record in chunk_data], dtype=np.int32)
                 cell_types = np.array([record["cell_type"] for record in chunk_data], dtype=object)
 
-                # Apply optimized data types with overflow protection
                 coverage_values = [record["coverage"] for record in chunk_data]
                 total_coverage_values = [record["total_coverage"] for record in chunk_data]
                 normalized_coverage_values = [record["normalized_coverage"] for record in chunk_data]
 
-                # Check for potential overflows and log warnings
                 max_coverage = max(coverage_values) if coverage_values else 0
                 max_total_coverage = max(total_coverage_values) if total_coverage_values else 0
 
-                if max_coverage > 65535:  # uint16 max
+                if max_coverage > 65535:
                     logger.warning(
                         f"Coverage value {max_coverage} exceeds uint16 range (65535), clipping to prevent overflow"
                     )
                     coverage_values = [min(val, 65535) for val in coverage_values]
 
-                if max_total_coverage > 4294967295:  # uint32 max
+                if max_total_coverage > 4294967295:
                     logger.warning(
                         f"Total coverage value {max_total_coverage} exceeds uint32 range (4.3B), clipping to prevent overflow"
                     )
