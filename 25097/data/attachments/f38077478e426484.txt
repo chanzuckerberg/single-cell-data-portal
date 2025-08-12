@@ -1,0 +1,44 @@
+INFO     backend.layers.processing.utils.atac:atac.py:483 Starting ATAC fragment processing for array: /tmp/pytest-of-root/pytest-0/test__process_fragment_file_in0/test_array
+INFO     backend.layers.processing.utils.atac:atac.py:492 Creating TileDB array with 47 chromosomes and 2489564 max bins
+INFO     backend.layers.processing.utils.atac:atac.py:495 Processing 47 chromosomes with 2 valid barcodes
+INFO     backend.layers.processing.utils.atac:atac.py:273 Using batch processing for 47 chromosomes with batch size 4
+INFO     backend.layers.processing.utils.atac:atac.py:365 Processing 47 chromosomes in 12 batches
+INFO     backend.layers.processing.utils.atac:atac.py:367 Processing chromosomes with single-pass totals computation...
+INFO     backend.layers.processing.utils.atac:atac.py:371 Processing batch 1/12 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:309 Fragment file size: 0.00GB, using 4 processes (memory-limited from 4)
+INFO     backend.layers.processing.utils.atac:atac.py:371 Processing batch 2/12 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:309 Fragment file size: 0.00GB, using 4 processes (memory-limited from 4)
+INFO     backend.layers.processing.utils.atac:atac.py:387 Batch 2 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:371 Processing batch 3/12 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:309 Fragment file size: 0.00GB, using 4 processes (memory-limited from 4)
+INFO     backend.layers.processing.utils.atac:atac.py:387 Batch 3 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:371 Processing batch 4/12 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:309 Fragment file size: 0.00GB, using 4 processes (memory-limited from 4)
+INFO     backend.layers.processing.utils.atac:atac.py:387 Batch 4 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:371 Processing batch 5/12 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:309 Fragment file size: 0.00GB, using 4 processes (memory-limited from 4)
+INFO     backend.layers.processing.utils.atac:atac.py:387 Batch 5 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:371 Processing batch 6/12 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:309 Fragment file size: 0.00GB, using 4 processes (memory-limited from 4)
+INFO     backend.layers.processing.utils.atac:atac.py:387 Batch 6 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:371 Processing batch 7/12 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:309 Fragment file size: 0.00GB, using 4 processes (memory-limited from 4)
+INFO     backend.layers.processing.utils.atac:atac.py:387 Batch 7 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:371 Processing batch 8/12 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:309 Fragment file size: 0.00GB, using 4 processes (memory-limited from 4)
+INFO     backend.layers.processing.utils.atac:atac.py:387 Batch 8 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:371 Processing batch 9/12 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:309 Fragment file size: 0.00GB, using 4 processes (memory-limited from 4)
+INFO     backend.layers.processing.utils.atac:atac.py:387 Batch 9 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:371 Processing batch 10/12 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:309 Fragment file size: 0.00GB, using 4 processes (memory-limited from 4)
+INFO     backend.layers.processing.utils.atac:atac.py:387 Batch 10 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:371 Processing batch 11/12 with 4 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:309 Fragment file size: 0.00GB, using 4 processes (memory-limited from 4)
+INFO     backend.layers.processing.utils.atac:atac.py:387 Batch 11 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:371 Processing batch 12/12 with 3 chromosomes
+INFO     backend.layers.processing.utils.atac:atac.py:309 Fragment file size: 0.00GB, using 3 processes (memory-limited from 4)
+INFO     backend.layers.processing.utils.atac:atac.py:387 Batch 12 had no coverage data, skipping
+INFO     backend.layers.processing.utils.atac:atac.py:413 Processing 2 records with generator-based chunked streaming (chunk_size: 9,366,881)...
+INFO     backend.layers.processing.utils.atac:atac.py:421 Successfully processed 2 records to TileDB as single fragment
+INFO     backend.layers.processing.utils.atac:atac.py:498 ATAC fragment processing completed successfully
