@@ -21,14 +21,14 @@ BIN_SIZE = 100
 NORMALIZATION_FACTOR = 2_000_000
 
 
-def get_dynamic_chunk_size(memory_factor: float = 0.1, min_chunk_size: int = 100_000, max_chunk_size: int = 50_000_000):
+def get_dynamic_chunk_size(memory_factor: float = 0.1, min_chunk_size: int = 100_000, max_chunk_size: int = 15_000_000):
     """
     Calculate dynamic chunk size based on available memory.
 
     Args:
         memory_factor: Fraction of available memory to use for chunk sizing
         min_chunk_size: Minimum chunk size regardless of memory
-        max_chunk_size: Maximum chunk size to prevent excessive memory usage
+        max_chunk_size: Maximum chunk size to prevent OOM during TileDB writing
 
     Returns:
         Optimal chunk size for the current system
@@ -38,16 +38,16 @@ def get_dynamic_chunk_size(memory_factor: float = 0.1, min_chunk_size: int = 100
     # Use available memory to be more conservative
     memory_for_chunks = int(available_memory * memory_factor)
 
-    # Estimate memory per record (for ATAC data):
+    # Estimate memory per record (for ATAC data with optimized types):
     # - chromosome name: ~10 bytes
     # - bin_id: 8 bytes (int64)
     # - cell_type: ~20 bytes average
-    # - coverage: 8 bytes (int64)
-    # - total_coverage: 8 bytes (int64)
-    # - normalized_coverage: 8 bytes (float64)
+    # - coverage: 2 bytes (uint16)
+    # - total_coverage: 4 bytes (uint32)
+    # - normalized_coverage: 1-4 bytes (uint8 quantized or float32)
     # - dict overhead: ~100 bytes
-    # Total: ~162 bytes per record
-    bytes_per_record = 162
+    # Total: ~145-148 bytes per record
+    bytes_per_record = 146
 
     calculated_chunk_size = memory_for_chunks // bytes_per_record
 
