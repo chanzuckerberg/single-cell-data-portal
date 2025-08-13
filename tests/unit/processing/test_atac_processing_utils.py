@@ -10,7 +10,6 @@ import tiledb
 from backend.layers.processing.utils.atac import ATACDataProcessor
 
 
-# Parametrized fixtures and test data
 @pytest.fixture(
     params=[
         {"cell1": "T cell", "cell2": "B cell", "cell3": "NK cell"},
@@ -36,13 +35,11 @@ def organism_genome_pair(request):
 
 @pytest.fixture(
     params=[
-        # Small coverage aggregator
         {
             (1, 0, "T cell"): 5,
             (1, 1, "T cell"): 3,
             (2, 0, "B cell"): 4,
         },
-        # Multi-cell type coverage
         {
             (1, 0, "T cell"): 10,
             (1, 1, "T cell"): 20,
@@ -50,7 +47,6 @@ def organism_genome_pair(request):
             (2, 1, "B cell"): 50,
             (3, 0, "NK cell"): 15,
         },
-        # Single cell type
         {
             (1, 0, "T cell"): 100,
             (1, 1, "T cell"): 200,
@@ -67,12 +63,10 @@ def coverage_aggregator_data(request):
 
 @pytest.fixture(
     params=[
-        # Valid coordinates
         ("chr1\t100\t200\tcell1", 100, 199, 1, 1),
         ("chr1\t0\t99\tcell1", 0, 99, 0, 0),
         ("chr1\t199\t300\tcell1", 199, 299, 1, 2),
         ("chr1\t250\t350\tcell1", 250, 349, 2, 3),
-        # Edge cases
         ("chr1\t99\t100\tcell1", 99, 99, 0, 0),
     ]
 )
@@ -90,7 +84,6 @@ def fragment_coordinate_data(request):
 
 @pytest.fixture(
     params=[
-        # Invalid coordinates
         ("chr1\t-50\t100\tcell1", "negative start"),
         ("chr1\t200\t200\tcell1", "start equals end"),
         ("chr1\t300\t250\tcell1", "start greater than end"),
@@ -108,8 +101,8 @@ def invalid_fragment_coordinates(request):
     params=[
         # TileDB array configuration scenarios
         {"max_chrom": 25, "max_bins": 1000, "compression_level": 3},
-        {"max_chrom": 1, "max_bins": 0, "compression_level": 3},  # Edge case
-        {"max_chrom": 50, "max_bins": 5000, "compression_level": 3},  # Larger dataset
+        {"max_chrom": 1, "max_bins": 0, "compression_level": 3},
+        {"max_chrom": 50, "max_bins": 5000, "compression_level": 3},
     ]
 )
 def tiledb_array_config(request):
@@ -122,25 +115,25 @@ def mock_tiledb_components(mocker):
     """Fixture that provides mocked TileDB components for testing."""
     mock_tiledb = mocker.patch("backend.layers.processing.utils.atac.tiledb")
 
-    # Create mock objects
     mock_filter_list = mocker.MagicMock()
     mock_domain = mocker.MagicMock()
     mock_dim = mocker.MagicMock()
     mock_attr = mocker.MagicMock()
     mock_schema = mocker.MagicMock()
     mock_array = mocker.MagicMock()
-
-    # Configure mock returns
     mock_tiledb.FilterList.return_value = mock_filter_list
     mock_tiledb.BitShuffleFilter.return_value = mocker.MagicMock()
+    mock_tiledb.ByteShuffleFilter.return_value = mocker.MagicMock()
+    mock_tiledb.DictionaryFilter.return_value = mocker.MagicMock()
+    mock_tiledb.BitWidthReductionFilter.return_value = mocker.MagicMock()
+    mock_tiledb.DoubleDeltaFilter.return_value = mocker.MagicMock()
+    mock_tiledb.XORFilter.return_value = mocker.MagicMock()
     mock_tiledb.ZstdFilter.return_value = mocker.MagicMock()
     mock_tiledb.Domain.return_value = mock_domain
     mock_tiledb.Dim.return_value = mock_dim
     mock_tiledb.Attr.return_value = mock_attr
     mock_tiledb.ArraySchema.return_value = mock_schema
     mock_tiledb.SparseArray.create = mocker.MagicMock()
-
-    # Configure array for writing
     mock_array.__setitem__ = mocker.MagicMock()
     mock_tiledb.SparseArray.return_value.__enter__.return_value = mock_array
 
@@ -199,7 +192,6 @@ class TestATACDataProcessor:
         pd.testing.assert_frame_equal(df_meta, expected_df)
         assert chromosome_by_length is not None
         assert isinstance(chromosome_by_length, dict)
-        # Check that we have common chromosomes
         assert "chr1" in chromosome_by_length
         assert "chr2" in chromosome_by_length
 
@@ -277,8 +269,8 @@ class TestATACDataProcessor:
 
         assert isinstance(max_bins, int)
         assert max_bins > 0
-        assert max_bins > 500_000  # At least 500K bins
-        assert max_bins < 3_500_000  # Less than 3.5M bins (hg38 is larger than mm39)
+        assert max_bins > 500_000
+        assert max_bins < 3_500_000
 
     def test__normalized_coverage_calculation(self, tmp_path):
         """Test normalized coverage calculation: (count / total_coverage) * normalization_factor."""
@@ -286,14 +278,13 @@ class TestATACDataProcessor:
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         array_name = str(tmp_path / "test_array")
-
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_quantization=False)
         coverage_aggregator = defaultdict(int)
         coverage_aggregator.update(
             {
-                (1, 0, "T cell"): 10,  # T cell total will be 30
+                (1, 0, "T cell"): 10,
                 (1, 1, "T cell"): 20,
-                (2, 0, "B cell"): 50,  # B cell total will be 100
+                (2, 0, "B cell"): 50,
                 (2, 1, "B cell"): 50,
             }
         )
@@ -304,21 +295,17 @@ class TestATACDataProcessor:
         total_written = processor._stream_coverage_chunks_to_tiledb(coverage_aggregator, cell_type_totals, array_name)
         assert total_written == 4
 
-        # Verify data was written correctly
-
         with tiledb.SparseArray(array_name, mode="r", ctx=processor.ctx) as A:
             df_data = A.df[:]
 
-        # Convert to DataFrame for easier testing
         df = pd.DataFrame(df_data)
         expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
         assert set(df.columns) == set(expected_columns)
 
-        # Check data types - TileDB may use uint32 for dimensions
         assert df["chrom"].dtype in ["int32", "uint32"]
         assert df["bin"].dtype in ["int32", "uint32"]
-        assert df["coverage"].dtype == "int32"
-        assert df["total_coverage"].dtype == "int32"
+        assert df["coverage"].dtype == "uint16"
+        assert df["total_coverage"].dtype == "uint32"
         assert df["normalized_coverage"].dtype == "float32"
         assert df["cell_type"].dtype == "object"
 
@@ -340,17 +327,14 @@ class TestATACDataProcessor:
         t_cell_rows = df[df["cell_type"] == "T cell"]
         b_cell_rows = df[df["cell_type"] == "B cell"]
 
-        # T cell with count=10, total=30: (10/30) * 2M = 666,666.67
         t_cell_10_row = t_cell_rows[t_cell_rows["coverage"] == 10].iloc[0]
         expected_t_cell_10 = (10 / 30) * normalization_factor
         assert abs(t_cell_10_row["normalized_coverage"] - expected_t_cell_10) < 1e-1
 
-        # T cell with count=20, total=30: (20/30) * 2M = 1,333,333.33
         t_cell_20_row = t_cell_rows[t_cell_rows["coverage"] == 20].iloc[0]
         expected_t_cell_20 = (20 / 30) * normalization_factor
         assert abs(t_cell_20_row["normalized_coverage"] - expected_t_cell_20) < 1e-1
 
-        # B cell with count=50, total=100: (50/100) * 2M = 1,000,000
         b_cell_rows_50 = b_cell_rows[b_cell_rows["coverage"] == 50]
         for _, row in b_cell_rows_50.iterrows():
             expected_b_cell = (50 / 100) * normalization_factor
@@ -362,7 +346,6 @@ class TestATACDataProcessor:
         total_coverage = 0
         normalization_factor = 2_000_000
 
-        # This simulates the calculation in the original code
         normalized_coverage = (count / total_coverage) * normalization_factor if total_coverage > 0 else 0.0
 
         assert normalized_coverage == 0.0
@@ -375,11 +358,11 @@ class TestATACDataProcessor:
 
         array_name = str(tmp_path / "test_array")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        # Disable quantization for precise dtype testing
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_quantization=False)
 
         cell_type_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator_data)
 
-        # Determine max dimensions for TileDB array
         max_chrom = max(chrom for chrom, _, _ in coverage_aggregator_data) if coverage_aggregator_data else 1
         max_bin = max(bin_id for _, bin_id, _ in coverage_aggregator_data) if coverage_aggregator_data else 1
         processor.create_dataframe_array(array_name, max_chrom, max(max_bin + 1, 10))
@@ -393,17 +376,16 @@ class TestATACDataProcessor:
         with tiledb.SparseArray(array_name, mode="r", ctx=processor.ctx) as A:
             df_data = A.df[:]
 
-        # Convert to DataFrame for easier testing
         df = pd.DataFrame(df_data)
         expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
         assert set(df.columns) == set(expected_columns)
 
-        assert df["chrom"].dtype in ["int32", "uint32"]  # TileDB may use uint32 for dimensions
+        assert df["chrom"].dtype in ["int32", "uint32"]
         assert df["bin"].dtype in ["int32", "uint32"]
-        assert df["coverage"].dtype == "int32"
-        assert df["total_coverage"].dtype == "int32"
+        assert df["coverage"].dtype == "uint16"
+        assert df["total_coverage"].dtype == "uint32"
         assert df["normalized_coverage"].dtype == "float32"
-        assert df["cell_type"].dtype == "object"  # String columns are object type
+        assert df["cell_type"].dtype == "object"
 
         expected_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator_data)
 
@@ -427,23 +409,16 @@ class TestATACDataProcessor:
         processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
 
         coverage_aggregator = defaultdict(int)
-        # Compute cell type totals using helper method
         cell_type_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator)
 
-        # Create TileDB array for testing
         processor.create_dataframe_array(array_name, 1, 10)
-
-        # Stream empty data to TileDB
         total_written = processor._stream_coverage_chunks_to_tiledb(coverage_aggregator, cell_type_totals, array_name)
 
         assert total_written == 0
 
-        # Read back from TileDB to verify empty array
-
         with tiledb.SparseArray(array_name, mode="r", ctx=processor.ctx) as A:
             df_data = A.df[:]
 
-        # Convert to DataFrame for easier testing
         df = pd.DataFrame(df_data)
         assert len(df) == 0
         expected_columns = ["chrom", "bin", "cell_type", "coverage", "total_coverage", "normalized_coverage"]
@@ -481,13 +456,11 @@ class TestATACDataProcessor:
             result = array[:]
             assert len(result["chrom"]) == 5
 
-            # Verify key data points
             chrom_bin_pairs = list(zip(result["chrom"], result["bin"], strict=False))
             assert (1, 10) in chrom_bin_pairs
             assert (2, 5) in chrom_bin_pairs
             assert (3, 8) in chrom_bin_pairs
 
-            # Verify coverage values match input
             for i, (chrom, bin_val) in enumerate(chrom_bin_pairs):
                 if chrom == 1 and bin_val == 10:
                     assert result["coverage"][i] == 15
@@ -502,7 +475,8 @@ class TestATACDataProcessor:
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         array_name = str(tmp_path / "test_array")
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        # Use min_coverage_threshold=1 to prevent pruning in this memory efficiency test
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), min_coverage_threshold=1)
 
         # Generate larger dataset (1000 records) to test memory efficiency
         coverage_aggregator = defaultdict(int)
@@ -519,7 +493,6 @@ class TestATACDataProcessor:
         total_written = processor._stream_coverage_chunks_to_tiledb(coverage_aggregator, cell_type_totals, array_name)
         assert total_written == num_records
 
-        # Verify statistical properties
         with tiledb.open(array_name, mode="r") as array:
             result = array[:]
             assert len(result["chrom"]) == num_records
@@ -533,9 +506,9 @@ class TestATACDataProcessor:
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         array_name = str(tmp_path / "test_array")
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        # Disable quantization for precise calculation testing
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_quantization=False)
 
-        # Test single record edge case
         coverage_aggregator = defaultdict(int)
         coverage_aggregator[(1, 0, "single_cell")] = 42
         cell_type_totals = {"single_cell": 42}
@@ -562,7 +535,8 @@ class TestATACDataProcessor:
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
         array_name = str(tmp_path / "test_array")
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        # Use threshold of 0 to disable pruning for this edge case test
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), min_coverage_threshold=0)
 
         # Test zero total coverage edge case
         coverage_aggregator = defaultdict(int)
@@ -585,28 +559,33 @@ class TestATACDataProcessor:
         fragment_file = tmp_path / "test_fragments.tsv.gz"
         fragment_file.write_text("chr1\t100\t200\tcell1\n")
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        # Disable quantization for this test to check float32 dtype
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), enable_quantization=False)
         mock_tiledb = mock_tiledb_components["tiledb"]
 
         array_name = str(tmp_path / "test_array")
         max_chrom = tiledb_array_config["max_chrom"]
         max_bins = tiledb_array_config["max_bins"]
-        expected_compression_level = tiledb_array_config["compression_level"]
 
         processor.create_dataframe_array(array_name, max_chrom, max_bins)
 
-        assert mock_tiledb.FilterList.call_count >= 2  # One for compression, one for dimensions
-        mock_tiledb.BitShuffleFilter.assert_called_once()
-        assert mock_tiledb.ZstdFilter.call_count >= 1  # Called for both compression and dimensions
+        assert mock_tiledb.FilterList.call_count >= 4
+        mock_tiledb.ByteShuffleFilter.assert_called()
+        mock_tiledb.DictionaryFilter.assert_called_once()
+        mock_tiledb.BitWidthReductionFilter.assert_called()
+        mock_tiledb.DoubleDeltaFilter.assert_called_once()
+
+        assert mock_tiledb.ZstdFilter.call_count >= 4
         zstd_calls = mock_tiledb.ZstdFilter.call_args_list
-        compression_call = next(
-            (call for call in zstd_calls if call.kwargs.get("level") == expected_compression_level), None
-        )
-        assert compression_call is not None
+
+        level_6_calls = [call for call in zstd_calls if call.kwargs.get("level") == 6]
+        level_22_calls = [call for call in zstd_calls if call.kwargs.get("level") == 22]
+        assert len(level_6_calls) >= 3
+        assert len(level_22_calls) == 1
 
         mock_tiledb.Domain.assert_called_once()
         domain_args = mock_tiledb.Domain.call_args[0]
-        assert len(domain_args) == 3  # chrom, bin, cell_type dimensions
+        assert len(domain_args) == 3
         dim_calls = mock_tiledb.Dim.call_args_list
         assert len(dim_calls) == 3
 
@@ -619,7 +598,10 @@ class TestATACDataProcessor:
         bin_dim_call = dim_calls[1]
         assert bin_dim_call.kwargs["name"] == "bin"
         assert bin_dim_call.kwargs["domain"] == (0, max_bins)
-        assert bin_dim_call.kwargs["tile"] == 10
+        # Verify adaptive tile sizing: between 100 and 10000, but cannot exceed domain range
+        calculated_tile = min(max(max_bins // 1000, 100), 10000)
+        expected_tile = min(calculated_tile, max_bins)  # Cannot exceed domain range
+        assert bin_dim_call.kwargs["tile"] == expected_tile
         assert bin_dim_call.kwargs["dtype"] == np.uint32
 
         cell_type_dim_call = dim_calls[2]
@@ -635,10 +617,10 @@ class TestATACDataProcessor:
         assert "normalized_coverage" in attr_names
 
         coverage_attr = next(call for call in attr_calls if call.kwargs["name"] == "coverage")
-        assert coverage_attr.kwargs["dtype"] == np.int32
+        assert coverage_attr.kwargs["dtype"] == np.uint16
 
         total_coverage_attr = next(call for call in attr_calls if call.kwargs["name"] == "total_coverage")
-        assert total_coverage_attr.kwargs["dtype"] == np.int32
+        assert total_coverage_attr.kwargs["dtype"] == np.uint32
 
         normalized_attr = next(call for call in attr_calls if call.kwargs["name"] == "normalized_coverage")
         assert normalized_attr.kwargs["dtype"] == np.float32
@@ -778,7 +760,8 @@ class TestATACDataProcessor:
         subprocess.run(["bgzip", str(uncompressed_file)], check=True, capture_output=True)
         subprocess.run(["tabix", "-p", "bed", str(fragment_file)], check=True, capture_output=True)
 
-        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file))
+        # Use threshold=1 to ensure test data isn't pruned (coverage values will be 1)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), min_coverage_threshold=1)
 
         array_name = str(tmp_path / "test_array")
         chrom_map = {"chr1": 1}
@@ -1331,3 +1314,76 @@ class TestATACDataProcessor:
         assert not temp_file.exists()
         assert processor._local_fragment_file is None
         assert processor._local_fragment_index == str(temp_index)
+
+    def test__sparse_data_pruning(self, tmp_path):
+        """Test sparse data pruning removes low normalized coverage records below threshold."""
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        fragment_file.write_text("chr1\t100\t200\tcell1\n")
+
+        # Test with normalized coverage threshold (500000 to prune low values), disable quantization for this test
+        processor = ATACDataProcessor(
+            fragment_artifact_id=str(fragment_file), min_coverage_threshold=500000, enable_quantization=False
+        )
+
+        # Create test data with specific coverage values to test normalized pruning
+        # T cell total: 5 + 3 + 1 = 9
+        # B cell total: 10 + 2 = 12
+        # NK cell total: 1
+        coverage_aggregator = defaultdict(int)
+        coverage_aggregator.update(
+            {
+                # T cell records (total = 9)
+                (1, 0, "T cell"): 5,  # normalized = (5/9)*2000000 ≈ 1111111 (keep)
+                (1, 1, "T cell"): 3,  # normalized = (3/9)*2000000 ≈ 666667 (keep)
+                (4, 0, "T cell"): 1,  # normalized = (1/9)*2000000 ≈ 222222 (prune < 500000)
+                # B cell records (total = 12)
+                (2, 0, "B cell"): 10,  # normalized = (10/12)*2000000 ≈ 1666667 (keep)
+                (2, 1, "B cell"): 2,  # normalized = (2/12)*2000000 ≈ 333333 (prune < 500000)
+                # NK cell records (total = 1)
+                (3, 0, "NK cell"): 1,  # normalized = (1/1)*2000000 = 2000000 (keep)
+            }
+        )
+
+        cell_type_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator)
+
+        # Generate chunks and verify pruning
+        chunks = list(processor._generate_chunks(coverage_aggregator, cell_type_totals, 1000))
+        assert len(chunks) == 1  # Should fit in one chunk
+
+        chunk_data = chunks[0]
+        assert len(chunk_data) == 4  # Should keep 4 records with normalized coverage ≥ 500000
+
+        # Verify correct records were kept (those with high normalized coverage)
+        kept_coverages = {record["coverage"] for record in chunk_data}
+        assert kept_coverages == {5, 3, 10, 1}  # Raw coverage values of kept records (T cell 5&3, B cell 10, NK cell 1)
+
+        # Verify all kept records meet normalized threshold
+        for record in chunk_data:
+            assert record["normalized_coverage"] >= processor.min_coverage_threshold
+
+    def test__sparse_data_pruning_threshold_zero(self, tmp_path):
+        """Test that threshold=0 disables pruning."""
+        fragment_file = tmp_path / "test_fragments.tsv.gz"
+        fragment_file.write_text("chr1\t100\t200\tcell1\n")
+
+        # Test with threshold of 0 (no pruning)
+        processor = ATACDataProcessor(fragment_artifact_id=str(fragment_file), min_coverage_threshold=0)
+
+        coverage_aggregator = defaultdict(int)
+        coverage_aggregator.update(
+            {
+                (1, 0, "T cell"): 5,
+                (2, 0, "B cell"): 1,  # This should be kept with threshold=0
+                (3, 0, "NK cell"): 0,  # Even 0 coverage should be kept
+            }
+        )
+
+        cell_type_totals = processor._compute_cell_type_totals_from_aggregator(coverage_aggregator)
+        chunks = list(processor._generate_chunks(coverage_aggregator, cell_type_totals, 1000))
+
+        assert len(chunks) == 1
+        chunk_data = chunks[0]
+        assert len(chunk_data) == 3  # All records should be kept
+
+        kept_coverages = {record["coverage"] for record in chunk_data}
+        assert kept_coverages == {5, 1, 0}  # All values should remain
