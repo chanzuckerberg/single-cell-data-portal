@@ -79,7 +79,7 @@ class ProcessCxg(ProcessingLogic):
 
         # Convert the labeled dataset to CXG and upload it to the cellxgene bucket
         self.process_cxg(
-            labeled_h5ad_filename, dataset_version_id, cellxgene_bucket, fragment_file_path, current_artifacts
+            labeled_h5ad_filename, dataset_version_id, cellxgene_bucket, fragment_file_path, current_artifacts, is_reprocess
         )
 
     @logit
@@ -105,14 +105,26 @@ class ProcessCxg(ProcessingLogic):
 
         return cxg_output_container
 
-    def copy_cxg_files_to_cxg_bucket(self, cxg_dir, s3_uri):
+    def delete_existing_cxg_files(self, s3_uri):
+        """
+        Delete all existing files in the CXG S3 directory
+        """
+        bucket, prefix = self.s3_provider.parse_s3_uri(s3_uri)
+        # Remove trailing slash if present for consistent prefix handling
+        prefix = prefix.rstrip('/')
+        self.logger.info(f"Deleting existing CXG files from s3://{bucket}/{prefix}/")
+        self.s3_provider.delete_prefix(bucket, prefix)
+
+    def copy_cxg_files_to_cxg_bucket(self, cxg_dir, s3_uri, clear_existing=False):
         """
         Copy cxg files to the cellxgene bucket (under the given object key) for access by the explorer
         """
+        if clear_existing:
+            self.delete_existing_cxg_files(s3_uri)
         self.s3_provider.upload_directory(cxg_dir, s3_uri)
 
     def process_cxg(
-        self, local_filename, dataset_version_id, cellxgene_bucket, fragment_file_path=None, current_artifacts=None
+        self, local_filename, dataset_version_id, cellxgene_bucket, fragment_file_path=None, current_artifacts=None, is_reprocess=False
     ):
         cxg_dir = self.convert_file(
             self.make_cxg, local_filename, dataset_version_id, fragment_file_path, DatasetStatusKey.CXG
@@ -131,7 +143,7 @@ class ProcessCxg(ProcessingLogic):
             s3_uri = f"s3://{cellxgene_bucket}/{key_prefix}.cxg/"
 
         self.update_processing_status(dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.UPLOADING)
-        self.copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)
+        self.copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri, clear_existing=is_reprocess)
         self.logger.info(f"Updating database with cxg artifact for dataset {dataset_version_id}. s3_uri is {s3_uri}")
 
         if not existing_cxg_artifacts:
