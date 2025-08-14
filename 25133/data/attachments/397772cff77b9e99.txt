@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2025-08-14T14:20:13.014Z", "name": "backend.layers.processing.utils.atac", "message": "Sparse data pruning (normalized coverage threshold \u2265500000): 2/6 records (33.3%) removed, 4 records kept", "lineno": 540, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}

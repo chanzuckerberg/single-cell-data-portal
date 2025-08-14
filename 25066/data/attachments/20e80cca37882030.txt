@@ -1,5 +1,0 @@
-INFO     backend.layers.processing.utils.atac:atac.py:246 Using single-pass processing for 1 chromosomes
-INFO     backend.layers.processing.utils.atac:atac.py:275 Fragment file size: 0.00GB, using 1 processes (memory-limited from 4)
-WARNING  backend.layers.processing.utils.atac:atac.py:314 1 barcodes in .h5ad were not found in fragment file.
-INFO     backend.layers.processing.utils.atac:atac.py:400 Processing 2 records with generator-based chunked streaming...
-INFO     backend.layers.processing.utils.atac:atac.py:407 Successfully processed 2 records to TileDB as single fragment
