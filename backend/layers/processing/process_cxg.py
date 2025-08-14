@@ -112,10 +112,9 @@ class ProcessCxg(ProcessingLogic):
 
     def delete_existing_cxg_files(self, s3_uri):
         """
-        Delete all existing files in the CXG S3 directory
+        Delete all existing files in a given CXG S3 directory
         """
         bucket, prefix = self.s3_provider.parse_s3_uri(s3_uri)
-        # Remove trailing slash if present for consistent prefix handling
         prefix = prefix.rstrip("/")
         self.logger.info(f"Deleting existing CXG files from s3://{bucket}/{prefix}/")
         self.s3_provider.delete_prefix(bucket, prefix)
