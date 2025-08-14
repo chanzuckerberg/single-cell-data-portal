@@ -79,7 +79,12 @@ class ProcessCxg(ProcessingLogic):
 
         # Convert the labeled dataset to CXG and upload it to the cellxgene bucket
         self.process_cxg(
-            labeled_h5ad_filename, dataset_version_id, cellxgene_bucket, fragment_file_path, current_artifacts, is_reprocess
+            labeled_h5ad_filename,
+            dataset_version_id,
+            cellxgene_bucket,
+            fragment_file_path,
+            current_artifacts,
+            is_reprocess,
         )
 
     @logit
@@ -111,7 +116,7 @@ class ProcessCxg(ProcessingLogic):
         """
         bucket, prefix = self.s3_provider.parse_s3_uri(s3_uri)
         # Remove trailing slash if present for consistent prefix handling
-        prefix = prefix.rstrip('/')
+        prefix = prefix.rstrip("/")
         self.logger.info(f"Deleting existing CXG files from s3://{bucket}/{prefix}/")
         self.s3_provider.delete_prefix(bucket, prefix)
 
@@ -124,7 +129,13 @@ class ProcessCxg(ProcessingLogic):
         self.s3_provider.upload_directory(cxg_dir, s3_uri)
 
     def process_cxg(
-        self, local_filename, dataset_version_id, cellxgene_bucket, fragment_file_path=None, current_artifacts=None, is_reprocess=False
+        self,
+        local_filename,
+        dataset_version_id,
+        cellxgene_bucket,
+        fragment_file_path=None,
+        current_artifacts=None,
+        is_reprocess=False,
     ):
         cxg_dir = self.convert_file(
             self.make_cxg, local_filename, dataset_version_id, fragment_file_path, DatasetStatusKey.CXG
