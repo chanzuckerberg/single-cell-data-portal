@@ -1,6 +1,0 @@
-INFO     root:h5ad_data_file.py:346 Reading in AnnData dataset: ed61b437-2331-4160-a1da-3678d62769cc.h5ad
-INFO     root:h5ad_data_file.py:348 Completed reading in AnnData dataset!
-INFO     root:h5ad_data_file.py:173 Low memory detected (4096MB), using chunked consolidation approach
-INFO     root:h5ad_data_file.py:223 Chunked consolidation config: buffer=51MB, memory_budget=102MB
-INFO     root:h5ad_data_file.py:232 Array has 0 fragments, consolidating in small batches
-INFO     root:h5ad_data_file.py:238 Chunked consolidation completed (single pass)
