@@ -1,1 +1,0 @@
-{"levelname": "INFO", "asctime": "2025-08-13T14:15:09.013Z", "name": "backend.layers.processing.utils.atac", "message": "Cleaning up temporary file: /tmp/pytest-of-root/pytest-0/test__cleanup_temp_files_parti0/temp_fragment.bgz", "lineno": 167, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
