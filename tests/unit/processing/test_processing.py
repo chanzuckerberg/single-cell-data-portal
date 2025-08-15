@@ -151,3 +151,120 @@ class ProcessingTest(BaseProcessingTest):
         status = self.business_logic.get_dataset_status(dataset_version_id)
         self.assertEqual(status.validation_status, DatasetValidationStatus.INVALID)
         self.assertEqual(status.validation_message, "\n".join(["failure 1", "failure 2"]))
+
+    def test_copy_cxg_files_no_deletion_when_is_reprocess_false(self):
+        """Test that no deletion occurs when is_reprocess=False"""
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection.version_id, "http://fake.url", None, None
+        )
+
+        with (
+            patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg") as mock_make_cxg,
+            patch.object(self.s3_provider, "delete_prefix") as mock_delete_prefix,
+            patch.object(self.s3_provider, "upload_directory") as mock_upload_directory,
+        ):
+
+            mock_make_cxg.return_value = "local.cxg"
+            ps = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
+
+            # Process without reprocessing (is_reprocess=False by default)
+            ps.process(dataset_version_id, "fake_bucket_name", "fake_cxg_bucket", is_reprocess=False)
+
+            # Assert delete_prefix was NOT called
+            mock_delete_prefix.assert_not_called()
+
+            # Assert upload_directory was called
+            mock_upload_directory.assert_called_once()
+
+    def test_copy_cxg_files_deletion_when_is_reprocess_true(self):
+        """Test that deletion occurs when is_reprocess=True"""
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection.version_id, "http://fake.url", None, None
+        )
+
+        # Add existing H5AD artifact (required for reprocessing)
+        existing_h5ad_uri = f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"
+        self.business_logic.add_dataset_artifact(dataset_version_id, DatasetArtifactType.H5AD, existing_h5ad_uri)
+
+        # Add existing CXG artifact
+        existing_cxg_uri = f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/"
+        self.business_logic.add_dataset_artifact(dataset_version_id, DatasetArtifactType.CXG, existing_cxg_uri)
+
+        with (
+            patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg") as mock_make_cxg,
+            patch.object(self.s3_provider, "delete_prefix") as mock_delete_prefix,
+            patch.object(self.s3_provider, "upload_directory") as mock_upload_directory,
+        ):
+
+            mock_make_cxg.return_value = "local.cxg"
+            ps = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
+
+            # Process with reprocessing (is_reprocess=True)
+            ps.process(dataset_version_id, "fake_bucket_name", "fake_cxg_bucket", is_reprocess=True)
+
+            # Assert delete_prefix was called with correct parameters
+            mock_delete_prefix.assert_called_once_with("fake_cxg_bucket", f"{dataset_version_id.id}.cxg")
+
+            # Assert upload_directory was called after deletion
+            mock_upload_directory.assert_called_once()
+
+    def test_delete_existing_cxg_files_method(self):
+        """Test the delete_existing_cxg_files method directly"""
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, _ = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None, None)
+
+        with patch.object(self.s3_provider, "delete_prefix") as mock_delete_prefix:
+            ps = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
+            s3_uri = f"s3://test-bucket/{dataset_version_id.id}.cxg/"
+
+            # Call the delete method directly
+            ps.delete_existing_cxg_files(s3_uri)
+
+            # Assert delete_prefix was called with correct parameters
+            mock_delete_prefix.assert_called_once_with("test-bucket", f"{dataset_version_id.id}.cxg")
+
+    def test_copy_cxg_files_to_cxg_bucket_clear_existing_false(self):
+        """Test copy_cxg_files_to_cxg_bucket with clear_existing=False"""
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, _ = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None, None)
+
+        with (
+            patch.object(self.s3_provider, "delete_prefix") as mock_delete_prefix,
+            patch.object(self.s3_provider, "upload_directory") as mock_upload_directory,
+        ):
+
+            ps = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
+            s3_uri = f"s3://test-bucket/{dataset_version_id.id}.cxg/"
+
+            # Call with clear_existing=False
+            ps.copy_cxg_files_to_cxg_bucket("local.cxg", s3_uri, clear_existing=False)
+
+            # Assert delete_prefix was NOT called
+            mock_delete_prefix.assert_not_called()
+
+            # Assert upload_directory was called
+            mock_upload_directory.assert_called_once_with("local.cxg", s3_uri)
+
+    def test_copy_cxg_files_to_cxg_bucket_clear_existing_true(self):
+        """Test copy_cxg_files_to_cxg_bucket with clear_existing=True"""
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, _ = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None, None)
+
+        with (
+            patch.object(self.s3_provider, "delete_prefix") as mock_delete_prefix,
+            patch.object(self.s3_provider, "upload_directory") as mock_upload_directory,
+        ):
+
+            ps = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
+            s3_uri = f"s3://test-bucket/{dataset_version_id.id}.cxg/"
+
+            # Call with clear_existing=True
+            ps.copy_cxg_files_to_cxg_bucket("local.cxg", s3_uri, clear_existing=True)
+
+            # Assert delete_prefix was called first
+            mock_delete_prefix.assert_called_once_with("test-bucket", f"{dataset_version_id.id}.cxg")
+
+            # Assert upload_directory was called after deletion
+            mock_upload_directory.assert_called_once_with("local.cxg", s3_uri)
