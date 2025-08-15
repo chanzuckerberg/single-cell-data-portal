@@ -96,7 +96,6 @@ class S3Provider(S3ProviderInterface):
         """
         Deletes the objects `object_keys` from bucket `bucket_name`
         """
-        # Filter out empty or invalid keys
         valid_keys = [key.strip() for key in object_keys if key and key.strip()]
 
         if not valid_keys:
@@ -117,7 +116,6 @@ class S3Provider(S3ProviderInterface):
                 f"Cannot delete root-level or insufficiently prefixed objects: {dangerous_keys[:5]}"
             )
 
-        # Safety check: warn about large deletion operations
         if len(valid_keys) > 10000:
             logger.warning(
                 {
@@ -128,7 +126,6 @@ class S3Provider(S3ProviderInterface):
                 }
             )
 
-        # Log all deletion operations for audit trail
         logger.info(
             {
                 "message": "Starting deletion operation",
@@ -141,7 +138,6 @@ class S3Provider(S3ProviderInterface):
         for i in range(0, len(valid_keys), AWS_S3_MAX_ITEMS_PER_BATCH):
             key_batch = valid_keys[i : i + AWS_S3_MAX_ITEMS_PER_BATCH]
 
-            # Ensure we have keys to delete in this batch
             if not key_batch:
                 continue
 
