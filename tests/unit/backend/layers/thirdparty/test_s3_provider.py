@@ -89,16 +89,18 @@ class TestS3Provider(unittest.TestCase):
 
     @patch("backend.layers.thirdparty.s3_provider.boto3.client")
     def test_delete_files_allows_safe_keys(self, mock_client_constructor):
-        """Test that delete_files allows properly prefixed objects"""
+        """Test that delete_files allows properly prefixed objects and UUID-based filenames"""
         mock_client_constructor.return_value.delete_objects.return_value = {"Objects": ["object"], "Errors": []}
 
         s3_provider = S3Provider()
 
-        # These should be allowed (8+ character prefix before slash)
+        # These should be allowed (8+ character prefix before slash and UUID-based root files)
         safe_keys = [
             "12345678-1234-5678-9012-123456789012/file1.txt",
             "longenoughprefix/subfolder/file2.txt",
             "uuid-like-prefix/data/file3.txt",
+            "12345678-1234-5678-9012-123456789012.h5ad",
+            "87654321-4321-8765-2109-876543210987.rds",
         ]
 
         # Should not raise exception

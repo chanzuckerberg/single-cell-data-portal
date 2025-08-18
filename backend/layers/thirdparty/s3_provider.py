@@ -103,11 +103,22 @@ class S3Provider(S3ProviderInterface):
             return
 
         # Safety check: prevent deletion of root-level objects without proper prefixes
-        dangerous_keys = [key for key in valid_keys if "/" not in key or len(key.split("/")[0]) < 8]
+        # Allow UUID-based filenames (36 chars) for public bucket compatibility
+        dangerous_keys = []
+        for key in valid_keys:
+            if "/" not in key:
+                # Root-level file - check if it's a UUID-based filename
+                filename_without_ext = key.split(".")[0]
+                if not re.match(ID_REGEX, filename_without_ext):
+                    dangerous_keys.append(key)
+            elif len(key.split("/")[0]) < 8:
+                # Directory structure but prefix too short
+                dangerous_keys.append(key)
+
         if dangerous_keys:
             logger.warning(
                 {
-                    "message": "Blocked deletion of potentially dangerous keys without proper directory structure",
+                    "message": "Blocked deletion of potentially dangerous keys without proper directory structure or UUID filename",
                     "bucket_name": bucket_name,
                     "dangerous_keys": dangerous_keys[:10],
                 }
