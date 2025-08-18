@@ -1525,11 +1525,16 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         delete_artifacts = self.business_logic.delete_artifacts
         s3_provider = self.business_logic.s3_provider
         bucket = "bucket"
+        uuid_prefix = "12345678-1234-5678-9012-123456789012"
 
         # Arrange
         artifacts: List[DatasetArtifact] = [
-            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.CXG, uri=f"s3://{bucket}/file.h5ad"),
-            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/file.cxg/"),
+            DatasetArtifact(
+                id=DatasetArtifactId(), type=DatasetArtifactType.CXG, uri=f"s3://{bucket}/{uuid_prefix}/file.h5ad"
+            ),
+            DatasetArtifact(
+                id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/{uuid_prefix}/file.cxg/"
+            ),
         ]
         # Act
         delete_artifacts(artifacts)
@@ -1542,30 +1547,36 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         delete_artifacts = self.business_logic.delete_artifacts
         s3_provider = self.business_logic.s3_provider
         bucket = "bucket"
+        uuid_prefix = "12345678-1234-5678-9012-123456789012"
 
         # Arrange
         artifacts: List[DatasetArtifact] = [
-            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.CXG, uri=f"s3://{bucket}/file.cxg/"),
+            DatasetArtifact(
+                id=DatasetArtifactId(), type=DatasetArtifactType.CXG, uri=f"s3://{bucket}/{uuid_prefix}/file.cxg/"
+            ),
         ]
         # Act
         delete_artifacts(artifacts)
         # Assert
-        s3_provider.delete_prefix.assert_called_with(bucket, "file.cxg/")
+        s3_provider.delete_prefix.assert_called_with(bucket, f"{uuid_prefix}/file.cxg/")
 
     def test_delete_artifacts_with_rdev_prefix(self):
         self.business_logic.s3_provider = Mock()
         delete_artifacts = self.business_logic.delete_artifacts
         s3_provider = self.business_logic.s3_provider
         bucket = "bucket"
+        rdev_prefix = "rdev-12345678"  # 8+ character prefix for safety validation
 
         # Arrange
         artifacts: List[DatasetArtifact] = [
-            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.CXG, uri=f"s3://{bucket}/rdev/file.cxg/"),
+            DatasetArtifact(
+                id=DatasetArtifactId(), type=DatasetArtifactType.CXG, uri=f"s3://{bucket}/{rdev_prefix}/file.cxg/"
+            ),
         ]
         # Act
         delete_artifacts(artifacts)
         # Assert
-        s3_provider.delete_prefix.assert_called_with(bucket, "rdev/file.cxg/")
+        s3_provider.delete_prefix.assert_called_with(bucket, f"{rdev_prefix}/file.cxg/")
 
     def test_delete_artifacts_with_no_match(self):
         self.business_logic.s3_provider = Mock()
@@ -1584,24 +1595,30 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         delete_artifacts = self.business_logic.delete_artifacts
         s3_provider = self.business_logic.s3_provider
         bucket = "bucket"
+        uuid_prefix = "12345678-1234-5678-9012-123456789012"
 
         # Arrange
         artifacts: List[DatasetArtifact] = [
-            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/file.h5ad"),
+            DatasetArtifact(
+                id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/{uuid_prefix}/file.h5ad"
+            ),
         ]
         # Act
         delete_artifacts(artifacts)
         # Assert
-        s3_provider.delete_files.assert_called_with(bucket, ["file.h5ad"])
+        s3_provider.delete_files.assert_called_with(bucket, [f"{uuid_prefix}/file.h5ad"])
 
     def test_delete_artifacts_CollectionDeleteException_with_H5AD(self):
         self.business_logic.s3_provider.delete_files = Mock(side_effect=S3DeleteException("error"))
         delete_artifacts = self.business_logic.delete_artifacts
         bucket = "bucket"
+        uuid_prefix = "12345678-1234-5678-9012-123456789012"
 
         # Arrange
         artifacts: List[DatasetArtifact] = [
-            DatasetArtifact(id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/file.h5ad"),
+            DatasetArtifact(
+                id=DatasetArtifactId(), type=DatasetArtifactType.H5AD, uri=f"s3://{bucket}/{uuid_prefix}/file.h5ad"
+            ),
         ]
 
         # Act + Assert

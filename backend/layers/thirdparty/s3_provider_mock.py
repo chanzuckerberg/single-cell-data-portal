@@ -1,8 +1,11 @@
 import contextlib
+import logging
 from typing import Iterable, List, Set
 from urllib.parse import urlparse
 
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
+
+logger = logging.getLogger(__name__)
 
 
 class MockS3Provider(S3ProviderInterface):
