@@ -105,6 +105,10 @@ class TestS3Provider(unittest.TestCase):
             "fragments_sorted.tsv.gz.tbi",
             "fragment.tsv.bgz",
             "valid-fragment.tsv.bgz",
+            "mock-key.tsv.bgz",
+            "some-index.tbi",
+            "data.tsv.gz",
+            "index.tbi",
         ]
 
         # Should not raise exception

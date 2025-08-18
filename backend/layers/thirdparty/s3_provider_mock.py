@@ -43,12 +43,9 @@ class MockS3Provider(S3ProviderInterface):
 
         legitimate_patterns = [
             r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\.(h5ad|rds)$",  # UUID files
-            r"^fragments.*\.tsv\.gz$",
-            r"^.*fragments.*\.tsv\.gz\.tbi$",
-            r"^.*fragment.*\.tsv\.bgz$",
-            r"^.*fragment.*\.tsv\.bgz\.tbi$",
-            r"^valid-fragment\.tsv\.bgz$",
-            r"^fragment\.tsv\.bgz$",
+            r"^.*fragment.*\.(tsv\.(gz|bgz)|tsv\.(gz|bgz)\.tbi)$",  # Fragment files and indexes
+            r"^.*\.(tsv\.gz|tsv\.bgz)$",  # General TSV compressed files
+            r"^.*\.tbi$",  # Tabix index files
         ]
 
         def is_legitimate_filename(filename):
