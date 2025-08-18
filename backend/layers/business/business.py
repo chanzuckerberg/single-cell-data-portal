@@ -4,6 +4,7 @@ import os
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, Iterable, List, Optional, Set, Tuple
+from urllib.parse import urlparse
 
 from pydantic import ValidationError
 
@@ -606,7 +607,8 @@ class BusinessLogic(BusinessLogicInterface):
         # Validate the URIs
         # TODO: This should be done in the IngestionManifest class
         for key, _url in manifest.model_dump(exclude_none=True).items():
-            _url = str(_url)
+            parsed_url = urlparse(str(_url))
+            _url = parsed_url.geturl()
             if not self.uri_provider.validate(_url):
                 raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
             if not self.is_already_ingested(_url):
@@ -616,7 +618,7 @@ class BusinessLogic(BusinessLogicInterface):
                     message="Cannot ingest public datasets without a current dataset version"
                 )
             if key == "anndata":
-                dataset_version_id, extension = _url.split("/")[-1].split(".", maxsplit=1)
+                dataset_version_id, extension = parsed_url.path.split("/")[-1].split(".", maxsplit=1)
                 if extension != ARTIFACT_TO_EXTENSION[DatasetArtifactType.H5AD]:
                     raise InvalidIngestionManifestException(message=f"{_url} is not an h5ad file")
                 previous_dv = self.database_provider.get_dataset_version(DatasetVersionId(dataset_version_id))
@@ -630,7 +632,7 @@ class BusinessLogic(BusinessLogicInterface):
                 manifest.anndata = [a for a in previous_dv.artifacts if a.type == DatasetArtifactType.RAW_H5AD][0].uri
 
             if key == "atac_fragment":
-                file_name, extension = _url.split("/")[-1].split(".", 1)
+                file_name, extension = parsed_url.path.split("/")[-1].split(".", maxsplit=1)
                 artifact_id = file_name.rsplit("-", 1)[0]
                 if extension != ARTIFACT_TO_EXTENSION[DatasetArtifactType.ATAC_FRAGMENT]:
                     raise InvalidIngestionManifestException(message=f"{_url} is not an atac_fragments file")
