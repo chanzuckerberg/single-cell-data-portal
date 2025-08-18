@@ -117,8 +117,8 @@ resource aws_batch_job_definition atac_job_def {
   container_properties = jsonencode({
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
-  "memory": 128000,
-  "vcpus": 16,
+  "memory": 64000,
+  "vcpus": 8,
   "environment": [
     {
       "name": "ARTIFACT_BUCKET",
