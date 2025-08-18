@@ -96,17 +96,71 @@ class S3Provider(S3ProviderInterface):
         """
         Deletes the objects `object_keys` from bucket `bucket_name`
         """
-        for i in range(0, len(object_keys), AWS_S3_MAX_ITEMS_PER_BATCH):
-            key_batch = object_keys[i:AWS_S3_MAX_ITEMS_PER_BATCH]
-            resp = self.client.delete_objects(
-                Bucket=bucket_name,
-                Delete={"Objects": [{"Key": key} for key in key_batch]},
+        valid_keys = [key.strip() for key in object_keys if key and key.strip()]
+
+        if not valid_keys:
+            logger.info({"message": "No valid keys to delete", "bucket_name": bucket_name})
+            return
+
+        # Safety check: prevent deletion of root-level objects without proper prefixes
+        dangerous_keys = [key for key in valid_keys if "/" not in key or len(key.split("/")[0]) < 8]
+        if dangerous_keys:
+            logger.warning(
+                {
+                    "message": "Blocked deletion of potentially dangerous keys without proper directory structure",
+                    "bucket_name": bucket_name,
+                    "dangerous_keys": dangerous_keys[:10],
+                }
             )
-            if deleted := resp.get("Deleted"):
-                logger.info({"deleted": deleted})
-            if errors := resp.get("Errors"):
-                logger.error({"errors": errors, "bucket_name": bucket_name})
-                raise S3DeleteException(errors)
+            raise IllegalS3RecursiveDelete(
+                f"Cannot delete root-level or insufficiently prefixed objects: {dangerous_keys[:5]}"
+            )
+
+        if len(valid_keys) > 10000:
+            logger.warning(
+                {
+                    "message": "Large deletion operation detected - proceeding with caution",
+                    "bucket_name": bucket_name,
+                    "key_count": len(valid_keys),
+                    "sample_keys": valid_keys[:5],
+                }
+            )
+
+        logger.info(
+            {
+                "message": "Starting deletion operation",
+                "bucket_name": bucket_name,
+                "key_count": len(valid_keys),
+                "sample_keys": valid_keys[:3],
+            }
+        )
+
+        for i in range(0, len(valid_keys), AWS_S3_MAX_ITEMS_PER_BATCH):
+            key_batch = valid_keys[i : i + AWS_S3_MAX_ITEMS_PER_BATCH]
+
+            if not key_batch:
+                continue
+
+            try:
+                resp = self.client.delete_objects(
+                    Bucket=bucket_name,
+                    Delete={"Objects": [{"Key": key} for key in key_batch]},
+                )
+                if deleted := resp.get("Deleted"):
+                    logger.info({"deleted": deleted})
+                if errors := resp.get("Errors"):
+                    logger.error({"errors": errors, "bucket_name": bucket_name})
+                    raise S3DeleteException(errors)
+            except Exception as e:
+                logger.error(
+                    {
+                        "message": "Failed to delete batch of keys",
+                        "bucket_name": bucket_name,
+                        "key_batch": key_batch,
+                        "error": str(e),
+                    }
+                )
+                raise
 
     def delete_prefix(self, bucket_name: str, prefix: str) -> None:
         if not re.search(ID_REGEX, prefix):
