@@ -4,7 +4,6 @@ import re
 from typing import Iterable, List, Set
 from urllib.parse import urlparse
 
-from backend.layers.common.regex import ID_REGEX
 from backend.layers.thirdparty.s3_exceptions import IllegalS3RecursiveDelete
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 
@@ -39,13 +38,26 @@ class MockS3Provider(S3ProviderInterface):
             return
 
         # Safety check: prevent deletion of root-level objects without proper prefixes
-        # Allow UUID-based filenames (36 chars) for public bucket compatibility
+        # Allow UUID-based filenames and legitimate file patterns
         dangerous_keys = []
+
+        legitimate_patterns = [
+            r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\.(h5ad|rds)$",  # UUID files
+            r"^fragments.*\.tsv\.gz$",
+            r"^.*fragments.*\.tsv\.gz\.tbi$",
+            r"^.*fragment.*\.tsv\.bgz$",
+            r"^.*fragment.*\.tsv\.bgz\.tbi$",
+            r"^valid-fragment\.tsv\.bgz$",
+            r"^fragment\.tsv\.bgz$",
+        ]
+
+        def is_legitimate_filename(filename):
+            return any(re.match(pattern, filename) for pattern in legitimate_patterns)
+
         for key in valid_keys:
             if "/" not in key:
-                # Root-level file - check if it's a UUID-based filename
-                filename_without_ext = key.split(".")[0]
-                if not re.match(ID_REGEX, filename_without_ext):
+                # Root-level file - check if it's a legitimate pattern
+                if not is_legitimate_filename(key):
                     dangerous_keys.append(key)
             elif len(key.split("/")[0]) < 8:
                 # Directory structure but prefix too short

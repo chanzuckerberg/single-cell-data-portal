@@ -94,13 +94,17 @@ class TestS3Provider(unittest.TestCase):
 
         s3_provider = S3Provider()
 
-        # These should be allowed (8+ character prefix before slash and UUID-based root files)
+        # These should be allowed (8+ character prefix before slash, UUID-based root files, and file patterns)
         safe_keys = [
             "12345678-1234-5678-9012-123456789012/file1.txt",
             "longenoughprefix/subfolder/file2.txt",
             "uuid-like-prefix/data/file3.txt",
             "12345678-1234-5678-9012-123456789012.h5ad",
             "87654321-4321-8765-2109-876543210987.rds",
+            "fragments.tsv.gz",
+            "fragments_sorted.tsv.gz.tbi",
+            "fragment.tsv.bgz",
+            "valid-fragment.tsv.bgz",
         ]
 
         # Should not raise exception
