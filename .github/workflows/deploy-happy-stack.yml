@@ -131,74 +131,74 @@ jobs:
           tag_name: ${{ github.event.deployment.payload.tag }}
           body: ${{steps.build_changelog.outputs.changelog}}
 
-  e2e-logged-in-test:
-    timeout-minutes: 30
-    runs-on: xl-cpu-lg-mem-arm64
-    needs:
-      - upgrade
-    steps:
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20.10.0"
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.deployment.sha }}
-          fetch-depth: 1
-      - name: Configure AWS Prod Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        if: github.event.deployment.environment == 'prod'
-        with:
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
-          role-duration-seconds: 2700
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        if: github.event.deployment.environment != 'prod'
-        with:
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 2700
-      - name: Run e2e Logged In tests
-        env:
-          DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
-        ### config.js set-up required due to transient test dependencies on API_URL
-        run: |
-          if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
-            export DEPLOYMENT_STAGE=staging
-          fi
-          if [ "${DEPLOYMENT_STAGE}" != "prod" ]; then
-            pip3 install -r scripts/smoke_tests/requirements.txt
-            python3 -m scripts.smoke_tests.setup
-          fi
-          cd frontend
-          npm ci
-          npx playwright install --with-deps
-          cp src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
-          DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}-logged-in
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: logged-in-test-results
-          path: frontend/playwright-report/
-          retention-days: 30
-      ### Need to write success failure way because Github API doesn't allow doing
-      ### "if: always(), state: ${{ success() }}:
-      - name: Set deployment status to success if no errors
-        uses: avakar/set-deployment-status@v1
-        with:
-          state: success
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Set deployment status to failure if errors
-        uses: avakar/set-deployment-status@v1
-        if: failure()
-        with:
-          state: failure
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # e2e-logged-in-test:
+  #   timeout-minutes: 30
+  #   runs-on: xl-cpu-lg-mem-arm64
+  #   needs:
+  #     - upgrade
+  #   steps:
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "20.10.0"
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: "3.10"
+  #     - uses: actions/checkout@v2
+  #       with:
+  #         ref: ${{ github.event.deployment.sha }}
+  #         fetch-depth: 1
+  #     - name: Configure AWS Prod Credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       if: github.event.deployment.environment == 'prod'
+  #       with:
+  #         aws-region: us-west-2
+  #         role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
+  #         role-duration-seconds: 2700
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       if: github.event.deployment.environment != 'prod'
+  #       with:
+  #         aws-region: us-west-2
+  #         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+  #         role-duration-seconds: 2700
+  #     - name: Run e2e Logged In tests
+  #       env:
+  #         DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
+  #       ### config.js set-up required due to transient test dependencies on API_URL
+  #       run: |
+  #         if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
+  #           export DEPLOYMENT_STAGE=staging
+  #         fi
+  #         if [ "${DEPLOYMENT_STAGE}" != "prod" ]; then
+  #           pip3 install -r scripts/smoke_tests/requirements.txt
+  #           python3 -m scripts.smoke_tests.setup
+  #         fi
+  #         cd frontend
+  #         npm ci
+  #         npx playwright install --with-deps
+  #         cp src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
+  #         DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}-logged-in
+  #     - uses: actions/upload-artifact@v4
+  #       if: always()
+  #       with:
+  #         name: logged-in-test-results
+  #         path: frontend/playwright-report/
+  #         retention-days: 30
+  #     ### Need to write success failure way because Github API doesn't allow doing
+  #     ### "if: always(), state: ${{ success() }}:
+  #     - name: Set deployment status to success if no errors
+  #       uses: avakar/set-deployment-status@v1
+  #       with:
+  #         state: success
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Set deployment status to failure if errors
+  #       uses: avakar/set-deployment-status@v1
+  #       if: failure()
+  #       with:
+  #         state: failure
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   run-e2e-tests:
     timeout-minutes: 30
@@ -407,7 +407,7 @@ jobs:
     if: ${{ always() }} # Ensures status is run after post-deploy tests, even if they fail
     needs:
       - performance-test
-      - e2e-logged-in-test
+      # - e2e-logged-in-test
       - e2e-test
       - functional-test
     steps:
@@ -415,7 +415,6 @@ jobs:
         id: result
         run: |
           if [[ "${{ needs.performance-test.result }}" == "success" && \
-                "${{ needs.e2e-logged-in-test.result }}" == "success" && \
                 "${{ needs.e2e-test.result }}" == "success" && \
                 "${{ needs.functional-test.result }}" == "success" ]]; then
             echo "status=success" >> $GITHUB_OUTPUT

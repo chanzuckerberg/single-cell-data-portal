@@ -97,7 +97,7 @@ class S3Provider(S3ProviderInterface):
         Deletes the objects `object_keys` from bucket `bucket_name`
         """
         for i in range(0, len(object_keys), AWS_S3_MAX_ITEMS_PER_BATCH):
-            key_batch = object_keys[i:AWS_S3_MAX_ITEMS_PER_BATCH]
+            key_batch = object_keys[i : i + AWS_S3_MAX_ITEMS_PER_BATCH]
             resp = self.client.delete_objects(
                 Bucket=bucket_name,
                 Delete={"Objects": [{"Key": key} for key in key_batch]},
