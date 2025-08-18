@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "sds-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@czi-sds/mcp"]
+    }
+  }
+}
