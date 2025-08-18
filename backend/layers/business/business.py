@@ -84,7 +84,7 @@ from backend.layers.common.ingestion_manifest import IngestionManifest
 from backend.layers.common.regex import S3_URI_REGEX
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.batch_job_provider import BatchJobProviderInterface
-from backend.layers.thirdparty.s3_exceptions import IllegalS3RecursiveDelete, S3DeleteException
+from backend.layers.thirdparty.s3_exceptions import S3DeleteException
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
@@ -1052,7 +1052,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         try:
             self.s3_provider.delete_files(os.getenv("DATASETS_BUCKET"), list(object_keys))
-        except (S3DeleteException, IllegalS3RecursiveDelete) as e:
+        except S3DeleteException as e:
             raise CollectionDeleteException("Attempt to delete public Datasets failed") from e
         return list(object_keys)
 
