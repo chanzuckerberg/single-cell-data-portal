@@ -30,4 +30,5 @@ VISIUM_DATASET_MANIFEST = {"anndata": VISIUM_DATASET_URI}
 ATAC_SEQ_MANIFEST = {
     "anndata": "https://www.dropbox.com/scl/fi/wxgczoo7gfu1n8fmxt350/atac.h5ad?rlkey=zbsknm1xyuzv83tixsnrbbh13&st=wbgpuzj8&dl=0",
     "atac_fragment": "https://www.dropbox.com/scl/fi/nexccttzlzwr3lt0oe7eq/fragments_sorted.tsv.gz?rlkey=wrajzdz0f1g5gpx4m1vwmvcfh&st=s3hbbajy&dl=0",
+    "flags": {"deduplicate_fragments": True},
 }
