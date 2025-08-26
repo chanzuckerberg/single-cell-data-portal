@@ -46,6 +46,12 @@ class SchemaValidatorProviderInterface(Protocol):
         """
         pass
 
+    def deduplicate_fragments(self, fragment_file: str, output_file: str) -> None:
+        """
+        Deduplicates the provided `fragment_file` and writes the result to `output_file`.
+        """
+        pass
+
 
 class SchemaValidatorProvider(SchemaValidatorProviderInterface):
     def validate_anndata(self, input_file: str) -> Tuple[bool, list, bool]:
@@ -102,3 +108,8 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
         import cellxgene_schema.atac_seq as atac_seq
 
         return atac_seq.check_anndata_requires_fragment(anndata_file)
+
+    def deduplicate_fragments(self, fragment_file: str, output_file: str) -> None:
+        import cellxgene_schema.atac_seq as atac_seq
+
+        atac_seq.deduplicate_fragment_rows(fragment_file, output_file)

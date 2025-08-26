@@ -40,6 +40,9 @@ resource aws_batch_job_definition batch_job_def {
     {
       "name": "FRONTEND_URL",
       "value": "${var.frontend_url}"
+    },
+    {
+      "name": ""
     }
   ],
   "vcpus": 2,
