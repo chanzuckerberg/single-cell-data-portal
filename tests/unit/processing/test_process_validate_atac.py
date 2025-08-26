@@ -317,6 +317,50 @@ class TestProcessValidateAtac:
         artifacts = self.assert_artifacts_uploaded(setup, new_dataset_version.version_id)
         self.assert_new_fragment_added(artifacts, setup)
 
+    def test_deduplicate_fragments_flag_true(self, process_validate_atac, unpublished_dataset, setup):
+        """Test that the deduplicate_fragments flag is passed to the schema validator."""
+        # Arrange
+        dataset_version_id, _ = unpublished_dataset
+        manifest = IngestionManifest(
+            anndata="s3://fake_bucket_name/fake_key.h5ad",
+            atac_fragment="https://www.dropbox.com/s/fake_location/test.tsv.bgz?dl=0",
+            flags=IngestionManifest.Flags(deduplicate_fragments=True),
+        )
+
+        # Act
+        process_validate_atac.process(
+            "fake_collection_version_id",
+            dataset_version_id,
+            manifest,
+            "datasets",
+        )
+
+        # Assert
+        process_validate_atac.schema_validator.deduplicate_fragments.assert_called_once_with(
+            CorporaConstants.ORIGINAL_ATAC_FRAGMENT_FILENAME
+        )
+
+    def test_deduplicate_fragments_flag_false(self, process_validate_atac, unpublished_dataset, setup):
+        """Test that the deduplicate_fragments flag is passed to the schema validator."""
+        # Arrange
+        dataset_version_id, _ = unpublished_dataset
+        manifest = IngestionManifest(
+            anndata="s3://fake_bucket_name/fake_key.h5ad",
+            atac_fragment="https://www.dropbox.com/s/fake_location/test.tsv.bgz?dl=0",
+            flags=IngestionManifest.Flags(deduplicate_fragments=False),
+        )
+
+        # Act
+        process_validate_atac.process(
+            "fake_collection_version_id",
+            dataset_version_id,
+            manifest,
+            "datasets",
+        )
+
+        # Assert
+        process_validate_atac.schema_validator.deduplicate_fragments.assert_not_called()
+
 
 class TestSkipATACValidation:
     def test_not_atac_and_no_fragment(

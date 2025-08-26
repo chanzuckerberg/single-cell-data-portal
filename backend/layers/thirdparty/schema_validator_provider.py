@@ -109,7 +109,12 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
 
         return atac_seq.check_anndata_requires_fragment(anndata_file)
 
-    def deduplicate_fragments(self, fragment_file: str, output_file: str) -> None:
+    def deduplicate_fragments(self, fragment_file: str) -> None:
+        import os
+
         import cellxgene_schema.atac_seq as atac_seq
 
+        output_file = fragment_file + ".deduplicated"
         atac_seq.deduplicate_fragment_rows(fragment_file, output_file)
+        os.remove(fragment_file)
+        os.rename(output_file, fragment_file)
