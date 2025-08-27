@@ -46,9 +46,9 @@ class SchemaValidatorProviderInterface(Protocol):
         """
         pass
 
-    def deduplicate_fragments(self, fragment_file: str, output_file: str) -> None:
+    def deduplicate_fragments(self, fragment_file: str) -> None:
         """
-        Deduplicates the provided `fragment_file` and writes the result to `output_file`.
+        Deduplicates and replaces the provided `fragment_file`.
         """
         pass
 
