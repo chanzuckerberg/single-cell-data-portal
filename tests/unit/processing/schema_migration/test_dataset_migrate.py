@@ -25,7 +25,7 @@ class TestDatasetMigrate:
         assert dataset_version_id != new_dataset_version_id.id
         assert (
             response["manifest"]
-            == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad","atac_fragment":null}}'
+            == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad","atac_fragment":null,"flags":null}}'
         )
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]
@@ -54,7 +54,7 @@ class TestDatasetMigrate:
         assert dataset_version_id != new_dataset_version_id.id
         assert (
             response["manifest"]
-            == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad","atac_fragment":null}}'
+            == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad","atac_fragment":null,"flags":null}}'
         )
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]
@@ -83,7 +83,7 @@ class TestDatasetMigrate:
         assert dataset_version_id != new_dataset_version_id.id
         assert (
             response["manifest"]
-            == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad","atac_fragment":null}}'
+            == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad","atac_fragment":null,"flags":null}}'
         )
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]

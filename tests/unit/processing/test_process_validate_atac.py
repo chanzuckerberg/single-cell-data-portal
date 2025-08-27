@@ -16,7 +16,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersionId,
 )
-from backend.layers.common.ingestion_manifest import IngestionManifest
+from backend.layers.common.ingestion_manifest import IngestionManifest, IngestionManifestFlags
 from backend.layers.processing.exceptions import ConversionFailed, ValidationAtacFailed
 from backend.layers.processing.process_validate_atac import ProcessValidateATAC
 from tests.unit.processing.base_processing_test import BaseProcessingTest
@@ -324,7 +324,7 @@ class TestProcessValidateAtac:
         manifest = IngestionManifest(
             anndata="s3://fake_bucket_name/fake_key.h5ad",
             atac_fragment="https://www.dropbox.com/s/fake_location/test.tsv.bgz?dl=0",
-            flags=IngestionManifest.Flags(deduplicate_fragments=True),
+            flags=IngestionManifestFlags(deduplicate_fragments=True),
         )
 
         # Act
@@ -347,7 +347,7 @@ class TestProcessValidateAtac:
         manifest = IngestionManifest(
             anndata="s3://fake_bucket_name/fake_key.h5ad",
             atac_fragment="https://www.dropbox.com/s/fake_location/test.tsv.bgz?dl=0",
-            flags=IngestionManifest.Flags(deduplicate_fragments=False),
+            flags=IngestionManifestFlags(deduplicate_fragments=False),
         )
 
         # Act

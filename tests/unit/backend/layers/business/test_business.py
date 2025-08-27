@@ -905,7 +905,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.step_function_provider.start_step_function.assert_called_once_with(
             revision.version_id,
             new_dataset_version_id,
-            f'{{"anndata":"s3://artifacts/{dataset_version.version_id}/raw.h5ad","atac_fragment":null}}',
+            f'{{"anndata":"s3://artifacts/{dataset_version.version_id}/raw.h5ad","atac_fragment":null,"flags":null}}',
         )
 
     def test_reingest_published_anndata_dataset__not_h5ad(self):
@@ -963,7 +963,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.step_function_provider.start_step_function.assert_called_once_with(
             revision.version_id,
             new_dataset_version_id,
-            f'{{"anndata":"s3://artifacts/{dataset_version.version_id}/raw.h5ad","atac_fragment":"{fragment_url}"}}',
+            f'{{"anndata":"s3://artifacts/{dataset_version.version_id}/raw.h5ad","atac_fragment":"{fragment_url}","flags":null}}',
         )
 
     def test_reingest_published_atac_dataset__not_atac(self):
