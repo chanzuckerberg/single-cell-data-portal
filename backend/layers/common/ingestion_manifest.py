@@ -26,7 +26,7 @@ class S3Url(AnyUrl):
 
 
 class IngestionManifestFlags(BaseModel):
-    deduplicate_fragments: Optional[bool] = False  # Optional field with default value
+    deduplicate_fragments: Optional[bool] = None  # Optional field with default value
 
 
 class IngestionManifest(BaseModel):
