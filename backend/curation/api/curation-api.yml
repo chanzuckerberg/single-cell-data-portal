@@ -1699,7 +1699,7 @@ components:
       type: string
     ingestion_manifest: # Schema lightly modified from yaml.dump(IngestionManifest.model_json_schema())
       description: |
-        Manifest of files defining a dataset, and flags used for internal purposes to control the ingestion behavior.
+        Manifest of files defining a dataset, and flags used for internal purposes.
       properties:
         anndata:
           anyOf:
@@ -1725,10 +1725,7 @@ components:
         flags:
           description: Flags used for internal purposes to control the ingestion behavior
           type: object
-          properties:
-            deduplicate_fragments:
-              description: Whether to deduplicate fragments in the fragment file before validation and ingestion
-              type: boolean
+          additionalProperties: true
       title: IngestionManifest
       type: object
   parameters:
