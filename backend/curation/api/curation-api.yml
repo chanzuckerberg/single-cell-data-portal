@@ -1699,7 +1699,7 @@ components:
       type: string
     ingestion_manifest: # Schema lightly modified from yaml.dump(IngestionManifest.model_json_schema())
       description: |
-        Manifest of files defining a dataset.
+        Manifest of files defining a dataset, and flags used for internal purposes.
       properties:
         anndata:
           anyOf:
@@ -1722,6 +1722,10 @@ components:
               minLength: 1
               type: string
           title: ATAC Seq Fragment
+        flags:
+          description: Flags used for internal purposes to control the ingestion behavior
+          type: object
+          additionalProperties: true
       title: IngestionManifest
       type: object
   parameters:

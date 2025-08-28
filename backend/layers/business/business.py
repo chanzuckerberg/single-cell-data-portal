@@ -711,7 +711,7 @@ class BusinessLogic(BusinessLogicInterface):
         # Starts the step function process
         if start_step_function:
             self.step_function_provider.start_step_function(
-                collection_version_id, new_dataset_version.version_id, manifest.model_dump_json()
+                collection_version_id, new_dataset_version.version_id, manifest.model_dump_json(exclude_none=True)
             )
 
         return (new_dataset_version.version_id, new_dataset_version.dataset_id)

@@ -3136,6 +3136,16 @@ class TestPutManifestATAC(TestPutManifest):
         }
 
 
+class TestPutManifestFlag(TestPutManifest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.good_request_body = {
+            "anndata": "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0",
+            "flags": {"deduplicate_fragments": True},
+        }
+
+
 class TestAuthToken(BaseAPIPortalTest):
     @patch("backend.curation.api.v1.curation.auth.token.CorporaAuthConfig")
     @patch("backend.curation.api.v1.curation.auth.token.auth0_management_session")
