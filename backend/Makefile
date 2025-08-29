@@ -122,8 +122,9 @@ endif
 # Runs in interactive mode, so each run requires separate terminal tab.
 PORT:=5432
 db/tunnel/up:
+	$(eval INSTANCE_ENV := $(if $(filter staging,$(DEPLOYMENT_STAGE)),stage,$(DEPLOYMENT_STAGE)))
 	$(eval endpoint=$(shell aws rds describe-db-cluster-endpoints --db-cluster-identifier ${CLUSTER_NAME} | jq -r '.DBClusterEndpoints[] | select(.EndpointType | contains("WRITER")) | .Endpoint'))
-	$(eval instance_id=$(shell aws ec2 describe-instances --filters "Name=tag:Name,Values=dp-${DEPLOYMENT_STAGE}-happy" --query "Reservations[*].Instances[*].InstanceId" --output text))
+	$(eval instance_id=$(shell aws ec2 describe-instances --filters "Name=tag:Name,Values=dp-${INSTANCE_ENV}-happy" --query "Reservations[*].Instances[*].InstanceId" --output text))
 
 	aws ssm start-session --target ${instance_id} --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"portNumber":["5432"],"localPortNumber":["$(PORT)"],"host":["${endpoint}"]}'
 
