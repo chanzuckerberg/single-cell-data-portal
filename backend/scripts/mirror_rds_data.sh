@@ -60,7 +60,9 @@ load_src_dump_to_dest_db || load_src_dump_to_dest_db  # Hack for rdev, where it 
 
 if [[ $DEST_ENV != 'rdev' ]]; then
   DB_UPDATE_CMDS=$(cat <<EOF
--c "UPDATE persistence_schema."DatasetArtifact" SET uri = regexp_replace(uri, '^(s3://[^/]*?)-${SRC_ENV}(/.+)$', '\\1-${DEST_ENV}\\2') WHERE  uri LIKE 's3://%-${SRC_ENV}/%';"
+  -c "UPDATE persistence_schema.\"DatasetArtifact\" \
+      SET uri = regexp_replace(uri, '^(s3://[^/]*?)-${SRC_ENV}(/.+)', '\1-${DEST_ENV}\2') \
+      WHERE uri LIKE 's3://%-${SRC_ENV}/%';"
 EOF
 )
 else
