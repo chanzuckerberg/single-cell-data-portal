@@ -166,6 +166,15 @@ class ProcessValidateATAC(ProcessingLogic):
             self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.FAILED)
             raise ValidationAtacFailed(errors=[str(e)]) from None
 
+        # Deduplicate the fragment file
+        if manifest.flags and manifest.flags.deduplicate_fragments:
+            try:
+                self.schema_validator.deduplicate_fragments(local_fragment_filename)
+            except Exception as e:
+                self.logger.exception(f"Failed to deduplicate fragment file {local_fragment_filename}")
+                self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.FAILED)
+                raise ValidationAtacFailed(errors=[str(e)]) from None
+
         # Validate the fragment with anndata file
         try:
             errors, fragment_index_file, fragment_file = self.schema_validator.validate_atac(
