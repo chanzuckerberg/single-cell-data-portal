@@ -11,6 +11,8 @@ from backend.layers.common.ingestion_manifest import IngestionManifest
         """{"anndata": "s3://bucket/dataset.h5ad"}""",
         """{"anndata": "https://example.com/dataset.h5ad", "atac_fragments": "https://example.com/fragments.tsv.gz"}""",
         """{"anndata": "https://example.com/dataset.h5ad", "atac_fragments": "s3://bucket/fragments.tsv.gz"}""",
+        """{"anndata": "https://example.com/dataset.h5ad", "atac_fragments": "s3://bucket/fragments.tsv.gz", "flags": {"deduplicate_fragments": true}}""",
+        """{"anndata": "s3://bucket/dataset.h5ad", "atac_fragments": "s3://bucket/fragments.tsv.gz", "flags": null}""",
     ],
 )
 def test_anndata_validation_success(manifest):
