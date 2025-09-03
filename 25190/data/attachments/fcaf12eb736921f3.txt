@@ -1,1 +1,0 @@
-INFO     backend.layers.thirdparty.s3_provider_mock:s3_provider_mock.py:78 {'message': 'Starting deletion operation', 'bucket_name': 'datasets', 'key_count': 8, 'sample_keys': ['607fe44b-b377-4ac3-83df-575cfa9b676f.rds', '607fe44b-b377-4ac3-83df-575cfa9b676f.h5ad', 'a8b999f8-fb70-4605-b707-c761dd727e59-fragment.tsv.bgz.tbi']}

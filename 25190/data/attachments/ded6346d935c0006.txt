@@ -1,3 +1,0 @@
-INFO     backend.layers.thirdparty.s3_provider_mock:s3_provider_mock.py:38 {'message': 'No valid keys to delete', 'bucket_name': 'datasets'}
-INFO     backend.layers.thirdparty.s3_provider_mock:s3_provider_mock.py:38 {'message': 'No valid keys to delete', 'bucket_name': 'datasets'}
-INFO     backend.layers.thirdparty.s3_provider_mock:s3_provider_mock.py:78 {'message': 'Starting deletion operation', 'bucket_name': 'datasets', 'key_count': 8, 'sample_keys': ['129f3ad2-e38e-4a33-ae18-d9ee16daef53.h5ad', '84b53614-c89b-4cf5-9acc-df3576a9e963-fragment.tsv.bgz', 'c8e8f789-326d-4ebb-b7cc-d560bc0409e4.rds']}
