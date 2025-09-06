@@ -1,2 +1,0 @@
-INFO     backend.layers.business.business:business.py:1505 {'message': 'Restoring previous collection version', 'collection_id': '69dc1601-99e5-4fd1-b705-b65c83d8928d', 'replace_version_id': 'd45c24d2-263a-45eb-8ae2-51dfd310f3cb', 'restored_version_id': 'c16d6a66-87a5-478a-977b-c88474b057bc'}
-INFO     backend.layers.thirdparty.s3_provider_mock:s3_provider_mock.py:87 {'message': 'Starting deletion operation', 'bucket_name': None, 'key_count': 2, 'sample_keys': ['481ce455-902a-4334-8916-39742bcbc216.h5ad', '481ce455-902a-4334-8916-39742bcbc216.rds']}
