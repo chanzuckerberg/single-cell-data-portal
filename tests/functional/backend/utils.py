@@ -153,11 +153,18 @@ def upload_manifest_and_wait(
         res = session.post(f"{api_url}/curation/v1/collections/{collection_id}/datasets", headers=headers)
         assertStatusCode(201, res)
         dataset_id = json.loads(res.content)["dataset_id"]
-        res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers)
-        assertStatusCode(200, res)
-        version_id = json.loads(res.content)["datasets"][0]["dataset_version_id"]
     else:
         dataset_id = existing_dataset_id
+
+    # Get dataset version id
+    res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers)
+    assertStatusCode(200, res)
+    version_id = None
+    for dataset in json.loads(res.content)["datasets"]:
+        if dataset["dataset_id"] == dataset_id:
+            version_id = dataset.get("dataset_version_id")
+            break
+    assert version_id is not None, f"Dataset version id not found for dataset {dataset_id}, we broke something"
 
     # Upload manifest
     res = session.put(
@@ -168,9 +175,11 @@ def upload_manifest_and_wait(
     assertStatusCode(202, res)
 
     # Wait for dataset status
-    return _wait_for_dataset_status(
+    result = _wait_for_dataset_status(
         session, api_url, version_id, {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     )
+    result["version_id"] = version_id
+    return result
 
 
 def _wait_for_dataset_status(session, api_url, dataset_id, headers):
