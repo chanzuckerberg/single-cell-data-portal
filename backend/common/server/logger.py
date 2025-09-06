@@ -32,10 +32,10 @@ def configure_logging(app_name):
                 }
             },
             "loggers": {
-                app_name: {"level": gunicorn_logger.level, "handlers": ["wsgi"], "propagate": 1},
-                "gunicorn.error": {"level": gunicorn_logger.level, "handlers": ["wsgi"], "propagate": 1},
+                app_name: {"level": gunicorn_logger.level, "handlers": ["wsgi"], "propagate": 0},
                 "backend": {"level": gunicorn_logger.level, "handlers": ["wsgi"], "propagate": 1},
-                "boto3": {"level": "WARNING", "handlers": ["wsgi"], "propagate": 1},
+                "wmg": {"level": gunicorn_logger.level, "handlers": ["wsgi"], "propagate": 1},
+                "matrix_utils": {"level": gunicorn_logger.level, "handlers": ["wsgi"], "propagate": 1},
             },
             "root": {"level": gunicorn_logger.level, "handlers": ["wsgi"]},
         }
