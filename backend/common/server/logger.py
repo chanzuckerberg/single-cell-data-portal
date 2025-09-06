@@ -31,12 +31,6 @@ def configure_logging(app_name):
                     "filters": ["request_id"],
                 }
             },
-            "loggers": {
-                app_name: {"level": gunicorn_logger.level, "handlers": ["wsgi"], "propagate": 1},
-                "gunicorn.error": {"level": gunicorn_logger.level, "handlers": ["wsgi"], "propagate": 0},
-                "backend": {"level": gunicorn_logger.level, "handlers": ["wsgi"], "propagate": 0},
-                "boto3": {"level": "WARNING", "handlers": ["wsgi"], "propagate": 0},
-            },
             "root": {"level": gunicorn_logger.level, "handlers": ["wsgi"]},
         }
     )
