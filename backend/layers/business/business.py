@@ -607,10 +607,11 @@ class BusinessLogic(BusinessLogicInterface):
         # Validate the URIs
         # TODO: This should be done in the IngestionManifest class
         for key, _url in manifest.model_dump(exclude_none=True).items():
-            parsed_url = urlparse(str(_url))
-            _url = parsed_url.geturl()
+            _url = str(_url)
+            parsed_url = urlparse(_url)
             if not self.uri_provider.validate(_url):
-                raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
+                logger.error(f"Trying to upload invalid URI: {_url}")
+                raise InvalidURIException()
             if not self.is_already_ingested(_url):
                 continue
             if not current_dataset_version_id:

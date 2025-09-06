@@ -224,6 +224,7 @@ def test_dataset_upload_flow_with_atac_seq_dataset(
     dataset_title_update,
     curation_api_access_token,
 ):
+    """Test upload, reupload from public urls, update title, and delete of an ATAC-seq dataset using manifest upload."""
     headers = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     collection_id = create_test_collection(
         headers,
@@ -232,10 +233,16 @@ def test_dataset_upload_flow_with_atac_seq_dataset(
         api_url,
         collection_data,
     )
+    dataset_id = upload_manifest(collection_id, ATAC_SEQ_MANIFEST)  # upload ATAC-seq dataset
+    # get the manifest and ensure it has expected content
+    new_manifest = session.get(
+        f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest", headers=headers
+    ).json()
+    # re-upload the manifest from the public urls to ensure re-upload works as expected
     _verify_upload_and_delete_succeeded(
         collection_id,
         headers,
-        ATAC_SEQ_MANIFEST,
+        new_manifest,
         dataset_title_update,
         session,
         api_url,
