@@ -610,8 +610,7 @@ class BusinessLogic(BusinessLogicInterface):
             _url = str(_url)
             parsed_url = urlparse(_url)
             if not self.uri_provider.validate(_url):
-                logger.error(f"Trying to upload invalid URI: {_url}")
-                raise InvalidURIException()
+                raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
             if not self.is_already_ingested(_url):
                 continue
             if not current_dataset_version_id:

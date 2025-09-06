@@ -1043,8 +1043,9 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 
         self.uri_provider.validate = Mock(return_value=False)
 
-        with self.assertRaises(InvalidURIException):
+        with self.assertRaises(DatasetIngestException) as ex:
             self.business_logic.ingest_dataset(version.version_id, url, None, None)
+        self.assertEqual(str(ex.exception), "Trying to upload invalid URI: http://bad.url/")
 
         self.step_function_provider.start_step_function.assert_not_called()
 

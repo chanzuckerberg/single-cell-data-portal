@@ -51,7 +51,7 @@ def make_cookie(auth_token: dict) -> str:
 
 def assertStatusCode(actual: int, expected_response: requests.Response):
     request_id = expected_response.headers.get("X-Request-Id")
-    assert actual == expected_response.status_code, f"{request_id=}"
+    assert actual == expected_response.status_code, f"{request_id=}, {expected_response.content=}"
 
 
 def create_test_collection(headers, request, session, api_url, body):
