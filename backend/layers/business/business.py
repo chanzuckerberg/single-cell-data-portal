@@ -608,7 +608,6 @@ class BusinessLogic(BusinessLogicInterface):
         # TODO: This should be done in the IngestionManifest class
         for key, _url in manifest.model_dump(exclude_none=True).items():
             _url = str(_url)
-            parsed_url = urlparse(_url)
             if not self.uri_provider.validate(_url):
                 raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
             if not self.is_already_ingested(_url):
@@ -617,6 +616,7 @@ class BusinessLogic(BusinessLogicInterface):
                 raise InvalidIngestionManifestException(
                     message="Cannot ingest public datasets without a current dataset version"
                 )
+            parsed_url = urlparse(_url)
             if key == "anndata":
                 dataset_version_id, extension = parsed_url.path.split("/")[-1].split(".", maxsplit=1)
                 if extension != ARTIFACT_TO_EXTENSION[DatasetArtifactType.H5AD]:
