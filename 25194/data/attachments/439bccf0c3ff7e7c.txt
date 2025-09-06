@@ -1,7 +1,0 @@
-INFO     backend.layers.processing.utils.atac:atac.py:294 Adaptive tiling: 25 bins per tile (2kb genomic windows) for dataset with 25 total bins
-INFO     backend.layers.processing.utils.atac:atac.py:305 Using advanced compression filters: BitWidthReduction+ByteShuffle+ZStd for integers, DoubleDelta+BitWidthReduction+ZStd for coordinates
-INFO     backend.layers.processing.utils.atac:atac.py:313 Using quantized normalized coverage (uint8) for ~6x better compression
-INFO     backend.layers.processing.utils.atac:atac.py:329 Created TileDB array /tmp/pytest-of-root/pytest-0/test__stream_coverage_direct_a0/test_array with advanced filter compression: BitWidth+ByteShuffle+ZStd(level=6) for coverage, DoubleDelta+BitWidth+ZStd(level=6) for coordinates, Dictionary+ZStd(level=22) for cell types
-INFO     backend.layers.processing.utils.atac:atac.py:487 Processing 5 records with generator-based chunked streaming (chunk_size: 10,466,228)...
-INFO     backend.layers.processing.utils.atac:atac.py:540 Sparse data pruning (normalized coverage threshold ≥0.1): 0/5 records (0.0%) removed, 5 records kept
-INFO     backend.layers.processing.utils.atac:atac.py:495 Successfully processed 5 records to TileDB as single fragment
