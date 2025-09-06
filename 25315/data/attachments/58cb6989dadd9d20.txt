@@ -1,0 +1,16 @@
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': 4e1145b9-5b08-48d5-bfb7-d67621bb5490, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, flags=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': 4e1145b9-5b08-48d5-bfb7-d67621bb5490, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, flags=None), 'current_dataset_version_id': None}
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [58d3f247-1317-4325-a1ef-9df6969e9c66/atac_fragment] to s3://datasets/2775e47c-8ba1-4fdb-b2ac-73876ce9378d-fragment.tsv.bgz
+INFO     processing:process_validate_atac.py:67 Updated database with atac_fragment.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [58d3f247-1317-4325-a1ef-9df6969e9c66/atac_index] to s3://datasets/2775e47c-8ba1-4fdb-b2ac-73876ce9378d-fragment.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:67 Updated database with atac_index.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [82bc9854-fb10-47c3-936b-741646edec60/atac_fragment] to s3://datasets/2a2e8450-03fe-4647-9934-45a6cfe198d9-fragment.tsv.bgz
+INFO     processing:process_validate_atac.py:67 Updated database with atac_fragment.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [82bc9854-fb10-47c3-936b-741646edec60/atac_index] to s3://datasets/2a2e8450-03fe-4647-9934-45a6cfe198d9-fragment.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:67 Updated database with atac_index.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:228 Processing completed successfully

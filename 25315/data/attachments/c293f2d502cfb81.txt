@@ -1,0 +1,10 @@
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': fc2216a3-9e9a-4e4a-a4f7-f054e99907ab, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, flags=None), 'current_dataset_version_id': None}
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/86a38f85-895b-41e6-a71b-212784d311e4/datasets/03e1e013-135b-4cb1-a2ff-9f33693c718e', 'method': 'GET', 'content_length': None}}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2436, 'response_time': 0.003582477569580078}}
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/86a38f85-895b-41e6-a71b-212784d311e4/datasets/2dbaf117-cb70-4aa6-b3a0-20e8fdffc0f0', 'method': 'GET', 'content_length': None}}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 403, 'content_length': 132, 'response_time': 0.0018870830535888672}}
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': ec49b6bf-c236-46fc-8b17-8013e6d9b00a, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, flags=None), 'current_dataset_version_id': None}
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/4f7a8b57-3509-449a-a83e-f2de060d1ff3/datasets/ef3985f8-43c3-4e95-a2e1-68ffd4adfa72', 'method': 'GET', 'content_length': None}}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 403, 'content_length': 132, 'response_time': 0.001996755599975586}}
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/46d1250c-c3ad-4f93-95bc-f580577ef7c9/datasets/ef3985f8-43c3-4e95-a2e1-68ffd4adfa72', 'method': 'GET', 'content_length': None}}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2495, 'response_time': 0.0036635398864746094}}
