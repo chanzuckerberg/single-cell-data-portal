@@ -1,0 +1,16 @@
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 360}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2110, 'response_time': 0.0054285526275634766}}
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 322}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2110, 'response_time': 0.0027196407318115234}}
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 316}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2110, 'response_time': 0.0026924610137939453}}
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 322}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2110, 'response_time': 0.0026497840881347656}}
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 322}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 1890, 'response_time': 0.0026590824127197266}}
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 360}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 1646, 'response_time': 0.002473592758178711}}
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 322}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 1890, 'response_time': 0.0025670528411865234}}
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 360}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 1646, 'response_time': 0.002484560012817383}}
