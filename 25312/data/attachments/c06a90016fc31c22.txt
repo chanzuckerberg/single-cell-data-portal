@@ -1,0 +1,10 @@
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/3ec652cc-7a05-438c-9b0c-153946416405/datasets/b05f0ac6-dbcb-429c-87c9-5692febfc4e0', 'method': 'GET', 'content_length': None}}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2436, 'response_time': 0.003549337387084961}}
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/ab2eb124-1965-47eb-a2a9-4bcfb6861dff/datasets/c8e8b2fd-ec77-4f88-8d0d-7bf4a93f3062', 'method': 'GET', 'content_length': None}}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2459, 'response_time': 0.0034837722778320312}}
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/4db4c1db-25da-4eeb-9c53-6bd53f03e4f0/datasets/96763c7a-9580-463c-b651-a0ef8469a257', 'method': 'GET', 'content_length': None}}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2472, 'response_time': 0.004310131072998047}}
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/4db4c1db-25da-4eeb-9c53-6bd53f03e4f0/datasets/45d21049-555d-41e7-aa3d-4d5e0a8aba8a', 'method': 'GET', 'content_length': None}}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2472, 'response_time': 0.0044023990631103516}}
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/4db4c1db-25da-4eeb-9c53-6bd53f03e4f0/datasets/e682b102-c974-4d4b-b971-081f2ad2085e', 'method': 'GET', 'content_length': None}}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2449, 'response_time': 0.0050754547119140625}}

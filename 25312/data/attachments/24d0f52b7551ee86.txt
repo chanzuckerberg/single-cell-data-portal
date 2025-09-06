@@ -1,0 +1,18 @@
+DEBUG    ddtrace.internal.remoteconfig._subscribers:_subscribers.py:45 [PID 1 | PPID 0] Subscriber ASM is getting data
+DEBUG    ddtrace.internal.remoteconfig._subscribers:_subscribers.py:47 [PID 1 | PPID 0] Subscriber ASM got data
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 360}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2110, 'response_time': 0.005316495895385742}}
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 322}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2110, 'response_time': 0.002587556838989258}}
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 316}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2110, 'response_time': 0.0026903152465820312}}
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 322}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2110, 'response_time': 0.0026557445526123047}}
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 322}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 1890, 'response_time': 0.002588510513305664}}
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 360}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 1646, 'response_time': 0.0025148391723632812}}
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 322}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 1890, 'response_time': 0.0025167465209960938}}
+INFO     corpora-api-wmg-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/wmg/v2/filters', 'method': 'POST', 'content_length': 360}}
+INFO     corpora-api-wmg-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 1646, 'response_time': 0.0025205612182617188}}

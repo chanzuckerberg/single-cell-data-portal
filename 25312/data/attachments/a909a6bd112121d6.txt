@@ -1,0 +1,3 @@
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [6b766bc2-cb3d-44fe-8de7-8eb053321c79/atac_fragment] to s3://datasets/5062245a-e818-4b67-aab8-4e7187411369-fragment.tsv.bgz
+INFO     processing:process_validate_atac.py:67 Updated database with atac_fragment.
