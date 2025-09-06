@@ -235,9 +235,14 @@ def test_dataset_upload_flow_with_atac_seq_dataset(
     )
     dataset_id = upload_manifest(collection_id, ATAC_SEQ_MANIFEST)  # upload ATAC-seq dataset
     # get the manifest and ensure it has expected content
-    new_manifest = session.get(
+    resp = session.get(
         f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest", headers=headers
-    ).json()
+    )
+    assertStatusCode(200, resp)
+    new_manifest = resp.json()
+    assert set(new_manifest.keys()) == set(
+        ATAC_SEQ_MANIFEST.keys()
+    ), f"Manifest keys do not match expected, {new_manifest=}"
     # re-upload the manifest from the public urls to ensure re-upload works as expected
     _verify_upload_and_delete_succeeded(
         collection_id,
