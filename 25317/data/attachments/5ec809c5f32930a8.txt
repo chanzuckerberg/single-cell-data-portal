@@ -1,0 +1,1 @@
+INFO     root:uri.py:145 {'parsed_uri.scheme': 'https', 'parsed_uri.netloc': 'datasets.test.technology', 'cls._netloc': 'datasets.test.technology', 'cls._scheme': 'https'}

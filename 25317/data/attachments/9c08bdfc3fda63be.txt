@@ -1,0 +1,2 @@
+INFO     root:uri.py:145 {'parsed_uri.scheme': 'http', 'parsed_uri.netloc': 'somebucket.s3.amazonaws.com', 'cls._netloc': 'datasets.test.technology', 'cls._scheme': 'https'}
+INFO     root:uri.py:145 {'parsed_uri.scheme': 'https', 'parsed_uri.netloc': 'somebucket', 'cls._netloc': 'datasets.test.technology', 'cls._scheme': 'https'}
