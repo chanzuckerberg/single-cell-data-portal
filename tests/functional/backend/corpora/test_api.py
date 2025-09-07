@@ -266,7 +266,7 @@ def test_dataset_reupload_flow_from_manifest(
         api_url,
         collection_data,
     )
-    dataset_id, version_id = upload_manifest(collection_id, DATASET_MANIFEST)
+    dataset_id = upload_manifest(collection_id, DATASET_MANIFEST)["dataset_id"]
     # get the manifest and ensure it has expected content
     resp = session.get(
         f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",

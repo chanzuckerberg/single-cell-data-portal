@@ -86,7 +86,7 @@ def upload_dataset(session, api_url, curator_cookie, request):
         request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/datasets/{dataset_id}", headers=headers))
         if result["errors"]:
             raise pytest.fail(str(result["errors"]))
-        return dataset_id
+        return result
 
     return _upload_dataset
 
@@ -122,7 +122,7 @@ def upload_manifest(session, api_url, curation_api_access_token, curator_cookie,
         request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/datasets/{dataset_id}", headers=headers))
         if result["errors"]:
             raise pytest.fail(str(result["errors"]))
-        return dataset_id, result["version_id"]
+        return result
 
     return _upload_manifest
 
