@@ -1,1 +1,0 @@
-Processing chromosomes:   0%|          | 0/3 [00:00<?, ?chrom/s]Processing chromosomes:  67%|██████▋   | 2/3 [00:00<00:00, 11.17chrom/s]Processing chromosomes: 100%|██████████| 3/3 [00:00<00:00, 16.72chrom/s]
