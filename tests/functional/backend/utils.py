@@ -99,7 +99,7 @@ def update_title_and_wait(session, api_url, curator_cookie, collection_id, datas
     patch_url = f"{api_url}/dp/v1/collections/{collection_id}/datasets/{dataset_id}"
     res = session.patch(patch_url, data=json.dumps(dataset_title_update), headers=headers)
     assertStatusCode(202, res)
-    # TODO: patch is only working for version_id for atac datasets. Why is that?
+
     # ensure metadata update is queued for dataset
     res = session.get(f"{api_url}/dp/v1/collections/{collection_id}", headers=headers)
     assertStatusCode(200, res)

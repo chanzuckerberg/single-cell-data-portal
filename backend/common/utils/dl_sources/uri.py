@@ -1,4 +1,3 @@
-import logging
 import shutil
 import typing
 from abc import ABC, abstractmethod
@@ -142,14 +141,6 @@ class S3URL(URI):
     @classmethod
     def validate(cls, uri: str):
         parsed_uri = urlparse(uri)
-        logging.info(
-            {
-                "parsed_uri.scheme": parsed_uri.scheme,
-                "parsed_uri.netloc": parsed_uri.netloc,
-                "cls._netloc": cls._netloc,
-                "cls._scheme": cls._scheme,
-            }
-        )
         return (
             cls(uri, parsed_uri)
             if parsed_uri.scheme == cls._scheme and parsed_uri.netloc.endswith(cls._netloc)

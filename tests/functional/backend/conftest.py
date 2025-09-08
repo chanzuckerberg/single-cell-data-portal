@@ -1,5 +1,5 @@
 import os
-from typing import Tuple
+from typing import Dict
 
 import pytest
 
@@ -113,7 +113,7 @@ def upload_dataset_title(session, api_url, curator_cookie, request):
 
 @pytest.fixture(scope="session")
 def upload_manifest(session, api_url, curation_api_access_token, curator_cookie, request):
-    def _upload_manifest(collection_id: str, manifest: dict, existing_dataset_id=None) -> Tuple[str, str]:
+    def _upload_manifest(collection_id: str, manifest: dict, existing_dataset_id=None) -> Dict[str, str]:
         result = upload_manifest_and_wait(
             session, api_url, curation_api_access_token, curator_cookie, collection_id, manifest, existing_dataset_id
         )
