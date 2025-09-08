@@ -98,11 +98,11 @@ def update_title_and_wait(session, api_url, curator_cookie, collection_id, datas
 
     patch_url = f"{api_url}/dp/v1/collections/{collection_id}/datasets/{dataset_id}"
     res = session.patch(patch_url, data=json.dumps(dataset_title_update), headers=headers)
-    res.raise_for_status()
-
+    assertStatusCode(202, res)
+    # TODO: patch is only working for version_id for atac datasets. Why is that?
     # ensure metadata update is queued for dataset
     res = session.get(f"{api_url}/dp/v1/collections/{collection_id}", headers=headers)
-    res.raise_for_status()
+    assertStatusCode(200, res)
     collection = json.loads(res.content)
     updated_dataset_id = [dataset["id"] for dataset in collection["datasets"]][0]
     res = session.get(f"{api_url}/dp/v1/datasets/{updated_dataset_id}/status", headers=headers)
@@ -139,8 +139,9 @@ def upload_url_and_wait(session, api_url, curator_cookie, collection_id, dropbox
         )
     assertStatusCode(requests.codes.accepted, res)
     dataset_id = json.loads(res.content)["dataset_id"]
-
-    return _wait_for_dataset_status(session, api_url, dataset_id, headers)
+    result = _wait_for_dataset_status(session, api_url, dataset_id, headers)
+    result["version_id"] = dataset_id
+    return result
 
 
 def upload_manifest_and_wait(
@@ -179,6 +180,7 @@ def upload_manifest_and_wait(
         session, api_url, version_id, {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     )
     result["version_id"] = version_id
+    result["dataset_id"] = dataset_id
     return result
 
 

@@ -266,7 +266,9 @@ def test_dataset_reupload_flow_from_manifest(
         api_url,
         collection_data,
     )
-    dataset_id = upload_manifest(collection_id, DATASET_MANIFEST)["dataset_id"]
+    result = upload_manifest(collection_id, DATASET_MANIFEST)
+    dataset_id = result["dataset_id"]
+
     # get the manifest and ensure it has expected content
     resp = session.get(
         f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
@@ -293,6 +295,7 @@ def _verify_upload_and_delete_succeeded(
 ):
     result = upload_and_wait(collection_id, req_body)
     dataset_id = result["dataset_id"]
+    version_id = result["version_id"]
     # test non owner cant retrieve status
     no_auth_headers = {"Content-Type": "application/json"}
     res = session.get(f"{api_url}/dp/v1/datasets/{dataset_id}/status", headers=no_auth_headers)
@@ -300,7 +303,7 @@ def _verify_upload_and_delete_succeeded(
         res.raise_for_status()
 
     # update title and await dataset update
-    updated_dataset_id = upload_dataset_title_and_wait(collection_id, dataset_id, title_update_body)
+    updated_dataset_id = upload_dataset_title_and_wait(collection_id, version_id, title_update_body)
 
     # Test dataset deletion
     res = session.delete(f"{api_url}/dp/v1/datasets/{updated_dataset_id}", headers=headers)
