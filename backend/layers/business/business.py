@@ -607,6 +607,8 @@ class BusinessLogic(BusinessLogicInterface):
         # Validate the URIs
         # TODO: This should be done in the IngestionManifest class
         for key, _url in manifest.model_dump(exclude_none=True).items():
+            if key == "flags":
+                continue
             _url = str(_url)
             if not self.uri_provider.validate(_url):
                 raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
