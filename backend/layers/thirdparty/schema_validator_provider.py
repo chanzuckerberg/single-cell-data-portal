@@ -115,5 +115,7 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
         import cellxgene_schema.atac_seq as atac_seq
 
         output_file = atac_seq.deduplicate_fragment_rows(fragment_file)
+        if not output_file or not os.path.exists(output_file):
+            raise RuntimeError("Deduplication failed: output file not created. Original file not removed.")
         os.remove(fragment_file)
         return output_file
