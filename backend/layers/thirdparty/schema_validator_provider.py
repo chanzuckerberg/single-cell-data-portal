@@ -114,7 +114,6 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
 
         import cellxgene_schema.atac_seq as atac_seq
 
-        output_file = fragment_file + ".deduplicated"
-        atac_seq.deduplicate_fragment_rows(fragment_file, output_file)
+        output_file = atac_seq.deduplicate_fragment_rows(fragment_file)
         os.remove(fragment_file)
         return output_file
