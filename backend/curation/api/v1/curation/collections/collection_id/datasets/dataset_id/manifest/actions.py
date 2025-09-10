@@ -86,8 +86,8 @@ def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
         raise ForbiddenHTTPException() from None
     except DatasetNotFoundException:
         raise NotFoundHTTPException() from None
-    except InvalidURIException:
-        raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.") from None
+    except InvalidURIException as e:
+        raise InvalidParametersHTTPException(detail=e.args) from None
     except InvalidIngestionManifestException as e:
         raise InvalidParametersHTTPException(detail=e.message) from None
     except MaxFileSizeExceededException:
