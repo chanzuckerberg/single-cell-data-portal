@@ -46,7 +46,7 @@ class SchemaValidatorProviderInterface(Protocol):
         """
         pass
 
-    def deduplicate_fragments(self, fragment_file: str) -> None:
+    def deduplicate_fragments(self, fragment_file: str) -> str:
         """
         Deduplicates and replaces the provided `fragment_file`.
         """
@@ -109,12 +109,13 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
 
         return atac_seq.check_anndata_requires_fragment(anndata_file)
 
-    def deduplicate_fragments(self, fragment_file: str) -> None:
+    def deduplicate_fragments(self, fragment_file: str) -> str:
         import os
 
         import cellxgene_schema.atac_seq as atac_seq
 
-        output_file = fragment_file + ".deduplicated"
-        atac_seq.deduplicate_fragment_rows(fragment_file, output_file)
+        output_file = atac_seq.deduplicate_fragment_rows(fragment_file)
+        if not output_file or not os.path.exists(output_file) or os.path.getsize(output_file) == 0:
+            raise RuntimeError("Deduplication failed: output file not created. Original file not removed.")
         os.remove(fragment_file)
-        os.rename(output_file, fragment_file)
+        return output_file
