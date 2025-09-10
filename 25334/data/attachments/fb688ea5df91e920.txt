@@ -1,0 +1,9 @@
+INFO     processing:process_validate_atac.py:173 Deduplicated fragment file to test.tsv.bgz.deduplicated
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [898f80bc-1e6d-4bc4-b9ef-41a5bcae2e97/atac_fragment] to s3://datasets/7bf06df2-d97c-4e35-8d03-e98604e1f3f9-fragment.tsv.bgz
+INFO     processing:process_validate_atac.py:67 Updated database with atac_fragment.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [898f80bc-1e6d-4bc4-b9ef-41a5bcae2e97/atac_index] to s3://datasets/7bf06df2-d97c-4e35-8d03-e98604e1f3f9-fragment.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:67 Updated database with atac_index.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:229 Processing completed successfully
