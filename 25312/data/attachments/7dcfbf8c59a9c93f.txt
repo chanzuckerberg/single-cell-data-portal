@@ -1,2 +1,0 @@
-INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/1d751d26-8386-489c-8c2b-d026bec791b4/datasets', 'method': 'POST', 'content_length': None}}
-INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 405, 'content_length': 163, 'response_time': 0.0018925666809082031}}

@@ -1,3 +1,0 @@
-INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/gene_info/v1/gene_info', 'method': 'GET', 'content_length': None}}
-ERROR    root:ncbi_provider.py:75 Unexpected NCBI search result, got failed
-INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 404, 'content_length': 114, 'response_time': 0.0012087821960449219}}
