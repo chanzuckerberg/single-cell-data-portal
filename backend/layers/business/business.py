@@ -42,7 +42,6 @@ from backend.layers.business.exceptions import (
     DatasetVersionNotFoundException,
     InvalidIngestionManifestException,
     InvalidURIException,
-    MaxFileSizeExceededException,
     NoPreviousCollectionVersionException,
     NoPreviousDatasetVersionException,
 )
@@ -647,16 +646,17 @@ class BusinessLogic(BusinessLogicInterface):
                     raise InvalidIngestionManifestException(
                         message=f"{_url} atac_fragments is not a part of the canonical dataset"
                     )
-        if file_size is None:
-            file_info = self.uri_provider.get_file_info(str(manifest.anndata))
-            file_size = file_info.size
-
-        max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2**30
-
-        if file_size is not None and file_size > max_file_size_gb:
-            raise MaxFileSizeExceededException(
-                f"{manifest.anndata} exceeds the maximum allowed file size of {max_file_size_gb} Gb"
-            )
+        # TODO: undo before merging to main
+        # if file_size is None:
+        #     file_info = self.uri_provider.get_file_info(str(manifest.anndata))
+        #     file_size = file_info.size
+        #
+        # max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2**30
+        #
+        # if file_size is not None and file_size > max_file_size_gb:
+        #     raise MaxFileSizeExceededException(
+        #         f"{manifest.anndata} exceeds the maximum allowed file size of {max_file_size_gb} Gb"
+        #     )
 
         # Ensure that the collection exists and is not published
         collection = self._assert_collection_version_unpublished(collection_version_id)
