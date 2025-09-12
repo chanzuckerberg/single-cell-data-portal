@@ -1,7 +1,7 @@
 anndata # uses the version supplied by cellxgene-schema
 awscli
 boto3>=1.11.17
-cellxgene-schema @ git+https://github.com/chanzuckerberg/single-cell-curation.git@main#subdirectory=cellxgene_schema # TODO: undo before merging to main
+cellxgene-schema @ git+https://github.com/chanzuckerberg/single-cell-curation.git@main#subdirectory=cellxgene_schema_cli # TODO: undo before merging to main
 dask==2024.12.0
 dataclasses-json
 ddtrace==2.1.4
