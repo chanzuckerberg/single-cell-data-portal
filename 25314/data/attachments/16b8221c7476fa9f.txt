@@ -1,4 +1,0 @@
-INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/11ab412a-1689-460d-98e1-6c84c747bfb4/datasets/a6610729-c6a9-4d07-bb2a-6d7b54b3240b/manifest', 'method': 'PUT', 'content_length': 177}}
-INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 403, 'content_length': 132, 'response_time': 0.0020418167114257812}}
-INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/f9f24a85-298f-4e15-8e60-4ea4803a2759/datasets/3c2602bc-93dd-42d5-bb8f-2597fd8b3d73/manifest', 'method': 'PUT', 'content_length': 177}}
-INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 403, 'content_length': 132, 'response_time': 0.002078533172607422}}
