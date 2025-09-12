@@ -1,4 +1,0 @@
-INFO     root:uri.py:145 {'parsed_uri.scheme': 'https', 'parsed_uri.netloc': 'somebucket.s3.amazonaws.com', 'cls._netloc': 'amazonaws.com', 'cls._scheme': 'https'}
-INFO     root:uri.py:145 {'parsed_uri.scheme': 'https', 'parsed_uri.netloc': 'www.dropbox.com', 'cls._netloc': 'amazonaws.com', 'cls._scheme': 'https'}
-INFO     root:uri.py:145 {'parsed_uri.scheme': 'http', 'parsed_uri.netloc': 'example.com', 'cls._netloc': 'amazonaws.com', 'cls._scheme': 'https'}
-INFO     root:uri.py:145 {'parsed_uri.scheme': 's3', 'parsed_uri.netloc': 'bucket', 'cls._netloc': 'amazonaws.com', 'cls._scheme': 'https'}
