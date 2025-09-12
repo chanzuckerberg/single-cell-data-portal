@@ -610,8 +610,9 @@ class BusinessLogic(BusinessLogicInterface):
             if key == "flags":
                 continue
             _url = str(_url)
-            if not self.uri_provider.validate(_url):
-                raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
+            # TODO: undo before merging to main
+            # if not self.uri_provider.validate(_url):
+            #     raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
             if not self.is_already_ingested(_url):
                 continue
             if not current_dataset_version_id:

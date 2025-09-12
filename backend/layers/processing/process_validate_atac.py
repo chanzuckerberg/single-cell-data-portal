@@ -152,9 +152,9 @@ class ProcessValidateATAC(ProcessingLogic):
             source_uri=str(manifest.anndata),
             local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
         )
-
-        if self.skip_atac_validation(local_anndata_filename, manifest, dataset_version_id):
-            return
+        # TODO: undo before merging to main
+        # if self.skip_atac_validation(local_anndata_filename, manifest, dataset_version_id):
+        #     return
 
         try:
             # Download the original fragment file from URI
