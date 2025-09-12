@@ -16,7 +16,7 @@ const Layout = ({ children }: Props) => {
   const showBanner = () => {
     const now = new Date();
     const startDate = new Date("2025-09-25");
-    const endDate = new Date("2026-09-25");
+    const endDate = new Date("2025-10-09");
     return now >= startDate && now <= endDate;
   };
 
