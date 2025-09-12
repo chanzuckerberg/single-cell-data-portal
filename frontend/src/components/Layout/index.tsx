@@ -34,10 +34,10 @@ const Layout = ({ children }: Props) => {
                   href="https://virtualcellmodels.cziscience.com/benchmarks"
                   target="_blank"
                 >
-                  benchmarking
+                  benchmarking suite
                 </a>{" "}
-                suite to evaluate single-cell foundation model performance on
-                tasks like cell clustering and cell type classification.
+                to evaluate single-cell foundation model performance on tasks
+                like cell clustering and cell type classification.
               </p>
             ),
           }}
