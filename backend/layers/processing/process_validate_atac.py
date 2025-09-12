@@ -1,3 +1,4 @@
+import gzip
 import hashlib
 import os
 
@@ -169,7 +170,15 @@ class ProcessValidateATAC(ProcessingLogic):
         # Deduplicate the fragment file
         if manifest.flags and manifest.flags.deduplicate_fragments:
             try:
+                with gzip.open(local_fragment_filename, "rt") as f:
+                    # logs the first 10 lines of the fragment file
+                    lines = [next(f) for _ in range(10)]
+                    self.logger.info(f"First 10 lines of fragment file before deduplication: {lines}")
                 local_fragment_filename = self.schema_validator.deduplicate_fragments(local_fragment_filename)
+                with gzip.open(local_fragment_filename, "rt") as f:
+                    # logs the first 10 lines of the fragment file
+                    lines = [next(f) for _ in range(10)]
+                    self.logger.info(f"First 10 lines of fragment file after deduplication: {lines}")
             except Exception as e:
                 self.logger.exception(f"Failed to deduplicate fragment file {local_fragment_filename}")
                 self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.FAILED)
