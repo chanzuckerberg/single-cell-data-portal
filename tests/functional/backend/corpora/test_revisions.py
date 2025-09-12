@@ -108,7 +108,7 @@ def test_revision_flow(
     public_datasets_before = session.get(f"{api_url}/dp/v1/collections/{canonical_collection_id}").json()["datasets"]
 
     # Upload a new dataset
-    another_dataset_id = upload_dataset(revision_id, dataset_1_dropbox_url)
+    another_dataset_id = upload_dataset(revision_id, dataset_1_dropbox_url)["dataset_id"]
 
     # Adding a dataset to a revision does not impact public datasets in that collection
     # Get datasets for the collection (after uploading)
