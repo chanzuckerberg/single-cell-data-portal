@@ -1,4 +1,3 @@
-import gzip
 import hashlib
 import os
 
@@ -153,9 +152,9 @@ class ProcessValidateATAC(ProcessingLogic):
             source_uri=str(manifest.anndata),
             local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
         )
-        # TODO: undo before merging to main
-        # if self.skip_atac_validation(local_anndata_filename, manifest, dataset_version_id):
-        #     return
+
+        if self.skip_atac_validation(local_anndata_filename, manifest, dataset_version_id):
+            return
 
         try:
             # Download the original fragment file from URI
@@ -170,15 +169,7 @@ class ProcessValidateATAC(ProcessingLogic):
         # Deduplicate the fragment file
         if manifest.flags and manifest.flags.deduplicate_fragments:
             try:
-                with gzip.open(local_fragment_filename, "rt") as f:
-                    # logs the first 10 lines of the fragment file
-                    lines = [next(f) for _ in range(10)]
-                    self.logger.info(f"First 10 lines of fragment file before deduplication: {lines}")
                 local_fragment_filename = self.schema_validator.deduplicate_fragments(local_fragment_filename)
-                with gzip.open(local_fragment_filename, "rt") as f:
-                    # logs the first 10 lines of the fragment file
-                    lines = [next(f) for _ in range(10)]
-                    self.logger.info(f"First 10 lines of fragment file after deduplication: {lines}")
             except Exception as e:
                 self.logger.exception(f"Failed to deduplicate fragment file {local_fragment_filename}")
                 self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.FAILED)

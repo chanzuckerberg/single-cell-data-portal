@@ -138,8 +138,7 @@ class ProcessMain(ProcessingLogic):
                 DatasetValidationStatus.INVALID,
                 validation_errors=e.errors,
             )
-            # TODO: undo before merging to main
-            return True
+            return False
         except ValidationAtacFailed as e:
             self.update_processing_status(
                 dataset_version_id,

@@ -117,6 +117,5 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
         output_file = atac_seq.deduplicate_fragment_rows(fragment_file)
         if not output_file or not os.path.exists(output_file) or os.path.getsize(output_file) == 0:
             raise RuntimeError("Deduplication failed: output file not created. Original file not removed.")
-        # TODO: undo before merging to main
-        # os.remove(fragment_file)
+        os.remove(fragment_file)
         return output_file

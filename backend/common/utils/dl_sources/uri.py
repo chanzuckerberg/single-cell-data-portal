@@ -142,10 +142,9 @@ class S3URL(URI):
     def validate(cls, uri: str):
         parsed_uri = urlparse(uri)
         return (
-            # TODO: undo before merging to main
             cls(uri, parsed_uri)
-            # if parsed_uri.scheme == cls._scheme and parsed_uri.netloc.endswith(cls._netloc)
-            # else None
+            if parsed_uri.scheme == cls._scheme and parsed_uri.netloc.endswith(cls._netloc)
+            else None
         )
 
     def file_info(self) -> dict:

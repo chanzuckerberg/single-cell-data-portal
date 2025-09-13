@@ -42,6 +42,7 @@ from backend.layers.business.exceptions import (
     DatasetVersionNotFoundException,
     InvalidIngestionManifestException,
     InvalidURIException,
+    MaxFileSizeExceededException,
     NoPreviousCollectionVersionException,
     NoPreviousDatasetVersionException,
 )
@@ -609,9 +610,8 @@ class BusinessLogic(BusinessLogicInterface):
             if key == "flags":
                 continue
             _url = str(_url)
-            # TODO: undo before merging to main
-            # if not self.uri_provider.validate(_url):
-            #     raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
+            if not self.uri_provider.validate(_url):
+                raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
             if not self.is_already_ingested(_url):
                 continue
             if not current_dataset_version_id:
@@ -646,17 +646,16 @@ class BusinessLogic(BusinessLogicInterface):
                     raise InvalidIngestionManifestException(
                         message=f"{_url} atac_fragments is not a part of the canonical dataset"
                     )
-        # TODO: undo before merging to main
-        # if file_size is None:
-        #     file_info = self.uri_provider.get_file_info(str(manifest.anndata))
-        #     file_size = file_info.size
-        #
-        # max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2**30
-        #
-        # if file_size is not None and file_size > max_file_size_gb:
-        #     raise MaxFileSizeExceededException(
-        #         f"{manifest.anndata} exceeds the maximum allowed file size of {max_file_size_gb} Gb"
-        #     )
+        if file_size is None:
+            file_info = self.uri_provider.get_file_info(str(manifest.anndata))
+            file_size = file_info.size
+
+        max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2**30
+
+        if file_size is not None and file_size > max_file_size_gb:
+            raise MaxFileSizeExceededException(
+                f"{manifest.anndata} exceeds the maximum allowed file size of {max_file_size_gb} Gb"
+            )
 
         # Ensure that the collection exists and is not published
         collection = self._assert_collection_version_unpublished(collection_version_id)
