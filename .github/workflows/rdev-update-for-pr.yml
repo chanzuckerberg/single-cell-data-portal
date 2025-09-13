@@ -26,13 +26,13 @@ permissions:
 jobs:
   get_previous_image_digests:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       ecr_repos: ${{ steps.get_digests.outputs.ecr_repos }}
       image_digests: ${{ steps.get_digests.outputs.image_digests }}
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
@@ -63,16 +63,16 @@ jobs:
 
   seed-wmg-cellguide-rdev:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
 
       - name: Grant Execute Permission to Bash Script
         run: |
@@ -87,7 +87,7 @@ jobs:
 
   deploy-rdev:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     concurrency:
       group: pr-${{ github.event.number }}-happy
       cancel-in-progress: false
@@ -97,7 +97,7 @@ jobs:
       - seed-wmg-cellguide-rdev
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
@@ -106,7 +106,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
       - name: Update deployment
@@ -119,13 +119,13 @@ jobs:
 
   delete-previous-images:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs:
       - get_previous_image_digests
       - deploy-rdev
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
@@ -147,7 +147,7 @@ jobs:
 
   summarize:
     if: ${{ ! startsWith(github.head_ref, 'renovate/') && github.event.action == 'opened' }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Summerize deployment
         id: summary
@@ -161,7 +161,7 @@ jobs:
           summary+="\n- migrate_db_task_definition_arn: arn:aws:ecs:us-west-2:***:task-definition/dp-rdev-${{ env.STACK_NAME}}-migration:1"
           echo "SUMMARY=$summary" >> $GITHUB_OUTPUT
       - name: Post Comment
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             github.rest.issues.createComment({
