@@ -1,1 +1,0 @@
-{"levelname": "INFO", "asctime": "2025-09-08T23:45:38.008Z", "name": "root", "message": "", "lineno": 145, "pathname": "/single-cell-data-portal/backend/common/utils/dl_sources/uri.py", "request_id": "", "parsed_uri.scheme": "https", "parsed_uri.netloc": "bucket.s3.amazonaws.com", "cls._netloc": "amazonaws.com", "cls._scheme": "https"}
