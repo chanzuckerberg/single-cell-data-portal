@@ -789,4 +789,5 @@ export enum TISSUE_TYPE {
   PRIMARY_CELL_CULTURE = "primary cell culture",
   ORGANOID = "organoid",
   TISSUE = "tissue",
+  CELL_LINE = "cell line",
 }
