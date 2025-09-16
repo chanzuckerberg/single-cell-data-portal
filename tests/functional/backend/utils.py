@@ -157,6 +157,14 @@ def upload_manifest_and_wait(
     else:
         dataset_id = existing_dataset_id
 
+    # Upload manifest
+    res = session.put(
+        f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
+        data=json.dumps(manifest),
+        headers=headers,
+    )
+    assertStatusCode(202, res)
+
     # Get dataset version id
     res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers)
     assertStatusCode(200, res)
@@ -166,14 +174,6 @@ def upload_manifest_and_wait(
             version_id = dataset.get("dataset_version_id")
             break
     assert version_id is not None, f"Dataset version id not found for dataset {dataset_id}, we broke something"
-
-    # Upload manifest
-    res = session.put(
-        f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
-        data=json.dumps(manifest),
-        headers=headers,
-    )
-    assertStatusCode(202, res)
 
     # Wait for dataset status
     result = _wait_for_dataset_status(

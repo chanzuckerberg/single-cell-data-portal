@@ -13,10 +13,35 @@ interface Props {
 const Layout = ({ children }: Props) => {
   const { pathname } = useRouter();
 
+  const showBanner = () => {
+    const now = new Date();
+    const startDate = new Date("2025-09-25T09:00:00-08:00");
+    const endDate = new Date("2025-10-09");
+    return now >= startDate && now <= endDate;
+  };
+
   if (pathname === ROUTES.HOMEPAGE || pathname === ROUTES.SITEMAP) {
     return (
       <>
-        <LandingHeader data-testid="landing-footer" banner={false} />
+        <LandingHeader
+          data-testid="landing-footer"
+          banner={showBanner()}
+          bannerOptions={{
+            content: (
+              <p>
+                New! Explore our{" "}
+                <a
+                  href="https://virtualcellmodels.cziscience.com/benchmarks"
+                  target="_blank"
+                >
+                  benchmarking suite
+                </a>{" "}
+                to evaluate single-cell foundation model performance on tasks
+                like cell clustering and cell type classification.
+              </p>
+            ),
+          }}
+        />
         {children}
         <LandingFooter />
       </>

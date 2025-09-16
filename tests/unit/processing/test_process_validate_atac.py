@@ -326,6 +326,7 @@ class TestProcessValidateAtac:
             atac_fragment="https://www.dropbox.com/s/fake_location/test.tsv.bgz?dl=0",
             flags=IngestionManifestFlags(deduplicate_fragments=True),
         )
+        process_validate_atac.schema_validator.deduplicate_fragments.return_value = "test_dedup.tsv.bgz"
 
         # Act
         process_validate_atac.process(
@@ -339,6 +340,7 @@ class TestProcessValidateAtac:
         process_validate_atac.schema_validator.deduplicate_fragments.assert_called_once_with(
             CorporaConstants.ORIGINAL_ATAC_FRAGMENT_FILENAME
         )
+        assert str(process_validate_atac.schema_validator.validate_atac.call_args[0][0]) == "test_dedup.tsv.bgz"
 
     def test_deduplicate_fragments_flag_false(self, process_validate_atac, unpublished_dataset, setup):
         """Test that the deduplicate_fragments flag is passed to the schema validator."""
