@@ -5,7 +5,7 @@ import requests
 from requests import HTTPError
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
-from tests.functional.backend.constants import ATAC_SEQ_MANIFEST, DATASET_URI, VISIUM_DATASET_URI
+from tests.functional.backend.constants import ATAC_SEQ_MANIFEST, DATASET_MANIFEST, DATASET_URI, VISIUM_DATASET_URI
 from tests.functional.backend.skip_reason import skip_creation_on_prod
 from tests.functional.backend.utils import assertStatusCode, create_test_collection
 
@@ -244,6 +244,45 @@ def test_dataset_upload_flow_with_atac_seq_dataset(
     )
 
 
+@skip_creation_on_prod
+def test_dataset_reupload_flow_from_manifest(
+    session,
+    curator_cookie,
+    api_url,
+    upload_manifest,
+    upload_dataset_title,
+    request,
+    collection_data,
+    dataset_title_update,
+    curation_api_access_token,
+):
+    """Test reupload from public urls."""
+    headers_dp = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
+    headers_curation = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
+    collection_id = create_test_collection(
+        headers_dp,
+        request,
+        session,
+        api_url,
+        collection_data,
+    )
+    result = upload_manifest(collection_id, DATASET_MANIFEST)
+    dataset_id = result["dataset_id"]
+
+    # get the manifest and ensure it has expected content
+    resp = session.get(
+        f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
+        headers=headers_curation,
+    )
+    assertStatusCode(200, resp)
+    new_manifest = resp.json()
+    assert set(new_manifest.keys()) == set(
+        DATASET_MANIFEST.keys()
+    ), f"Manifest keys do not match expected, {new_manifest=}"
+    # re-upload the manifest from the public urls to ensure re-upload works as expected
+    upload_manifest(collection_id, new_manifest, existing_dataset_id=dataset_id)
+
+
 def _verify_upload_and_delete_succeeded(
     collection_id,
     headers,
@@ -254,7 +293,9 @@ def _verify_upload_and_delete_succeeded(
     upload_and_wait,
     upload_dataset_title_and_wait,
 ):
-    dataset_id = upload_and_wait(collection_id, req_body)
+    result = upload_and_wait(collection_id, req_body)
+    dataset_id = result["dataset_id"]
+    version_id = result["version_id"]
     # test non owner cant retrieve status
     no_auth_headers = {"Content-Type": "application/json"}
     res = session.get(f"{api_url}/dp/v1/datasets/{dataset_id}/status", headers=no_auth_headers)
@@ -262,7 +303,7 @@ def _verify_upload_and_delete_succeeded(
         res.raise_for_status()
 
     # update title and await dataset update
-    updated_dataset_id = upload_dataset_title_and_wait(collection_id, dataset_id, title_update_body)
+    updated_dataset_id = upload_dataset_title_and_wait(collection_id, version_id, title_update_body)
 
     # Test dataset deletion
     res = session.delete(f"{api_url}/dp/v1/datasets/{updated_dataset_id}", headers=headers)

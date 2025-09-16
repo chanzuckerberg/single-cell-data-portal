@@ -607,8 +607,9 @@ class BusinessLogic(BusinessLogicInterface):
         # Validate the URIs
         # TODO: This should be done in the IngestionManifest class
         for key, _url in manifest.model_dump(exclude_none=True).items():
-            parsed_url = urlparse(str(_url))
-            _url = parsed_url.geturl()
+            if key == "flags":
+                continue
+            _url = str(_url)
             if not self.uri_provider.validate(_url):
                 raise InvalidURIException(f"Trying to upload invalid URI: {_url}")
             if not self.is_already_ingested(_url):
@@ -617,6 +618,7 @@ class BusinessLogic(BusinessLogicInterface):
                 raise InvalidIngestionManifestException(
                     message="Cannot ingest public datasets without a current dataset version"
                 )
+            parsed_url = urlparse(_url)
             if key == "anndata":
                 dataset_version_id, extension = parsed_url.path.split("/")[-1].split(".", maxsplit=1)
                 if extension != ARTIFACT_TO_EXTENSION[DatasetArtifactType.H5AD]:
@@ -711,7 +713,7 @@ class BusinessLogic(BusinessLogicInterface):
         # Starts the step function process
         if start_step_function:
             self.step_function_provider.start_step_function(
-                collection_version_id, new_dataset_version.version_id, manifest.model_dump_json()
+                collection_version_id, new_dataset_version.version_id, manifest.model_dump_json(exclude_none=True)
             )
 
         return (new_dataset_version.version_id, new_dataset_version.dataset_id)
