@@ -180,15 +180,15 @@ describe("filter", () => {
       const tissue = {
         label: "epithelial cell",
         ontology_term_id: "CL:0000066",
-        tissue_type: TISSUE_TYPE.CELL_CULTURE,
+        tissue_type: TISSUE_TYPE.PRIMARY_CELL_CULTURE,
       };
 
       const processedTissue = createTaggedTissueOntology(tissue);
       expect(processedTissue.label).toEqual(
-        `${tissue.label} (${TISSUE_TYPE.CELL_CULTURE})`
+        `${tissue.label} (${TISSUE_TYPE.PRIMARY_CELL_CULTURE})`
       );
       expect(processedTissue.ontology_term_id).toEqual(
-        `${tissue.ontology_term_id} (${TISSUE_TYPE.CELL_CULTURE})`
+        `${tissue.ontology_term_id} (${TISSUE_TYPE.PRIMARY_CELL_CULTURE})`
       );
     });
     test("handles tissue", () => {
