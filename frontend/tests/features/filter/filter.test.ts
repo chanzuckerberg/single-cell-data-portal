@@ -191,6 +191,21 @@ describe("filter", () => {
         `${tissue.ontology_term_id} (${TISSUE_TYPE.PRIMARY_CELL_CULTURE})`
       );
     });
+    test("handles cell line", () => {
+      const tissue = {
+        label: "HeLa cell",
+        ontology_term_id: "CLO:0003684",
+        tissue_type: TISSUE_TYPE.CELL_LINE,
+      };
+
+      const processedTissue = createTaggedTissueOntology(tissue);
+      expect(processedTissue.label).toEqual(
+        `${tissue.label} (${TISSUE_TYPE.CELL_LINE})`
+      );
+      expect(processedTissue.ontology_term_id).toEqual(
+        `${tissue.ontology_term_id} (${TISSUE_TYPE.CELL_LINE})`
+      );
+    });
     test("handles tissue", () => {
       const tissue = {
         label: "brain",
