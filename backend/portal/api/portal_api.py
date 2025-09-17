@@ -601,8 +601,8 @@ def publish_post(collection_id: str, body: object, token_info: dict):
 
     try:
         get_business_logic().publish_collection_version(version.version_id, data_submission_policy_version)
-    except CollectionPublishException:
-        raise ConflictException(detail="The collection must have a least one dataset.") from None
+    except CollectionPublishException as e:
+        raise ConflictException(detail=str(e.args)) from None
 
     get_cloudfront_provider().create_invalidation_for_index_paths()
 
