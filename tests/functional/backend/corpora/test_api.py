@@ -269,6 +269,18 @@ def test_dataset_reupload_flow_from_manifest(
     result = upload_manifest(collection_id, DATASET_MANIFEST)
     dataset_id = result["dataset_id"]
 
+    # publish the collection
+    body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
+    res = session.post(
+        f"{api_url}/dp/v1/collections/{collection_id}/publish", headers=headers_dp, data=json.dumps(body)
+    )
+    assertStatusCode(requests.codes.accepted, res)
+
+    # start a revision
+    res = session.post(f"{api_url}/dp/v1/collections/{collection_id}", headers=headers_dp)
+    assertStatusCode(201, res)
+    collection_id = res.json()["id"]
+
     # get the manifest and ensure it has expected content
     resp = session.get(
         f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
@@ -281,6 +293,13 @@ def test_dataset_reupload_flow_from_manifest(
     ), f"Manifest keys do not match expected, {new_manifest=}"
     # re-upload the manifest from the public urls to ensure re-upload works as expected
     upload_manifest(collection_id, new_manifest, existing_dataset_id=dataset_id)
+
+    # publish the revision
+    body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
+    res = session.post(
+        f"{api_url}/dp/v1/collections/{collection_id}/publish", headers=headers_dp, data=json.dumps(body)
+    )
+    assertStatusCode(requests.codes.accepted, res)
 
 
 def _verify_upload_and_delete_succeeded(
