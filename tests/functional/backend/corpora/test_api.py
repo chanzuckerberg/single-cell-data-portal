@@ -5,7 +5,7 @@ import requests
 from requests import HTTPError
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
-from tests.functional.backend.constants import ATAC_SEQ_MANIFEST, DATASET_URI, VISIUM_DATASET_URI
+from tests.functional.backend.constants import ATAC_SEQ_MANIFEST, DATASET_MANIFEST, DATASET_URI, VISIUM_DATASET_URI
 from tests.functional.backend.skip_reason import skip_creation_on_prod
 from tests.functional.backend.utils import assertStatusCode, create_test_collection
 
@@ -266,7 +266,7 @@ def test_dataset_reupload_flow_from_manifest(
         api_url,
         collection_data,
     )
-    result = upload_manifest(collection_id, ATAC_SEQ_MANIFEST)
+    result = upload_manifest(collection_id, DATASET_MANIFEST)
     dataset_id = result["dataset_id"]
 
     # publish the collection
@@ -289,7 +289,7 @@ def test_dataset_reupload_flow_from_manifest(
     assertStatusCode(200, resp)
     new_manifest = resp.json()
     assert set(new_manifest.keys()) == set(
-        ATAC_SEQ_MANIFEST.keys()
+        DATASET_MANIFEST.keys()
     ), f"Manifest keys do not match expected, {new_manifest=}"
     # re-upload the manifest from the public urls to ensure re-upload works as expected
     upload_manifest(collection_id, new_manifest, existing_dataset_id=dataset_id)
