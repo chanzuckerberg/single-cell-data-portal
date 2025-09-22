@@ -1,0 +1,17 @@
+INFO     root:h5ad_data_file.py:355 Reading in AnnData dataset: ea4936d4-aff9-475e-b6a3-2717452b5d7c.h5ad
+INFO     root:h5ad_data_file.py:357 Completed reading in AnnData dataset!
+INFO     root:h5ad_data_file.py:89 Beginning writing to CXG.
+INFO     root:h5ad_data_file.py:93 	...group created, with name /single-cell-data-portal/tests/unit/backend/fixtures/a97d3d16-80b9-45da-8e33-02a6a0a1c4d3.cxg
+INFO     root:h5ad_data_file.py:98 	...dataset metadata saved
+INFO     root:h5ad_data_file.py:101 	...dataset obs dataframe saved
+INFO     root:h5ad_data_file.py:104 	...dataset var dataframe saved
+INFO     root:h5ad_data_file.py:107 	...dataset uns dataframe saved
+INFO     root:h5ad_data_file.py:312 		.../single-cell-data-portal/tests/unit/backend/fixtures/a97d3d16-80b9-45da-8e33-02a6a0a1c4d3.cxg/emb/awesome_embedding embedding created
+INFO     root:h5ad_data_file.py:138 	...dataset embeddings saved
+INFO     root:h5ad_data_file.py:157 is_sparse: True
+INFO     root:cxg_generation_utils.py:183 create /single-cell-data-portal/tests/unit/backend/fixtures/a97d3d16-80b9-45da-8e33-02a6a0a1c4d3.cxg/X
+INFO     root:h5ad_data_file.py:161 start consolidating
+INFO     root:h5ad_data_file.py:200 TileDB consolidation config: buffer=706MB, memory_budget=1412MB, available_memory=14138MB
+INFO     root:h5ad_data_file.py:208 TileDB consolidation completed successfully with memory optimization
+INFO     root:h5ad_data_file.py:141 	...dataset X matrix saved
+INFO     root:h5ad_data_file.py:143 Completed writing to CXG.
