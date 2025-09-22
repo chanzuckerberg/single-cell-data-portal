@@ -1,10 +1,13 @@
-import { Banner } from "@czi-sds/components";
+import { Banner, Button } from "@czi-sds/components";
 import { useRouter } from "next/router";
 import { FC, useRef, useState, useEffect } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import AuthButtons from "src/components/Header/components/AuthButtons";
+import BYODModal from "src/components/BYODModal";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { FEATURES } from "src/common/featureFlags/features";
 import { HomepageLink } from "../common/HomepageLink";
 import {
   BannerWrapper,
@@ -51,6 +54,16 @@ const LandingHeader: FC<Props> = ({
 
   const mobileNavTray = useRef<HTMLDivElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isBYODModalOpen, setIsBYODModalOpen] = useState(false);
+  const isBYODEnabled = useFeatureFlag(FEATURES.BYOD);
+
+  const handleBYODClick = () => {
+    setIsBYODModalOpen(true);
+  };
+
+  const handleBYODClose = () => {
+    setIsBYODModalOpen(false);
+  };
 
   function mobileNavHandler(mobileMenuOpen: boolean) {
     if (!mobileMenuOpen) {
@@ -147,6 +160,16 @@ const LandingHeader: FC<Props> = ({
                 <Nav pathname={pathname} />
               </Left>
               <Right>
+                {isBYODEnabled && (
+                  <Button
+                    sdsType="primary"
+                    sdsStyle="square"
+                    onClick={handleBYODClick}
+                  >
+                    Explore Your Data
+                  </Button>
+                )}
+
                 <LinkWrapper isActive={isRouteActive(pathname, ROUTES.DOCS)}>
                   <a
                     onClick={() => {
@@ -165,6 +188,8 @@ const LandingHeader: FC<Props> = ({
           </Wrapper>
         </MobileNavTray>
       </MobileNavWrapper>
+
+      <BYODModal open={isBYODModalOpen} onClose={handleBYODClose} />
     </div>
   );
 };

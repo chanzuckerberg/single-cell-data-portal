@@ -1,8 +1,11 @@
-import { MenuSelect } from "@czi-sds/components";
-import { FC } from "react";
+import { MenuSelect, Button } from "@czi-sds/components";
+import { FC, useState } from "react";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
 import Nav from "src/components/Header/components/Nav";
+import BYODModal from "src/components/BYODModal";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { FEATURES } from "src/common/featureFlags/features";
 import { useConnect } from "./connect";
 import {
   Left,
@@ -25,6 +28,17 @@ const Header: FC = () => {
     handleHelpClose,
   } = useConnect();
 
+  const [isBYODModalOpen, setIsBYODModalOpen] = useState(false);
+  const isBYODEnabled = useFeatureFlag(FEATURES.BYOD);
+
+  const handleBYODClick = () => {
+    setIsBYODModalOpen(true);
+  };
+
+  const handleBYODClose = () => {
+    setIsBYODModalOpen(false);
+  };
+
   return (
     <Wrapper id={HEADER_ID}>
       <MainWrapper>
@@ -33,6 +47,16 @@ const Header: FC = () => {
           <Nav pathname={pathname} />
         </Left>
         <Right>
+          {isBYODEnabled && (
+            <Button
+              sdsType="primary"
+              sdsStyle="square"
+              onClick={handleBYODClick}
+            >
+              Explore Your Data
+            </Button>
+          )}
+
           <StyledInputDropdown
             disabled={false}
             label="Help & Documentation"
@@ -59,6 +83,8 @@ const Header: FC = () => {
           <AuthButtons />
         </Right>
       </MainWrapper>
+
+      <BYODModal open={isBYODModalOpen} onClose={handleBYODClose} />
     </Wrapper>
   );
 };
