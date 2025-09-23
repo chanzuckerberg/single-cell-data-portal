@@ -1,10 +1,6 @@
 import React from "react";
-import {
-  StyledCallout,
-  CalloutTitle,
-  CalloutTextWrapper,
-  StyledButton,
-} from "./style";
+import { StyledCallout, CalloutTitle, CalloutTextWrapper } from "./style";
+import { StyledButton } from "../style";
 
 const ByodCallout: React.FC = () => {
   const handleLearnMore = () => {

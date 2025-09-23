@@ -8,7 +8,7 @@ import {
   DetailsContainer,
 } from "../../style";
 import DetailItem from "../DetailItem";
-import ByodCallout from "../ByodCallout";
+import ByodCallout from "src/components/BYODConnectors/ByodCallout";
 
 import { ProjectProps } from "./types";
 import { useConnect } from "./connect";
