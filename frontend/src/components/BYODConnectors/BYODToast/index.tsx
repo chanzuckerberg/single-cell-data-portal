@@ -3,12 +3,11 @@ import { Notification, Icon } from "@czi-sds/components";
 import { StyledToast, StyledMessage } from "./style";
 import { isToastDismissed, dismissToast } from "./utils";
 import { StyledButton } from "../style";
+import { TOAST_BUTTON_TEXT } from "../constants";
 
 const BYOD_TOAST_ID = "byod-ai-workspace";
-const BYOD_MESSAGE =
+const TOAST_MESSAGE =
   "Visualize and annotate your own single cell data on CZI's Platform with our new AI Workspace.";
-const BYOD_LINK_TEXT = "Learn more about AI Workspace";
-const BYOD_LINK_URL = "https://cellxgene.cziscience.com/docs/";
 
 export default function BYODToast(): JSX.Element | null {
   const [isVisible, setIsVisible] = useState(false);
@@ -23,7 +22,7 @@ export default function BYODToast(): JSX.Element | null {
   };
 
   const handleLinkClick = () => {
-    window.open(BYOD_LINK_URL, "_blank", "noopener,noreferrer");
+    console.log("Open BYOD info dialog");
   };
 
   if (!isVisible) return null;
@@ -36,13 +35,13 @@ export default function BYODToast(): JSX.Element | null {
         onClose={handleClose}
         icon={<Icon sdsIcon="InfoCircle" sdsSize="s" sdsType="static" />}
       >
-        <StyledMessage>{BYOD_MESSAGE}</StyledMessage>
+        <StyledMessage>{TOAST_MESSAGE}</StyledMessage>
         <StyledButton
           sdsType="primary"
           sdsStyle="minimal"
           onClick={handleLinkClick}
         >
-          {BYOD_LINK_TEXT}
+          {TOAST_BUTTON_TEXT}
         </StyledButton>
       </Notification>
     </StyledToast>
