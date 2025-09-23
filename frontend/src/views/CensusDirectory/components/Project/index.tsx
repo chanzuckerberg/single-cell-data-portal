@@ -32,13 +32,17 @@ const Project = ({ clobberedProjects }: ProjectProps) => {
     clobberedProjects,
   });
 
+  const shouldShowByodCallout =
+    sharedProject.title?.toLowerCase().includes("scvi") ||
+    sharedProject.title?.toLowerCase().includes("transcriptformer");
+
   return (
     <ProjectContainer key={sharedProject.title}>
       <ProjectDetails>
         <ProjectTitle>{sharedProject.title}</ProjectTitle>
         <ProjectSubmitter>{authorsString}</ProjectSubmitter>
         <ProjectDescription>{sharedProject.description}</ProjectDescription>
-        <ByodCallout />
+        {shouldShowByodCallout && <ByodCallout />}
         <DetailsContainer>
           <DetailItem
             label="contact"
