@@ -11,4 +11,4 @@ def check_file(file_path: str) -> bool:
     Returns:
         bool: True if the file passes all checks, False otherwise.
     """
-    return os.path.isfile(file_path) and os.access(file_path, os.R_OK) and os.path.getsize(file_path) > 100
+    return os.path.isfile(file_path) and os.access(file_path, os.R_OK) and os.path.getsize(file_path) > 1
