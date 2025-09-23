@@ -13,6 +13,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersionId,
 )
+from backend.layers.common.files_check import check_file
 from backend.layers.common.ingestion_manifest import IngestionManifest
 from backend.layers.processing.exceptions import ConversionFailed, ValidationAtacFailed
 from backend.layers.processing.process_logic import ProcessingLogic
@@ -170,6 +171,8 @@ class ProcessValidateATAC(ProcessingLogic):
         if manifest.flags and manifest.flags.deduplicate_fragments:
             try:
                 local_fragment_filename = self.schema_validator.deduplicate_fragments(local_fragment_filename)
+                if not check_file(local_fragment_filename):
+                    raise RuntimeError("Deduplication failed: output file not created. Original file not removed.")
             except Exception as e:
                 self.logger.exception(f"Failed to deduplicate fragment file {local_fragment_filename}")
                 self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.FAILED)
@@ -180,6 +183,10 @@ class ProcessValidateATAC(ProcessingLogic):
             errors, fragment_index_file, fragment_file = self.schema_validator.validate_atac(
                 local_fragment_filename, local_anndata_filename, CorporaConstants.NEW_ATAC_FRAGMENT_FILENAME
             )
+            if not check_file(fragment_file):
+                raise RuntimeError("Deduplication failed: output file not created. Original file not removed.")
+            if not check_file(fragment_index_file):
+                raise RuntimeError("Deduplication failed: output file not created. Original file not removed.")
         except Exception as e:
             # for unexpected errors, log the exception and raise a ValidationAtacFailed exception
             self.logger.exception("validation failed")

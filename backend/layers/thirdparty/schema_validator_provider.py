@@ -4,7 +4,6 @@ from cellxgene_schema import validate
 from cellxgene_schema.migrate import migrate
 from cellxgene_schema.schema import get_current_schema_version
 
-from backend.common.utils.math_utils import MB
 from backend.layers.processing.exceptions import AddLabelsFailed
 
 
@@ -116,7 +115,5 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
         import cellxgene_schema.atac_seq as atac_seq
 
         output_file = atac_seq.deduplicate_fragment_rows(fragment_file)
-        if not output_file or not os.path.exists(output_file) or os.path.getsize(output_file) > 1 * MB:
-            raise RuntimeError("Deduplication failed: output file not created. Original file not removed.")
         os.remove(fragment_file)
         return output_file
