@@ -1,4 +1,0 @@
-INFO     root:h5ad_data_file.py:355 Reading in AnnData dataset: 3eb8dae9-1157-4869-a59a-806722095669.h5ad
-INFO     root:h5ad_data_file.py:357 Completed reading in AnnData dataset!
-INFO     root:h5ad_data_file.py:200 TileDB consolidation config: buffer=512MB, memory_budget=1024MB, available_memory=10240MB
-INFO     root:h5ad_data_file.py:208 TileDB consolidation completed successfully with memory optimization
