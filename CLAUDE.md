@@ -9,6 +9,7 @@ This is the CZ CELLxGENE Discover data portal - a platform for publishing, disco
 ## Development Commands
 
 ### Python/Backend Commands
+
 - `make fmt` - Auto-format Python code with black and run pre-commit hooks
 - `make lint` - Run ruff linting on Python code
 - `make unit-test` - Run all unit tests (equivalent to `make local-unit-test`)
@@ -21,6 +22,7 @@ This is the CZ CELLxGENE Discover data portal - a platform for publishing, disco
 - `make local-dbconsole` - Connect to local PostgreSQL database
 
 ### Frontend Commands (run from `/frontend`)
+
 - `npm run dev` - Start development server with HTTPS
 - `npm run build` - Build production bundle
 - `npm run start` - Start production server
@@ -31,6 +33,7 @@ This is the CZ CELLxGENE Discover data portal - a platform for publishing, disco
 - `npm test` - Run Playwright tests (alias for e2e)
 
 ### Environment Setup
+
 - Set `AWS_PROFILE=single-cell-dev` for local development
 - Set `DEPLOYMENT_STAGE=test` for local Docker environment
 - Copy `frontend/src/configs/local.js` to `frontend/src/configs/configs.js` for frontend development
@@ -39,6 +42,7 @@ This is the CZ CELLxGENE Discover data portal - a platform for publishing, disco
 ## Architecture
 
 ### Backend Structure
+
 - **`/backend/api_server/`** - Main API server with Flask/Connexion
 - **`/backend/layers/`** - Shared utilities and database models
 - **`/backend/common/`** - Common utilities across services
@@ -49,6 +53,7 @@ This is the CZ CELLxGENE Discover data portal - a platform for publishing, disco
 - **`/backend/portal/`** - Core portal business logic
 
 ### Frontend Structure
+
 - **Next.js application** with TypeScript and React 18
 - **Styling**: Emotion CSS-in-JS, Material-UI components, Blueprint.js, CZI SDS components
 - **Key directories**:
@@ -58,23 +63,27 @@ This is the CZ CELLxGENE Discover data portal - a platform for publishing, disco
   - `/src/common/` - Utilities and shared logic
 
 ### Development Environments
+
 1. **Local Python-only**: Fast testing environment without Docker
 2. **Local Docker**: Full environment with all services (recommended for integration work)
 3. **Remote deployment (rDev)**: AWS-hosted development environment
 
 ### Database & Testing
+
 - **PostgreSQL** for primary data storage
 - **Unit tests**: Run in Docker containers with coverage reporting
 - **Functional tests**: Test against deployed environments
 - **E2E tests**: Playwright-based frontend testing
 
 ### Key Technologies
+
 - **Backend**: Python 3.10, Flask, SQLAlchemy, Alembic, pytest
 - **Frontend**: Next.js 14, React 18, TypeScript, Material-UI, Emotion
 - **Infrastructure**: Docker, AWS, PostgreSQL
 - **CI/CD**: GitHub Actions with pre-commit hooks (black, ruff, prettier)
 
 ### Code Quality
+
 - Python: black formatting, ruff linting
 - Frontend: Prettier formatting, ESLint linting, TypeScript checking
 - Pre-commit hooks enforce formatting standards
