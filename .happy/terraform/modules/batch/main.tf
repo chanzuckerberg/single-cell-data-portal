@@ -11,7 +11,7 @@ resource aws_batch_job_definition batch_job_def {
   container_properties = jsonencode({
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
-  "memory": 16000,
+  "memory": 24000,
   "environment": [
     {
       "name": "ARTIFACT_BUCKET",
@@ -42,7 +42,7 @@ resource aws_batch_job_definition batch_job_def {
       "value": "${var.frontend_url}"
     }
   ],
-  "vcpus": 2,
+  "vcpus": 3,
   "retryStrategy": {
     "attempts": 1,
     "evaluateOnExit": [
@@ -69,7 +69,7 @@ resource aws_batch_job_definition cxg_job_def {
   container_properties = jsonencode({
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
-  "memory": 64000,
+  "memory": 112000,
   "environment": [
     {
       "name": "ARTIFACT_BUCKET",
@@ -100,7 +100,7 @@ resource aws_batch_job_definition cxg_job_def {
       "value": "${var.frontend_url}"
     }
   ],
-  "vcpus": 8,
+  "vcpus": 14,
   "logConfiguration": {
     "logDriver": "awslogs",
     "options": {
@@ -117,8 +117,8 @@ resource aws_batch_job_definition atac_job_def {
   container_properties = jsonencode({
   "jobRoleArn": "${var.batch_role_arn}",
   "image": "${var.image}",
-  "memory": 64000,
-  "vcpus": 8,
+  "memory": 112000,
+  "vcpus": 14,
   "environment": [
     {
       "name": "ARTIFACT_BUCKET",

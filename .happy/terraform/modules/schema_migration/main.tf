@@ -91,11 +91,11 @@ resource aws_batch_job_definition dataset_migrations {
     resourceRequirements = [
         {
           type= "VCPU",
-          Value="2"
+          Value="3"
         },
         {
           Type="MEMORY",
-          Value = "16000"
+          Value = "24000"
         }
     ]
     logConfiguration= {
