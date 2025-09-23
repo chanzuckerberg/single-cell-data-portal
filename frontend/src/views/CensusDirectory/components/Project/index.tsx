@@ -8,6 +8,7 @@ import {
   DetailsContainer,
 } from "../../style";
 import DetailItem from "../DetailItem";
+import ByodCallout from "../ByodCallout";
 
 import { ProjectProps } from "./types";
 import { useConnect } from "./connect";
@@ -37,6 +38,7 @@ const Project = ({ clobberedProjects }: ProjectProps) => {
         <ProjectTitle>{sharedProject.title}</ProjectTitle>
         <ProjectSubmitter>{authorsString}</ProjectSubmitter>
         <ProjectDescription>{sharedProject.description}</ProjectDescription>
+        <ByodCallout />
         <DetailsContainer>
           <DetailItem
             label="contact"
