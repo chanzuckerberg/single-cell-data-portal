@@ -184,9 +184,9 @@ class ProcessValidateATAC(ProcessingLogic):
                 local_fragment_filename, local_anndata_filename, CorporaConstants.NEW_ATAC_FRAGMENT_FILENAME
             )
             if not check_file(fragment_file):
-                raise RuntimeError("Deduplication failed: output file not created. Original file not removed.")
+                raise RuntimeError("Validation failed: output file not created. Original file not removed.")
             if not check_file(fragment_index_file):
-                raise RuntimeError("Deduplication failed: output file not created. Original file not removed.")
+                raise RuntimeError("Validation failed: output file not created. Original file not removed.")
         except Exception as e:
             # for unexpected errors, log the exception and raise a ValidationAtacFailed exception
             self.logger.exception("validation failed")
