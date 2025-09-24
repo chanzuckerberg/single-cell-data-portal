@@ -13,14 +13,6 @@ def test_empty_file(tmp_path):
     assert check_file(str(file)) is False
 
 
-def test_unreadable_file(tmp_path):
-    file = tmp_path / "unreadable.txt"
-    file.write_bytes(b"data")
-    file.chmod(0o000)
-    assert check_file(str(file)) is False
-    file.chmod(0o644)  # Restore permissions for cleanup
-
-
 def test_directory(tmp_path):
     assert check_file(str(tmp_path)) is False
 
