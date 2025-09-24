@@ -4,7 +4,6 @@ import { FEATURE_CARDS } from "./constants";
 import {
   StyledDialog,
   StyledDialogContent,
-  Subtitle,
   FeatureCardsContainer,
   FeatureCard,
   FeatureIconWrapper,
@@ -29,11 +28,6 @@ const BYODModal: FC<Props> = ({ open, onClose }) => {
         onClose={onClose}
       />
       <StyledDialogContent>
-        <Subtitle>
-          Discover and analyze single cell data using our comprehensive platform
-          tools.
-        </Subtitle>
-
         <FeatureCardsContainer>
           {FEATURE_CARDS.map((card, index) => (
             <FeatureCard key={index}>

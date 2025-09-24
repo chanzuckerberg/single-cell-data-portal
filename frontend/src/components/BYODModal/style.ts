@@ -34,12 +34,6 @@ export const StyledDialogContent = styled(DialogContent)`
   }
 `;
 
-export const Subtitle = styled.p`
-  color: #666;
-  margin-bottom: 32px;
-  font-size: 16px;
-`;
-
 export const FeatureCardsContainer = styled.div`
   display: flex;
   gap: 24px;
@@ -47,9 +41,16 @@ export const FeatureCardsContainer = styled.div`
   justify-content: space-between;
   flex-wrap: nowrap;
 
+  /* Tablet: 2 boxes on top, 1 full-width on bottom */
+  @media (max-width: 1024px) and (min-width: 769px) {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  /* Mobile: All boxes stack vertically */
   @media (max-width: 768px) {
     flex-direction: column;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 `;
 
@@ -64,13 +65,21 @@ export const FeatureCard = styled.div`
   flex-direction: row;
   gap: 16px;
   box-sizing: border-box;
+
+  /* Tablet: First two cards take ~50% width, third card takes full width */
+  @media (max-width: 1024px) and (min-width: 769px) {
+    flex: 0 0 calc(50% - 12px);
+
+    &:nth-of-type(3) {
+      flex: 1 0 100%;
+    }
+  }
 `;
 
 export const FeatureIconWrapper = styled.div`
   flex-shrink: 0;
   display: flex;
   align-items: flex-start;
-  margin-top: 2px;
 `;
 
 export const FeatureContentWrapper = styled.div`
