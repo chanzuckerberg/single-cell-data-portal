@@ -154,3 +154,6 @@ allure-results
 # playwright
 html-reports
 loginState.json
+
+# AI task documentation
+ai_task_docs/
