@@ -1,1 +1,0 @@
-{"levelname": "INFO", "asctime": "2025-09-18T03:48:04.018Z", "name": "root", "message": "", "lineno": 23, "pathname": "/single-cell-data-portal/backend/layers/processing/upload_failures/app.py", "dataset_version_id": "123", "collection_version_id": "456", "error": {}, "execution_id": "arn:aws:states:us-west-2:123456789012:execution:MyStateMachine"}
