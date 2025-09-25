@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import { ROUTES } from "src/common/constants/routes";
 import rawCellxgeneLogo from "src/components/common/staticPages/cellxgene.png";
 import {
@@ -188,9 +189,9 @@ const ToS = (): JSX.Element => {
               property rights of others. We require that content posted by you
               does not violate the intellectual property rights of third
               parties. Please see our{" "}
-              <a href="/dmca/">
+              <Link href="/dmca/">
                 Digital Millennium Copyright Act (DMCA) Policy
-              </a>{" "}
+              </Link>{" "}
               for more information. If you believe your intellectual property
               rights have been violated through the Services, information on how
               to contact us is available in our DMCA Policy.
