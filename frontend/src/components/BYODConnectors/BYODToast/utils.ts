@@ -103,16 +103,3 @@ export function dismissToast(toastId: string): void {
     console.warn("Error saving toast dismissal state:", error);
   }
 }
-
-/**
- * Clear dismissal state for a toast (useful for testing or re-enabling toasts)
- */
-export function clearToastDismissal(toastId: string): void {
-  if (typeof window === "undefined") return;
-
-  try {
-    localStorage.removeItem(`${TOAST_STORAGE_PREFIX}${toastId}`);
-  } catch (error) {
-    console.warn("Error clearing toast dismissal state:", error);
-  }
-}

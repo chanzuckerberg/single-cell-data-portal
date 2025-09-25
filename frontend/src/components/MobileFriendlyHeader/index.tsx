@@ -5,7 +5,7 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import AuthButtons from "src/components/Header/components/AuthButtons";
-import BYODModal from "src/components/BYODModal";
+import BYODModal from "src/components/BYODConnectors/BYODModal";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { FEATURES } from "src/common/featureFlags/features";
 import { HomepageLink } from "../common/HomepageLink";

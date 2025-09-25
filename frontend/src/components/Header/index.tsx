@@ -3,7 +3,7 @@ import { FC, useState } from "react";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
 import Nav from "src/components/Header/components/Nav";
-import BYODModal from "src/components/BYODModal";
+import BYODModal from "src/components/BYODConnectors/BYODModal";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useConnect } from "./connect";
