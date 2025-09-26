@@ -1,11 +1,11 @@
 import { MenuSelect, Button } from "@czi-sds/components";
-import { FC, useState } from "react";
+import { FC } from "react";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
 import Nav from "src/components/Header/components/Nav";
-import BYODModal from "src/components/BYODConnectors/BYODModal";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { FEATURES } from "src/common/featureFlags/features";
+import { useBYODModal } from "src/contexts/BYODModalContext";
 import { useConnect } from "./connect";
 import {
   Left,
@@ -28,15 +28,11 @@ const Header: FC = () => {
     handleHelpClose,
   } = useConnect();
 
-  const [isBYODModalOpen, setIsBYODModalOpen] = useState(false);
+  const { openModal } = useBYODModal();
   const isBYODEnabled = useFeatureFlag(FEATURES.BYOD);
 
   const handleBYODClick = () => {
-    setIsBYODModalOpen(true);
-  };
-
-  const handleBYODClose = () => {
-    setIsBYODModalOpen(false);
+    openModal();
   };
 
   return (
@@ -83,8 +79,6 @@ const Header: FC = () => {
           <AuthButtons />
         </Right>
       </MainWrapper>
-
-      <BYODModal open={isBYODModalOpen} onClose={handleBYODClose} />
     </Wrapper>
   );
 };

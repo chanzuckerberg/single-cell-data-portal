@@ -1,11 +1,13 @@
 import React from "react";
 import { StyledCallout, CalloutTitle, CalloutTextWrapper } from "./style";
 import { StyledButton } from "../style";
+import { useBYODModal } from "src/contexts/BYODModalContext";
 
 const ByodCallout: React.FC = () => {
+  const { openModal } = useBYODModal();
+
   const handleLearnMore = () => {
-    // TODO: Implement BYOD info dialog
-    console.log("Open BYOD info dialog");
+    openModal();
   };
 
   return (

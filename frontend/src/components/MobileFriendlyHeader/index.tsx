@@ -5,9 +5,9 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import AuthButtons from "src/components/Header/components/AuthButtons";
-import BYODModal from "src/components/BYODConnectors/BYODModal";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { FEATURES } from "src/common/featureFlags/features";
+import { useBYODModal } from "src/contexts/BYODModalContext";
 import { HomepageLink } from "../common/HomepageLink";
 import {
   BannerWrapper,
@@ -54,15 +54,11 @@ const LandingHeader: FC<Props> = ({
 
   const mobileNavTray = useRef<HTMLDivElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isBYODModalOpen, setIsBYODModalOpen] = useState(false);
+  const { openModal } = useBYODModal();
   const isBYODEnabled = useFeatureFlag(FEATURES.BYOD);
 
   const handleBYODClick = () => {
-    setIsBYODModalOpen(true);
-  };
-
-  const handleBYODClose = () => {
-    setIsBYODModalOpen(false);
+    openModal();
   };
 
   function mobileNavHandler(mobileMenuOpen: boolean) {
@@ -188,8 +184,6 @@ const LandingHeader: FC<Props> = ({
           </Wrapper>
         </MobileNavTray>
       </MobileNavWrapper>
-
-      <BYODModal open={isBYODModalOpen} onClose={handleBYODClose} />
     </div>
   );
 };
