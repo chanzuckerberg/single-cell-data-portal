@@ -2,6 +2,7 @@ import React from "react";
 import { StyledCallout, CalloutTitle, CalloutTextWrapper } from "./style";
 import { StyledButton } from "../style";
 import { useBYODModal } from "src/contexts/BYODModalContext";
+import SparkleIcon from "src/common/images/sparkle-icon.svg";
 
 const ByodCallout: React.FC = () => {
   const { openModal } = useBYODModal();
@@ -11,7 +12,7 @@ const ByodCallout: React.FC = () => {
   };
 
   return (
-    <StyledCallout intent="info">
+    <StyledCallout intent="info" icon={<SparkleIcon />}>
       <CalloutTextWrapper>
         <CalloutTitle>
           Want to use this model to explore your own data?
