@@ -167,12 +167,10 @@ def exclude_dev_stage_and_ethnicity_for_secondary_filter_test(coord) -> bool:
         "self_reported_ethnicity_ontology_term_id_1",
         "self_reported_ethnicity_ontology_term_id_2",
     )
-    if (
+    return (
         coord.development_stage_ontology_term_id in dev_stages_to_exclude
         and coord.self_reported_ethnicity_ontology_term_id in self_reported_ethnicity_terms_to_exclude
-    ):
-        return True
-    return False
+    )
 
 
 # use this to create a disjoint set of genes across organisms, to mimic real data (each organism has its own set of

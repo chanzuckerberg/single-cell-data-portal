@@ -120,7 +120,7 @@ class ATACDataProcessor:
         s3_url = s3_path[5:]
         bucket, key = s3_url.split("/", 1)
 
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".bgz")
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".bgz")  # noqa: SIM115
         temp_path = temp_file.name
         temp_file.close()
 

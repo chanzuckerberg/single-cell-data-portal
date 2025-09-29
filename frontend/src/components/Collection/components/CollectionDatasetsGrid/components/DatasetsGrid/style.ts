@@ -8,11 +8,11 @@ interface DatasetsGridProps extends CommonThemeProps {
 }
 
 export const DatasetsGrid = styled(Grid)<DatasetsGridProps>`
-    dragAndDropStyles &&
+  ${(props) =>
+    props.dragAndDropStyles &&
     css`
       tbody tr {
-        ${dragAndDropStyles}
+        ${props.dragAndDropStyles}
       }
     `}
-
 `;
