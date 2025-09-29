@@ -1,15 +1,20 @@
 import React from "react";
-import { StyledCallout, CalloutTitle, CalloutTextWrapper } from "./style";
 import { StyledButton } from "../style";
 import { useBYODModal } from "src/contexts/BYODModalContext";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { FEATURES } from "src/common/featureFlags/features";
 import SparkleIcon from "src/common/images/sparkle-icon.svg";
+import { CalloutTextWrapper, CalloutTitle, StyledCallout } from "./style";
 
-const ByodCallout: React.FC = () => {
+const BYODCallout: React.FC = () => {
   const { openModal } = useBYODModal();
+  const isBYODEnabled = useFeatureFlag(FEATURES.BYOD);
 
   const handleLearnMore = () => {
     openModal();
   };
+
+  if (!isBYODEnabled) return null;
 
   return (
     <StyledCallout intent="info" icon={<SparkleIcon />}>
@@ -31,4 +36,4 @@ const ByodCallout: React.FC = () => {
   );
 };
 
-export default ByodCallout;
+export default BYODCallout;

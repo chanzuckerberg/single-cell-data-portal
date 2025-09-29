@@ -5,6 +5,8 @@ import { StyledButton } from "../style";
 import { TOAST_BUTTON_TEXT } from "../constants";
 import { dismissToast, isToastDismissed } from "./utils";
 import { useBYODModal } from "src/contexts/BYODModalContext";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { FEATURES } from "src/common/featureFlags/features";
 import SparkleIcon from "src/common/images/sparkle-icon.svg";
 
 const BYOD_TOAST_ID = "byod-ai-workspace";
@@ -14,6 +16,7 @@ const TOAST_MESSAGE =
 export default function BYODToast(): JSX.Element | null {
   const [isVisible, setIsVisible] = useState(false);
   const { openModal } = useBYODModal();
+  const isBYODEnabled = useFeatureFlag(FEATURES.BYOD);
 
   useEffect(() => {
     setIsVisible(!isToastDismissed(BYOD_TOAST_ID));
@@ -28,7 +31,7 @@ export default function BYODToast(): JSX.Element | null {
     openModal();
   };
 
-  if (!isVisible) return null;
+  if (!isBYODEnabled || !isVisible) return null;
 
   return (
     <StyledToast>

@@ -8,7 +8,7 @@ import {
   DetailsContainer,
 } from "../../style";
 import DetailItem from "../DetailItem";
-import ByodCallout from "src/components/BYODConnectors/ByodCallout";
+import BYODCallout from "src/components/BYODConnectors/BYODCallout";
 
 import { ProjectProps } from "./types";
 import { useConnect } from "./connect";
@@ -32,7 +32,7 @@ const Project = ({ clobberedProjects }: ProjectProps) => {
     clobberedProjects,
   });
 
-  const shouldShowByodCallout =
+  const shouldShowBYODCallout =
     sharedProject.title?.toLowerCase().includes("scvi") ||
     sharedProject.title?.toLowerCase().includes("transcriptformer");
 
@@ -42,7 +42,7 @@ const Project = ({ clobberedProjects }: ProjectProps) => {
         <ProjectTitle>{sharedProject.title}</ProjectTitle>
         <ProjectSubmitter>{authorsString}</ProjectSubmitter>
         <ProjectDescription>{sharedProject.description}</ProjectDescription>
-        {shouldShowByodCallout && <ByodCallout />}
+        {shouldShowBYODCallout && <BYODCallout />}
         <DetailsContainer>
           <DetailItem
             label="contact"
