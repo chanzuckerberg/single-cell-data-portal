@@ -1224,17 +1224,24 @@ class BusinessLogic(BusinessLogicInterface):
             version.collection_id, from_date=date_of_last_publish
         )
         versions_to_delete = list(filter(lambda dv: dv.version_id.id not in versions_to_keep, dataset_versions))
+        artifacts_to_save = self._get_artifacts_to_save(dataset_versions, versions_to_keep, versions_to_delete)
 
-        # Collect artifact ids from dataset versions to keep
+        self.delete_dataset_versions(versions_to_delete, artifacts_to_save=artifacts_to_save)
+
+    @staticmethod
+    def _get_artifacts_to_save(
+        dataset_versions: list,
+        versions_to_keep: set,
+        versions_to_delete: list,
+    ):
+        """
+        Returns a list of artifacts that are present in both the dataset versions to keep and to delete.
+        """
         artifacts_to_keep = [
             artifact for dv in dataset_versions if dv.version_id.id in versions_to_keep for artifact in dv.artifacts
         ]
-        # Collect artifact ids from dataset versions to delete
         artifacts_to_delete = [artifact for dv in versions_to_delete for artifact in dv.artifacts]
-        # Artifacts present in both sets should be saved
-        artifacts_to_save = [artifact for artifact in artifacts_to_keep if artifact in artifacts_to_delete]
-
-        self.delete_dataset_versions(versions_to_delete, artifacts_to_save=artifacts_to_save)
+        return [artifact for artifact in artifacts_to_keep if artifact in artifacts_to_delete]
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
         """

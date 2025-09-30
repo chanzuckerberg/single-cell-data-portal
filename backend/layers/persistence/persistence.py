@@ -644,18 +644,28 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Delete DatasetVersionTable rows (and their dependent DatasetArtifactTable rows)
         """
-        dataset_version_ids = []
-        artifact_ids = []
-        for d_v_row in dataset_version_rows:
-            dataset_version_ids.append(str(d_v_row.id))
-            for artifact in d_v_row.artifacts:
-                artifact_ids.append(str(artifact))
-        artifact_delete_statement = delete(DatasetArtifactTable).where(DatasetArtifactTable.id.in_(artifact_ids))
-        session.execute(artifact_delete_statement)
-        dataset_version_delete_statement = delete(DatasetVersionTable).where(
-            DatasetVersionTable.id.in_(dataset_version_ids)
+        from collections import Counter
+
+        dataset_version_ids = [str(dv_row.id) for dv_row in dataset_version_rows]
+        all_artifact_ids = [str(artifact) for dv_row in dataset_version_rows for artifact in dv_row.artifacts]
+
+        # Batch query: count how many dataset versions reference each artifact
+        artifact_lists = (
+            session.query(DatasetVersionTable.artifacts)
+            .filter(DatasetVersionTable.artifacts.overlap(all_artifact_ids))
+            .all()
         )
-        session.execute(dataset_version_delete_statement)
+
+        # Flatten and count
+        artifact_counter = Counter()
+        for (artifact_list,) in artifact_lists:
+            artifact_counter.update(str(aid) for aid in artifact_list if str(aid) in all_artifact_ids)
+
+        # Only delete artifacts referenced once
+        artifact_ids_to_delete = [aid for aid in all_artifact_ids if artifact_counter.get(aid, 0) <= 1]
+
+        session.execute(delete(DatasetArtifactTable).where(DatasetArtifactTable.id.in_(artifact_ids_to_delete)))
+        session.execute(delete(DatasetVersionTable).where(DatasetVersionTable.id.in_(dataset_version_ids)))
         session.flush()
 
     def finalize_collection_version(
