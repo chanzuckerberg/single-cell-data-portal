@@ -680,3 +680,12 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             return None
         else:
             return copy.deepcopy(previous_dataset.version_id)
+
+    def get_all_artifacts(self) -> List[DatasetArtifact]:
+        """
+        Returns all dataset artifacts in the system.
+        """
+        return list(copy.deepcopy(self.dataset_artifacts.values()))
+
+    def artifact_exists(self, artifact_id: DatasetArtifactId) -> bool:
+        return artifact_id.id in self.dataset_artifacts

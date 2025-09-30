@@ -1382,7 +1382,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         self.database_provider.add_artifact_to_dataset_version(new_atac_dataset_version.version_id, fragment_index_id)
         new_atac_dataset_version = self.business_logic.get_dataset_version(new_atac_dataset_version.version_id)
 
-        # Get Updates collection
+        # Get Updated collection
         updated_collection = self.business_logic.get_collection_version(collection.version_id)
 
         # Verify that the old datasets have been replaced in the collection
@@ -1403,6 +1403,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
             new_atac_dataset_version.artifacts,
         ):
             self.assertTrue(self.s3_provider.uri_exists(artifact.uri))
+            self.assertTrue(self.database_provider.artifact_exists(artifact.id))
 
         # Publish the collection
         self.business_logic.publish_collection_version(collection.version_id)
@@ -1410,8 +1411,14 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         # After publication, these dataset should be gone
         self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_replace.version_id))
         self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_check_artifact_retention.version_id))
+
         # Artifacts for dataset_to_replace should be gone
         [self.assertFalse(self.s3_provider.uri_exists(a.uri), f"Found {a.uri}") for a in dataset_to_replace.artifacts]
+        [
+            self.assertFalse(self.database_provider.artifact_exists(a.id), f"Found artifact {a.id} in database")
+            for a in dataset_to_replace.artifacts
+        ]
+
         # Some Artifact for dataset_to_check_artifact_retention should be gone
         retained_artifacts = [DatasetArtifactType.ATAC_FRAGMENT, DatasetArtifactType.ATAC_INDEX]
         [
@@ -1420,17 +1427,44 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
             if a.type not in retained_artifacts
         ]
         [
+            self.assertFalse(self.database_provider.artifact_exists(a.id), f"Found artifact {a.id} in database")
+            for a in dataset_to_check_artifact_retention.artifacts
+            if a.type not in retained_artifacts
+        ]
+
+        # Some Artifacts for dataset_to_check_artifact_retention should remain
+        [
             self.assertTrue(self.s3_provider.uri_exists(a.uri), f"Missing {a.uri}")
             for a in dataset_to_check_artifact_retention.artifacts
             if a.type in retained_artifacts
         ]
+        [
+            self.assertTrue(self.database_provider.artifact_exists(a.id), f"Missing artifact {a.id} in database")
+            for a in dataset_to_check_artifact_retention.artifacts
+            if a.type in retained_artifacts
+        ]
+
         # Artifacts for dataset_to_keep should remain
         [self.assertTrue(self.s3_provider.uri_exists(a.uri), f"Missing {a.uri}") for a in dataset_to_keep.artifacts]
+        [
+            self.assertTrue(self.database_provider.artifact_exists(a.id), f"Missing artifact {a.id} in database")
+            for a in dataset_to_keep.artifacts
+        ]
+
         # Artifacts for new_dataset_version should remain
         [self.assertTrue(self.s3_provider.uri_exists(a.uri), f"Missing {a.uri}") for a in new_dataset_version.artifacts]
+        [
+            self.assertTrue(self.database_provider.artifact_exists(a.id), f"Missing artifact {a.id} in database")
+            for a in new_dataset_version.artifacts
+        ]
+
         # Artifacts for new_atac_dataset_version should remain
         [
             self.assertTrue(self.s3_provider.uri_exists(a.uri), f"Missing {a.uri}")
+            for a in new_atac_dataset_version.artifacts
+        ]
+        [
+            self.assertTrue(self.database_provider.artifact_exists(a.id), f"Missing artifact {a.id} in database")
             for a in new_atac_dataset_version.artifacts
         ]
 
