@@ -1,6 +1,7 @@
 import contextlib
 import logging
 import uuid
+from collections import Counter
 from contextlib import contextmanager
 from copy import deepcopy
 from datetime import datetime
@@ -644,10 +645,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Delete DatasetVersionTable rows (and their dependent DatasetArtifactTable rows)
         """
-        from collections import Counter
 
         dataset_version_ids = [str(dv_row.id) for dv_row in dataset_version_rows]
-        all_artifact_ids = [str(artifact) for dv_row in dataset_version_rows for artifact in dv_row.artifacts]
+        all_artifact_ids = {str(artifact) for dv_row in dataset_version_rows for artifact in dv_row.artifacts}
 
         # Batch query: count how many dataset versions reference each artifact
         artifact_lists = (

@@ -1,4 +1,5 @@
 import copy
+from collections import Counter
 from datetime import datetime
 from fnmatch import fnmatchcase
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
@@ -253,10 +254,32 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def _delete_dataset_version_and_artifact_rows(
         self, dataset_version_rows: List[DatasetVersion], session: Any
     ) -> None:
-        for d_v_row in dataset_version_rows:
-            for artifact_id in [a.id.id for a in d_v_row.artifacts]:
-                del self.dataset_artifacts[artifact_id]
-            del self.datasets_versions[d_v_row.version_id.id]  # Artifacts live on DatasetVersion; they get deleted
+        dataset_version_ids = [str(dv_row.version_id) for dv_row in dataset_version_rows]
+        all_artifact_ids = {str(artifact.id) for dv_row in dataset_version_rows for artifact in dv_row.artifacts}
+
+        # Get all artifact lists from the datasets
+        artifact_lists = []
+        artifact_lists.append(
+            [
+                str(artifact.id)
+                for dataset_version in self.datasets_versions.values()
+                for artifact in dataset_version.artifacts
+                if str(artifact.id) in all_artifact_ids
+            ]
+        )
+
+        # Flatten and count
+        artifact_counter = Counter()
+        for artifact_list in artifact_lists:
+            artifact_counter.update(str(aid) for aid in artifact_list if str(aid) in all_artifact_ids)
+
+        # Only delete artifacts referenced once
+        artifact_ids_to_delete = [aid for aid in all_artifact_ids if artifact_counter.get(aid, 0) <= 1]
+        for artifact_id in artifact_ids_to_delete:
+            del self.dataset_artifacts[artifact_id]
+
+        for d_v_row in dataset_version_ids:
+            del self.datasets_versions[d_v_row]
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
         version = self.collections_versions.get(version_id.id)
