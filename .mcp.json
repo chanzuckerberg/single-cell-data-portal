@@ -1,0 +1,50 @@
+{
+  "mcpServers": {
+    "postgresql": {
+      "command": "npx",
+      "args": [
+        "--yes",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://postgres:password_postgres@localhost:5432/platformics"
+      ]
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "--yes",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "--yes",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "--yes",
+        "@playwright/mcp"
+      ]
+    },
+    "sds-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@czi-sds/mcp"]
+    },
+    "zeroheight": {
+      "command": "npx",
+      "args": ["-y", "@zeroheight/mcp-server@latest"],
+      "env": {
+        "ZEROHEIGHT_ACCESS_TOKEN": "${ZEROHEIGHT_ACCESS_TOKEN}",
+        "ZEROHEIGHT_CLIENT_ID": "${ZEROHEIGHT_CLIENT_ID}"
+      }
+    }
+  }
+}
