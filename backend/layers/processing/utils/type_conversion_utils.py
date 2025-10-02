@@ -170,10 +170,7 @@ def _can_cast_array_values_to_int32(array: Union[np.ndarray, pd.Series, pd.Index
         return True
 
     int32_machine_limits = np.iinfo(np.int32)
-    if array.min() >= int32_machine_limits.min and array.max() <= int32_machine_limits.max:
-        return True
-
-    return False
+    return array.min() >= int32_machine_limits.min and array.max() <= int32_machine_limits.max
 
 
 def convert_string_to_value(value: str):
