@@ -10,10 +10,6 @@ const BYODCallout: React.FC = () => {
   const { openModal } = useBYODModal();
   const isBYODEnabled = useFeatureFlag(FEATURES.BYOD);
 
-  const handleLearnMore = () => {
-    openModal();
-  };
-
   if (!isBYODEnabled) return null;
 
   return (
@@ -25,11 +21,7 @@ const BYODCallout: React.FC = () => {
         Upload and analyze your data, add annotations, and explore embeddings on
         CZI&apos;s AI Workspace.
       </CalloutTextWrapper>
-      <StyledButton
-        sdsType="primary"
-        sdsStyle="minimal"
-        onClick={handleLearnMore}
-      >
+      <StyledButton sdsType="primary" sdsStyle="minimal" onClick={openModal}>
         Learn more about AI Workspace
       </StyledButton>
     </StyledCallout>

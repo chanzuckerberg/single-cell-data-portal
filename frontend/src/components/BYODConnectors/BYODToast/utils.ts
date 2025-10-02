@@ -1,4 +1,6 @@
-const TOAST_STORAGE_PREFIX = "byod-toast-dismissed-";
+// NOTE: The same logic is duplicated in Explorer. Please keep them in sync.
+// File in Explorer: client/src/components/BYODConnectors/BYODToast/utils.ts
+const TOAST_STORAGE_PREFIX = "byod-discover-toast-dismissed-";
 
 // Forced re-trigger dates
 const FORCED_RETRIGGER_DATES = [
