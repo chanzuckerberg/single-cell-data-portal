@@ -42,6 +42,7 @@ import {
   DatasetsView as View,
 } from "./style";
 import { GridLoader as Loader } from "src/components/common/Grid/components/Loader/style";
+import BYODToast from "src/components/BYODConnectors/BYODToast";
 
 /**
  * Collection ID object key.
@@ -415,6 +416,7 @@ export default function Datasets(): JSX.Element {
             </View>
             {/* May be added in the future after sign off */}
             {/* <BottomBanner /> */}
+            <BYODToast />
           </>
         )
       )}
