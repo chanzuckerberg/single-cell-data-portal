@@ -1468,6 +1468,37 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
             for a in new_atac_dataset_version.artifacts
         ]
 
+    def test_shared_fragment_not_deleted_after_publish(self):
+        collection = self.initialize_unpublished_collection(complete_dataset_ingestion=True, num_datasets=1)
+
+        # update the dataset with a different h5ad and the same fragment
+        dataset_to_replace = collection.datasets[0]
+        new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
+            collection.version_id, dataset_to_replace.version_id
+        )
+        self.business_logic.set_dataset_metadata(new_dataset_version.version_id, self.sample_dataset_metadata)
+        fragment_id = [a for a in dataset_to_replace.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0].id
+        self.database_provider.add_artifact_to_dataset_version(new_dataset_version.version_id, fragment_id)
+        fragment_index_id = [a for a in dataset_to_replace.artifacts if a.type == DatasetArtifactType.ATAC_INDEX][0].id
+        self.database_provider.add_artifact_to_dataset_version(new_dataset_version.version_id, fragment_index_id)
+        self.complete_dataset_processing_with_success(new_dataset_version.version_id, skip_atac=True)
+        new_dataset_version = self.business_logic.get_dataset_version(new_dataset_version.version_id)
+
+        # publish the collection
+        self.business_logic.publish_collection_version(collection.version_id)
+
+        # the old dataset should be gone
+        self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_replace.version_id))
+
+        # publishing the collection should keeps the fragment artifacs in s3
+        [self.assertTrue(self.s3_provider.uri_exists(a.uri), f"Found {a.uri}") for a in new_dataset_version.artifacts]
+
+        # the fragment artifacts should remain in the database
+        [
+            self.assertTrue(self.database_provider.artifact_exists(a.id), f"Found artifact {a.id} in database")
+            for a in new_dataset_version.artifacts
+        ]
+
     def test_cleanup_occurs_after_revision_is_canceled(self):
         """
         New Dataset assets and rows not deleted until after revision is canceled (for previously-published Collection)
