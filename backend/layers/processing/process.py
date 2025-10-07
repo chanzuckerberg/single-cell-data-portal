@@ -14,7 +14,6 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.common.ingestion_manifest import IngestionManifest
-from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing.exceptions import (
     AddLabelsFailed,
     ConversionFailed,
@@ -202,12 +201,11 @@ class ProcessMain(ProcessingLogic):
 
 
 if __name__ == "__main__":
-    database_provider = DatabaseProvider()
     s3_provider = S3Provider()
     uri_provider = UriProvider()
 
     business_logic = BusinessLogic(
-        database_provider,
+        None,
         None,
         None,
         None,

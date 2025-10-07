@@ -1,4 +1,5 @@
 import copy
+import json
 import logging
 import os
 from collections import defaultdict
@@ -908,6 +909,8 @@ class BusinessLogic(BusinessLogicInterface):
         Updates the status of a dataset version.
         status_key can be one of: [upload, validation, cxg, rds, h5ad, processing]
         """
+        if True:  # TODO: store the status in s3 and update the status in the database at the end of the step function.
+            return
         if status_key == DatasetStatusKey.UPLOAD and isinstance(new_dataset_status, DatasetUploadStatus):
             self.database_provider.update_dataset_upload_status(dataset_version_id, new_dataset_status)
         elif status_key == DatasetStatusKey.PROCESSING and isinstance(new_dataset_status, DatasetProcessingStatus):
@@ -947,14 +950,18 @@ class BusinessLogic(BusinessLogicInterface):
         artifact_id: Optional[DatasetArtifactId] = None,
     ) -> DatasetArtifactId:
         """
-        Registers an artifact to a dataset version.
+        Registers an artifact to a dataset version. If artifact_id is not provided, a new one will be generated.
         """
         if not isinstance(artifact_type, DatasetArtifactType):
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
-
-        return self.database_provider.create_dataset_artifact(
-            dataset_version_id, artifact_type, artifact_uri, artifact_id
-        )
+        # save the inputs as json
+        artifact_id = artifact_id or DatasetArtifactId()
+        file_name = f"/tmp/artifact-{artifact_id}.json"
+        with open(file_name, "w") as f:
+            json.dump({"uri": artifact_uri, "type": artifact_type.value}, f)
+        destination_path = f"{dataset_version_id}/{artifact_id}.{artifact_type.value}.json"
+        self.s3_provider.upload_file(file_name, os.getenv("ARTIFACT_BUCKET"), destination_path)
+        return artifact_id
 
     def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
         """

@@ -23,7 +23,6 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
-from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing.exceptions import ProcessingFailed
 from backend.layers.processing.h5ad_data_file import H5ADDataFile
 from backend.layers.processing.logger import configure_logging
@@ -42,7 +41,7 @@ class DatasetMetadataUpdaterWorker(ProcessValidateH5AD):
     def __init__(self, artifact_bucket: str, datasets_bucket: str, spatial_deep_zoom_dir: str = None) -> None:
         # init each worker with business logic backed by non-shared DB connection
         self.business_logic = BusinessLogic(
-            DatabaseProvider(),
+            None,
             None,
             None,
             None,
@@ -372,7 +371,7 @@ class DatasetMetadataUpdater(ProcessValidateH5AD):
 
 if __name__ == "__main__":
     business_logic = BusinessLogic(
-        DatabaseProvider(),
+        None,
         None,
         None,
         None,

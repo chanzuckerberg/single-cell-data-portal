@@ -887,6 +887,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Adds a dataset artifact to an existing dataset version.
         """
+        # TODO this will run from an s3 event
         artifact_id = artifact_id if artifact_id else DatasetArtifactId()
         artifact = DatasetArtifactTable(id=artifact_id.id, type=artifact_type.name, uri=artifact_uri)
         with self._get_serializable_session() as session:
