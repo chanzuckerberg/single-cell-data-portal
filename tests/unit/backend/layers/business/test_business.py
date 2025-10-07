@@ -1490,7 +1490,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         # the old dataset should be gone
         self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_replace.version_id))
 
-        # publishing the collection should keeps the fragment artifacs in s3
+        # publishing the collection should keep the fragment artifacts in s3
         [self.assertTrue(self.s3_provider.uri_exists(a.uri), f"Found {a.uri}") for a in new_dataset_version.artifacts]
 
         # the fragment artifacts should remain in the database
