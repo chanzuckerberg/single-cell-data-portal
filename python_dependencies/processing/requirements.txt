@@ -20,4 +20,4 @@ s3fs==0.4.2
 scanpy==1.9.8
 SQLAlchemy==2.*
 tenacity
-tiledb==0.25.0  # Portal's tiledb version should always be the same or older than Explorer's
+tiledb==0.34.0  # Portal's tiledb version should always be the same or older than Explorer's
