@@ -1223,6 +1223,23 @@ class BusinessLogic(BusinessLogicInterface):
         self.delete_dataset_versions_from_public_bucket(dataset_versions_to_delete_from_s3)
 
         # Handle cleanup of unpublished versions
+        self._cleanup_unpublished_versions_after_publish(version, date_of_last_publish, is_auto_version)
+
+    def _cleanup_unpublished_versions_after_publish(
+        self,
+        version: CollectionVersionWithDatasets,
+        date_of_last_publish: datetime,
+        is_auto_version: bool,
+    ) -> None:
+        """
+        Handles cleanup of unpublished dataset versions after collection publication.
+        Determines which versions to keep (including auto_version revisions) and
+        safely deletes unused versions while preserving shared artifacts.
+
+        :param version: The collection version being published
+        :param date_of_last_publish: Date of last publish (for revision) or datetime.min (for new collections)
+        :param is_auto_version: Whether the published version is an auto_version
+        """
         versions_to_keep = {dv.version_id.id for dv in version.datasets}
         # If version published was an auto_version, there may be an open revision with dataset versions to keep
         if is_auto_version:
