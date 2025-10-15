@@ -1037,11 +1037,11 @@ class BusinessLogic(BusinessLogicInterface):
         yield from (a for a in dataset_version.artifacts if a.type in artifact_types)
 
     def delete_dataset_versions_from_public_bucket(
-        self, dataset_versions: List[DatasetVersion], artifact_to_save: List[DatasetArtifact] = None
+        self, dataset_versions: List[DatasetVersion], artifacts_to_save: List[DatasetArtifact] = None
     ) -> List[str]:
         rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
         object_keys = set()
-        artifact_to_save = artifact_to_save or []
+        artifacts_to_save = artifacts_to_save or []
         for d_v in dataset_versions:
             for file_type in ("h5ad", "rds"):
                 dataset_version_s3_object_key = f"{d_v.version_id}.{file_type}"
@@ -1051,7 +1051,7 @@ class BusinessLogic(BusinessLogicInterface):
             for a in self.filter_artifacts_from_dataset_version(
                 d_v, [DatasetArtifactType.ATAC_FRAGMENT, DatasetArtifactType.ATAC_INDEX]
             ):
-                if a not in artifact_to_save:
+                if a not in artifacts_to_save:
                     object_keys.add(a.uri.rsplit("/", 1)[-1])
 
         try:
@@ -1105,11 +1105,12 @@ class BusinessLogic(BusinessLogicInterface):
         # Get all artifacts from dataset versions being deleted
         all_artifacts = [a for dv in dataset_versions for a in dv.artifacts]
 
-        # Determine which artifacts to keep (explicit + referenced elsewhere)
-        artifacts_to_keep = self._get_artifacts_to_keep(all_artifacts, dataset_versions, artifacts_to_save)
+        # Determine which artifacts to save (explicit + referenced elsewhere)
+        # Only compute if not already provided to avoid redundant reference counting
+        artifacts_to_save = artifacts_to_save or self._get_artifacts_to_save(all_artifacts, dataset_versions, None)
 
-        # Delete only artifacts not in the keep list
-        artifacts_to_delete = [a for a in all_artifacts if a not in artifacts_to_keep]
+        # Delete only artifacts not in the save list
+        artifacts_to_delete = [a for a in all_artifacts if a not in artifacts_to_save]
         self.delete_artifacts(artifacts_to_delete)
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:
@@ -1258,32 +1259,32 @@ class BusinessLogic(BusinessLogicInterface):
         artifacts_in_deleted_versions = [artifact for dv in versions_to_delete for artifact in dv.artifacts]
         explicitly_saved = {a for a in artifacts_in_kept_versions if a in artifacts_in_deleted_versions}
 
-        # Determine all artifacts to keep (explicit + referenced elsewhere)
-        artifacts_to_save = self._get_artifacts_to_keep(
+        # Determine all artifacts to save (explicit + referenced elsewhere)
+        artifacts_to_save = self._get_artifacts_to_save(
             artifacts_in_deleted_versions, versions_to_delete, explicitly_saved
         )
 
         self.delete_dataset_versions(versions_to_delete, artifacts_to_save=artifacts_to_save)
 
-    def _get_artifacts_to_keep(
+    def _get_artifacts_to_save(
         self,
         artifacts_being_deleted: List[DatasetArtifact],
         dataset_versions_being_deleted: List[DatasetVersion],
         explicitly_saved_artifacts: Set[DatasetArtifact] = None,
     ) -> Set[DatasetArtifact]:
         """
-        Determines which artifacts must be kept. Combines explicit saves with reference counting.
+        Determines which artifacts must be saved. Combines explicit saves with reference counting.
 
         :param artifacts_being_deleted: All artifacts from dataset versions being deleted
         :param dataset_versions_being_deleted: Dataset versions being deleted
         :param explicitly_saved_artifacts: Optional set of artifacts explicitly marked to save (e.g., shared with kept versions)
-        :return: Set of artifacts that must be kept (not deleted from S3 or database)
+        :return: Set of artifacts that must be saved (not deleted from S3 or database)
         """
         if not artifacts_being_deleted:
             return set()
 
         # Start with explicitly saved artifacts
-        artifacts_to_keep = set(explicitly_saved_artifacts or [])
+        artifacts_to_save = set(explicitly_saved_artifacts or [])
 
         # Get IDs of dataset versions being deleted
         dataset_version_ids_being_deleted = {str(dv.version_id.id) for dv in dataset_versions_being_deleted}
@@ -1294,17 +1295,17 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Add artifacts referenced by dataset versions NOT being deleted
         for artifact in artifacts_being_deleted:
-            if artifact in artifacts_to_keep:
-                continue  # Already marked to keep
+            if artifact in artifacts_to_save:
+                continue  # Already marked to save
 
             artifact_id_str = str(artifact.id)
             referencing_versions = set(artifact_references.get(artifact_id_str, []))
 
-            # Keep if referenced by any version not in the deletion list
+            # Save if referenced by any version not in the deletion list
             if referencing_versions and not referencing_versions.issubset(dataset_version_ids_being_deleted):
-                artifacts_to_keep.add(artifact)
+                artifacts_to_save.add(artifact)
 
-        return artifacts_to_keep
+        return artifacts_to_save
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
         """
