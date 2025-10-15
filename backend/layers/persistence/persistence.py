@@ -1206,14 +1206,6 @@ class DatabaseProvider(DatabaseProviderInterface):
             replaced_collection_version = session.query(CollectionVersionTable).filter_by(id=replaced_version_id).one()
             session.delete(replaced_collection_version)
 
-    def get_all_artifacts(self) -> List[DatasetArtifact]:
-        """
-        Returns all dataset artifacts in the system.
-        """
-        with self._manage_session() as session:
-            artifacts = session.query(DatasetArtifactTable).all()
-            return [self._row_to_dataset_artifact(a) for a in artifacts]
-
     def artifact_exists(self, artifact_id: DatasetArtifactId) -> bool:
         """
         Returns True if the artifact exists, False otherwise.

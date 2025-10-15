@@ -1382,7 +1382,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         self.database_provider.add_artifact_to_dataset_version(new_atac_dataset_version.version_id, fragment_index_id)
         new_atac_dataset_version = self.business_logic.get_dataset_version(new_atac_dataset_version.version_id)
 
-        # Get Updated collection
+        # Get Updates collection
         updated_collection = self.business_logic.get_collection_version(collection.version_id)
 
         # Verify that the old datasets have been replaced in the collection
