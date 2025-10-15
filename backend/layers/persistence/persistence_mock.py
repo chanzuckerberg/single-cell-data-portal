@@ -1,8 +1,7 @@
 import copy
-from collections import Counter
 from datetime import datetime
 from fnmatch import fnmatchcase
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from backend.layers.business.exceptions import CollectionIsPublishedException, DatasetIsPublishedException
 from backend.layers.common.entities import (
@@ -243,38 +242,43 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             dataset_versions = list(
                 filter(lambda dv: dv.dataset_id == dataset.dataset_id, self.datasets_versions.values())
             )
-            self._delete_dataset_version_and_artifact_rows(dataset_versions, None)  # None in place of Session
+            self._delete_dataset_version_and_artifact_rows(
+                dataset_versions, None, None
+            )  # None in place of Session, None for artifacts_to_save
             del self.datasets[d_id]
 
-    def delete_dataset_versions(self, dataset_versions: List[Union[DatasetVersionId, DatasetVersion]]) -> None:
+    def delete_dataset_versions(
+        self,
+        dataset_versions: List[Union[DatasetVersionId, DatasetVersion]],
+        artifacts_to_save: Optional[Set[DatasetArtifact]] = None,
+    ) -> None:
         ids = [d_v.id if isinstance(d_v, DatasetVersionId) else d_v.version_id.id for d_v in dataset_versions]
         dataset_version_rows = [self.datasets_versions.get(_id) for _id in ids]
-        self._delete_dataset_version_and_artifact_rows(dataset_version_rows, None)  # None in place of Session
+        self._delete_dataset_version_and_artifact_rows(
+            dataset_version_rows, None, artifacts_to_save
+        )  # None in place of Session
 
     def _delete_dataset_version_and_artifact_rows(
-        self, dataset_version_rows: List[DatasetVersion], session: Any
+        self,
+        dataset_version_rows: List[DatasetVersion],
+        session: Any,
+        artifacts_to_save: Optional[Set[DatasetArtifact]] = None,
     ) -> None:
+        """
+        Delete DatasetVersionTable rows (and their dependent DatasetArtifactTable rows)
+
+        :param dataset_version_rows: List of dataset version rows to delete
+        :param session: Not used in mock (kept for interface compatibility)
+        :param artifacts_to_save: Set of artifacts that should NOT be deleted (includes both explicitly saved
+                                   artifacts and artifacts referenced by other dataset versions via reference counting)
+        """
         dataset_version_ids = [str(dv_row.version_id) for dv_row in dataset_version_rows]
         all_artifact_ids = {str(artifact.id) for dv_row in dataset_version_rows for artifact in dv_row.artifacts}
 
-        # Get all artifact lists from the datasets
-        artifact_lists = []
-        artifact_lists.append(
-            [
-                str(artifact.id)
-                for dataset_version in self.datasets_versions.values()
-                for artifact in dataset_version.artifacts
-                if str(artifact.id) in all_artifact_ids
-            ]
-        )
+        # Exclude artifacts_to_save (reference counting is done in business layer)
+        artifacts_to_save_ids = {str(a.id) for a in (artifacts_to_save or [])}
+        artifact_ids_to_delete = [aid for aid in all_artifact_ids if aid not in artifacts_to_save_ids]
 
-        # Flatten and count
-        artifact_counter = Counter()
-        for artifact_list in artifact_lists:
-            artifact_counter.update(str(aid) for aid in artifact_list if str(aid) in all_artifact_ids)
-
-        # Only delete artifacts referenced once
-        artifact_ids_to_delete = [aid for aid in all_artifact_ids if artifact_counter.get(aid, 0) <= 1]
         for artifact_id in artifact_ids_to_delete:
             del self.dataset_artifacts[artifact_id]
 
@@ -503,6 +507,30 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             for artifact_id in dataset_artifact_id_list
             if artifact_id.id in self.dataset_artifacts
         ]
+
+    def get_artifact_references(self, artifact_ids: List[DatasetArtifactId]) -> Dict[str, List[str]]:
+        """
+        Returns which dataset versions reference each artifact.
+
+        :param artifact_ids: List of artifact IDs to check references for
+        :return: Dictionary mapping artifact_id (str) to list of dataset_version_ids (str) that reference it
+        """
+        if not artifact_ids:
+            return {}
+
+        artifact_id_strs = [str(aid.id) for aid in artifact_ids]
+
+        # Build a map of which artifacts are referenced by which dataset versions
+        artifact_to_dataset_versions = {}
+        for dataset_version in self.datasets_versions.values():
+            for artifact in dataset_version.artifacts:
+                artifact_id_str = str(artifact.id)
+                if artifact_id_str in artifact_id_strs:
+                    if artifact_id_str not in artifact_to_dataset_versions:
+                        artifact_to_dataset_versions[artifact_id_str] = []
+                    artifact_to_dataset_versions[artifact_id_str].append(str(dataset_version.version_id.id))
+
+        return artifact_to_dataset_versions
 
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         # Creates a dataset and initializes it with one version

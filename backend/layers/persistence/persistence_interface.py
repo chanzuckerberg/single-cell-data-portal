@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import Dict, Iterable, List, Optional, Set, Tuple, Union
 
 from backend.layers.common.entities import (
     CanonicalCollection,
@@ -134,9 +134,16 @@ class DatabaseProviderInterface:
         Delete an unpublished DatasetTable row (and its dependent DatasetVersionTable and DatasetArtifactTable rows)
         """
 
-    def delete_dataset_versions(self, dataset_versions: List[Union[DatasetVersionId, DatasetVersion]]) -> None:
+    def delete_dataset_versions(
+        self,
+        dataset_versions: List[Union[DatasetVersionId, DatasetVersion]],
+        artifacts_to_save: Optional[Set[DatasetArtifact]] = None,
+    ) -> None:
         """
         Deletes DatasetVersionTable rows.
+
+        :param dataset_versions: List of dataset versions to delete
+        :param artifacts_to_save: Optional set of artifacts that should not be deleted from the database
         """
 
     def set_collection_version_datasets_order(
@@ -214,6 +221,14 @@ class DatabaseProviderInterface:
     def get_dataset_artifacts(self, artifact: List[DatasetArtifactId]) -> List[DatasetArtifact]:
         """
         Returns a list of dataset artifacts by id
+        """
+
+    def get_artifact_references(self, artifact_ids: List[DatasetArtifactId]) -> Dict[str, List[str]]:
+        """
+        Returns which dataset versions reference each artifact. Pure data query with no business logic.
+
+        :param artifact_ids: List of artifact IDs to check references for
+        :return: Dictionary mapping artifact_id (str) to list of dataset_version_ids (str) that reference it
         """
 
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
