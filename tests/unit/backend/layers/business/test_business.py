@@ -1702,6 +1702,178 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
         [self.assertFalse(self.s3_provider.uri_exists(uri)) for uri in uris_to_delete]
 
 
+class TestArtifactCleanupHelpers(BaseBusinessLogicTestCase):
+    """Test helper methods for artifact cleanup and reference counting."""
+
+    def test_get_artifacts_to_keep_empty_list(self):
+        """Test _get_artifacts_to_keep returns empty set when given empty artifact list."""
+        result = self.business_logic._get_artifacts_to_keep([], [], None)
+        self.assertEqual(result, set())
+
+    def test_get_artifacts_to_keep_only_explicit_saves(self):
+        """Test that explicitly saved artifacts are kept."""
+        # Create a collection with datasets
+        collection = self.initialize_unpublished_collection(num_datasets=2)
+        dataset1 = collection.datasets[0]
+
+        # Get some artifacts from dataset1
+        artifacts_to_save = set(dataset1.artifacts[:2])
+
+        # Call the method
+        result = self.business_logic._get_artifacts_to_keep(list(dataset1.artifacts), [dataset1], artifacts_to_save)
+
+        # Should return the explicitly saved artifacts
+        self.assertEqual(result, artifacts_to_save)
+
+    def test_get_artifacts_to_keep_with_reference_counting(self):
+        """Test that artifacts referenced by non-deleted versions are kept via reference counting."""
+        # Create a collection with 3 datasets
+        collection = self.initialize_unpublished_collection(num_datasets=3)
+        dataset1 = collection.datasets[0]
+        dataset2 = collection.datasets[1]
+
+        # Share an artifact between dataset1 and dataset2
+        shared_artifact = dataset1.artifacts[0]
+        self.database_provider.add_artifact_to_dataset_version(dataset2.version_id, shared_artifact.id)
+
+        # Now try to delete dataset1 (without explicit saves)
+        result = self.business_logic._get_artifacts_to_keep(dataset1.artifacts, [dataset1], None)
+
+        # The shared artifact should be kept because dataset2 still references it
+        self.assertIn(shared_artifact, result)
+
+    def test_get_artifacts_to_keep_artifact_only_in_deleted_versions(self):
+        """Test that artifacts only referenced by deleted versions are NOT kept."""
+        # Create a collection with 2 datasets
+        collection = self.initialize_unpublished_collection(num_datasets=2)
+        dataset1 = collection.datasets[0]
+        dataset2 = collection.datasets[1]
+
+        # Get a unique artifact from dataset1 (not shared with dataset2)
+        unique_artifacts = [a for a in dataset1.artifacts if a not in dataset2.artifacts]
+
+        # Try to delete dataset1 (without explicit saves)
+        result = self.business_logic._get_artifacts_to_keep(unique_artifacts, [dataset1], None)
+
+        # None of the unique artifacts should be kept (only referenced by deleted version)
+        self.assertEqual(result, set())
+
+    def test_get_artifacts_to_keep_combines_explicit_and_reference_counting(self):
+        """Test that both explicit saves and reference counting work together."""
+        # Create a collection with 3 datasets
+        collection = self.initialize_unpublished_collection(num_datasets=3)
+        dataset1 = collection.datasets[0]
+        dataset2 = collection.datasets[1]
+
+        # Share artifact between dataset1 and dataset2
+        shared_artifact = dataset1.artifacts[0]
+        self.database_provider.add_artifact_to_dataset_version(dataset2.version_id, shared_artifact.id)
+
+        # Explicitly save a different artifact
+        explicitly_saved = {dataset1.artifacts[1]}
+
+        # Try to delete dataset1
+        result = self.business_logic._get_artifacts_to_keep(dataset1.artifacts, [dataset1], explicitly_saved)
+
+        # Should keep both: the shared artifact (via reference counting) and explicitly saved
+        self.assertIn(shared_artifact, result)
+        self.assertIn(dataset1.artifacts[1], result)
+        self.assertGreaterEqual(len(result), 2)
+
+    def test_cleanup_unpublished_versions_after_publish_basic(self):
+        """Test basic cleanup after publishing a collection (no auto_version)."""
+        # Create and publish a collection
+        collection = self.initialize_unpublished_collection(num_datasets=2)
+
+        # Replace one dataset to create an old version
+        dataset_to_replace = collection.datasets[0]
+        new_version = self.database_provider.replace_dataset_in_collection_version(
+            collection.version_id, dataset_to_replace.version_id
+        )
+        self.business_logic.set_dataset_metadata(new_version.version_id, self.sample_dataset_metadata)
+        self.complete_dataset_processing_with_success(new_version.version_id)
+        self.database_provider.add_dataset_to_collection_version_mapping(collection.version_id, new_version.version_id)
+
+        # Get updated collection
+        collection = self.database_provider.get_collection_version_with_datasets(collection.version_id)
+
+        # Call the cleanup method
+        self.business_logic._cleanup_unpublished_versions_after_publish(collection, datetime.min, is_auto_version=False)
+
+        # Old version should be deleted
+        self.assertIsNone(self.business_logic.get_dataset_version(dataset_to_replace.version_id))
+
+        # New version should still exist
+        self.assertIsNotNone(self.business_logic.get_dataset_version(new_version.version_id))
+
+    def test_cleanup_unpublished_versions_preserves_shared_artifacts(self):
+        """Test that cleanup preserves artifacts shared between kept and deleted versions."""
+        # Create a collection with 2 datasets
+        collection = self.initialize_unpublished_collection(num_datasets=2)
+        dataset_to_replace = collection.datasets[0]
+
+        # Replace dataset but keep a shared artifact
+        new_version = self.database_provider.replace_dataset_in_collection_version(
+            collection.version_id, dataset_to_replace.version_id
+        )
+        self.business_logic.set_dataset_metadata(new_version.version_id, self.sample_dataset_metadata)
+
+        # Share an artifact between old and new versions
+        shared_artifact = dataset_to_replace.artifacts[0]
+        self.database_provider.add_artifact_to_dataset_version(new_version.version_id, shared_artifact.id)
+        self.complete_dataset_processing_with_success(new_version.version_id, skip_atac=True)
+        new_version = self.business_logic.get_dataset_version(new_version.version_id)
+
+        self.database_provider.add_dataset_to_collection_version_mapping(collection.version_id, new_version.version_id)
+        collection = self.database_provider.get_collection_version_with_datasets(collection.version_id)
+
+        # Call the cleanup method
+        self.business_logic._cleanup_unpublished_versions_after_publish(collection, datetime.min, is_auto_version=False)
+
+        # Shared artifact should still exist in S3
+        self.assertTrue(self.s3_provider.uri_exists(shared_artifact.uri))
+
+        # Shared artifact should still exist in database
+        self.assertTrue(self.database_provider.artifact_exists(shared_artifact.id))
+
+    def test_cleanup_with_auto_version_and_open_revision(self):
+        """Test cleanup when publishing an auto_version with an open revision preserves revision datasets."""
+        # Create and publish a collection
+        collection = self.initialize_published_collection(num_datasets=2)
+
+        # Create a regular revision and replace a dataset
+        revision = self.business_logic.create_collection_version(collection.collection_id, is_auto_version=False)
+        dataset_to_replace = revision.datasets[0]
+        new_dataset_in_revision = self.database_provider.replace_dataset_in_collection_version(
+            revision.version_id, dataset_to_replace.version_id
+        )
+        self.business_logic.set_dataset_metadata(new_dataset_in_revision.version_id, self.sample_dataset_metadata)
+        self.complete_dataset_processing_with_success(new_dataset_in_revision.version_id)
+        self.database_provider.add_dataset_to_collection_version_mapping(
+            revision.version_id, new_dataset_in_revision.version_id
+        )
+
+        # Create an auto_version (for schema migration, etc.)
+        auto_version = self.business_logic.create_collection_version(collection.collection_id, is_auto_version=True)
+
+        # Get all unpublished versions (should have both revision and auto_version)
+        unpublished_versions = self.database_provider.get_unpublished_versions_for_collection(collection.collection_id)
+        self.assertEqual(len(unpublished_versions), 2)  # Should have revision and auto_version
+
+        # Call cleanup as if we're publishing the auto_version
+        # The key behavior: when is_auto_version=True, datasets from open revision should be preserved
+        self.business_logic._cleanup_unpublished_versions_after_publish(
+            auto_version, collection.published_at, is_auto_version=True
+        )
+
+        # The new dataset in the open revision should still exist (preserved because is_auto_version=True)
+        self.assertIsNotNone(self.business_logic.get_dataset_version(new_dataset_in_revision.version_id))
+
+        # Verify its artifacts still exist
+        for artifact in new_dataset_in_revision.artifacts:
+            self.assertTrue(self.s3_provider.uri_exists(artifact.uri))
+
+
 class TestGetDataset(BaseBusinessLogicTestCase):
     def test_get_all_datasets_ok(self):
         """

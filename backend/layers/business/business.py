@@ -1087,15 +1087,15 @@ class BusinessLogic(BusinessLogicInterface):
             )
         )
 
-    def delete_dataset_versions(self, dataset_versions: List[DatasetVersion], **kwargs) -> None:
+    def delete_dataset_versions(
+        self, dataset_versions: List[DatasetVersion], artifacts_to_save: Set[DatasetArtifact] = None
+    ) -> None:
         """
         Deletes a list of dataset versions and associated dataset artifact rows from the database, as well
         as kicking off deletion of their corresponding assets from S3
         """
-        self.delete_dataset_version_assets(dataset_versions, **kwargs)
-        self.database_provider.delete_dataset_versions(
-            dataset_versions, artifacts_to_save=kwargs.get("artifacts_to_save")
-        )
+        self.delete_dataset_version_assets(dataset_versions, artifacts_to_save)
+        self.database_provider.delete_dataset_versions(dataset_versions, artifacts_to_save)
 
     def delete_dataset_version_assets(
         self, dataset_versions: List[DatasetVersion], artifacts_to_save: Set[DatasetArtifact] = None
@@ -1272,8 +1272,7 @@ class BusinessLogic(BusinessLogicInterface):
         explicitly_saved_artifacts: Set[DatasetArtifact] = None,
     ) -> Set[DatasetArtifact]:
         """
-        Determines which artifacts must be kept (not deleted). Combines explicit saves with reference counting.
-        Used for both publishing (explicit saves) and general deletion (reference counting only).
+        Determines which artifacts must be kept. Combines explicit saves with reference counting.
 
         :param artifacts_being_deleted: All artifacts from dataset versions being deleted
         :param dataset_versions_being_deleted: Dataset versions being deleted
