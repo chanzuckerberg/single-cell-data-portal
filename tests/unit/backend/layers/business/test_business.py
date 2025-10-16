@@ -1705,12 +1705,12 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
 class TestArtifactCleanupHelpers(BaseBusinessLogicTestCase):
     """Test helper methods for artifact cleanup and reference counting."""
 
-    def test_get_artifacts_to_keep_empty_list(self):
-        """Test _get_artifacts_to_keep returns empty set when given empty artifact list."""
-        result = self.business_logic._get_artifacts_to_keep([], [], None)
+    def testget_artifacts_to_save_empty_list(self):
+        """Test get_artifacts_to_save returns empty set when given empty artifact list."""
+        result = self.business_logic.get_artifacts_to_save([], [], None)
         self.assertEqual(result, set())
 
-    def test_get_artifacts_to_keep_only_explicit_saves(self):
+    def testget_artifacts_to_save_only_explicit_saves(self):
         """Test that explicitly saved artifacts are kept."""
         # Create a collection with datasets
         collection = self.initialize_unpublished_collection(num_datasets=2)
@@ -1720,12 +1720,12 @@ class TestArtifactCleanupHelpers(BaseBusinessLogicTestCase):
         artifacts_to_save = set(dataset1.artifacts[:2])
 
         # Call the method
-        result = self.business_logic._get_artifacts_to_keep(list(dataset1.artifacts), [dataset1], artifacts_to_save)
+        result = self.business_logic.get_artifacts_to_save(list(dataset1.artifacts), [dataset1], artifacts_to_save)
 
         # Should return the explicitly saved artifacts
         self.assertEqual(result, artifacts_to_save)
 
-    def test_get_artifacts_to_keep_with_reference_counting(self):
+    def testget_artifacts_to_save_with_reference_counting(self):
         """Test that artifacts referenced by non-deleted versions are kept via reference counting."""
         # Create a collection with 3 datasets
         collection = self.initialize_unpublished_collection(num_datasets=3)
@@ -1737,12 +1737,12 @@ class TestArtifactCleanupHelpers(BaseBusinessLogicTestCase):
         self.database_provider.add_artifact_to_dataset_version(dataset2.version_id, shared_artifact.id)
 
         # Now try to delete dataset1 (without explicit saves)
-        result = self.business_logic._get_artifacts_to_keep(dataset1.artifacts, [dataset1], None)
+        result = self.business_logic.get_artifacts_to_save(dataset1.artifacts, [dataset1], None)
 
         # The shared artifact should be kept because dataset2 still references it
         self.assertIn(shared_artifact, result)
 
-    def test_get_artifacts_to_keep_artifact_only_in_deleted_versions(self):
+    def testget_artifacts_to_save_artifact_only_in_deleted_versions(self):
         """Test that artifacts only referenced by deleted versions are NOT kept."""
         # Create a collection with 2 datasets
         collection = self.initialize_unpublished_collection(num_datasets=2)
@@ -1753,12 +1753,12 @@ class TestArtifactCleanupHelpers(BaseBusinessLogicTestCase):
         unique_artifacts = [a for a in dataset1.artifacts if a not in dataset2.artifacts]
 
         # Try to delete dataset1 (without explicit saves)
-        result = self.business_logic._get_artifacts_to_keep(unique_artifacts, [dataset1], None)
+        result = self.business_logic.get_artifacts_to_save(unique_artifacts, [dataset1], None)
 
         # None of the unique artifacts should be kept (only referenced by deleted version)
         self.assertEqual(result, set())
 
-    def test_get_artifacts_to_keep_combines_explicit_and_reference_counting(self):
+    def testget_artifacts_to_save_combines_explicit_and_reference_counting(self):
         """Test that both explicit saves and reference counting work together."""
         # Create a collection with 3 datasets
         collection = self.initialize_unpublished_collection(num_datasets=3)
@@ -1773,7 +1773,7 @@ class TestArtifactCleanupHelpers(BaseBusinessLogicTestCase):
         explicitly_saved = {dataset1.artifacts[1]}
 
         # Try to delete dataset1
-        result = self.business_logic._get_artifacts_to_keep(dataset1.artifacts, [dataset1], explicitly_saved)
+        result = self.business_logic.get_artifacts_to_save(dataset1.artifacts, [dataset1], explicitly_saved)
 
         # Should keep both: the shared artifact (via reference counting) and explicitly saved
         self.assertIn(shared_artifact, result)
