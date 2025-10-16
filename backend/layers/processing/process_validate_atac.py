@@ -204,8 +204,8 @@ class ProcessValidateATAC(ProcessingLogic):
                 fragment_changed = True
 
         # fragment file to avoid uploading the same file multiple times
-        # if the fragment file is unchanged from a migration or the fragment file is already ingested, use the old fragment.
-        if not fragment_changed or (
+        # if the fragment file is unchanged or the fragment file is already ingested, use the old fragment.
+        if fragment_changed is False or (
             self.business_logic.is_already_ingested(manifest.atac_fragment) and not in_migration
         ):
             # get the artifact id of the old fragment, and add it to the new dataset
