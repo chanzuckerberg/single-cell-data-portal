@@ -11,24 +11,23 @@
 
 set -e
 
-SCRIPTS_DIR=`dirname $0`
-. $SCRIPTS_DIR/set_src_dest_envs.sh
+SCRIPTS_DIR=$(dirname "$0")
+source "${SCRIPTS_DIR}/_mirror_utils.sh"
+source "${SCRIPTS_DIR}/set_src_dest_envs.sh"
 
-echo Mirroring RDS data from $SRC_ENV to $DEST_ENV
+log "Mirroring RDS data from $SRC_ENV to $DEST_ENV"
 
-DB_DUMP_FILE=`mktemp`
+DB_DUMP_FILE=$(mktemp)
 
+# Dump source database
 export DEPLOYMENT_STAGE=$SRC_ENV
-if [[ $SRC_ENV == 'staging' ]]; then
-   export AWS_PROFILE=single-cell-dev
-else
-   export AWS_PROFILE=single-cell-${SRC_ENV}
-fi
+set_aws_profile "$SRC_ENV"
 cd $SCRIPTS_DIR/..
 make db/dump OUTFILE=$DB_DUMP_FILE PORT=${SRC_PORT}
 
+# Prepare destination environment
 export DEPLOYMENT_STAGE=$DEST_ENV
-export AWS_PROFILE=single-cell-dev
+set_aws_profile "$DEST_ENV"
 
 if [[ $DEST_ENV != 'rdev' ]]; then
    #  For safety, dump the destination db to a local file, just in case. Not necessary if destination is rdev.
@@ -37,19 +36,17 @@ if [[ $DEST_ENV != 'rdev' ]]; then
    make db/dump OUTFILE=$DEST_DB_BACKUP_DUMP_FILE PORT=${DEST_PORT}
 fi
 
-DB_PW=`aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'`
+DB_PW=$(aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region ${AWS_REGION} | jq -r '.SecretString | match(":([^:]*)@").captures[0].string')
 
-if [[ $DEST_ENV == 'rdev' ]]; then
-   DB_NAME="/${STACK}"
-   DB_USER="dataportal"
-else
-   DB_NAME="corpora_${DEPLOYMENT_STAGE}"
-   DB_USER="corpora_${DEPLOYMENT_STAGE}"
+# Get database credentials using shared utility
+read DB_NAME DB_USER <<< $(get_db_credentials "$DEST_ENV" "$STACK")
+
+# Confirmation prompt (only if not already confirmed in set_src_dest_envs.sh)
+if [[ -z "$NO_PROMPT" ]]; then
+    read -n 1 -p "ATTENTION: Proceed to replace the destination database \"${DB_NAME}\"? (Y/n) " ANS
+    echo
+    [[ $ANS == 'Y' ]] || exit 1
 fi
-
-read -n 1 -p "ATTENTION: Proceed to replace the destination database \"${DB_NAME}\"? (Y/n) " ANS
-echo
-[[ $ANS == 'Y' ]] || exit 1
 
 function load_src_dump_to_dest_db() {
   PGPASSWORD=${DB_PW} pg_restore --clean --if-exists --no-owner --no-privileges --no-comments --dbname=${DB_NAME} \
