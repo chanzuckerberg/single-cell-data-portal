@@ -19,10 +19,29 @@ else
 fi
 
 
-# Note: "--copy-props metadata-directive" copies s3 object metadata, but not tags.
-# We have not granted s3:GetObjectTagging perm to dev AWS account on prod buckets,
-# so this avoids errors. As none of the s3 objects contain tags, this is acceptable.
+# Note: In AWS CLI v2, metadata is copied by default for S3-to-S3 operations, but not tags.
+# We have not granted s3:GetObjectTagging perm to dev AWS account on prod buckets.
+# Using --metadata-directive COPY explicitly ensures metadata is preserved.
+# As none of the s3 objects contain tags, this is acceptable.
 AWS_OPTIONS="--copy-props metadata-directive --no-progress"
+
+# Add --dryrun flag if DRY_RUN is set
+if [[ -n "$DRY_RUN" ]]; then
+  AWS_OPTIONS="$AWS_OPTIONS --dryrun"
+  echo "🔍 DRY-RUN MODE: S3 operations will show what would be changed without copying files"
+fi
+
+# Performance tuning for S3 transfers (AWS CLI v2)
+# Use environment variables for better compatibility and performance
+export AWS_MAX_ATTEMPTS=3
+export AWS_RETRY_MODE=adaptive
+# S3 transfer configuration
+export AWS_S3_MAX_CONCURRENT_REQUESTS=100
+export AWS_S3_MAX_BANDWIDTH=5368709120  # 5 GB/s in bytes/sec
+export AWS_S3_MULTIPART_THRESHOLD=67108864  # 64 MB in bytes
+export AWS_S3_MULTIPART_CHUNKSIZE=16777216  # 16 MB in bytes
+export AWS_S3_USE_ARN_REGION=true
+
 S3_COPY_CMD="aws s3 cp $AWS_OPTIONS"
 S3_SYNC_CMD="aws s3 sync $AWS_OPTIONS"
 

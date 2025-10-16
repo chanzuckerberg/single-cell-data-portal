@@ -123,32 +123,39 @@ endif
 PORT:=5432
 db/tunnel/up:
 	$(eval INSTANCE_ENV := $(if $(filter staging,$(DEPLOYMENT_STAGE)),stage,$(DEPLOYMENT_STAGE)))
-	$(eval endpoint=$(shell aws rds describe-db-cluster-endpoints --db-cluster-identifier ${CLUSTER_NAME} | jq -r '.DBClusterEndpoints[] | select(.EndpointType | contains("WRITER")) | .Endpoint'))
-	$(eval instance_id=$(shell aws ec2 describe-instances --filters "Name=tag:Name,Values=dp-${INSTANCE_ENV}-happy" --query "Reservations[*].Instances[*].InstanceId" --output text))
+	$(eval endpoint=$(shell aws rds describe-db-cluster-endpoints --region us-west-2 --db-cluster-identifier ${CLUSTER_NAME} | jq -r '.DBClusterEndpoints[] | select(.EndpointType | contains("WRITER")) | .Endpoint'))
+	$(eval instance_id=$(shell aws ec2 describe-instances --region us-west-2 --filters "Name=tag:Name,Values=dp-${INSTANCE_ENV}-happy" --query "Reservations[*].Instances[*].InstanceId" --output text))
 
-	aws ssm start-session --target ${instance_id} --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"portNumber":["5432"],"localPortNumber":["$(PORT)"],"host":["${endpoint}"]}'
+	aws ssm start-session --region us-west-2 --target ${instance_id} --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"portNumber":["5432"],"localPortNumber":["$(PORT)"],"host":["${endpoint}"]}'
 
 db/tunnel: db/tunnel/up # alias for backwards compatibility
 
 SRC_ENV := prod
+SRC_PORT := 5432
+DEST_PORT := 5433
+
 mirror_env_data:
-	# Mirrors the SRC_ENV env's AWS RDS database and S3 data to
-	# DEST_ENV. Defaults to prod->dev.
-	# Must also provide SRC_PORT and DEST_PORT where psql is running for each env.
-	# Must also run `make db/tunnel/up` before running this command, once for the SRC_ENV and once for the DEST_ENV.
+	# Mirrors the SRC_ENV env's AWS RDS database and S3 data to DEST_ENV.
+	# Automatically manages SSH tunnels - no manual tunnel setup required!
 	#
-	# If WMG_CUBE is set to any non-null value, copy the WMG cube from SRC_ENV to DEST_ENV. Works for DEST_ENV=rdev.
+	# THIS IS DESTRUCTIVE for the DEST_ENV env! The SRC_ENV env will never be modified,
+	# but the DEST_ENV env's data will be replaced.
 	#
-	# If DEST_ENV = 'rdev':
-	# - STACK arg must be included accordingly
-	# - A comma-separated list of Collection id uuids may be passed as the COLLECTIONS arg to determine which Dataset
-	# assets are mirrored from SRC_ENV s3 to the specified rdev STACK -- pass any non-null value for the DATA arg
-	# (e.g., DATA=1) to copy the real datafiles, otherwise a sample Dataset is used to populate all relevant s3 asset
-	# keys for all corresponding Datasets (faster). Covers all Dataset versions in each Collection. Ignored for mirrors
-	# where DEST_ENV != rdev.
+	# Basic Usage: make mirror_env_data SRC_ENV={prod|staging|dev} DEST_ENV={dev|staging|rdev}
 	#
-	# THIS IS DESTRUCTIVE for the DEST_ENV env! The SRC_ENV env will
-	# never be modified, but the DEST_ENV env's data will be replaced.
+	# Optional Parameters:
+	#   DRY_RUN=1               - Show what would be done without making changes (safe!)
+	#   WMG_CUBE=1              - Copy the WMG cube from SRC_ENV to DEST_ENV
+	#   CELLGUIDE=1             - Copy CellGuide data (rdev only)
+	#   STACK=<rdev_stack_name> - Required when DEST_ENV=rdev
+	#   COLLECTIONS=<uuid1,...> - Comma-separated Collection UUIDs to mirror (rdev only)
+	#   DATA=1                  - Copy real datafiles instead of sample data (rdev only)
+	#   SRC_PORT=<port>         - Override source tunnel port (default: 5432)
+	#   DEST_PORT=<port>        - Override destination tunnel port (default: 5433)
 	#
-	# Usage: make mirror_env_data [SRC_ENV={prod|staging|dev}] [DEST_ENV={dev|staging|rdev}] [SRC_PORT={int}] [DEST_PORT={int}] [WMG_CUBE=1] [STACK=<rdev_stack_name> [CELLGUIDE=1] [COLLECTIONS=<uuid1,uuid2,...> [DATA=1]]]
-	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV) $(SRC_PORT) $(DEST_PORT) $(WMG_CUBE) $(STACK) $(CELLGUIDE) $(COLLECTIONS) $(DATA)
+	# Examples:
+	#   make mirror_env_data SRC_ENV=prod DEST_ENV=staging DRY_RUN=1  # Test first!
+	#   make mirror_env_data SRC_ENV=prod DEST_ENV=staging
+	#   make mirror_env_data SRC_ENV=prod DEST_ENV=dev WMG_CUBE=1
+	#   make mirror_env_data SRC_ENV=dev DEST_ENV=rdev STACK=my-stack COLLECTIONS=uuid1,uuid2
+	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV) $(SRC_PORT) $(DEST_PORT) $(WMG_CUBE) $(STACK) $(CELLGUIDE) $(COLLECTIONS) $(DATA) $(DRY_RUN)
