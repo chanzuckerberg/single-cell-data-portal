@@ -1284,7 +1284,7 @@ class BusinessLogic(BusinessLogicInterface):
             return set()
 
         # Start with explicitly saved artifacts
-        artifacts_to_save = set(explicitly_saved_artifacts) or set()
+        artifacts_to_save = set(explicitly_saved_artifacts) if explicitly_saved_artifacts else set()
 
         # Get IDs of dataset versions being deleted
         dataset_version_ids_being_deleted = {str(dv.version_id.id) for dv in dataset_versions_being_deleted}
