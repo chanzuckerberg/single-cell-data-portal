@@ -172,9 +172,11 @@ class TestProcessValidateAtac:
         artifacts = self.assert_artifacts_uploaded(setup, dataset_version_id)
         self.assert_new_fragment_added(artifacts, setup)
 
-    def test_old_fragment(self, anndata_uri, collection_revision_with_fragment, process_validate_atac, setup):
+    def test_old_fragment(
+        self, anndata_uri, collection_revision_with_fragment, process_validate_atac, setup, migration_set
+    ):
         """A published fragment is used in the manifest, this will pass validation, the artifact will be copied to the
-        new dataset version."""
+        new dataset version. This requires migration mode to trigger hash comparison."""
         # Arrange
         process_validate_atac.hash_file = Mock(
             return_value="fake_hash"
@@ -246,6 +248,7 @@ class TestProcessValidateAtac:
     def test_replace_existing_fragment(
         self, collection_revision_with_fragment, process_validate_atac, setup, manifest_with_fragment
     ):
+        """Updating a dataset to replace an existing fragment with a new one."""
         # Arrange
         dataset = collection_revision_with_fragment.datasets[0]
         new_dataset_version = setup.database_provider.replace_dataset_in_collection_version(
@@ -318,7 +321,9 @@ class TestProcessValidateAtac:
         self.assert_new_fragment_added(artifacts, setup)
 
     def test_deduplicate_fragments_flag_true(self, process_validate_atac, unpublished_dataset, setup):
-        """Test that the deduplicate_fragments flag is passed to the schema validator."""
+        """Test that the deduplicate_fragments flag is passed to the schema validator.
+        When deduplication is enabled, fragment_changed is True, so hash_file should not be called
+        and the fragment should always be uploaded."""
         # Arrange
         dataset_version_id, _ = unpublished_dataset
         manifest = IngestionManifest(
@@ -327,6 +332,7 @@ class TestProcessValidateAtac:
             flags=IngestionManifestFlags(deduplicate_fragments=True),
         )
         process_validate_atac.schema_validator.deduplicate_fragments.return_value = "test_dedup.tsv.bgz"
+        process_validate_atac.hash_file = Mock()
 
         # Act
         process_validate_atac.process(
@@ -341,6 +347,11 @@ class TestProcessValidateAtac:
             CorporaConstants.ORIGINAL_ATAC_FRAGMENT_FILENAME
         )
         assert str(process_validate_atac.schema_validator.validate_atac.call_args[0][0]) == "test_dedup.tsv.bgz"
+        # Hash should not be called because deduplication sets fragment_changed = True
+        process_validate_atac.hash_file.assert_not_called()
+        # Fragment should be uploaded, not copied
+        status = setup.business_logic.get_dataset_status(dataset_version_id)
+        assert status.atac_status == DatasetConversionStatus.UPLOADED
 
     def test_deduplicate_fragments_flag_false(self, process_validate_atac, unpublished_dataset, setup):
         """Test that the deduplicate_fragments flag is passed to the schema validator."""
@@ -362,6 +373,106 @@ class TestProcessValidateAtac:
 
         # Assert
         process_validate_atac.schema_validator.deduplicate_fragments.assert_not_called()
+
+    def test_deduplicate_fragments_with_migration(
+        self, process_validate_atac, unpublished_dataset, setup, migration_set
+    ):
+        """Test that when deduplication is enabled during migration, hash comparison is skipped.
+        The fragment_changed flag is set to True by deduplication, so hash_file should not be called
+        and the fragment should always be uploaded."""
+        # Arrange
+        dataset_version_id, _ = unpublished_dataset
+        manifest = IngestionManifest(
+            anndata="s3://fake_bucket_name/fake_key.h5ad",
+            atac_fragment="https://www.dropbox.com/s/fake_location/test.tsv.bgz?dl=0",
+            flags=IngestionManifestFlags(deduplicate_fragments=True),
+        )
+        process_validate_atac.schema_validator.deduplicate_fragments.return_value = "test_dedup.tsv.bgz"
+        process_validate_atac.hash_file = Mock()
+
+        # Act
+        process_validate_atac.process(
+            "fake_collection_version_id",
+            dataset_version_id,
+            manifest,
+            "datasets",
+        )
+
+        # Assert
+        # Deduplication should be called
+        process_validate_atac.schema_validator.deduplicate_fragments.assert_called_once()
+        # Hash should not be called because deduplication sets fragment_changed = True
+        process_validate_atac.hash_file.assert_not_called()
+        # Fragment should be uploaded, not copied
+        status = setup.business_logic.get_dataset_status(dataset_version_id)
+        assert status.atac_status == DatasetConversionStatus.UPLOADED
+
+    def test_non_migration_no_deduplication_always_uploads(self, process_validate_atac, unpublished_dataset, setup):
+        """Test that outside of migration mode (without deduplication), fragments are always uploaded.
+        The fragment_changed flag is set to True in non-migration mode, so the fragment should always
+        be uploaded regardless of whether it's already ingested."""
+        # Arrange
+        dataset_version_id, _ = unpublished_dataset
+        manifest = IngestionManifest(
+            anndata="s3://fake_bucket_name/fake_key.h5ad",
+            atac_fragment="https://www.dropbox.com/s/fake_location/test.tsv.bgz?dl=0",
+        )
+        process_validate_atac.hash_file = Mock()
+
+        # Act
+        process_validate_atac.process(
+            "fake_collection_version_id",
+            dataset_version_id,
+            manifest,
+            "datasets",
+        )
+
+        # Assert
+        # Hash should not be called in non-migration mode
+        process_validate_atac.hash_file.assert_not_called()
+        # Fragment should be uploaded
+        status = setup.business_logic.get_dataset_status(dataset_version_id)
+        assert status.atac_status == DatasetConversionStatus.UPLOADED
+
+    def test_deduplication_always_uploads_even_if_already_ingested(
+        self, collection_revision_with_fragment, process_validate_atac, setup, new_fragment_uri
+    ):
+        """Test that when deduplication is enabled, the fragment is uploaded even if it's already ingested.
+        Deduplication sets fragment_changed = True, which takes precedence over is_already_ingested check."""
+        # Arrange
+        dataset = collection_revision_with_fragment.datasets[0]
+        new_dataset_version = setup.database_provider.replace_dataset_in_collection_version(
+            collection_revision_with_fragment.version_id, dataset.version_id
+        )
+        old_fragment_artifact = setup.get_artifact_type_from_dataset(dataset, DatasetArtifactType.ATAC_FRAGMENT)
+        old_fragment_uri = old_fragment_artifact.uri
+
+        # Create manifest with deduplication enabled and using the already-ingested fragment
+        manifest = IngestionManifest(
+            anndata="s3://fake_bucket_name/fake_key.h5ad",
+            atac_fragment=old_fragment_uri,
+            flags=IngestionManifestFlags(deduplicate_fragments=True),
+        )
+        process_validate_atac.schema_validator.deduplicate_fragments.return_value = "test_dedup.tsv.bgz"
+        process_validate_atac.hash_file = Mock()
+        # Mock is_already_ingested to return True to test the scenario where
+        # the fragment is already ingested but deduplication should still force upload
+        process_validate_atac.business_logic.is_already_ingested = Mock(return_value=True)
+
+        # Act
+        process_validate_atac.process(
+            collection_revision_with_fragment.version_id,
+            new_dataset_version.version_id,
+            manifest,
+            "datasets",
+        )
+
+        # Assert
+        # Deduplication should be called
+        process_validate_atac.schema_validator.deduplicate_fragments.assert_called_once()
+        # Fragment should be uploaded (not copied), even though it's already ingested
+        status = setup.business_logic.get_dataset_status(new_dataset_version.version_id)
+        assert status.atac_status == DatasetConversionStatus.UPLOADED
 
 
 class TestSkipATACValidation:

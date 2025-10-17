@@ -13,6 +13,7 @@ import { networkGuard } from "src/common/networkGuard";
 import { theme } from "src/common/theme";
 import DefaultLayout from "src/components/Layout/components/defaultLayout";
 import configs from "src/configs/configs";
+import { BYODModalProvider } from "src/contexts/BYODModalContext";
 import "src/global.scss";
 // (thuang): `layout.css` needs to be imported after `global.scss`
 import "src/layout.css";
@@ -96,17 +97,19 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
         <meta property="og:type" key="og:type" content="website" />
       </Head>
       <QueryClientProvider client={queryClient}>
-        <StyledEngineProvider>
-          <EmotionThemeProvider theme={theme}>
-            <ThemeProvider theme={theme}>
-              <Layout>
-                <Component {...pageProps} />
-                <div id="bp-toaster"></div>
-              </Layout>
-              <ReactQueryDevtools />
-            </ThemeProvider>
-          </EmotionThemeProvider>
-        </StyledEngineProvider>
+        <BYODModalProvider>
+          <StyledEngineProvider>
+            <EmotionThemeProvider theme={theme}>
+              <ThemeProvider theme={theme}>
+                <Layout>
+                  <Component {...pageProps} />
+                  <div id="bp-toaster"></div>
+                </Layout>
+                <ReactQueryDevtools />
+              </ThemeProvider>
+            </EmotionThemeProvider>
+          </StyledEngineProvider>
+        </BYODModalProvider>
       </QueryClientProvider>
       <Script data-domain={configs.PLAUSIBLE_DATA_DOMAIN} src="/js/script.js" />
       <Script id="hsq-do-not-track" strategy="afterInteractive">

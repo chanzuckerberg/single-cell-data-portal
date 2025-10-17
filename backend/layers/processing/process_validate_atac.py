@@ -147,6 +147,7 @@ class ProcessValidateATAC(ProcessingLogic):
         :param datasets_bucket:
         :return:
         """
+        fragment_changed = None
         # Download the original dataset files from URI
         local_anndata_filename = self.download_from_source_uri(
             source_uri=str(manifest.anndata),
@@ -167,7 +168,9 @@ class ProcessValidateATAC(ProcessingLogic):
             raise ValidationAtacFailed(errors=[str(e)]) from None
 
         # Deduplicate the fragment file
-        if manifest.flags and manifest.flags.deduplicate_fragments:
+        deduplication_enabled = manifest.flags and manifest.flags.deduplicate_fragments
+        if deduplication_enabled:
+            fragment_changed = True
             try:
                 local_fragment_filename = self.schema_validator.deduplicate_fragments(local_fragment_filename)
             except Exception as e:
@@ -193,24 +196,18 @@ class ProcessValidateATAC(ProcessingLogic):
 
         # Changes to processing only happen during a migration. Only hash the files if the migration is set to true
         in_migration = os.environ.get("MIGRATION", "").lower() == "true"
-        if in_migration:
-            # check if the new fragment is the same as the old fragment
-            fragment_unchanged = self.hash_file(local_fragment_filename) == self.hash_file(fragment_file)
-        else:
-            fragment_unchanged = False
+        if fragment_changed is None:
+            if in_migration:
+                # check if the new fragment is the same as the old fragment
+                fragment_changed = self.hash_file(local_fragment_filename) != self.hash_file(fragment_file)
+            else:
+                fragment_changed = True
 
-        # fragment file to avoid uploading the same file multiple times
-        # if the fragment file is unchanged from a migration or the fragment file is already ingested, use the old fragment.
-        if fragment_unchanged or (self.business_logic.is_already_ingested(manifest.atac_fragment) and not in_migration):
-            # get the artifact id of the old fragment, and add it to the new dataset
-            artifact_name = str(manifest.atac_fragment).split("/")[-1]
-            artifact = self.business_logic.database_provider.get_artifact_by_uri_suffix(artifact_name)
-            self.business_logic.database_provider.add_artifact_to_dataset_version(dataset_version_id, artifact.id)
-            # get the artifact id of the old fragment index, and add it to the new dataset
-            artifact = self.business_logic.database_provider.get_artifact_by_uri_suffix(artifact_name + ".tbi")
-            self.business_logic.database_provider.add_artifact_to_dataset_version(dataset_version_id, artifact.id)
-            self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.COPIED)
-        else:
+        # Upload the fragment if:
+        # 1. The fragment has changed (new content), OR
+        # 2. The fragment is not already ingested (we don't have it yet)
+        # Otherwise, copy the existing artifact reference (unchanged AND already ingested)
+        if fragment_changed is True or not self.business_logic.is_already_ingested(manifest.atac_fragment):
             fragment_artifact_id = self.create_atac_artifact(
                 fragment_file,
                 DatasetArtifactType.ATAC_FRAGMENT,
@@ -225,5 +222,15 @@ class ProcessValidateATAC(ProcessingLogic):
                 fragment_artifact_id,
             )
             self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.UPLOADED)
+        else:
+            # get the artifact id of the old fragment, and add it to the new dataset
+            artifact_name = str(manifest.atac_fragment).split("/")[-1]
+            artifact = self.business_logic.database_provider.get_artifact_by_uri_suffix(artifact_name)
+            self.business_logic.database_provider.add_artifact_to_dataset_version(dataset_version_id, artifact.id)
+            # get the artifact id of the old fragment index, and add it to the new dataset
+            artifact = self.business_logic.database_provider.get_artifact_by_uri_suffix(artifact_name + ".tbi")
+            self.business_logic.database_provider.add_artifact_to_dataset_version(dataset_version_id, artifact.id)
+            self.update_processing_status(dataset_version_id, DatasetStatusKey.ATAC, DatasetConversionStatus.COPIED)
+
         self.logger.info("Processing completed successfully")
         return

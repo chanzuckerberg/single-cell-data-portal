@@ -74,7 +74,7 @@ def test_invalid_email(bad_email):
     errors = []
     with pytest.raises(InvalidMetadataException):
         verify_collection_metadata(body, errors)
-    assert [{"name": "contact_email", "reason": "Invalid format."}] == errors
+    assert errors == [{"name": "contact_email", "reason": "Invalid format."}]
 
 
 @pytest.mark.parametrize("invalid_string", [b"\x00some data", b"text\x1f", b"text\x01", b"\x7ftext"])
