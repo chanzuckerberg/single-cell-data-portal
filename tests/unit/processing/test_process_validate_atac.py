@@ -248,6 +248,7 @@ class TestProcessValidateAtac:
     def test_replace_existing_fragment(
         self, collection_revision_with_fragment, process_validate_atac, setup, manifest_with_fragment
     ):
+        """Updating a dataset to replace an existing fragment with a new one."""
         # Arrange
         dataset = collection_revision_with_fragment.datasets[0]
         new_dataset_version = setup.database_provider.replace_dataset_in_collection_version(
@@ -454,6 +455,9 @@ class TestProcessValidateAtac:
         )
         process_validate_atac.schema_validator.deduplicate_fragments.return_value = "test_dedup.tsv.bgz"
         process_validate_atac.hash_file = Mock()
+        # Mock is_already_ingested to return True to test the scenario where
+        # the fragment is already ingested but deduplication should still force upload
+        process_validate_atac.business_logic.is_already_ingested = Mock(return_value=True)
 
         # Act
         process_validate_atac.process(
