@@ -271,5 +271,5 @@ def get_curation_api_access_token(session, api_url, config) -> str:
         f"{api_url}/curation/v1/auth/token",
         headers={"x-api-key": config.super_curator_api_key},
     )
-    response.raise_for_status()
+    assertStatusCode(requests.codes.ok, response)
     return response.json()["access_token"]
