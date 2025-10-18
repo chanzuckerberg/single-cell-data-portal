@@ -25,6 +25,35 @@ Follow instructions in [/frontend README](./frontend/README.md)
 1. [install libpq](https://www.timescale.com/blog/how-to-install-psql-on-mac-ubuntu-debian-windows/). If brew is installed run ` brew install libpq`. We need this
    tool to invoke the `psql` commandline utility.
 1. Install chamber. For running functional tests below, you will need to install Chamber on your machine. Chamber is a tool for reading secrets stored in AWS Secret Store and Parameter Store. On Linux, go to https://github.com/segmentio/chamber/releases to download the latest version >= 2.9.0, and add it somewhere on your path. On Mac, run `brew install chamber`.
+1. Install `uv` for Python dependency management (see below).
+
+   ```bash
+   # Using pip
+   pip install uv
+
+   # Using pipx (recommended)
+   pipx install uv
+
+   # Using Homebrew (macOS)
+   brew install uv
+   ```
+
+### Python Dependency Management
+
+This project uses `uv` for dependency management to ensure reproducible builds across all Docker images.
+
+#### Dependency File Structure
+
+- **`requirements.in`** - Source files containing direct dependencies (may include version constraints)
+- **`requirements.txt`** - Auto-generated locked files with exact versions and hashes for all dependencies (direct + transitive)
+
+All dependency files are located in the `/python_dependencies/` directory, organized by service:
+
+#### Adding or Updating Dependencies
+
+1. **Edit the source file** - Modify the appropriate `.in` file to add, update, or remove dependencies
+2. **Regenerate the locked file** - Use the make update-dependencies recipe to generate the locked .txt file:
+3. **Commit both files** - Always commit both the `.in` and `.txt` files together:
 
 ### Development Quickstart
 
