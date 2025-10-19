@@ -15,19 +15,13 @@ AUDIENCE = {
     "rdev": "api.cellxgene.dev.single-cell.czi.technology",
 }
 
-DATASET_URI = (
-    "https://www.dropbox.com/scl/fi/593x1pa1bdnb4rwqnlp8y/example_valid.h5ad?rlkey"
-    "=qzgsr0e0j5i13nsr10p983atf&st=o3b21tl4&dl=0"
-)
+DATASET_URI = "https://www.dropbox.com/scl/fi/l18zfx8i45j90xejip6qk/example_valid.h5ad?rlkey=3p9cnwc0i0ysnfgk8bqy57fev&st=msygclrx&dl=0"
 
-VISIUM_DATASET_URI = (
-    "https://www.dropbox.com/scl/fi/w8527i9n16461r2ydpbph/small_visium.h5ad?rlkey"
-    "=x4zoxoh896o9mj2i372sxgahz&st=qijzavx6&dl=0"
-)
+VISIUM_DATASET_URI = "https://www.dropbox.com/scl/fi/a871dhnoqzzhkqz0pr3fj/small_visium.h5ad?rlkey=8zv1m79p4lnaqr60nl6hi6yai&st=ibim78id&dl=0"
 
 DATASET_MANIFEST = {"anndata": DATASET_URI}
 VISIUM_DATASET_MANIFEST = {"anndata": VISIUM_DATASET_URI}
 ATAC_SEQ_MANIFEST = {
-    "anndata": "https://www.dropbox.com/scl/fi/wxgczoo7gfu1n8fmxt350/atac.h5ad?rlkey=zbsknm1xyuzv83tixsnrbbh13&st=wbgpuzj8&dl=0",
+    "anndata": "https://www.dropbox.com/scl/fi/1h9d1usgobiqgnin4s6ld/atac.h5ad?rlkey=o3aokwmez6a8tdip5p4vybv8a&st=nkamyl1n&dl=0",
     "atac_fragment": "https://www.dropbox.com/scl/fi/nexccttzlzwr3lt0oe7eq/fragments_sorted.tsv.gz?rlkey=wrajzdz0f1g5gpx4m1vwmvcfh&st=s3hbbajy&dl=0",
 }
