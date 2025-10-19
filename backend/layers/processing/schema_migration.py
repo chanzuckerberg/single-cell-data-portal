@@ -36,6 +36,7 @@ class SchemaMigrate(ProcessingLogic):
         self.logger = logging.getLogger("processing")
         self.local_path: str = "."  # Used for testing
         self.limit_migration = os.environ.get("LIMIT_MIGRATION", 0)  # Run a small migration for testing
+        self.collection_version_ids = os.environ.get("COLLECTION_VERSION_IDS", None)  # Migrate specific collections
         self._schema_version = None
 
     @property
@@ -45,9 +46,35 @@ class SchemaMigrate(ProcessingLogic):
         return self._schema_version
 
     def fetch_collections(self) -> Iterable[CollectionVersion]:
-        published_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=True))]
-        unpublished_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=False))]
-        return itertools.chain(unpublished_collections, published_collections)
+        if self.collection_version_ids:
+            # Parse comma-separated IDs and fetch only those specific collection versions
+            version_ids = [vid.strip() for vid in self.collection_version_ids.split(",")]
+            collections = []
+            for version_id in version_ids:
+                try:
+                    collection = self.business_logic.get_collection_version(CollectionVersionId(version_id))
+                    if collection is None:
+                        self.logger.warning(
+                            f"Collection version not found or cannot be fetched: {version_id}",
+                            extra={"collection_version_id": version_id},
+                        )
+                        continue
+                    collections.append(collection)
+                    self.logger.info(
+                        "Fetched collection version for migration",
+                        extra={"collection_version_id": version_id, "collection_id": collection.collection_id.id},
+                    )
+                except Exception as e:
+                    self.logger.warning(
+                        f"Collection version not found or cannot be fetched: {version_id}",
+                        extra={"collection_version_id": version_id, "error": str(e)},
+                    )
+            return iter(collections)
+        else:
+            # Default behavior: fetch all published and unpublished collections
+            published_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=True))]
+            unpublished_collections = [*self.business_logic.get_collections(CollectionQueryFilter(is_published=False))]
+            return itertools.chain(unpublished_collections, published_collections)
 
     def gather_collections(self) -> Tuple[Dict[str, str], Dict[str, str]]:
         """
@@ -64,21 +91,33 @@ class SchemaMigrate(ProcessingLogic):
         """
         response_for_span_collections = []
 
-        has_migration_revision = set()
-        # iterates over unpublished collections first, so published versions are skipped if there is an active revision
-        for collection in self.fetch_collections():
-            if collection.is_published() and collection.collection_id.id in has_migration_revision:
-                continue
+        # When specific collection version IDs are provided, migrate exactly those versions
+        # without the published/unpublished filtering logic
+        if self.collection_version_ids:
+            for collection in self.fetch_collections():
+                _resp = {
+                    "collection_id": collection.collection_id.id,
+                    "collection_version_id": collection.version_id.id,
+                    "execution_id": self.execution_id,
+                }
+                response_for_span_collections.append(_resp)
+        else:
+            # Default behavior: iterate over unpublished collections first,
+            # so published versions are skipped if there is an active revision
+            has_migration_revision = set()
+            for collection in self.fetch_collections():
+                if collection.is_published() and collection.collection_id.id in has_migration_revision:
+                    continue
 
-            if collection.is_auto_version:
-                has_migration_revision.add(collection.collection_id.id)  # migration revision found, skip published
+                if collection.is_auto_version:
+                    has_migration_revision.add(collection.collection_id.id)  # migration revision found, skip published
 
-            _resp = {
-                "collection_id": collection.collection_id.id,
-                "collection_version_id": collection.version_id.id,
-                "execution_id": self.execution_id,
-            }
-            response_for_span_collections.append(_resp)
+                _resp = {
+                    "collection_id": collection.collection_id.id,
+                    "collection_version_id": collection.version_id.id,
+                    "execution_id": self.execution_id,
+                }
+                response_for_span_collections.append(_resp)
 
         # For testing purposes, only migrate a randomly sampled subset of the collections gathered
         limit = int(self.limit_migration) if isinstance(self.limit_migration, str) else self.limit_migration

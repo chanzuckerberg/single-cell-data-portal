@@ -175,7 +175,8 @@ resource aws_sfn_state_machine sfn_schema_migration {
         "Next": "ApplyDefaults",
         "ResultPath": "$.inputDefaults",
         "Parameters": {
-          "limit_migration": "0"
+          "limit_migration": "0",
+          "collection_version_ids": ""
         }
     },
     "ApplyDefaults": {
@@ -218,6 +219,10 @@ resource aws_sfn_state_machine sfn_schema_migration {
             {
               "Name": "LIMIT_MIGRATION",
               "Value.$": "$.limit_migration"
+            },
+            {
+              "Name": "COLLECTION_VERSION_IDS",
+              "Value.$": "$.collection_version_ids"
             }
           ]
         }
