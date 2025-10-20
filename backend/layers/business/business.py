@@ -1100,8 +1100,6 @@ class BusinessLogic(BusinessLogicInterface):
     def delete_dataset_version_assets(
         self, dataset_versions: List[DatasetVersion], artifacts_to_save: Set[DatasetArtifact] = None
     ) -> None:
-        self.delete_dataset_versions_from_public_bucket(dataset_versions, artifacts_to_save)
-
         # Get all artifacts from dataset versions being deleted
         all_artifacts = [a for dv in dataset_versions for a in dv.artifacts]
 
@@ -1111,6 +1109,8 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Delete only artifacts not in the save list
         artifacts_to_delete = [a for a in all_artifacts if a not in artifacts_to_save]
+
+        self.delete_dataset_versions_from_public_bucket(dataset_versions, artifacts_to_save)
         self.delete_artifacts(artifacts_to_delete)
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:
