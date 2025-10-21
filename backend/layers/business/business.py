@@ -1093,6 +1093,12 @@ class BusinessLogic(BusinessLogicInterface):
         as kicking off deletion of their corresponding assets from S3. Automatically preserves artifacts
         that are still referenced by other existing dataset versions.
         """
+        logger.info(
+            {
+                "message": "Deleting dataset versions",
+                "dataset_version_ids": [dv.version_id.id for dv in dataset_versions],
+            }
+        )
         # Compute artifacts_to_save once if not provided, to ensure both S3 and DB deletion use the same set
         artifacts_to_save = self._get_artifacts_to_save(dataset_versions)
 
@@ -1112,7 +1118,12 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Delete only artifacts not in the save list
         artifacts_to_delete = [a for a in all_artifacts if a not in artifacts_to_save]
-
+        logger.info(
+            {
+                "message": "Deleting dataset version assets",
+                "artifacts_to_delete": [a.id.id for a in artifacts_to_delete],
+            }
+        )
         self.delete_dataset_versions_from_public_bucket(dataset_versions, artifacts_to_save)
         self.delete_artifacts(artifacts_to_delete)
 
@@ -1286,6 +1297,7 @@ class BusinessLogic(BusinessLogicInterface):
             # Save if referenced by any version not in the deletion list
             if referencing_versions and not referencing_versions.issubset(dataset_version_ids_being_deleted):
                 artifacts_to_save.add(artifact)
+                logger.info(f"Artifact {artifact.id} is referenced by {len(referencing_versions)} dataset versions.")
 
         return artifacts_to_save
 
