@@ -1087,13 +1087,15 @@ class BusinessLogic(BusinessLogicInterface):
             )
         )
 
-    def delete_dataset_versions(
-        self, dataset_versions: List[DatasetVersion], artifacts_to_save: Set[DatasetArtifact] = None
-    ) -> None:
+    def delete_dataset_versions(self, dataset_versions: List[DatasetVersion]) -> None:
         """
         Deletes a list of dataset versions and associated dataset artifact rows from the database, as well
-        as kicking off deletion of their corresponding assets from S3
+        as kicking off deletion of their corresponding assets from S3. Automatically preserves artifacts
+        that are still referenced by other existing dataset versions.
         """
+        # Compute artifacts_to_save once if not provided, to ensure both S3 and DB deletion use the same set
+        artifacts_to_save = self._get_artifacts_to_save(dataset_versions)
+
         self.delete_dataset_version_assets(dataset_versions, artifacts_to_save)
         self.database_provider.delete_dataset_versions(dataset_versions, artifacts_to_save)
 
@@ -1105,7 +1107,8 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Determine which artifacts to save (explicit + referenced elsewhere)
         # Only compute if not already provided to avoid redundant reference counting
-        artifacts_to_save = artifacts_to_save or self._get_artifacts_to_save(all_artifacts, dataset_versions, None)
+        if not artifacts_to_save:
+            artifacts_to_save = self._get_artifacts_to_save(dataset_versions)
 
         # Delete only artifacts not in the save list
         artifacts_to_delete = [a for a in all_artifacts if a not in artifacts_to_save]
@@ -1251,40 +1254,19 @@ class BusinessLogic(BusinessLogicInterface):
             version.collection_id, from_date=date_of_last_publish
         )
         versions_to_delete = list(filter(lambda dv: dv.version_id.id not in versions_to_keep, dataset_versions))
+        self.delete_dataset_versions(versions_to_delete)
 
-        # Find artifacts shared between versions to keep and versions to delete
-        artifacts_in_kept_versions = [
-            artifact for dv in dataset_versions if dv.version_id.id in versions_to_keep for artifact in dv.artifacts
-        ]
-        artifacts_in_deleted_versions = [artifact for dv in versions_to_delete for artifact in dv.artifacts]
-        explicitly_saved = {a for a in artifacts_in_kept_versions if a in artifacts_in_deleted_versions}
-
-        # Determine all artifacts to save (explicit + referenced elsewhere)
-        artifacts_to_save = self._get_artifacts_to_save(
-            artifacts_in_deleted_versions, versions_to_delete, explicitly_saved
-        )
-
-        self.delete_dataset_versions(versions_to_delete, artifacts_to_save=artifacts_to_save)
-
-    def _get_artifacts_to_save(
-        self,
-        artifacts_being_deleted: List[DatasetArtifact],
-        dataset_versions_being_deleted: List[DatasetVersion],
-        explicitly_saved_artifacts: Set[DatasetArtifact] = None,
-    ) -> Set[DatasetArtifact]:
+    def _get_artifacts_to_save(self, dataset_versions_being_deleted: List[DatasetVersion]) -> Set[DatasetArtifact]:
         """
         Determines which artifacts must be saved. Combines explicit saves with reference counting.
 
-        :param artifacts_being_deleted: All artifacts from dataset versions being deleted
         :param dataset_versions_being_deleted: Dataset versions being deleted
-        :param explicitly_saved_artifacts: Optional set of artifacts explicitly marked to save (e.g., shared with kept versions)
         :return: Set of artifacts that must be saved (not deleted from S3 or database)
         """
-        if not artifacts_being_deleted:
-            return set()
+        artifacts_being_deleted = [a for dv in dataset_versions_being_deleted for a in dv.artifacts]
 
         # Start with explicitly saved artifacts
-        artifacts_to_save = set(explicitly_saved_artifacts) if explicitly_saved_artifacts else set()
+        artifacts_to_save = set()
 
         # Get IDs of dataset versions being deleted
         dataset_version_ids_being_deleted = {str(dv.version_id.id) for dv in dataset_versions_being_deleted}
