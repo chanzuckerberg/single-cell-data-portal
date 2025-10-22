@@ -1036,7 +1036,7 @@ class BusinessLogic(BusinessLogicInterface):
             return
         yield from (a for a in dataset_version.artifacts if a.type in artifact_types)
 
-    def delete_dataset_versions_from_public_bucket(
+    def delete_artifacts_from_public_bucket(
         self, dataset_versions: List[DatasetVersion], artifacts_to_save: List[DatasetArtifact] = None
     ) -> List[str]:
         rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
@@ -1065,7 +1065,7 @@ class BusinessLogic(BusinessLogicInterface):
         Delete all associated publicly-accessible Datasets in s3
         """
         dataset_versions = self.database_provider.get_all_dataset_versions_for_collection(collection_id)
-        return self.delete_dataset_versions_from_public_bucket(dataset_versions)
+        return self.delete_artifacts_from_public_bucket(dataset_versions)
 
     def get_unpublished_dataset_versions(self, dataset_id: DatasetId) -> List[DatasetVersion]:
         """
@@ -1124,8 +1124,8 @@ class BusinessLogic(BusinessLogicInterface):
                 "artifacts_to_delete": [a.id.id for a in artifacts_to_delete],
             }
         )
-        self.delete_dataset_versions_from_public_bucket(dataset_versions, artifacts_to_save)
-        self.delete_artifacts(artifacts_to_delete)
+        self.delete_artifacts_from_public_bucket(dataset_versions, artifacts_to_save)
+        self.delete_artifacts_from_private_bucket(artifacts_to_delete)
 
     def tombstone_collection(self, collection_id: CollectionId) -> None:
         """
@@ -1235,7 +1235,7 @@ class BusinessLogic(BusinessLogicInterface):
             data_submission_policy_version,
             update_revised_at=has_dataset_revisions,
         )
-        self.delete_dataset_versions_from_public_bucket(dataset_versions_to_delete_from_s3)
+        self.delete_artifacts_from_public_bucket(dataset_versions_to_delete_from_s3)
 
         # Handle cleanup of unpublished versions
         self._cleanup_unpublished_versions_after_publish(version, date_of_last_publish, is_auto_version)
@@ -1274,10 +1274,8 @@ class BusinessLogic(BusinessLogicInterface):
         :param dataset_versions_being_deleted: Dataset versions being deleted
         :return: Set of artifacts that must be saved (not deleted from S3 or database)
         """
-        artifacts_being_deleted = [a for dv in dataset_versions_being_deleted for a in dv.artifacts]
-
-        # Start with explicitly saved artifacts
         artifacts_to_save = set()
+        artifacts_being_deleted = [a for dv in dataset_versions_being_deleted for a in dv.artifacts]
 
         # Get IDs of dataset versions being deleted
         dataset_version_ids_being_deleted = {str(dv.version_id.id) for dv in dataset_versions_being_deleted}
@@ -1381,7 +1379,7 @@ class BusinessLogic(BusinessLogicInterface):
         except DatasetVersionNotFoundException:
             return None
 
-    def delete_artifacts(self, artifacts: List[DatasetArtifact]) -> None:
+    def delete_artifacts_from_private_bucket(self, artifacts: List[DatasetArtifact]) -> None:
         for artifact in artifacts:
             matches = S3_URI_REGEX.match(artifact.uri)
             if not matches:

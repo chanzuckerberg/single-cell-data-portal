@@ -1575,7 +1575,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
 
     def test_delete_artifacts_delete_no_artifacts(self):
         self.business_logic.s3_provider = Mock()
-        delete_artifacts = self.business_logic.delete_artifacts
+        delete_artifacts = self.business_logic.delete_artifacts_from_private_bucket
         s3_provider = self.business_logic.s3_provider
 
         # Arrange
@@ -1587,7 +1587,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
 
     def test_delete_artifacts_artifact_type_doesnt_match_regex(self):
         self.business_logic.s3_provider = Mock()
-        delete_artifacts = self.business_logic.delete_artifacts
+        delete_artifacts = self.business_logic.delete_artifacts_from_private_bucket
         s3_provider = self.business_logic.s3_provider
         bucket = "bucket"
         uuid_prefix = "12345678-1234-5678-9012-123456789012"
@@ -1609,7 +1609,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
 
     def test_delete_artifacts_delete_cxg(self):
         self.business_logic.s3_provider = Mock()
-        delete_artifacts = self.business_logic.delete_artifacts
+        delete_artifacts = self.business_logic.delete_artifacts_from_private_bucket
         s3_provider = self.business_logic.s3_provider
         bucket = "bucket"
         uuid_prefix = "12345678-1234-5678-9012-123456789012"
@@ -1627,7 +1627,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
 
     def test_delete_artifacts_with_rdev_prefix(self):
         self.business_logic.s3_provider = Mock()
-        delete_artifacts = self.business_logic.delete_artifacts
+        delete_artifacts = self.business_logic.delete_artifacts_from_private_bucket
         s3_provider = self.business_logic.s3_provider
         bucket = "bucket"
         rdev_prefix = "rdev-12345678"  # 8+ character prefix for safety validation
@@ -1645,7 +1645,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
 
     def test_delete_artifacts_with_no_match(self):
         self.business_logic.s3_provider = Mock()
-        delete_artifacts = self.business_logic.delete_artifacts
+        delete_artifacts = self.business_logic.delete_artifacts_from_private_bucket
 
         ## not matching regex
         # Arrange
@@ -1657,7 +1657,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
 
     def test_delete_artifacts_delete_h5ad(self):
         self.business_logic.s3_provider = Mock()
-        delete_artifacts = self.business_logic.delete_artifacts
+        delete_artifacts = self.business_logic.delete_artifacts_from_private_bucket
         s3_provider = self.business_logic.s3_provider
         bucket = "bucket"
         uuid_prefix = "12345678-1234-5678-9012-123456789012"
@@ -1675,7 +1675,7 @@ class TestDeleteDataset(BaseBusinessLogicTestCase):
 
     def test_delete_artifacts_CollectionDeleteException_with_H5AD(self):
         self.business_logic.s3_provider.delete_files = Mock(side_effect=S3DeleteException("error"))
-        delete_artifacts = self.business_logic.delete_artifacts
+        delete_artifacts = self.business_logic.delete_artifacts_from_private_bucket
         bucket = "bucket"
         uuid_prefix = "12345678-1234-5678-9012-123456789012"
 
