@@ -33,3 +33,127 @@ repos:
           - prettier@3.0.2
           - prettier-plugin-organize-imports@2.3.3
           - typescript@4.9.5
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.9.5
+    hooks:
+      - id: pip-compile
+        name: backend/requirements.in
+        args:
+          [
+            python_dependencies/backend/requirements.in,
+            -o,
+            python_dependencies/backend/requirements.txt,
+            --generate-hashes,
+            --python-version,
+            "3.10",
+          ]
+        files: ^python_dependencies/backend/requirements\.in$
+      - id: pip-compile
+        name: backend/common/server/requirements.in
+        args:
+          [
+            python_dependencies/backend/common/server/requirements.in,
+            -o,
+            python_dependencies/backend/common/server/requirements.txt,
+            --generate-hashes,
+            --python-version,
+            "3.10",
+          ]
+        files: ^python_dependencies/backend/common/server/requirements\.in$
+      - id: pip-compile
+        name: backend/de/requirements.in
+        args:
+          [
+            python_dependencies/backend/de/requirements.in,
+            -o,
+            python_dependencies/backend/de/requirements.txt,
+            --generate-hashes,
+            --python-version,
+            "3.10",
+          ]
+        files: ^python_dependencies/backend/de/requirements\.in$
+      - id: pip-compile
+        name: backend/wmg/requirements.in
+        args:
+          [
+            python_dependencies/backend/wmg/requirements.in,
+            -o,
+            python_dependencies/backend/wmg/requirements.txt,
+            --generate-hashes,
+            --python-version,
+            "3.10",
+          ]
+        files: ^python_dependencies/backend/wmg/requirements\.in$
+      - id: pip-compile
+        name: cellguide_pipeline/requirements.in
+        args:
+          [
+            python_dependencies/cellguide_pipeline/requirements.in,
+            -o,
+            python_dependencies/cellguide_pipeline/requirements.txt,
+            --generate-hashes,
+            --python-version,
+            "3.10",
+          ]
+        files: ^python_dependencies/cellguide_pipeline/requirements\.in$
+      - id: pip-compile
+        name: common/requirements-dev.in
+        args:
+          [
+            python_dependencies/common/requirements-dev.in,
+            -o,
+            python_dependencies/common/requirements-dev.txt,
+            --generate-hashes,
+            --python-version,
+            "3.10",
+          ]
+        files: ^python_dependencies/common/requirements-dev\.in$
+      - id: pip-compile
+        name: processing/requirements.in
+        args:
+          [
+            python_dependencies/processing/requirements.in,
+            -o,
+            python_dependencies/processing/requirements.txt,
+            --generate-hashes,
+            --python-version,
+            "3.10",
+          ]
+        files: ^python_dependencies/processing/requirements\.in$
+      - id: pip-compile
+        name: submissions/requirements.in
+        args:
+          [
+            python_dependencies/submissions/requirements.in,
+            -o,
+            python_dependencies/submissions/requirements.txt,
+            --generate-hashes,
+            --python-version,
+            "3.10",
+          ]
+        files: ^python_dependencies/submissions/requirements\.in$
+      - id: pip-compile
+        name: upload_handler/requirements.in
+        args:
+          [
+            python_dependencies/upload_handler/requirements.in,
+            -o,
+            python_dependencies/upload_handler/requirements.txt,
+            --generate-hashes,
+            --python-version,
+            "3.10",
+          ]
+        files: ^python_dependencies/upload_handler/requirements\.in$
+      - id: pip-compile
+        name: wmg_processing/requirements.in
+        args:
+          [
+            python_dependencies/wmg_processing/requirements.in,
+            -o,
+            python_dependencies/wmg_processing/requirements.txt,
+            --generate-hashes,
+            --python-version,
+            "3.10",
+          ]
+        files: ^python_dependencies/wmg_processing/requirements\.in$
