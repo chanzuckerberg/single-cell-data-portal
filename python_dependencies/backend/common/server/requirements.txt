@@ -812,6 +812,7 @@ werkzeug==2.2.3 \
     --hash=sha256:2e1ccc9417d4da358b9de6f174e3ac094391ea1d4fbef2d667865d819dfd0afe \
     --hash=sha256:56433961bc1f12533306c624f3be5e744389ac61d722175d543e1751285da612
     # via
+    #   -r python_dependencies/backend/common/server/requirements.in
     #   connexion
     #   flask
 xmltodict==1.0.2 \
