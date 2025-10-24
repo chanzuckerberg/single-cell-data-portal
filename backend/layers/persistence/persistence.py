@@ -6,7 +6,7 @@ from copy import deepcopy
 from datetime import datetime
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
-from sqlalchemy import create_engine, delete, update
+from sqlalchemy import create_engine, delete, func, update
 from sqlalchemy.exc import ProgrammingError, SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 from tenacity import retry
@@ -830,6 +830,33 @@ class DatabaseProvider(DatabaseProviderInterface):
         for collection in active_collections:
             dataset_version_ids.extend(collection.datasets)
         return list(self.get_dataset_versions_by_id(dataset_version_ids)), active_collections
+
+    def get_all_dataset_versions_from_published_collections(self) -> List[DatasetVersion]:
+        """
+        Returns all dataset versions (all versions per dataset) from published collections,
+        including tombstoned datasets. Uses a direct SQL query for efficiency.
+        """
+        with self._manage_session() as session:
+            # Get all published collection version IDs by querying collections with mapped versions
+            published_collection_version_ids = (
+                session.query(CollectionVersionTable.id)
+                .join(CollectionTable, CollectionTable.version_id == CollectionVersionTable.id)
+                .filter(CollectionTable.tombstone.is_(False))
+                .all()
+            )
+            published_cv_ids = [cv_id[0] for cv_id in published_collection_version_ids]
+
+            # Query all dataset versions that are referenced by these published collection versions
+            # We use unnest to expand the datasets array and find all matching dataset versions
+            dataset_version_ids_query = (
+                session.query(func.unnest(CollectionVersionTable.datasets).label("dataset_version_id"))
+                .filter(CollectionVersionTable.id.in_(published_cv_ids))
+                .distinct()
+            )
+            dataset_version_ids = [DatasetVersionId(str(row.dataset_version_id)) for row in dataset_version_ids_query]
+
+            # Use existing method to bulk fetch and hydrate dataset versions (including tombstoned)
+            return self.get_dataset_versions_by_id(dataset_version_ids, get_tombstoned=True)
 
     def get_dataset_artifacts(self, dataset_artifact_id_list: List[DatasetArtifactId]) -> List[DatasetArtifact]:
         """

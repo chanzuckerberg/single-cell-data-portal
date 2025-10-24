@@ -847,6 +847,31 @@ def get_user_datasets_index(token_info: dict):
     return make_response(jsonify(response), 200)
 
 
+def get_all_dataset_versions():
+    """
+    Returns all dataset versions from published collections, including all versions per dataset
+    and tombstoned datasets. Returns basic metadata: dataset_id, dataset_version_id, name,
+    collection_id, published_at, and created_at.
+    """
+    datasets = get_business_logic().get_all_dataset_versions_from_published_collections()
+
+    response = []
+    for dataset in datasets:
+        dataset_info = {
+            "dataset_id": str(dataset.dataset_id),
+            "dataset_version_id": str(dataset.version_id),
+            "name": dataset.metadata.name if dataset.metadata else None,
+            "collection_id": str(dataset.collection_id),
+            "published_at": (
+                dataset.canonical_dataset.published_at.timestamp() if dataset.canonical_dataset.published_at else None
+            ),
+            "created_at": dataset.created_at.timestamp() if dataset.created_at else None,
+        }
+        response.append(dataset_info)
+
+    return make_response(jsonify(response), 200)
+
+
 def enrich_dataset_response(datasets: Iterable[DatasetVersion]) -> List[dict]:
     """
     Enriches a list of datasets with ancestors of ontologized fields

@@ -926,6 +926,50 @@ paths:
           $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
+  /v1/datasets/versions:
+    get:
+      tags:
+        - datasets
+      summary: >-
+        Returns all dataset versions from published collections, including all versions per dataset and tombstoned datasets.
+      security:
+        - cxguserCookieLenient: []
+        - {}
+      description: >-
+        Returns all dataset versions (dataset_id and dataset_version_id pairs) that belong to published collections.
+        This includes all historical versions for each dataset and tombstoned datasets. Returns basic metadata including
+        name, collection_id, and timestamps.
+      operationId: backend.portal.api.portal_api.get_all_dataset_versions
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    dataset_id:
+                      type: string
+                      description: The canonical dataset ID
+                    dataset_version_id:
+                      type: string
+                      description: The specific dataset version ID
+                    name:
+                      type: string
+                      description: The name of the dataset
+                    collection_id:
+                      type: string
+                      description: The collection ID this dataset belongs to
+                    published_at:
+                      type: number
+                      description: Unix timestamp when the dataset was first published
+                    created_at:
+                      type: number
+                      description: Unix timestamp when this dataset version was created
+        "400":
+          $ref: "#/components/responses/400"
   /v1/login:
     get:
       tags:

@@ -787,6 +787,13 @@ class BusinessLogic(BusinessLogicInterface):
         datasets, _ = self.database_provider.get_all_mapped_datasets_and_collections()
         return datasets
 
+    def get_all_dataset_versions_from_published_collections(self) -> List[DatasetVersion]:
+        """
+        Retrieves all dataset versions (including all versions per dataset and tombstoned datasets)
+        from published collections
+        """
+        return self.database_provider.get_all_dataset_versions_from_published_collections()
+
     def get_datasets_for_collections(self, collections: Iterable[CollectionVersion]) -> Iterable[DatasetVersion]:
         datasets = []
         for collection in collections:
