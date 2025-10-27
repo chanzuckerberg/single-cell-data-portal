@@ -1,3 +1,0 @@
-INFO     processing:schema_migration.py:63 Fetched collection version for migration
-INFO     processing:schema_migration.py:63 Fetched collection version for migration
-INFO     processing:schema_migration.py:329 Uploaded to S3
