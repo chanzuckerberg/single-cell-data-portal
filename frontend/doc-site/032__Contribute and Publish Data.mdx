@@ -33,7 +33,7 @@ CELLxGENE Discover sets the maximum per dataset file size for submissions to 50 
 
 ### Formatting Requirements
 
-Include the following Collection metadata in your emails to describe your publication or study, all of which can be edited as titles, abstracts, etc. change:
+Include the following Collection metadata in your emails to describe your publication or study, all of which can be edited as titles, abstracts, etc.:
 
 - **Collection information**:
   - Title
@@ -60,9 +60,13 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
   - normalized counts are strongly recommended
   - raw counts should be in raw.X if normalized counts are in .X
   - if there is no normalized matrix, raw counts should be in .X
+  - layer in .X is displayed in CELLxGENE Explorer
+    - it is highly recommended that .X is not filtered to enable exploration of all genes
+    - if only raw counts are provided, gene expression visualizations will not be normalized and might appear different than expected
 - **Cell metadata in obs** (ontology term IDs MUST be the most specific term available from the specified ontology):
   - **donor_id**
     - free-text identifier that distinguishes the unique individual that data were derived from
+    - `na` for cell line
   - **development_stage_ontology_term_id**
     - human [HsapDv]
     - mouse [MmusDv]
@@ -71,31 +75,37 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
     - fruit fly FBdv descendent of [development stage](https://www.ebi.ac.uk/ols4/ontologies/fbdv/classes?obo_id=FBdv%3A00005259) or [age](https://www.ebi.ac.uk/ols4/ontologies/fbdv/classes?obo_id=FBdv%3A00007014)
     - other organsism [UBERON](https://www.ebi.ac.uk/ols4/ontologies/uberon/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FUBERON_0000105)
     - `unknown` if information unavailable
+    - `na` for cell line
   - **sex_ontology_term_id**
     - `PATO:0000384` for male, `PATO:0000383` for female, `PATO:0001340` for hermaphrodite, or `unknown` if unavailable
+    - `na` for cell line
   - **self_reported_ethnicity_ontology_term_id**
     - human [HANCESTRO]
     - multiple <code>&nbsp;||&nbsp;</code>-delimited terms may be used if more than one ethnicity is reported
     - `unknown` if information unavailable
     - other organisms `na`
+    - `na` for cell line
   - **disease_ontology_term_id**
     - should describe any known disease thought to, or being tested to, have an impact on the measurement being taken, _not_ necessarily any known disease of the donor
     - [MONDO] or `PATO:0000461` for normal
     - multiple <code>&nbsp;||&nbsp;</code>-delimited terms may be used if appropriate
   - **tissue_type**
-    - `tissue`, `organoid`, or `cell culture`
+    - `tissue`, `organoid`, `primary cell culture` or `cell line`
   - **tissue_ontology_term_id**
     - should describe the sample used as input to the experiment, _not_ analysis-derived annotations
     - round worm [WBbt](https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FWBbt_0005766) or [UBERON]
     - zebrafish [ZFA](https://www.ebi.ac.uk/ols4/ontologies/zfa/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FZFA_0100000?lang=en) or [UBERON]
     - fruit fly [FBbt](https://www.ebi.ac.uk/ols4/ontologies/fbbt) or [UBERON]
     - other organisms [UBERON]
+    - cell line [CVCL](https://www.cellosaurus.org/)
+    - primary cell culture [CL]
   - **cell_type_ontology_term_id**
     - should describe analysis-derived cell annotations
     - roundworm [WBbt](https://www.ebi.ac.uk/ols4/ontologies/wbbt/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FWBbt_0004017) or [CL]
     - zebrafish [ZFA](https://www.ebi.ac.uk/ols4/ontologies/zfa/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FZFA_0009000) or [CL]
     - fruit fly [FBbt](https://www.ebi.ac.uk/ols4/ontologies/fbbt/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FFBbt_00007002) or [CL]
     - other organisms [CL]
+    - cell line may be all `na` for studies that do not involve cell label annotation
   - **assay_ontology_term_id**
     - [EFO]
   - **suspension_type**
