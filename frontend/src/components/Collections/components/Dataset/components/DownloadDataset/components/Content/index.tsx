@@ -17,7 +17,7 @@ import {
 import { downloadMultipleFiles, getDownloadLink } from "./utils";
 import { BrowserTab } from "./components/BrowserTab/BrowserTab";
 import { ActiveTab } from "./utils";
-import { ApiTab } from "./components/ApiTab/ApiTab";
+// import { ApiTab } from "./components/ApiTab/ApiTab";
 import { StyledTabs } from "./style";
 interface Props {
   isError?: boolean;
@@ -40,7 +40,7 @@ const Content: FC<Props> = ({
   onClose,
   name,
   dataAssets,
-  collectionId,
+  // collectionId,
 }) => {
   const [activeTab, setActiveTab] = useState<ActiveTab>(ActiveTab.Browser);
   const [initialFetchDone, setInitialFetchDone] = useState(false);
@@ -179,8 +179,8 @@ const Content: FC<Props> = ({
         onChange={handleTabsChange}
       >
         <Tab label="Browser" value={ActiveTab.Browser} />
-        <Tab label="Python API" value={ActiveTab.PythonApi} />
-        <Tab label="R API" value={ActiveTab.RApi} />
+        {/* <Tab label="Python API" value={ActiveTab.PythonApi} />
+        <Tab label="R API" value={ActiveTab.RApi} /> */}
       </StyledTabs>
       <DialogContent>
         {activeTab === ActiveTab.Browser && (
@@ -197,7 +197,8 @@ const Content: FC<Props> = ({
             isDownloadLinkLoading={isDownloadLinkLoading}
           />
         )}
-        {activeTab === ActiveTab.PythonApi && (
+        {/* https://czi.atlassian.net/browse/VC-4792 */}
+        {/* {activeTab === ActiveTab.PythonApi && (
           <ApiTab
             name={name}
             tab={ActiveTab.PythonApi}
@@ -211,8 +212,8 @@ const Content: FC<Props> = ({
                dataset_id = "${dataAssets[0].dataset_id}"
               `}
           />
-        )}
-        {activeTab === ActiveTab.RApi && (
+        )} */}
+        {/* {activeTab === ActiveTab.RApi && (
           <ApiTab
             name={name}
             tab={ActiveTab.RApi}
@@ -225,7 +226,7 @@ const Content: FC<Props> = ({
                dataset_id <- "${dataAssets[0].dataset_id}"
               `}
           />
-        )}
+        )} */}
       </DialogContent>
       <DialogActions>
         <Button
