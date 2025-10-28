@@ -23,7 +23,10 @@ class TestDatasetMigrate:
         assert response["collection_version_id"] == private.version_id.id
         assert response["dataset_version_id"] == new_dataset_version_id.id
         assert dataset_version_id != new_dataset_version_id.id
-        assert response["manifest"] == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"}}'
+        assert (
+            response["manifest"]
+            == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad","atac_fragment":null}}'
+        )
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]
         schema_migrate.schema_validator.migrate.assert_called_once_with(
@@ -49,7 +52,10 @@ class TestDatasetMigrate:
         assert response["collection_version_id"] == published.version_id.id
         assert response["dataset_version_id"] == new_dataset_version_id.id
         assert dataset_version_id != new_dataset_version_id.id
-        assert response["manifest"] == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"}}'
+        assert (
+            response["manifest"]
+            == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad","atac_fragment":null}}'
+        )
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]
         schema_migrate.schema_validator.migrate.assert_called_once_with(
@@ -75,7 +81,10 @@ class TestDatasetMigrate:
         assert response["collection_version_id"] == revision.version_id.id
         assert response["dataset_version_id"] == new_dataset_version_id.id
         assert dataset_version_id != new_dataset_version_id.id
-        assert response["manifest"] == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad"}}'
+        assert (
+            response["manifest"]
+            == f'{{"anndata":"s3://artifact-bucket/{dataset_version_id}/migrated.h5ad","atac_fragment":null}}'
+        )
         assert response["sfn_name"].startswith("migrate_")
         assert new_dataset_version_id.id in response["sfn_name"]
         schema_migrate.schema_validator.migrate.assert_called_once_with(

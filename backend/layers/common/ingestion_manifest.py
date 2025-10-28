@@ -25,10 +25,6 @@ class S3Url(AnyUrl):
     )
 
 
-class IngestionManifestFlags(BaseModel):
-    deduplicate_fragments: Optional[bool] = None  # Optional field with default value
-
-
 class IngestionManifest(BaseModel):
     """
     # Deserialize JSON to Pydantic model
@@ -40,4 +36,3 @@ class IngestionManifest(BaseModel):
 
     anndata: Union[HttpUrl, S3Url]
     atac_fragment: Optional[Union[HttpUrl, S3Url]] = None  # Optional field
-    flags: Optional["IngestionManifestFlags"] = None  # Optional nested field
