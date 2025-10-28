@@ -34,7 +34,8 @@ ASSAYS_FOR_GENE_LENGTH_NORMALIZATION = [
 
 TARGET_LIBRARY_SIZE = 10_000
 
-MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION = 2
+# The admissible census schema versions expressed as a packaging.specifiers.SpecifierSet string.
+ADMISSIBLE_CENSUS_SCHEMA_VERSION_SPECIFIER_SET = "<2.2"
 
 HIGH_LEVEL_TISSUES = [
     "UBERON:0000178",  # blood
