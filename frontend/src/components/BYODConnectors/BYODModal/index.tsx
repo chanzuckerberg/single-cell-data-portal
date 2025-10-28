@@ -38,7 +38,14 @@ const BYODModal: FC<Props> = ({ open, onClose }) => {
                 <FeatureTitle>{card.title}</FeatureTitle>
                 <FeatureDescription>{card.description}</FeatureDescription>
                 <FeatureButtonContainer>
-                  <Button sdsType="secondary" sdsStyle="rounded">
+                  <Button
+                    sdsType="secondary"
+                    sdsStyle="rounded"
+                    href={card.href}
+                    // @ts-expect-error - in this version, SDS Button doesn't properly type anchor props
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     {card.buttonText}
                   </Button>
                 </FeatureButtonContainer>
@@ -51,7 +58,10 @@ const BYODModal: FC<Props> = ({ open, onClose }) => {
           <Button
             sdsType="primary"
             sdsStyle="square"
-            href="https://virtualcellmodels.cziscience.com/byod"
+            href="https://virtualcellmodels.cziscience.com/ai-workspace"
+            // @ts-expect-error - in this version, SDS Button doesn't properly type anchor props
+            target="_blank"
+            rel="noopener noreferrer"
           >
             Explore on Platform
             <StyledIcon>
