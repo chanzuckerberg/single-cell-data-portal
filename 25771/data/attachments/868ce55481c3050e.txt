@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2025-10-28T06:28:00.028Z", "name": "backend.layers.processing.utils.atac", "message": "Downloading S3 file s3://test-bucket/fragments.tsv.gz to /tmp/pytest-of-root/pytest-0/test__download_s3_file_downloa0/temp_file.bgz", "lineno": 130, "pathname": "/single-cell-data-portal/backend/layers/processing/utils/atac.py"}
