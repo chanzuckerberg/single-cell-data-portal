@@ -6,7 +6,6 @@ import pytest
 import scanpy
 import tiledb
 from parameterized import parameterized
-from rpy2.robjects.packages import importr
 
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.common.entities import (
@@ -27,8 +26,6 @@ from backend.layers.processing.utils.cxg_generation_utils import convert_diction
 from backend.layers.thirdparty.s3_provider_mock import MockS3Provider
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
 from tests.unit.processing.base_processing_test import BaseProcessingTest
-
-base = importr("base")
 
 
 def mock_process(target, args=()):

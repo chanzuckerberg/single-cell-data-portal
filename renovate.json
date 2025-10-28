@@ -60,8 +60,7 @@
         "Dockerfile.upload_failures",
         "Dockerfile.upload_success",
         "python_dependencies/processing/**",
-        "Dockerfile.processing",
-        "Dockerfile.processing_base"
+        "Dockerfile.processing"
       ],
       "enabled": true,
       "assignees": ["nayib-jose-gloria", "ebezzi", "Bento007"]

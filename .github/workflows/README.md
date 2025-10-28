@@ -34,10 +34,6 @@
 
   #### Summary: Runs a GitHub action that lints the PR commit message according to conventional commit standards
 
-### Workflow: `push-processing-base.yml`
-
-TODO
-
 ### Workflow: `push-rdev.yml`
 
 TODO
