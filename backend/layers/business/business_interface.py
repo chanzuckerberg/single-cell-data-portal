@@ -77,10 +77,10 @@ class BusinessLogicInterface:
         """
         pass
 
-    def delete_artifacts(self, artifacts: List[DatasetArtifact]) -> None:
+    def delete_artifacts_from_private_bucket(self, artifacts: List[DatasetArtifact]) -> None:
         pass
 
-    def delete_dataset_versions_from_public_bucket(self, dataset_versions: List[DatasetVersion]) -> List[str]:
+    def delete_artifacts_from_public_bucket(self, dataset_versions: List[DatasetVersion]) -> List[str]:
         pass
 
     def delete_all_dataset_versions_from_public_bucket_for_collection(self, collection_id: CollectionId) -> List[str]:
