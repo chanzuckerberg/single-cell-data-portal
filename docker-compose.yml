@@ -150,6 +150,7 @@ services:
     image: "${DOCKER_REPO}corpora-upload"
     profiles:
       - processing
+    platform: linux/amd64
     build:
       context: .
       cache_from:

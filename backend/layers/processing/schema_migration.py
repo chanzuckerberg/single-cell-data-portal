@@ -120,7 +120,7 @@ class SchemaMigrate(ProcessingLogic):
         return {
             "collection_version_id": collection_version_id,
             "dataset_version_id": new_dataset_version_id.id,
-            "manifest": manifest.model_dump_json(exclude_none=True),
+            "manifest": manifest.model_dump_json(),
             "sfn_name": sfn_name,
             "execution_id": self.execution_id,
         }
