@@ -1,35 +1,28 @@
-ARG BASE_TAG=20250204@sha256:9db765e1207dc46dd49748e6660edb9f43a309e11cf9a83eaf6eae6cc40a894f
-
-FROM ghcr.io/chanzuckerberg/corpora-upload-base:$BASE_TAG
+FROM python:3.10
 
 # Update AWS root Certificates
 ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem
 
-# Install cellxgene so we get the remote server that has the converter in it
-# The cellxgene install script expects executables named python and pip, not python3 and pip3
+# Install required system packages
 RUN apt-get update && \
 	apt-get upgrade -y && \
-	apt-get install software-properties-common -y && \
-	add-apt-repository ppa:deadsnakes/ppa && \
-	apt-get update && apt-get install -y python3.10 python3.10-dev python3.10-venv libvips coreutils tabix pigz && \
-    wget https://bootstrap.pypa.io/get-pip.py && \
-    python3.10 get-pip.py
+	apt-get install -y libvips coreutils tabix pigz && \
+	rm -rf /var/lib/apt/lists/*
+
+# Install uv for fast Python package installation
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # For lighter weight Docker images
-ENV PIP_NO_CACHE_DIR=1
-
-# Activate virtual environment for subsequent commands
-RUN python3.10 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+ENV UV_NO_CACHE=1
 
 COPY /python_dependencies/processing/ .
 COPY /python_dependencies/common/ .
 ARG INSTALL_DEV=false
 
 ARG CACHEBUST=1
-RUN python3.10 -m pip install -r requirements.txt
+RUN uv pip install --system -r requirements.txt
 
-RUN if [ "$INSTALL_DEV" = "true" ]; then python3 -m pip install -r requirements-dev.txt; fi
+RUN if [ "$INSTALL_DEV" = "true" ]; then uv pip install --system -r requirements-dev.txt; fi
 
 ADD backend/__init__.py backend/__init__.py
 ADD backend/layers backend/layers
@@ -42,4 +35,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["python3.10", "-m", "backend.layers.processing.process"]
+CMD ["python", "-m", "backend.layers.processing.process"]
