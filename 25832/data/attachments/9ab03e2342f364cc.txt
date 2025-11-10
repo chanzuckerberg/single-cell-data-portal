@@ -1,0 +1,10 @@
+INFO     backend.curation.api.v1.curation.collections.collection_id.s3_upload_credentials:s3_upload_credentials.py:40 {"RoleArn": "test_role_arn", "RoleSessionName": "test_user_id", "WebIdentityToken": "owner", "DurationSeconds": 43200}
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': 74dd32fd-4279-43d7-9b10-bf054b70ed10, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:1096 {'message': 'Deleting dataset versions', 'dataset_version_ids': []}
+INFO     backend.layers.business.business:business.py:1121 {'message': 'Deleting dataset version assets', 'artifacts_to_delete': []}
+INFO     backend.curation.api.v1.curation.collections.collection_id.s3_upload_credentials:s3_upload_credentials.py:40 {"RoleArn": "test_role_arn", "RoleSessionName": "test_user_id", "WebIdentityToken": "owner", "DurationSeconds": 43200}
+INFO     backend.curation.api.v1.curation.collections.collection_id.s3_upload_credentials:s3_upload_credentials.py:40 {"RoleArn": "test_role_arn", "RoleSessionName": "super", "WebIdentityToken": "super", "DurationSeconds": 43200}
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': 083f2406-6e7e-4c81-a161-ef6ef20b7e52, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:1096 {'message': 'Deleting dataset versions', 'dataset_version_ids': []}
+INFO     backend.layers.business.business:business.py:1121 {'message': 'Deleting dataset version assets', 'artifacts_to_delete': []}
+INFO     backend.curation.api.v1.curation.collections.collection_id.s3_upload_credentials:s3_upload_credentials.py:40 {"RoleArn": "test_role_arn", "RoleSessionName": "super", "WebIdentityToken": "super", "DurationSeconds": 43200}
