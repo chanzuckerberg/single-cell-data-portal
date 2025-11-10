@@ -234,7 +234,7 @@ def get_all_tissue_ids_in_corpus(snapshot: CensusCubeSnapshot) -> list[str]:
 def descendants(cell_type):
     try:
         return ontology_parser.get_term_descendants(cell_type, include_self=True)
-    except ValueError:
+    except (ValueError, KeyError):
         return [cell_type]
 
 
@@ -242,7 +242,7 @@ def descendants(cell_type):
 def ancestors(cell_type):
     try:
         return ontology_parser.get_term_ancestors(cell_type, include_self=True)
-    except ValueError:
+    except (ValueError, KeyError):
         return [cell_type]
 
 
