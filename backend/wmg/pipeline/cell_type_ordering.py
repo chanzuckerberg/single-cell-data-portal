@@ -8,7 +8,12 @@ from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
     CELL_TYPE_ORDERINGS_FILENAME,
 )
-from backend.common.census_cube.utils import ontology_parser, to_dict
+from backend.common.census_cube.utils import (
+    ancestors as get_ancestors,
+    children as get_children,
+    ontology_parser,
+    to_dict,
+)
 from backend.wmg.pipeline.constants import (
     CELL_TYPE_ORDERING_CREATED_FLAG,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
@@ -92,13 +97,13 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     # so that this file can be imported by tests without breaking.
     import pygraphviz as pgv
 
-    ancestors = [ontology_parser.get_term_ancestors(t, include_self=True) for t in cells]
+    ancestors = [get_ancestors(t) for t in cells]
     ancestors = [i for s in ancestors for i in s]
     ancestors = sorted(set(ancestors))
 
     G = pgv.AGraph()
     for a in ancestors:
-        for s in ontology_parser.get_term_children(a):
+        for s in get_children(a):
             if s in ancestors:
                 G.add_edge(a, s)
 
@@ -118,7 +123,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
             yield cell_entity(node, depth)
             depth += 1
 
-        children = [(c_id, positions[c_id]) for c_id in ontology_parser.get_term_children(node) if c_id in ancestors]
+        children = [(c_id, positions[c_id]) for c_id in get_children(node) if c_id in ancestors]
         sorted_children = sorted(children, key=lambda x: x[1][0])
         for child in sorted_children:
             yield from recurse(child[0], depth=depth)

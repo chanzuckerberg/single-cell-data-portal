@@ -246,6 +246,14 @@ def ancestors(cell_type):
         return [cell_type]
 
 
+@lru_cache(maxsize=None)
+def children(cell_type):
+    try:
+        return ontology_parser.get_term_children(cell_type)
+    except (ValueError, KeyError):
+        return []
+
+
 def get_valid_descendants(
     cell_type: str, valid_cell_types: frozenset[str], cell_counts: Optional[dict[str, int]] = None
 ):

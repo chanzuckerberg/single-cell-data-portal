@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import patch
 
 from backend.common.census_cube.data.snapshot import CELL_TYPE_ANCESTORS_FILENAME
-from backend.common.census_cube.utils import ancestors, descendants
+from backend.common.census_cube.utils import ancestors, children, descendants
 from backend.wmg.pipeline.cell_type_ancestors import create_cell_type_ancestors
 from backend.wmg.pipeline.constants import (
     CELL_TYPE_ANCESTORS_CREATED_FLAG,
@@ -101,3 +101,29 @@ class CellTypeUtilsTests(unittest.TestCase):
 
         # Should return the cell type itself as a fallback
         self.assertEqual(result, ["CL:INVALID"])
+
+    @patch("backend.common.census_cube.utils.ontology_parser")
+    def test_children_handles_key_error(self, mock_ontology_parser):
+        """Test that children handles KeyError for missing cell types in ontology."""
+        mock_ontology_parser.get_term_children.side_effect = KeyError("CL:4052026")
+
+        # Clear cache to ensure clean test
+        children.cache_clear()
+
+        result = children("CL:4052026")
+
+        # Should return an empty list as a fallback instead of crashing
+        self.assertEqual(result, [])
+
+    @patch("backend.common.census_cube.utils.ontology_parser")
+    def test_children_handles_value_error(self, mock_ontology_parser):
+        """Test that children handles ValueError gracefully."""
+        mock_ontology_parser.get_term_children.side_effect = ValueError("Invalid term")
+
+        # Clear cache to ensure clean test
+        children.cache_clear()
+
+        result = children("CL:INVALID")
+
+        # Should return an empty list as a fallback
+        self.assertEqual(result, [])
