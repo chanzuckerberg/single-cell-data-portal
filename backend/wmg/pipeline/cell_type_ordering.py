@@ -10,8 +10,11 @@ from backend.common.census_cube.data.snapshot import (
 )
 from backend.common.census_cube.utils import (
     ancestors as get_ancestors,
+)
+from backend.common.census_cube.utils import (
     children as get_children,
-    ontology_parser,
+)
+from backend.common.census_cube.utils import (
     to_dict,
 )
 from backend.wmg.pipeline.constants import (
