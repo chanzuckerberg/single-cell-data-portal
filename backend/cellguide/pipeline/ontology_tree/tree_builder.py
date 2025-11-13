@@ -398,9 +398,7 @@ class OntologyTreeBuilder:
         uberon_ancestors_in_whitelist = list(set(TISSUES_IMMUNE_CELL_WHITELIST).intersection(uberon_ancestors))
         if len(uberon_ancestors_in_whitelist) == 0:
             end_nodes_that_are_not_hematopoietic = [
-                e
-                for e in end_nodes
-                if HEMATOPOIETIC_CELL_TYPE_ID not in ancestors(e)
+                e for e in end_nodes if HEMATOPOIETIC_CELL_TYPE_ID not in ancestors(e)
             ]
             if len(end_nodes_that_are_not_hematopoietic) == 0:
                 logger.info(f"Not filtering out immune cell for {tissue_label}")
