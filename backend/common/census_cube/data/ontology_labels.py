@@ -20,10 +20,44 @@ def ontology_term_label(ontology_term_id: str) -> Optional[str]:
     """
     try:
         return ontology_parser.get_term_label(ontology_term_id)
-    # If the ontology term id is invalid, return the ontology term id itself
-    # This is useful for cases like publication citation.
-    except ValueError:
+    # If the ontology term id is invalid or not found in the ontology schema,
+    # return the ontology term id itself. This is useful for cases like publication
+    # citation and newly added cell types not yet in the ontology schema.
+    except (ValueError, KeyError):
         return ontology_term_id
+
+
+def is_ontology_term_deprecated(ontology_term_id: str) -> bool:
+    """
+    Returns whether an ontology term is deprecated. Returns False for unknown terms.
+    """
+    try:
+        return ontology_parser.is_term_deprecated(ontology_term_id)
+    except (ValueError, KeyError):
+        # Assume unknown terms are not deprecated
+        return False
+
+
+def ontology_term_description(ontology_term_id: str) -> Optional[str]:
+    """
+    Returns the description for an ontology term, given its id. Returns None if the term is not found.
+    """
+    try:
+        return ontology_parser.get_term_description(ontology_term_id)
+    except (ValueError, KeyError):
+        # Return None for unknown terms (no description available)
+        return None
+
+
+def ontology_term_synonyms(ontology_term_id: str) -> list[str]:
+    """
+    Returns the synonyms for an ontology term, given its id. Returns empty list if the term is not found.
+    """
+    try:
+        return ontology_parser.get_term_synonyms(ontology_term_id)
+    except (ValueError, KeyError):
+        # Return empty list for unknown terms (no synonyms available)
+        return []
 
 
 def gene_term_label(gene_ontology_term_id: str) -> Optional[str]:
