@@ -1,5 +1,5 @@
 alembic==1.*
-Authlib==0.14.3
+Authlib==1.6.5
 boto3>=1.11.17
 botocore>=1.14.17
 connexion[swagger-ui]==2.14.2
@@ -26,4 +26,4 @@ SQLAlchemy-Utils
 SQLAlchemy==2.*
 tenacity
 tiledb
-Werkzeug==2.2.3
+Werkzeug==3.0.6
