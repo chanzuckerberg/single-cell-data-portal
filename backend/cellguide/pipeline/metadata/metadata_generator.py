@@ -1,7 +1,12 @@
 import logging
 
 from backend.cellguide.pipeline.metadata.types import CellMetadata, TissueMetadata
-from backend.common.census_cube.utils import ontology_parser
+from backend.common.census_cube.data.ontology_labels import (
+    is_ontology_term_deprecated,
+    ontology_term_description,
+    ontology_term_label,
+    ontology_term_synonyms,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -27,20 +32,20 @@ def generate_cellguide_card_metadata(all_cell_type_ids_in_corpus: list[str]) -> 
 
     for id in all_cell_type_ids_in_corpus:
 
-        if ontology_parser.is_term_deprecated(id):
+        if is_ontology_term_deprecated(id):
             obsolete_cell_ids.append(id)
         else:
-            description = ontology_parser.get_term_description(id)
+            description = ontology_term_description(id)
             if description is not None:
                 cell_ids_with_cl_description += 1
             else:
                 cell_ids_without_cl_description += 1
 
             metadata = CellMetadata(
-                name=ontology_parser.get_term_label(id),
+                name=ontology_term_label(id),
                 id=id,
                 clDescription=description,
-                synonyms=ontology_parser.get_term_synonyms(id),
+                synonyms=ontology_term_synonyms(id),
             )
             cellguide_card_metadata[id] = metadata
 
@@ -71,20 +76,20 @@ def generate_cellguide_tissue_card_metadata(all_tissue_ids_in_corpus: list[str])
     uberon_ids_without_description = 0
 
     for id in all_tissue_ids_in_corpus:
-        if ontology_parser.is_term_deprecated(id):
+        if is_ontology_term_deprecated(id):
             obsolete_uberon_ids.append(id)
         else:
-            description = ontology_parser.get_term_description(id)
+            description = ontology_term_description(id)
             if description is not None:
                 uberon_ids_with_description += 1
             else:
                 uberon_ids_without_description += 1
 
             metadata = TissueMetadata(
-                name=ontology_parser.get_term_label(id),
+                name=ontology_term_label(id),
                 id=id,
                 uberonDescription=description,
-                synonyms=ontology_parser.get_term_synonyms(id),
+                synonyms=ontology_term_synonyms(id),
             )
             cellguide_tissue_card_metadata[id] = metadata
 
