@@ -10,7 +10,13 @@ from dask.diagnostics import ProgressBar
 from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.ontology_tree.types import OntologyTree, OntologyTreeState
 from backend.common.census_cube.data.ontology_labels import ontology_term_label
-from backend.common.census_cube.utils import ancestors, ontology_parser, rollup_across_cell_type_descendants, to_dict
+from backend.common.census_cube.utils import (
+    ancestors,
+    descendants,
+    ontology_parser,
+    rollup_across_cell_type_descendants,
+    to_dict,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +94,7 @@ class OntologyTreeBuilder:
 
         logger.info("Initializing cell type data structures from the input cell counts dataframe...")
 
-        self.all_cell_type_ids = self.ontology.get_term_descendants(root_node, include_self=True)
+        self.all_cell_type_ids = descendants(root_node)
 
         self.cell_counts_df, self.cell_counts_df_rollup = self._initialize_cell_counts_df_rollup(cell_counts_df)
         self.all_cell_type_ids_in_corpus = self.cell_counts_df_rollup.index.values[
