@@ -10,7 +10,7 @@ from dask.diagnostics import ProgressBar
 from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.ontology_tree.types import OntologyTree, OntologyTreeState
 from backend.common.census_cube.data.ontology_labels import ontology_term_label
-from backend.common.census_cube.utils import ontology_parser, rollup_across_cell_type_descendants, to_dict
+from backend.common.census_cube.utils import ancestors, ontology_parser, rollup_across_cell_type_descendants, to_dict
 
 logger = logging.getLogger(__name__)
 
@@ -392,7 +392,7 @@ class OntologyTreeBuilder:
         """
         end_nodes = self.uberon_by_celltype[tissueId]
         tissue_label = ontology_term_label(tissueId)
-        uberon_ancestors = self.ontology.get_term_ancestors(tissueId, include_self=True)
+        uberon_ancestors = ancestors(tissueId)
 
         # filter out hemaotoietic cell types from non-whitelisted tissues
         uberon_ancestors_in_whitelist = list(set(TISSUES_IMMUNE_CELL_WHITELIST).intersection(uberon_ancestors))
@@ -400,7 +400,7 @@ class OntologyTreeBuilder:
             end_nodes_that_are_not_hematopoietic = [
                 e
                 for e in end_nodes
-                if HEMATOPOIETIC_CELL_TYPE_ID not in self.ontology.get_term_ancestors(e, include_self=True)
+                if HEMATOPOIETIC_CELL_TYPE_ID not in ancestors(e)
             ]
             if len(end_nodes_that_are_not_hematopoietic) == 0:
                 logger.info(f"Not filtering out immune cell for {tissue_label}")
