@@ -1,5 +1,0 @@
-INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': 768f5c6c-bc62-4154-b5d0-9a0916e8d625, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, flags=None), 'current_dataset_version_id': None}
-INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': e510a5f1-abb3-4595-863c-d1b4944d6ddf, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, flags=None), 'current_dataset_version_id': None}
-INFO     root:actions.py:42 {'is_published': True, 'curator_name': 'Not A Curator'}
-INFO     root:actions.py:42 {'is_published': True, 'curator_name': 'John Smith'}
-INFO     root:actions.py:42 {'is_published': False, 'curator_name': 'John Smith'}
