@@ -9,6 +9,7 @@ from dask.diagnostics import ProgressBar
 
 from backend.cellguide.pipeline.constants import CELLGUIDE_PIPELINE_NUM_CPUS
 from backend.cellguide.pipeline.ontology_tree.types import OntologyTree, OntologyTreeState
+from backend.common.census_cube.data.ontology_labels import ontology_term_label
 from backend.common.census_cube.utils import ontology_parser, rollup_across_cell_type_descendants, to_dict
 
 logger = logging.getLogger(__name__)
@@ -98,7 +99,7 @@ class OntologyTreeBuilder:
         self.all_cell_type_ids_to_labels_in_corpus = dict(
             zip(
                 self.all_cell_type_ids_in_corpus,
-                [self.ontology.get_term_label(c) for c in self.all_cell_type_ids_in_corpus],
+                [ontology_term_label(c) for c in self.all_cell_type_ids_in_corpus],
                 strict=False,
             )
         )
@@ -390,7 +391,7 @@ class OntologyTreeBuilder:
                     The number of cells is a dictionary with keys "n_cells" and "n_cells_rollup".
         """
         end_nodes = self.uberon_by_celltype[tissueId]
-        tissue_label = self.ontology.get_term_label(tissueId)
+        tissue_label = ontology_term_label(tissueId)
         uberon_ancestors = self.ontology.get_term_ancestors(tissueId, include_self=True)
 
         # filter out hemaotoietic cell types from non-whitelisted tissues
