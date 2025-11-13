@@ -1,0 +1,3 @@
+SUBPASSED[ERCC-00002] [ 79%]
+tests/unit/wmg_processing/test_ontology_labels.py::OntologyLabelTests::test__gene_label SUBPASSED[ENSG00000223972] [ 79%]
+tests/unit/wmg_processing/test_ontology_labels.py::OntologyLabelTests::test__gene_label SUBPASSED[ENSMUSG00000102693] [ 79%]
