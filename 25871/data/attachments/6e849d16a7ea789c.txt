@@ -1,0 +1,3 @@
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': e98c5afc-096a-485f-ad79-55f60d19d89f, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': a9416e25-e850-4131-83f9-5ec05655499f}
+INFO     backend.layers.business.business:business.py:1096 {'message': 'Deleting dataset versions', 'dataset_version_ids': []}
+INFO     backend.layers.business.business:business.py:1121 {'message': 'Deleting dataset version assets', 'artifacts_to_delete': []}

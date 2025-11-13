@@ -1,0 +1,2 @@
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': a0364302-d60f-4f64-a716-26132d053c8f, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+WARNING  root:portal_api.py:745 File size not found

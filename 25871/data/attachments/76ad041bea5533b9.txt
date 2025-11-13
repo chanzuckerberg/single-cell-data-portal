@@ -1,0 +1,11 @@
+Processing chromosomes:   0%|          | 0/4 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 4/4 [00:00<00:00, 2471.96chrom/s]
+Processing chromosomes:   0%|          | 0/4 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 4/4 [00:00<00:00, 3167.90chrom/s]
+Processing chromosomes:   0%|          | 0/4 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 4/4 [00:00<00:00, 3332.12chrom/s]
+Processing chromosomes:   0%|          | 0/4 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 4/4 [00:00<00:00, 2882.68chrom/s]
+Processing chromosomes:   0%|          | 0/4 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 4/4 [00:00<00:00, 2792.94chrom/s]
+Processing chromosomes:   0%|          | 0/4 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 4/4 [00:00<00:00, 2299.51chrom/s]
+Processing chromosomes:   0%|          | 0/4 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 4/4 [00:00<00:00, 2196.26chrom/s]
+Processing chromosomes:   0%|          | 0/4 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 4/4 [00:00<00:00, 3180.51chrom/s]
+Processing chromosomes:   0%|          | 0/4 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 4/4 [00:00<00:00, 3248.25chrom/s]
+Processing chromosomes:   0%|          | 0/3 [00:00<?, ?chrom/s]Processing chromosomes: 100%|██████████| 3/3 [00:00<00:00, 713.11chrom/s]
+Writing chunks to TileDB: 0it [00:00, ?it/s]Writing chunks to TileDB: 1it [00:00, 1327.31it/s]

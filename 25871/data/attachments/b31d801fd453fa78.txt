@@ -1,0 +1,2 @@
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': b9c39c3f-f6a0-469f-b2c6-995e36e09263, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     processing:process_cxg.py:119 Deleting existing CXG files from s3://test-bucket/76f0cbcb-1c0d-4073-8595-2fcab5a9175f.cxg/
