@@ -245,3 +245,10 @@ coverage/report-html: coverage/combine
 .PHONY: promote-staging-to-prod
 promote-staging-to-prod:
 	./scripts/promote_staging_to_prod.sh
+
+.PHONY: update-requirements
+update-requirements:
+	@find python_dependencies -type f \( -name 'requirements.in' -o -name 'requirements-dev.in' \) | while read req_in; do \
+		req_txt=$$(echo $$req_in | sed 's/\.in$$/.txt/'); \
+		uv pip compile "$$req_in" -o "$$req_txt" --generate-hashes --python-version 3.10; \
+	done
