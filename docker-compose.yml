@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   database:
-    image: postgres:13.0
+    image: postgres:18.1
     platform: linux/amd64
     ports:
       - "5432:5432"
@@ -17,7 +17,7 @@ services:
         aliases:
           - database.corporanet.local
   localstack:
-    image: localstack/localstack@sha256:7c6635493185d25165979995fb073fd789c72b6d8b17ef3a70b798d55576732f
+    image: localstack/localstack@sha256:8843f04c256bb07e7355c4d627d5f152900dafb4cdd64b0688119682b73c58d7
     ports:
       - "4566:4566"
     environment:
@@ -393,7 +393,7 @@ services:
           - backend-wmg.corporanet.local
 
   oidc:
-    image: soluto/oidc-server-mock:0.3.0
+    image: soluto/oidc-server-mock:0.3.2
     # For Mac M1, you may need to build this image from source.
     # 1. Comment out `image:` line, above, and uncomment the following two lines
     # 2. In the same directory as this file, run `git clone -b v0.3.0 git@github.com:Soluto/oidc-server-mock.git`
