@@ -1,0 +1,4 @@
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': e2fdd8c6-0c97-48c2-bf49-4d0890f0accc, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:598 {'message': 'ingesting dataset', 'collection_version_id': e2fdd8c6-0c97-48c2-bf49-4d0890f0accc, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:1096 {'message': 'Deleting dataset versions', 'dataset_version_ids': ['b2bf26bd-64e4-40a0-b08f-4352812422ef']}
+INFO     backend.layers.business.business:business.py:1121 {'message': 'Deleting dataset version assets', 'artifacts_to_delete': ['92a1fe4d-b1d5-4482-ba5e-e10158c9c44b', '56689ac1-bb91-4988-a907-633d62b3c33a', '2f0f39ca-ed34-4034-be82-90e9602fce0f']}
