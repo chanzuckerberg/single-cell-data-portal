@@ -17,7 +17,7 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout main branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v5
         with:
           ref: main
           fetch-depth: 0 # fetch all history to make merges work correctly
@@ -42,7 +42,7 @@ jobs:
           git push origin staging
       - name: Trigger repository_dispatch to build images for staging
         if: success()
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: build-images-for-staging
