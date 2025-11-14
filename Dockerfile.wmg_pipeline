@@ -1,6 +1,6 @@
 ARG BASE_TAG=branch-main
 
-FROM python:3.10
+FROM python:3.14
 
 # Update AWS root Certificates
 ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/certs/rds-global-bundle.pem
