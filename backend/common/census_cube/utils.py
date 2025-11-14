@@ -190,7 +190,7 @@ def get_all_cell_type_ids_in_corpus(snapshot: CensusCubeSnapshot, root_node="CL:
         list[str]: A list of cell type ontology term IDs that have at least one cell in the corpus.
     """
 
-    all_cell_type_ids = ontology_parser.get_term_descendants(root_node, include_self=True)
+    all_cell_type_ids = descendants(root_node)
     cell_counts_df = snapshot.cell_counts_df
 
     cell_counts_df = (
