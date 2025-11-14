@@ -12,6 +12,7 @@ from backend.layers.thirdparty.s3_exceptions import IllegalS3RecursiveDelete, S3
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 
 AWS_S3_MAX_ITEMS_PER_BATCH = 1000
+SIZE_50GB = 50 * 1024 * 1024 * 1024
 
 logger = logging.getLogger(__name__)
 
@@ -75,21 +76,41 @@ class S3Provider(S3ProviderInterface):
     def upload_file(self, src_file: str, bucket_name: str, dst_file: str, extra_args: dict):
         """
         Uploads the local `src_file` to an S3 object in the `bucket_name` bucket with object key `dst_file`
+        Sets Cache-Control: no-cache for files larger than 50GB to prevent CloudFront caching issues
         """
+        # Check file size and set Cache-Control for large files (> 50GB)
+        file_size = os.path.getsize(src_file)
+
+        # Create a copy of extra_args to avoid modifying the original
+        upload_args = extra_args.copy() if extra_args else {}
+
+        if file_size > SIZE_50GB:
+            # Set Cache-Control to no-cache to bypass CloudFront caching for large files
+            upload_args["CacheControl"] = "no-cache, no-store, must-revalidate"
+            logger.info(
+                {
+                    "message": "Large file detected - setting Cache-Control: no-cache",
+                    "file_size_gb": file_size / (1024 * 1024 * 1024),
+                    "src_file": src_file,
+                    "dst_file": dst_file,
+                }
+            )
+
         logger.info(
             {
                 "message": "Uploading file",
                 "bucket_name": bucket_name,
                 "dst_file": dst_file,
                 "src_file": src_file,
-                "extra_args": extra_args,
+                "file_size_bytes": file_size,
+                "extra_args": upload_args,
             }
         )
         self.client.upload_file(
             src_file,
             bucket_name,
             dst_file,
-            ExtraArgs=extra_args,
+            ExtraArgs=upload_args,
         )
 
     def delete_files(self, bucket_name: str, object_keys: List[str]) -> None:
