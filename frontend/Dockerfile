@@ -1,7 +1,7 @@
 # Frontend dockerfile
 # Pinning to 20.10.0 to avoid GH Action lint error exit code 243
 # See: https://stackoverflow.com/a/71892226/3120863
-FROM node:20.10.0
+FROM node:24.11.1
 
 # install dependencies first, in a different location for easier app bind mounting for local development
 # due to default /opt permissions we have to create the dir with root and change perms
