@@ -1,0 +1,1 @@
+INFO     backend.layers.thirdparty.s3_provider:s3_provider.py:99 {'message': 'Uploading file', 'bucket_name': 'test-bucket', 'dst_file': 'test-key', 'src_file': '/tmp/tmpqvh77fcu', 'file_size_bytes': 1048576, 'extra_args': {'ACL': 'bucket-owner-full-control'}}

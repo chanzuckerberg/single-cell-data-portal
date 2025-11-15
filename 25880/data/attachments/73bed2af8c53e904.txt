@@ -1,0 +1,2 @@
+INFO     backend.layers.thirdparty.s3_provider:s3_provider.py:90 {'message': 'Large file detected - setting Cache-Control: no-cache', 'file_size_gb': 50.00000000093132, 'src_file': '/tmp/tmpke139h3l', 'dst_file': 'test-key'}
+INFO     backend.layers.thirdparty.s3_provider:s3_provider.py:99 {'message': 'Uploading file', 'bucket_name': 'test-bucket', 'dst_file': 'test-key', 'src_file': '/tmp/tmpke139h3l', 'file_size_bytes': 53687091201, 'extra_args': {'ACL': 'bucket-owner-full-control', 'CacheControl': 'no-cache, no-store, must-revalidate'}}
