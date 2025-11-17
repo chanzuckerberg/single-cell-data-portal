@@ -2,7 +2,8 @@ import cellxgene_census
 from pandas import DataFrame
 
 from backend.cellguide.pipeline.source_collections.types import SourceCollectionsData
-from backend.common.census_cube.utils import descendants, ontology_parser
+from backend.common.census_cube.data.ontology_labels import ontology_term_label
+from backend.common.census_cube.utils import descendants
 
 
 def generate_source_collections_data(
@@ -40,7 +41,7 @@ def generate_source_collections_data(
             # We need tissue, disease, and organism labels AND ontology term ids for each cell type id
             df_dict = {
                 df_agg.index[i]: [
-                    {"label": ontology_parser.get_term_label(cell_type_id), "ontology_term_id": cell_type_id}
+                    {"label": ontology_term_label(cell_type_id), "ontology_term_id": cell_type_id}
                     for cell_type_id in df_agg.values[i][0].split(",")
                 ]
                 for i in range(len(df_agg))
