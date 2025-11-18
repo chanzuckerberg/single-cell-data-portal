@@ -3,8 +3,6 @@ import { FC } from "react";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
 import Nav from "src/components/Header/components/Nav";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
-import { FEATURES } from "src/common/featureFlags/features";
 import { useBYODModal } from "src/contexts/BYODModalContext";
 import { useConnect } from "./connect";
 import {
@@ -29,7 +27,6 @@ const Header: FC = () => {
   } = useConnect();
 
   const { openModal } = useBYODModal();
-  const isBYODEnabled = useFeatureFlag(FEATURES.BYOD);
 
   const handleBYODClick = () => {
     openModal();
@@ -43,15 +40,9 @@ const Header: FC = () => {
           <Nav pathname={pathname} />
         </Left>
         <Right>
-          {isBYODEnabled && (
-            <Button
-              sdsType="primary"
-              sdsStyle="square"
-              onClick={handleBYODClick}
-            >
-              Explore Your Data
-            </Button>
-          )}
+          <Button sdsType="primary" sdsStyle="square" onClick={handleBYODClick}>
+            Explore Your Data
+          </Button>
 
           <StyledInputDropdown
             disabled={false}
