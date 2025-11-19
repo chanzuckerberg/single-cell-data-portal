@@ -2,7 +2,7 @@
 This is a script to upload cellguide descriptions using the /cellguide/v1/upload endpoint.
 
 It requires a csv file to be present in the scripts directory with the following columns:
-Cell Ontology ID, Final version (QC'd), Supporting reference 1, Supporting reference 2, Supporting reference 3, 
+Cell Ontology ID, Final version (QC'd), Supporting reference 1, Supporting reference 2, Supporting reference 3,
 Supporting reference 4, Supporting reference 5
 
 The script will convert the csv to json and post each row to the endpoint.

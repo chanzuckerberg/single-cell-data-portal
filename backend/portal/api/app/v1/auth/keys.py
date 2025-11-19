@@ -1,6 +1,6 @@
 """
- Don't skip these tests https://github.com/chanzuckerberg/single-cell-data-portal/blob/82ddc2a019bb8e057bc5783e659231d4e2dc9867/tests/functional/backend/corpora/test_api_key.py#L10
- if modifying this code.
+Don't skip these tests https://github.com/chanzuckerberg/single-cell-data-portal/blob/82ddc2a019bb8e057bc5783e659231d4e2dc9867/tests/functional/backend/corpora/test_api_key.py#L10
+if modifying this code.
 """
 
 from flask import make_response

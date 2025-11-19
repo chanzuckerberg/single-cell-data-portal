@@ -516,7 +516,7 @@ def is_owner_or_allowed_else_forbidden(collection_version, user_info):
 
 
 def calculate_dataset_collection_id(
-    collection_version: Union[CollectionVersionWithPublishedDatasets, CollectionVersionWithPrivateDatasets]
+    collection_version: Union[CollectionVersionWithPublishedDatasets, CollectionVersionWithPrivateDatasets],
 ) -> str:
     """
     Determine the collection ID for the collection version: if the collection version is a revision,

@@ -1,6 +1,6 @@
 """This module tests the functions that build the gene expression and cell counts data structures.
 
-In detail, this module tests the public and private functions defined in 
+In detail, this module tests the public and private functions defined in
 `backend.wmg.api.common.expression_dotplot_data` module.
 """
 

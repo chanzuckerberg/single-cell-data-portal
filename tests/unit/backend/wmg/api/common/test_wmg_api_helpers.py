@@ -1,5 +1,4 @@
-"""This module tests the helper functions used in `backend.wmg.api.v2.py`.
-"""
+"""This module tests the helper functions used in `backend.wmg.api.v2.py`."""
 
 import pytest
 
