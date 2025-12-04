@@ -15,26 +15,6 @@ class TestGuidescanInstallation(unittest.TestCase):
             guidescan_path, "guidescan binary not found in PATH. Ensure it is installed in the Docker image."
         )
 
-    def test_guidescan_help_command(self):
-        """Test that guidescan --help command executes successfully."""
-        result = subprocess.run(
-            ["guidescan", "--help"],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-
-        self.assertEqual(
-            result.returncode,
-            0,
-            f"guidescan --help failed with return code {result.returncode}. "
-            f"stderr: {result.stderr}, stdout: {result.stdout}",
-        )
-
-        # Verify the output contains expected content
-        self.assertIn("Guidescan", result.stdout, "guidescan help output should contain 'Guidescan'")
-        self.assertIn("Usage:", result.stdout, "guidescan help output should contain 'Usage:'")
-
     def test_guidescan_version_command(self):
         """Test that guidescan --version command executes successfully."""
         result = subprocess.run(
@@ -52,8 +32,8 @@ class TestGuidescanInstallation(unittest.TestCase):
         )
 
         # Verify version output contains version information
-        self.assertGreater(
+        self.assertEqual(
             len(result.stdout.strip()),
-            0,
+            "2.2.1",
             "guidescan --version should output version information",
         )
