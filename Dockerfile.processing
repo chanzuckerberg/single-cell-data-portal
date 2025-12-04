@@ -6,8 +6,17 @@ ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/c
 # Install required system packages
 RUN apt-get update && \
 	apt-get upgrade -y && \
-	apt-get install -y libvips coreutils tabix pigz && \
+	apt-get install -y libvips coreutils tabix pigz curl && \
 	rm -rf /var/lib/apt/lists/*
+
+# Install guidescan-cli from GitHub releases (prebuilt binary)
+ARG GUIDESCAN_VER="v2.2.1"
+RUN curl -fsSL https://github.com/pritykinlab/guidescan-cli/releases/download/${GUIDESCAN_VER}/guidescan-${GUIDESCAN_VER}-Linux.tar.gz -o /tmp/guidescan.tar.gz && \
+	cd /tmp && \
+	tar -xzf /tmp/guidescan.tar.gz -C /tmp && \
+	mv /tmp/bin/guidescan /usr/local/bin/guidescan && \
+	chmod +x /usr/local/bin/guidescan && \
+	rm -rf /tmp/guidescan.tar.gz /tmp/guidescan.tar.gz /tmp/bin /tmp/include
 
 # Install uv for fast Python package installation
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
