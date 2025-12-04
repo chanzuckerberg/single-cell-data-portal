@@ -11,7 +11,7 @@ RUN apt-get update && \
 
 # Install guidescan-cli from GitHub releases (prebuilt binary)
 ARG GUIDESCAN_VER="v2.2.1"
-RUN curl -fsSL https://github.com/pritykinlab/guidescan-cli/releases/download/$GUIDESCAN_VER/guidescan-$GUIDESCAN_VER-Linux.tar.gz.sha256 -o /tmp/guidescan.tar.gz.sha256 && \
+RUN curl -fsSL https://github.com/pritykinlab/guidescan-cli/releases/download/${GUIDESCAN_VER}/guidescan-${GUIDESCAN_VER}-Linux.tar.gz.sha256 -o /tmp/guidescan.tar.gz.sha256 && \
 	cd /tmp && sha256sum --check guidescan.tar.gz.sha256 && \
 	tar -xzf /tmp/guidescan.tar.gz -C /tmp && \
 	mv /tmp/bin/guidescan /usr/local/bin/guidescan && \
