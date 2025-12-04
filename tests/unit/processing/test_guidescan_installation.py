@@ -33,7 +33,7 @@ class TestGuidescanInstallation(unittest.TestCase):
 
         # Verify version output contains version information
         self.assertEqual(
-            len(result.stdout.strip()),
-            "2.2.1",
+            result.stdout.strip(),
+            "v2.2.1",
             "guidescan --version should output version information",
         )

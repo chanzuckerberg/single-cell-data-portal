@@ -10,11 +10,13 @@ RUN apt-get update && \
 	rm -rf /var/lib/apt/lists/*
 
 # Install guidescan-cli from GitHub releases (prebuilt binary)
-RUN curl -fsSL https://github.com/pritykinlab/guidescan-cli/releases/download/v2.2.1/guidescan-v2.2.1-Linux.tar.gz -o /tmp/guidescan.tar.gz && \
+ARG GUIDESCAN_VER="v2.2.1"
+RUN curl -fsSL https://github.com/pritykinlab/guidescan-cli/releases/download/$GUIDESCAN_VER/guidescan-$GUIDESCAN_VER-Linux.tar.gz.sha256 -o /tmp/guidescan.tar.gz.sha256 && \
+	cd /tmp && sha256sum --check guidescan.tar.gz.sha256 && \
 	tar -xzf /tmp/guidescan.tar.gz -C /tmp && \
 	mv /tmp/bin/guidescan /usr/local/bin/guidescan && \
 	chmod +x /usr/local/bin/guidescan && \
-	rm -rf /tmp/guidescan.tar.gz /tmp/bin /tmp/include
+	rm -rf /tmp/guidescan.tar.gz /tmp/guidescan.tar.gz.sha256 /tmp/bin /tmp/include
 
 # Install uv for fast Python package installation
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
