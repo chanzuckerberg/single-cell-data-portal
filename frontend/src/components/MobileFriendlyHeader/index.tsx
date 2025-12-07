@@ -5,8 +5,6 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import AuthButtons from "src/components/Header/components/AuthButtons";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
-import { FEATURES } from "src/common/featureFlags/features";
 import { useBYODModal } from "src/contexts/BYODModalContext";
 import { HomepageLink } from "../common/HomepageLink";
 import {
@@ -55,7 +53,6 @@ const LandingHeader: FC<Props> = ({
   const mobileNavTray = useRef<HTMLDivElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { openModal } = useBYODModal();
-  const isBYODEnabled = useFeatureFlag(FEATURES.BYOD);
 
   const handleBYODClick = () => {
     openModal();
@@ -156,15 +153,13 @@ const LandingHeader: FC<Props> = ({
                 <Nav pathname={pathname} />
               </Left>
               <Right>
-                {isBYODEnabled && (
-                  <Button
-                    sdsType="primary"
-                    sdsStyle="square"
-                    onClick={handleBYODClick}
-                  >
-                    Explore Your Data
-                  </Button>
-                )}
+                <Button
+                  sdsType="primary"
+                  sdsStyle="square"
+                  onClick={handleBYODClick}
+                >
+                  Explore Your Data
+                </Button>
 
                 <LinkWrapper isActive={isRouteActive(pathname, ROUTES.DOCS)}>
                   <a
