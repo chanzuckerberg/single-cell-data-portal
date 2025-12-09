@@ -76,47 +76,12 @@ interface S3ContentProps {
   downloadBaseUrl?: string;
 }
 
-function buildS3Url(bucket: string, region: string, prefix: string): string {
-  const baseUrl = `https://${bucket}.s3.${region}.amazonaws.com/?list-type=2`;
+function buildApiUrl(bucket: string, region: string, prefix: string): string {
+  const params = new URLSearchParams({ bucket, region });
   if (prefix) {
-    return `${baseUrl}&prefix=${encodeURIComponent(prefix)}`;
+    params.set("prefix", prefix);
   }
-  return baseUrl;
-}
-
-function parseS3FileFromElement(item: Element): S3File | null {
-  const key = item.querySelector("Key")?.textContent || "";
-  const size = parseInt(item.querySelector("Size")?.textContent || "0", 10);
-  const lastModified = item.querySelector("LastModified")?.textContent || "";
-
-  // Skip "folder" entries (keys ending with /)
-  if (!key || key.endsWith("/")) {
-    return null;
-  }
-
-  return { key, size, lastModified };
-}
-
-function parseS3Response(xml: string): S3File[] {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xml, "application/xml");
-
-  const parseError = doc.querySelector("parsererror");
-  if (parseError) {
-    throw new Error("Failed to parse S3 response");
-  }
-
-  const contents = doc.querySelectorAll("Contents");
-  const fileList: S3File[] = [];
-
-  contents.forEach((item) => {
-    const file = parseS3FileFromElement(item);
-    if (file) {
-      fileList.push(file);
-    }
-  });
-
-  return fileList;
+  return `/api/s3-listing?${params.toString()}`;
 }
 
 async function fetchBucketListing(
@@ -124,17 +89,15 @@ async function fetchBucketListing(
   region: string,
   prefix: string
 ): Promise<S3File[]> {
-  const s3Url = buildS3Url(bucket, region, prefix);
-  const response = await fetch(s3Url);
+  const apiUrl = buildApiUrl(bucket, region, prefix);
+  const response = await fetch(apiUrl);
+  const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(
-      `Failed to fetch bucket listing: ${response.status} ${response.statusText}`
-    );
+    throw new Error(data.error || "Failed to fetch bucket listing");
   }
 
-  const xml = await response.text();
-  return parseS3Response(xml);
+  return data.files || [];
 }
 
 function getFileName(key: string): string {

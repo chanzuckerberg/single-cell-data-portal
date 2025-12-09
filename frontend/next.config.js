@@ -72,19 +72,11 @@ const defaultSecureHeaders = {
 const docSiteScriptSrc = [...SCRIPT_SRC, "'unsafe-eval'"];
 // Required for google slides iframe
 const docSiteFrameSrc = ["https://docs.google.com"];
-// Required for S3Content component to list files from public S3 bucket
-const docSiteConnectSrc = [
-  "https://gene-expression-assets-public-prod.s3.us-west-2.amazonaws.com",
-];
 const docSiteSecureHeaders = cloneDeep(defaultSecureHeaders);
 docSiteSecureHeaders.contentSecurityPolicy.directives.scriptSrc =
   docSiteScriptSrc;
 docSiteSecureHeaders.contentSecurityPolicy.directives.frameSrc =
   docSiteFrameSrc;
-docSiteSecureHeaders.contentSecurityPolicy.directives.connectSrc = [
-  ...docSiteSecureHeaders.contentSecurityPolicy.directives.connectSrc,
-  ...docSiteConnectSrc,
-];
 
 module.exports = {
   /**
