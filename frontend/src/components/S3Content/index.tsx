@@ -76,6 +76,93 @@ interface S3ContentProps {
   downloadBaseUrl?: string;
 }
 
+function buildS3Url(bucket: string, region: string, prefix: string): string {
+  const baseUrl = `https://${bucket}.s3.${region}.amazonaws.com/?list-type=2`;
+  if (prefix) {
+    return `${baseUrl}&prefix=${encodeURIComponent(prefix)}`;
+  }
+  return baseUrl;
+}
+
+function parseS3FileFromElement(item: Element): S3File | null {
+  const key = item.querySelector("Key")?.textContent || "";
+  const size = parseInt(item.querySelector("Size")?.textContent || "0", 10);
+  const lastModified = item.querySelector("LastModified")?.textContent || "";
+
+  // Skip "folder" entries (keys ending with /)
+  if (!key || key.endsWith("/")) {
+    return null;
+  }
+
+  return { key, size, lastModified };
+}
+
+function parseS3Response(xml: string): S3File[] {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xml, "application/xml");
+
+  const parseError = doc.querySelector("parsererror");
+  if (parseError) {
+    throw new Error("Failed to parse S3 response");
+  }
+
+  const contents = doc.querySelectorAll("Contents");
+  const fileList: S3File[] = [];
+
+  contents.forEach((item) => {
+    const file = parseS3FileFromElement(item);
+    if (file) {
+      fileList.push(file);
+    }
+  });
+
+  return fileList;
+}
+
+async function fetchBucketListing(
+  bucket: string,
+  region: string,
+  prefix: string
+): Promise<S3File[]> {
+  const s3Url = buildS3Url(bucket, region, prefix);
+  const response = await fetch(s3Url);
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to fetch bucket listing: ${response.status} ${response.statusText}`
+    );
+  }
+
+  const xml = await response.text();
+  return parseS3Response(xml);
+}
+
+function getFileName(key: string): string {
+  const parts = key.split("/");
+  return parts[parts.length - 1];
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return "0 B";
+
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const k = 1024;
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${units[i]}`;
+}
+
+function formatDate(isoDate: string): string {
+  if (!isoDate) return "";
+
+  const date = new Date(isoDate);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 /**
  * S3Content - Lists files from a public S3 bucket with download links
  *
@@ -94,61 +181,17 @@ const S3Content = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchBucketListing = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    setLoading(true);
+    setError(null);
 
-        const s3Url = `https://${bucket}.s3.${region}.amazonaws.com/?list-type=2${prefix ? `&prefix=${encodeURIComponent(prefix)}` : ""}`;
-
-        const response = await fetch(s3Url);
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch bucket listing: ${response.status} ${response.statusText}`
-          );
-        }
-
-        const xml = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(xml, "application/xml");
-
-        // Check for parsing errors
-        const parseError = doc.querySelector("parsererror");
-        if (parseError) {
-          throw new Error("Failed to parse S3 response");
-        }
-
-        // Extract file information from XML
-        const contents = doc.querySelectorAll("Contents");
-        const fileList: S3File[] = [];
-
-        contents.forEach((item) => {
-          const key = item.querySelector("Key")?.textContent || "";
-          const size = parseInt(
-            item.querySelector("Size")?.textContent || "0",
-            10
-          );
-          const lastModified =
-            item.querySelector("LastModified")?.textContent || "";
-
-          // Skip "folder" entries (keys ending with /)
-          if (key && !key.endsWith("/")) {
-            fileList.push({ key, size, lastModified });
-          }
-        });
-
-        setFiles(fileList);
-      } catch (err) {
+    fetchBucketListing(bucket, region, prefix)
+      .then(setFiles)
+      .catch((err) => {
         setError(
           err instanceof Error ? err.message : "Failed to fetch bucket listing"
         );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBucketListing();
+      })
+      .finally(() => setLoading(false));
   }, [bucket, region, prefix]);
 
   if (loading) {
@@ -212,32 +255,5 @@ const S3Content = ({
     </Container>
   );
 };
-
-function getFileName(key: string): string {
-  // Extract just the filename from the full key path
-  const parts = key.split("/");
-  return parts[parts.length - 1];
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 B";
-
-  const units = ["B", "KB", "MB", "GB", "TB"];
-  const k = 1024;
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${units[i]}`;
-}
-
-function formatDate(isoDate: string): string {
-  if (!isoDate) return "";
-
-  const date = new Date(isoDate);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 export default S3Content;
