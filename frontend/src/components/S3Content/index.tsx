@@ -74,7 +74,11 @@ async function fetchManifest(
   console.log("S3Content: fetching manifest from", manifestUrl);
 
   const response = await fetch(manifestUrl);
-  console.log("S3Content: response status", response.status, response.statusText);
+  console.log(
+    "S3Content: response status",
+    response.status,
+    response.statusText
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to fetch manifest: ${response.statusText}`);
