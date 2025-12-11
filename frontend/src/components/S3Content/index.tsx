@@ -71,13 +71,17 @@ async function fetchManifest(
   manifestFile: string
 ): Promise<string[]> {
   const manifestUrl = `${downloadBaseUrl}/${manifestFile}`;
+  console.log("S3Content: fetching manifest from", manifestUrl);
+
   const response = await fetch(manifestUrl);
+  console.log("S3Content: response status", response.status, response.statusText);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch manifest: ${response.statusText}`);
   }
 
   const data = await response.json();
+  console.log("S3Content: manifest data", data);
   return data.files || [];
 }
 
@@ -96,13 +100,26 @@ const S3Content = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  console.log("S3Content: Component rendering", {
+    downloadBaseUrl,
+    manifestFile,
+  });
+
   useEffect(() => {
+    console.log("S3Content: useEffect triggered", {
+      downloadBaseUrl,
+      manifestFile,
+    });
     setLoading(true);
     setError(null);
 
     fetchManifest(downloadBaseUrl, manifestFile)
-      .then(setFiles)
+      .then((files) => {
+        console.log("S3Content: files fetched", files);
+        setFiles(files);
+      })
       .catch((err) => {
+        console.error("S3Content: fetch error", err);
         setError(
           err instanceof Error ? err.message : "Failed to fetch file manifest"
         );
