@@ -59,87 +59,40 @@ const DownloadLink = styled.a`
   }
 `;
 
-interface S3File {
-  key: string;
-  size: number;
-  lastModified: string;
-}
-
 interface S3ContentProps {
-  /** The S3 bucket name (e.g., "gene-expression-assets-public-prod") */
-  bucket: string;
-  /** AWS region (e.g., "us-west-2"). Defaults to "us-west-2" */
-  region?: string;
-  /** Optional prefix to filter files (e.g., "data/") */
-  prefix?: string;
-  /** Base URL for download links. If not provided, uses the S3 URL */
-  downloadBaseUrl?: string;
+  /** Base URL for the CloudFront distribution (e.g., "https://ge-data.cellxgene.cziscience.com") */
+  downloadBaseUrl: string;
+  /** Name of the JSON manifest file. Defaults to "expression-summary-files.json" */
+  manifestFile?: string;
 }
 
-function buildApiUrl(bucket: string, region: string, prefix: string): string {
-  const params = new URLSearchParams({ bucket, region });
-  if (prefix) {
-    params.set("prefix", prefix);
-  }
-  return `/api/s3-listing?${params.toString()}`;
-}
-
-async function fetchBucketListing(
-  bucket: string,
-  region: string,
-  prefix: string
-): Promise<S3File[]> {
-  const apiUrl = buildApiUrl(bucket, region, prefix);
-  const response = await fetch(apiUrl);
-  const data = await response.json();
+async function fetchManifest(
+  downloadBaseUrl: string,
+  manifestFile: string
+): Promise<string[]> {
+  const manifestUrl = `${downloadBaseUrl}/${manifestFile}`;
+  const response = await fetch(manifestUrl);
 
   if (!response.ok) {
-    throw new Error(data.error || "Failed to fetch bucket listing");
+    throw new Error(`Failed to fetch manifest: ${response.statusText}`);
   }
 
+  const data = await response.json();
   return data.files || [];
 }
 
-function getFileName(key: string): string {
-  const parts = key.split("/");
-  return parts[parts.length - 1];
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 B";
-
-  const units = ["B", "KB", "MB", "GB", "TB"];
-  const k = 1024;
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${units[i]}`;
-}
-
-function formatDate(isoDate: string): string {
-  if (!isoDate) return "";
-
-  const date = new Date(isoDate);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
 /**
- * S3Content - Lists files from a public S3 bucket with download links
+ * S3Content - Lists files from a JSON manifest with download links
  *
  * Usage in MDX:
- * <S3Content bucket="gene-expression-assets-public-prod" />
- * <S3Content bucket="gene-expression-assets-public-prod" prefix="data/" downloadBaseUrl="https://ge-data.cellxgene.cziscience.com" />
+ * <S3Content downloadBaseUrl="https://ge-data.cellxgene.cziscience.com" />
+ * <S3Content downloadBaseUrl="https://ge-data.cellxgene.cziscience.com" manifestFile="expression-summary-files.json" />
  */
 const S3Content = ({
-  bucket,
-  region = "us-west-2",
-  prefix = "",
   downloadBaseUrl,
+  manifestFile = "expression-summary-files.json",
 }: S3ContentProps): ReactElement => {
-  const [files, setFiles] = useState<S3File[]>([]);
+  const [files, setFiles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -147,15 +100,15 @@ const S3Content = ({
     setLoading(true);
     setError(null);
 
-    fetchBucketListing(bucket, region, prefix)
+    fetchManifest(downloadBaseUrl, manifestFile)
       .then(setFiles)
       .catch((err) => {
         setError(
-          err instanceof Error ? err.message : "Failed to fetch bucket listing"
+          err instanceof Error ? err.message : "Failed to fetch file manifest"
         );
       })
       .finally(() => setLoading(false));
-  }, [bucket, region, prefix]);
+  }, [downloadBaseUrl, manifestFile]);
 
   if (loading) {
     return (
@@ -181,9 +134,6 @@ const S3Content = ({
     );
   }
 
-  const baseUrl =
-    downloadBaseUrl || `https://${bucket}.s3.${region}.amazonaws.com`;
-
   return (
     <Container>
       <TableContainer>
@@ -191,25 +141,21 @@ const S3Content = ({
           <thead>
             <tr>
               <th>File</th>
-              <th>Size</th>
-              <th>Last Modified</th>
             </tr>
           </thead>
           <tbody>
-            {files.map((file) => (
-              <tr key={file.key}>
+            {files.map((filename) => (
+              <tr key={filename}>
                 <td>
                   <DownloadLink
-                    href={`${baseUrl}/${file.key}`}
+                    href={`${downloadBaseUrl}/${filename}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     download
                   >
-                    {getFileName(file.key)}
+                    {filename}
                   </DownloadLink>
                 </td>
-                <td>{formatFileSize(file.size)}</td>
-                <td>{formatDate(file.lastModified)}</td>
               </tr>
             ))}
           </tbody>
