@@ -190,14 +190,11 @@ describe("Gene Expression Source Data - S3Content Component", () => {
  * Helper function to mock the manifest response
  */
 async function mockManifestResponse(page: Page, files: string[]) {
-  await page.route(
-    `${CLOUDFRONT_BASE_URL}/${MANIFEST_FILE}`,
-    async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ files }),
-      });
-    }
-  );
+  await page.route(`${CLOUDFRONT_BASE_URL}/${MANIFEST_FILE}`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ files }),
+    });
+  });
 }
