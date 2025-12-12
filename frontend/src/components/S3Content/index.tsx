@@ -27,8 +27,16 @@ async function fetchManifest(
   }
 
   const text = await response.text();
-  const data = JSON.parse(text);
-  return data.files || [];
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch (err) {
+    throw new Error(
+      `Manifest file is not valid JSON. Please check the format of "${manifestFile}".` +
+        (err instanceof Error ? ` Details: ${err.message}` : "")
+    );
+  }
+  return Array.isArray(data.files) ? data.files : [];
 }
 
 /**
@@ -103,7 +111,7 @@ function S3Content({
                     href={`${downloadBaseUrl}/${filename}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    download
+                    download={filename}
                   >
                     {filename}
                   </DownloadLink>
