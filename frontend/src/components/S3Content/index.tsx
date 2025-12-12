@@ -1,63 +1,12 @@
-import styled from "@emotion/styled";
 import { ReactElement, useEffect, useState } from "react";
-
-const Container = styled.div`
-  margin: 16px 0;
-`;
-
-const LoadingText = styled.div`
-  color: #666;
-  font-style: italic;
-`;
-
-const ErrorText = styled.div`
-  color: #d32f2f;
-  padding: 12px;
-  background-color: #ffebee;
-  border-radius: 4px;
-`;
-
-const TableContainer = styled.div`
-  overflow-x: auto;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-`;
-
-const StyledTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-
-  th,
-  td {
-    padding: 10px 14px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
-  }
-
-  th {
-    background-color: #f5f5f5;
-    font-weight: 600;
-  }
-
-  tr:last-child td {
-    border-bottom: none;
-  }
-
-  tr:hover td {
-    background-color: #fafafa;
-  }
-`;
-
-const DownloadLink = styled.a`
-  color: #1976d2;
-  text-decoration: none;
-  font-weight: 500;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`;
+import {
+  Container,
+  DownloadLink,
+  ErrorText,
+  LoadingText,
+  StyledTable,
+  TableContainer,
+} from "./style";
 
 interface S3ContentProps {
   /** Base URL for the CloudFront distribution (e.g., "https://ge-data.cellxgene.cziscience.com") */
@@ -71,25 +20,14 @@ async function fetchManifest(
   manifestFile: string
 ): Promise<string[]> {
   const manifestUrl = `${downloadBaseUrl}/${manifestFile}`;
-  console.log("S3Content: fetching manifest from", manifestUrl);
-
   const response = await fetch(manifestUrl);
-  console.log(
-    "S3Content: response status",
-    response.status,
-    response.statusText
-  );
-  console.log("S3Content: response headers", response.headers);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch manifest: ${response.statusText}`);
   }
 
   const text = await response.text();
-  console.log("S3Content: raw response text", text);
-
   const data = JSON.parse(text);
-  console.log("S3Content: manifest data", data);
   return data.files || [];
 }
 
@@ -100,34 +38,23 @@ async function fetchManifest(
  * <S3Content downloadBaseUrl="https://ge-data.cellxgene.cziscience.com" />
  * <S3Content downloadBaseUrl="https://ge-data.cellxgene.cziscience.com" manifestFile="expression-summary-files.json" />
  */
-const S3Content = ({
+function S3Content({
   downloadBaseUrl,
   manifestFile = "expression-summary-files.json",
-}: S3ContentProps): ReactElement => {
+}: S3ContentProps): ReactElement {
   const [files, setFiles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  console.log("S3Content: Component rendering", {
-    downloadBaseUrl,
-    manifestFile,
-  });
-
   useEffect(() => {
-    console.log("S3Content: useEffect triggered", {
-      downloadBaseUrl,
-      manifestFile,
-    });
     setLoading(true);
     setError(null);
 
     fetchManifest(downloadBaseUrl, manifestFile)
       .then((files) => {
-        console.log("S3Content: files fetched", files);
         setFiles(files);
       })
       .catch((err) => {
-        console.error("S3Content: fetch error", err);
         setError(
           err instanceof Error ? err.message : "Failed to fetch file manifest"
         );
@@ -188,6 +115,6 @@ const S3Content = ({
       </TableContainer>
     </Container>
   );
-};
+}
 
 export default S3Content;
