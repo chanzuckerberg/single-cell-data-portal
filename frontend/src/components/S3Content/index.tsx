@@ -79,12 +79,16 @@ async function fetchManifest(
     response.status,
     response.statusText
   );
+  console.log("S3Content: response headers", response.headers);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch manifest: ${response.statusText}`);
   }
 
-  const data = await response.json();
+  const text = await response.text();
+  console.log("S3Content: raw response text", text);
+
+  const data = JSON.parse(text);
   console.log("S3Content: manifest data", data);
   return data.files || [];
 }
