@@ -625,7 +625,7 @@ const Privacy = (): JSX.Element => {
                   complaints regarding this Privacy Policy, please contact us at{" "}
                   <a href="mailto:privacy@biohub.org">privacy@biohub.org</a>.
                   <address>
-                    Biohub Inc. <br />
+                    Chan Zuckerberg Biohub, Inc. <br />
                     2682 Middlefield Road, Suite i <br />
                     Redwood City, CA 94063
                     <br />
