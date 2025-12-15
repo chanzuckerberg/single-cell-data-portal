@@ -31,7 +31,8 @@ const ToS = (): JSX.Element => {
 
           <h1 id="tos">Terms of Use</h1>
 
-          <p>Last Updated: January 1, 2026</p>
+          <p>Last Updated: December 15, 2025</p>
+          <p>Effective Date: January 1, 2026</p>
 
           <p>
             <span className="caps">
