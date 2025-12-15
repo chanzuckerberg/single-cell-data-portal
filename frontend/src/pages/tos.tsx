@@ -31,7 +31,7 @@ const ToS = (): JSX.Element => {
 
           <h1 id="tos">Terms of Use</h1>
 
-          <p>Last Updated: April 23, 2025.</p>
+          <p>Last Updated: January 1, 2026</p>
 
           <p>
             <span className="caps">
@@ -64,13 +64,11 @@ const ToS = (): JSX.Element => {
 
           <p>
             You agree that by accessing the Site, you are entering into a
-            legally-binding contract with the Chan Zuckerberg Initiative
-            Foundation, a 501(c)(3) nonprofit private foundation (
-            <strong>“Provider,” “we,” “us”</strong>) and agree to be bound by
-            these Terms as well as our{" "}
-            <a href={ROUTES.PRIVACY}>Privacy Policy</a>. If you don’t agree to
-            these Terms, or to our <a href={ROUTES.PRIVACY}>Privacy Policy</a>,
-            don’t access the Site.
+            legally-binding contract with the Chan Zuckerberg Biohub Inc. (
+            <strong>Biohub,” “we,” “us”</strong>) and agree to be bound by these
+            Terms as well as our <a href={ROUTES.PRIVACY}>Privacy Policy</a>. If
+            you don’t agree to these Terms, or to our{" "}
+            <a href={ROUTES.PRIVACY}>Privacy Policy</a>, don’t access the Site.
           </p>
 
           <p>
@@ -112,7 +110,7 @@ const ToS = (): JSX.Element => {
               . Keep in mind that – if the Data you wish to submit is not
               already published in a public archive such as GEO, as an open link
               in a publication, or in a GitHub repository – you will be required
-              to grant CZIF permission to use, display and create derivative
+              to grant Biohub permission to use, display and create derivative
               works (e.g. visualizations) of the Data for purposes of offering
               the Site, and must therefore have the authority to give that
               permission. You can find the data submission policy and
@@ -138,11 +136,11 @@ const ToS = (): JSX.Element => {
               access to the Site at any time, without notice, and for any reason
               including for breach of these Terms. The Data on the Site has been
               compiled from a variety of sources, and is subject to change
-              without notice. CZIF does not investigate, monitor or check Data
+              without notice. Biohub does not investigate, monitor or check Data
               for accuracy, appropriateness, completeness, or other reliability.
-              As such, you agree that CZIF shall not be responsible for any Data
-              or failure to include any Data or updates thereto. Your use of the
-              Data is at your own risk.
+              As such, you agree that Biohub shall not be responsible for any
+              Data or failure to include any Data or updates thereto. Your use
+              of the Data is at your own risk.
             </li>
             <li>
               <h4>Our Rights in the Services.</h4> We reserve all rights, title,
@@ -260,15 +258,15 @@ const ToS = (): JSX.Element => {
                   for public use.
                 </li>
                 <li>
-                  Section 12.1 indemnification is conditioned upon, CZIF giving
-                  you written notice of any such Claim, and giving you control
-                  of the defense and settlement of any such Claim, and
+                  Section 12.1 indemnification is conditioned upon, Biohub
+                  giving you written notice of any such Claim, and giving you
+                  control of the defense and settlement of any such Claim, and
                   cooperating with you in such defense. Notwithstanding anything
-                  to the contrary, (1) CZIF may participate in defense of such
+                  to the contrary, (1) Biohub may participate in defense of such
                   Claim with its own counsel at its own expense and (2) you may
-                  not settle any Claim without CZIF’s prior written consent,
+                  not settle any Claim without Biohub’s prior written consent,
                   which will not be unreasonably withheld, unless it
-                  unconditionally releases CZIF of all liability, obligation,
+                  unconditionally releases Biohub of all liability, obligation,
                   and fault.
                 </li>
               </ol>
@@ -278,12 +276,12 @@ const ToS = (): JSX.Element => {
               <ol>
                 <li>
                   <h5>Applicability.</h5> In the unlikely event we end up in a
-                  legal dispute, you and CZIF agree that all Disputes, including
-                  Enforceability Disputes, will be resolved exclusively in
-                  binding arbitration on an individual basis, except that you
-                  and CZIF are not required to arbitrate IP Disputes.
-                  Notwithstanding the foregoing, either you or CZIF may bring an
-                  individual action in small claims court.
+                  legal dispute, you and Biohub agree that all Disputes,
+                  including Enforceability Disputes, will be resolved
+                  exclusively in binding arbitration on an individual basis,
+                  except that you and Biohub are not required to arbitrate IP
+                  Disputes. Notwithstanding the foregoing, either you or Biohub
+                  may bring an individual action in small claims court.
                   <ol>
                     <li>
                       A <strong>“Dispute”</strong> means a dispute, claim or
@@ -313,7 +311,7 @@ const ToS = (): JSX.Element => {
                   <h5>Waivers.</h5>
                   <ol>
                     <li>
-                      <strong>Waiver of Jury Right.</strong> YOU AND CZIF ARE
+                      <strong>Waiver of Jury Right.</strong> YOU AND BIOHUB ARE
                       EXPRESSLY GIVING UP ALL RIGHTS TO A JURY TRIAL OR COURT
                       TRIAL BEFORE A JUDGE, EXCEPT AS EXPRESSLY PROVIDED IN THIS
                       ARBITRATION AGREEMENT. The arbitrator’s decision will be
@@ -323,8 +321,8 @@ const ToS = (): JSX.Element => {
                     </li>
                     <li>
                       <strong>Waiver of Class or Consolidated Actions.</strong>
-                      YOU AND CZIF AGREE THAT ALL DISPUTES MUST BE ARBITRATED OR
-                      LITIGATED ON AN INDIVIDUAL BASIS AND NOT ON A CLASS,
+                      YOU AND BIOHUB AGREE THAT ALL DISPUTES MUST BE ARBITRATED
+                      OR LITIGATED ON AN INDIVIDUAL BASIS AND NOT ON A CLASS,
                       COLLECTIVE ACTION, OR REPRESENTATIVE BASIS. The validity
                       of this waiver – and whether an action may proceed as a
                       class, collective, or representative action – must be
@@ -337,20 +335,20 @@ const ToS = (): JSX.Element => {
                   must send to the other party written notice of that Dispute
                   containing: (a) the name, address, and contact information of
                   the party giving notice; (b) the facts giving rise to the
-                  Dispute; and (c) the relief requested. Notices sent to CZIF
+                  Dispute; and (c) the relief requested. Notices sent to Biohub
                   must be sent by mail to the address provided in Section 18
                   below.{" "}
                   <p>
                     You and we agree that the parties shall (in good faith) meet
                     and attempt to resolve the Dispute within 30 days. If the
                     Dispute is not resolved during that time period, then you
-                    and a representative of CZIF shall (in good faith) meet and
-                    attempt to resolve the Dispute through non-binding mediation
-                    with a mutually agreed-upon mediator within 30 additional
-                    days. If you and we do not reach an agreement to resolve the
-                    dispute within that 60-day period, you or we may commence an
-                    arbitration proceeding or file a claim in small claims
-                    court.
+                    and a representative of Biohub shall (in good faith) meet
+                    and attempt to resolve the Dispute through non-binding
+                    mediation with a mutually agreed-upon mediator within 30
+                    additional days. If you and we do not reach an agreement to
+                    resolve the dispute within that 60-day period, you or we may
+                    commence an arbitration proceeding or file a claim in small
+                    claims court.
                   </p>
                 </li>
                 <li>
@@ -373,8 +371,8 @@ const ToS = (): JSX.Element => {
                     </li>
                     <li>
                       <strong>Fees.</strong> Pursuant to the JAMS Consumer
-                      Arbitration Minimum Standards, CZIF will bear all costs of
-                      the arbitration (including any JAMS Case Management Fee
+                      Arbitration Minimum Standards, Biohub will bear all costs
+                      of the arbitration (including any JAMS Case Management Fee
                       and all professional fees for the arbitrator’s services),
                       except for the filing fee if you are the party initiating
                       the arbitration.
@@ -395,8 +393,8 @@ const ToS = (): JSX.Element => {
                   Agreement by notifying us no later than 30 days after first
                   becoming subject to it. Your notice must include your name,
                   address, and a clear statement that you want to opt out of
-                  this Arbitration Agreement. Notices sent to CZIF must be sent
-                  by mail to the address provided in Section 18 of this
+                  this Arbitration Agreement. Notices sent to Biohub must be
+                  sent by mail to the address provided in Section 18 of this
                   Agreement.
                 </li>
                 <li>
@@ -443,7 +441,7 @@ const ToS = (): JSX.Element => {
             </li>
             <li id="section8">
               <h4>Governing Law.</h4> These Terms and any Dispute between you
-              and CZIF will be governed by California law and/or applicable
+              and Biohub will be governed by California law and/or applicable
               federal law (including the Federal Arbitration Act) without regard
               to its choice of law or conflicts of law principles.
             </li>
@@ -478,20 +476,15 @@ const ToS = (): JSX.Element => {
               writing and deemed to have been given on the date delivered by a
               nationally recognized express mail service, such as Federal
               Express, or by certified and registered mail (signature for
-              receipt required) to CZIF as follows:
+              receipt required) to Biohub as follows:
               <br />
               <br />
               <address>
-                Chan Zuckerberg Initiative <br />
+                Chan Zuckerberg Biohub Inc. <br />
                 2682 Middlefield Road, Suite i <br />
                 Redwood City, CA 94063
                 <br />
                 Attn: General Counsel <br />
-                Email: courtesy copy:{" "}
-                <a href="mailto:legalczi1@chanzuckerberg.com">
-                  legalczi1@chanzuckerberg.com
-                </a>{" "}
-                (email does not constitute notice)
               </address>
             </li>
           </ol>

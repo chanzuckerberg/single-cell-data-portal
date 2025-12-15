@@ -30,7 +30,7 @@ const Privacy = (): JSX.Element => {
 
           <div>
             <h1>Privacy Policy</h1>
-            <p>Last updated: April 23, 2025.</p>
+            <p>Last updated: January 1, 2026.</p>
             {/* Introduction */}
             <>
               <h2>Introduction</h2>
