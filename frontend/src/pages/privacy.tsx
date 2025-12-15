@@ -57,7 +57,7 @@ const Privacy = (): JSX.Element => {
                   advance biomedical research.
                 </li>
                 <li>
-                  The datasets made available in the Site are{" "}
+                  The datasets made available on the Site are{" "}
                   <strong>publicly available</strong> and should
                   <strong>not be personally identifiable</strong>.
                 </li>
