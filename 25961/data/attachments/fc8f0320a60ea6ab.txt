@@ -1,4 +1,0 @@
-INFO     backend.layers.business.business:business.py:1096 {'message': 'Deleting dataset versions', 'dataset_version_ids': ['221aba8e-fce5-430a-8e88-8945f32d1154']}
-INFO     backend.layers.business.business:business.py:1298 Artifact bb7a5f51-d123-45b8-a5b3-194cbb93b321 is referenced by 2 dataset versions.
-INFO     backend.layers.business.business:business.py:1298 Artifact f68bb14d-ef57-41e9-96cb-e8d02d773242 is referenced by 2 dataset versions.
-INFO     backend.layers.business.business:business.py:1121 {'message': 'Deleting dataset version assets', 'artifacts_to_delete': ['a0757b77-8f4d-4593-8bc2-2b19cce823cc', '2eb0ffa1-be69-4cd1-b049-20d3404507de', 'ee570abb-6e3b-478b-a82a-8497e839e518', '88e25339-c019-40db-b915-848dc2237819']}
