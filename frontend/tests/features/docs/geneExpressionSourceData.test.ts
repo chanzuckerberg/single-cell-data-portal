@@ -58,8 +58,8 @@ describe("Gene Expression Source Data - S3Content Component", () => {
     await page.route(
       `${CLOUDFRONT_BASE_URL}/${MANIFEST_FILE}`,
       async (route) => {
-        // Delay the response
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Delay the response to keep loading state visible
+        await new Promise((resolve) => setTimeout(resolve, 2000));
         await route.fulfill({
           status: 200,
           contentType: "application/json",
@@ -68,10 +68,14 @@ describe("Gene Expression Source Data - S3Content Component", () => {
       }
     );
 
-    await goToPage(GENE_EXPRESSION_SOURCE_DATA_URL, page);
+    // Start navigation without waiting for it to complete
+    const navigationPromise = page.goto(GENE_EXPRESSION_SOURCE_DATA_URL);
 
-    // Check that loading text appears
+    // Check that loading text appears while navigation is in progress
     await expect(page.getByText("Loading file listing...")).toBeVisible();
+
+    // Wait for navigation to complete
+    await navigationPromise;
   });
 
   test("Should show error message when manifest fetch fails", async ({
