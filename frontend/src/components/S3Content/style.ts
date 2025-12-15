@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 
 export const Container = styled.div`
-  margin: 16px 0;
+  margin: 0;
 `;
 
 export const LoadingText = styled.div`
@@ -26,6 +26,7 @@ export const StyledTable = styled.table`
   width: 100%;
   border-collapse: collapse;
   font-size: 13px;
+  margin: 0;
 
   th,
   td {
