@@ -30,7 +30,8 @@ const Privacy = (): JSX.Element => {
 
           <div>
             <h1>Privacy Policy</h1>
-            <p>Last updated: April 23, 2025.</p>
+            <p>Last Updated: December 15, 2025.</p>
+            <p>Effective Date: January 1, 2026.</p>
             {/* Introduction */}
             <>
               <h2>Introduction</h2>
@@ -56,8 +57,9 @@ const Privacy = (): JSX.Element => {
                   advance biomedical research.
                 </li>
                 <li>
-                  The datasets made available through the Site are{" "}
-                  <strong>not personally identifiable</strong>.
+                  The datasets made available on the Site are{" "}
+                  <strong>publicly available</strong> and should
+                  <strong>not be personally identifiable</strong>.
                 </li>
                 <li>
                   We use the privacy-friendly Plausible service to collect{" "}
@@ -73,8 +75,7 @@ const Privacy = (): JSX.Element => {
               <h2>Data Controllers and Contracting Parties</h2>
               <p>
                 By accessing and using the Site, you are contracting with the
-                Chan Zuckerberg Initiative Foundation, a 501(c)(3) nonprofit
-                private foundation (“<strong>Provider</strong>,” “
+                Chan Zuckerberg Biohub Inc., (“<strong>Biohub</strong>,” “
                 <strong>we</strong>” or “<strong>us</strong>”), and agreeing
                 that Provider is the “controller” of your personal data provided
                 to, collected by, or processed in connection with the Site. This
@@ -87,7 +88,7 @@ const Privacy = (): JSX.Element => {
                 This Privacy Policy applies to only this Site, and excludes any
                 other services that state that they are offered under a
                 different privacy policy. For example, this Privacy Policy does
-                not apply to chanzuckerberg.com.
+                not apply to biohub.org.
               </p>
             </>
             {/* Data We Collect */}
@@ -104,7 +105,7 @@ const Privacy = (): JSX.Element => {
                 – hopefully – insight.
               </p>
               <p>
-                The datasets available on the Site are not personally
+                The datasets available on the Site should not be personally
                 identifiable.
               </p>
               <ul className="text-list">
@@ -186,7 +187,7 @@ const Privacy = (): JSX.Element => {
             <>
               <h2>How We Use Your Data</h2>
               <p>
-                CZIF does not sell your personal information nor do we share
+                Biohub does not sell your personal information nor do we share
                 your personal data for behavioral advertising purposes. We do
                 use your data for the following business purposes:
               </p>
@@ -251,7 +252,7 @@ const Privacy = (): JSX.Element => {
               </p>
               <ul className="text-list">
                 <li>
-                  <h4>Third Party Site Providers.</h4> CZIF works with service
+                  <h4>Third Party Site Providers.</h4> Biohub works with service
                   providers that help us operate, secure, and improve the Site.
                   These services are, for example, performing statistical
                   analysis, database management services, database hosting,
@@ -269,22 +270,19 @@ const Privacy = (): JSX.Element => {
                   the law.
                 </li>
                 <li>
-                  <h4>CZIF Entities and Affiliates.</h4> The Chan Zuckerberg
-                  Initiative, LLC (“CZI LLC”) is our primary technology partner,
-                  focusing on the Site’s infrastructure, security, and
-                  compliance. In this role, CZI LLC is a data controller for all
-                  data referenced in this Privacy Policy. As with Service
-                  Providers mentioned above, CZI LLC&lsquo;s use of data is
-                  limited by this Privacy Policy. “Affiliates” refers to
-                  entities controlled by or under common control with CZIF (such
-                  as CZI LLC) and does not include Meta Platforms, Inc. for
-                  purposes of this policy.
+                  <h4>Biohub Entities and Affiliates.</h4> We enable access to
+                  personal information across our affiliates and related
+                  entities, for example, where we share common data systems or
+                  where access helps us to operate our organization and provide
+                  our services. Our affiliates include entities that are under
+                  common control and ownership, but do not include Meta
+                  Platforms, Inc. (Meta) or any Meta affiliates.
                 </li>
                 <li>
                   <h4>Reorganization, Sale or Merger.</h4> We may disclose your
                   information in connection with a merger, reorganization, or
                   sale of all or a portion of our organization or assets related
-                  to CZIF. In the event of a merger, reorganization or sale of
+                  to Biohub. In the event of a merger, reorganization or sale of
                   assets, the buyer or other successor entity will continue to
                   be bound by the terms of this Privacy Policy.
                 </li>
@@ -327,40 +325,34 @@ const Privacy = (): JSX.Element => {
                   information.
                 </li>
                 <li>
-                  <h5>The right not to be discriminated against.</h5> CZIF will
-                  not discriminate against you in any manner for exercising any
-                  of the above rights with respect to your personal data.
+                  <h5>The right not to be discriminated against.</h5> Biohub
+                  will not discriminate against you in any manner for exercising
+                  any of the above rights with respect to your personal data.
                 </li>
               </ul>
               <p>
                 If you would like to exercise your right to any of the above,
                 email us at{" "}
-                <a href="mailto:privacy@chanzuckerberg.com">
-                  privacy@chanzuckerberg.com
-                </a>
-                . In the email, please provide us with your name, the country
-                (and state if within the United States) in which you live, which
-                of the above rights you would like to exercise, and sufficient
+                <a href="mailto:privacy@biohub.org">privacy@biohub.org</a>. In
+                the email, please provide us with your name, the country (and
+                state if within the United States) in which you live, which of
+                the above rights you would like to exercise, and sufficient
                 information that allows us to reasonably verify that you are the
                 person about whom we collected personal information. If you
                 would like an authorized agent to make a request for you, have
                 that agent email{" "}
-                <a href="mailto:privacy@chanzuckerberg.com">
-                  privacy@chanzuckerberg.com
-                </a>{" "}
-                with the above information along with additional information
+                <a href="mailto:privacy@biohub.org">privacy@biohub.org</a> with
+                the above information along with additional information
                 sufficient for us to verify that the authorized agent is acting
                 on your behalf. Please also let us know if you have questions or
                 concerns related to exercising any rights you have under
                 applicable law to control your personal data.
               </p>
               <p>
-                If you would like to appeal a CZI decision with respect to a
+                If you would like to appeal a Biohub decision with respect to a
                 request to exercise any of these rights, please email us at{" "}
-                <a href="mailto:privacy@chanzuckerberg.com">
-                  privacy@chanzuckerberg.com
-                </a>{" "}
-                and explain the basis for your appeal.
+                <a href="mailto:privacy@biohub.org">privacy@biohub.org</a> and
+                explain the basis for your appeal.
               </p>
               <p>
                 If you wish to raise a concern about our use of your information
@@ -381,17 +373,15 @@ const Privacy = (): JSX.Element => {
                 disclosed, altered, or destroyed by a breach of any of our
                 physical, technical, or administrative safeguards. Please notify
                 us immediately at{" "}
-                <a href="mailto:security@chanzuckerberg.com">
-                  security@chanzuckerberg.com
-                </a>{" "}
-                if you become aware of any security issues relating to the Site.
+                <a href="mailto:security@biohub.org">security@biohub.org</a> if
+                you become aware of any security issues relating to the Site.
               </p>
             </>
             {/* Data Transfers */}
             <>
               <h2>Data Transfers</h2>
               <p>
-                CZIF is based in the United States; when you engage with the
+                Biohub is based in the United States; when you engage with the
                 Site, you are sending personal data into the United States which
                 may have different data protection rules than those of your
                 country. We process data both inside and outside of the United
@@ -435,15 +425,11 @@ const Privacy = (): JSX.Element => {
                     Where we rely on consent, you have the right to revoke your
                     consent and where we rely on legitimate interests, you have
                     the right to object by emailing us at{" "}
-                    <a href="mailto:privacy@chanzuckerberg.com">
-                      privacy@chanzuckerberg.com
-                    </a>
-                    . If you have any questions about the lawful bases on which
-                    we collect and use your personal data, please contact us at{" "}
-                    <a href="mailto:GDPR-REP@chanzuckerberg.com">
-                      GDPR-REP@chanzuckerberg.com
-                    </a>
-                    .
+                    <a href="mailto:privacy@biohub.org">privacy@biohub.org</a>.
+                    If you have any questions about the lawful bases on which we
+                    collect and use your personal data, you can also contact us
+                    at{" "}
+                    <a href="mailto:privacy@biohub.org">privacy@biohub.org</a>.
                   </p>
                 </li>
               </ul>
@@ -637,12 +623,9 @@ const Privacy = (): JSX.Element => {
                 <li>
                   <h4>Contact Information.</h4> If you have questions or
                   complaints regarding this Privacy Policy, please contact us at{" "}
-                  <a href="mailto:privacy@chanzuckerberg.com">
-                    privacy@chanzuckerberg.com
-                  </a>
-                  .
+                  <a href="mailto:privacy@biohub.org">privacy@biohub.org</a>.
                   <address>
-                    Chan Zuckerberg Initiative <br />
+                    Chan Zuckerberg Biohub, Inc. <br />
                     2682 Middlefield Road, Suite i <br />
                     Redwood City, CA 94063
                     <br />
@@ -650,10 +633,10 @@ const Privacy = (): JSX.Element => {
                   <div>
                     To comply with article 27 of the GDPR and the UK-GDPR, we
                     have appointed a representative who can accept
-                    communications on behalf of CZIF and CZI LLC in relation to
-                    personal data processing activities falling within the scope
-                    of the GDPR or the UK-GDPR. If you wish to contact them,
-                    their details are as follows:
+                    communications in relation to personal data processing
+                    activities falling within the scope of the GDPR or the
+                    UK-GDPR. If you wish to contact them, their details are as
+                    follows:
                     <br />
                     <br />
                     <address>
