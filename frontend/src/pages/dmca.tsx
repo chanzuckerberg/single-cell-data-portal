@@ -29,7 +29,8 @@ const DMCA = (): JSX.Element => {
 
           <div>
             <h1>Digital Millennium Copyright Act (DMCA) Policy</h1>
-            <p>Last Updated: April 23, 2025.</p>
+            <p>Last Updated: December 15, 2025</p>
+            <p>Effective Date: January 1, 2026</p>
             {/* Introduction */}
             <>
               <p>
@@ -86,19 +87,19 @@ const DMCA = (): JSX.Element => {
                 <li>
                   <h4>Notification of Infringement.</h4>
                   <p>
-                    Chan Zuckerberg Initiative (“CZI”) will respond to notices
-                    of alleged copyright infringement that comply with the
-                    Digital Millennium Copyright Act (the “DMCA”). In addition,
-                    we will promptly terminate without notice the accounts of
-                    those determined by us to be “repeat infringers.” If you are
-                    a copyright owner or an agent thereof, and you believe that
-                    any content hosted on our website or the Services infringes
-                    your copyrights, then you may submit a notification pursuant
-                    to the DMCA by providing our designated copyright agent
-                    (“Designated Agent”) with the following information in
-                    writing (please consult your legal counsel or see 17 U.S.C.
-                    Section 512(c)(3) to confirm these requirements and your
-                    compliance therewith):
+                    Chan Zuckerberg Biohub Inc. (“Biohub”) will respond to
+                    notices of alleged copyright infringement that comply with
+                    the Digital Millennium Copyright Act (the “DMCA”). In
+                    addition, we will promptly terminate without notice the
+                    accounts of those determined by us to be “repeat
+                    infringers.” If you are a copyright owner or an agent
+                    thereof, and you believe that any content hosted on our
+                    website or the Services infringes your copyrights, then you
+                    may submit a notification pursuant to the DMCA by providing
+                    our designated copyright agent (“Designated Agent”) with the
+                    following information in writing (please consult your legal
+                    counsel or see 17 U.S.C. Section 512(c)(3) to confirm these
+                    requirements and your compliance therewith):
                   </p>
                   <ol>
                     <li>
@@ -226,16 +227,14 @@ const DMCA = (): JSX.Element => {
                   <br />
                   <br />
                   <address>
-                    Attention: Designated Agent Chan Zuckerberg Initiative{" "}
+                    Attention: Designated Agent Chan Zuckerberg Biohub Inc.{" "}
                     <br />
                     2682 Middlefield Road, Suite i <br />
                     Redwood City, CA 94063
                     <br />
                     Attn: General Counsel <br />
                     Email: courtesy copy:{" "}
-                    <a href="mailto:privacy@chanzuckerberg.com">
-                      privacy@chanzuckerberg.com
-                    </a>
+                    <a href="mailto:privacy@biohub.org">privacy@biohub.org</a>
                   </address>
                   <p>
                     You acknowledge that if you fail to comply with all of the

@@ -116,7 +116,7 @@ class RollbackEntity:
         """
         Rolls back the Datasets in the CollectionVersions associated with each DatasetVersionId passed in, to their
         respective previous, most recently created DatasetVersion. Then, triggers deletion of the DB references and S3
-        assets for the rolled back DatasetVersions.
+        artifacts for the rolled back DatasetVersions.
         """
         rolled_back_datasets = []
         for dataset_version_id in dataset_version_id_list:
@@ -165,7 +165,7 @@ class RollbackEntity:
         """
         Rollback all the datasets in all private collections. This will restore the
         state of private collections to their pre-migration state. Then, triggers deletion of the DB
-        references and S3 assets for the rolled back DatasetVersions.
+        references and S3 artifacts for the rolled back DatasetVersions.
         """
         filter = CollectionQueryFilter(is_published=False)
         collections = self.business_logic.get_collections(filter)
@@ -175,7 +175,7 @@ class RollbackEntity:
         """
         Rollback all the datasets from the input list of private collections. This will restore the
         state of the list of private collections to their pre-migration state. Then, triggers deletion of the DB
-        references and S3 assets for the rolled back DatasetVersions.
+        references and S3 artifacts for the rolled back DatasetVersions.
         """
         rolled_back_datasets = []
         for collection_version_id in collection_version_id_list:
@@ -207,7 +207,7 @@ class RollbackEntity:
         """
         Rollback each public collection to its previous, most recently published CollectionVersion (if one exists).
         This will restore the state of public collections to their pre-migration state. Then, triggers deletion of the DB
-        references and S3 assets for the rolled back CollectionVersions and their associated DatasetVersions.
+        references and S3 artifacts for the rolled back CollectionVersions and their associated DatasetVersions.
         """
         filter = CollectionQueryFilter(is_published=True)
         collections = self.business_logic.get_collections(filter)
@@ -217,7 +217,7 @@ class RollbackEntity:
         """
         Rollback each public collection in the input list to its previous, most recently published CollectionVersion (if
         one exists). This will restore the state of the list of public collections to their pre-migration state. Then,
-        triggers deletion of the DB references and S3 assets for the rolled back CollectionVersions and their associated
+        triggers deletion of the DB references and S3 artifacts for the rolled back CollectionVersions and their associated
         DatasetVersions.
         """
         rolled_back_collection_versions = []
@@ -243,13 +243,13 @@ class RollbackEntity:
 
     def _clean_up_rolled_back_datasets(self, rolled_back_datasets: List[DatasetVersion]) -> None:
         """
-        Triggers deletion of the DB references and S3 assets for the rolled back DatasetVersions.
+        Triggers deletion of the DB references and S3 artifacts for the rolled back DatasetVersions.
         """
         self.business_logic.delete_dataset_versions(rolled_back_datasets)
 
     def _clean_up_published_collection_versions(self, rolled_back_collection_versions: List[CollectionVersion]) -> None:
         """
-        Triggers deletion of the DB references and S3 assets for the rolled back CollectionVersions' associated
+        Triggers deletion of the DB references and S3 artifacts for the rolled back CollectionVersions' associated
         DatasetVersions, if they are not associated with any still-existing CollectionVersions.
         """
         datasets_to_rollback = []
