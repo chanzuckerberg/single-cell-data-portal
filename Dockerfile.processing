@@ -16,7 +16,7 @@ RUN curl -fsSL https://github.com/pritykinlab/guidescan-cli/releases/download/${
 	tar -xzf /tmp/guidescan.tar.gz -C /tmp && \
 	mv /tmp/bin/guidescan /usr/local/bin/guidescan && \
 	chmod +x /usr/local/bin/guidescan && \
-	rm -rf /tmp/guidescan.tar.gz /tmp/guidescan.tar.gz /tmp/bin /tmp/include
+	rm -rf /tmp/guidescan.tar.gz /tmp/bin /tmp/include
 
 # Install uv for fast Python package installation
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
