@@ -19,6 +19,7 @@ import { Fragment, memo, useState, useMemo } from "react";
 import rehypeSlug from "rehype-slug";
 import { OFF_WHITE, PINK } from "src/common/theme";
 import EmbeddedGoogleSlides from "src/components/EmbeddedGoogleSlides";
+import S3Content from "src/components/S3Content";
 import Layout from "src/components/Layout";
 import { StyledDocsLayout } from "src/components/Layout/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
@@ -399,6 +400,7 @@ const DocsImage = ({ src }: ImageProps) => {
 
 const MDX_AVAILABLE_COMPONENTS = {
   EmbeddedGoogleSlides,
+  S3Content,
   Image: DocsImage,
   NextLink,
   a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
