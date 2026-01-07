@@ -1,0 +1,19 @@
+INFO     backend.layers.business.business:business.py:612 {'message': 'ingesting dataset', 'collection_version_id': 549200f9-fe69-4bba-8256-ccd8c3f91bed, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:612 {'message': 'ingesting dataset', 'collection_version_id': 549200f9-fe69-4bba-8256-ccd8c3f91bed, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': d3ddb1db-e257-4fb0-a6e5-30d4702c0a62}
+INFO     processing:dataset_metadata_update.py:273 Main: No raw h5ad update required
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:100 Uploaded [b700d73c-94ab-46f3-ab1c-3980ab00f2d2/raw.h5ad] to s3://artifact_bucket/b700d73c-94ab-46f3-ab1c-3980ab00f2d2/raw.h5ad
+INFO     processing:process_logic.py:102 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:dataset_metadata_update.py:278 Main: Starting thread for h5ad update
+INFO     processing:process_logic.py:49 Updating processing status
+ERROR    processing:dataset_metadata_update.py:318 Cannot find cxg artifact uri for d3ddb1db-e257-4fb0-a6e5-30d4702c0a62.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:dataset_metadata_update.py:333 Main: No ATAC fragment found, copying status from current dataset version
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:49 Updating processing status
