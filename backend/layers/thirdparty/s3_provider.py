@@ -12,9 +12,83 @@ from backend.layers.thirdparty.s3_exceptions import IllegalS3RecursiveDelete, S3
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 
 AWS_S3_MAX_ITEMS_PER_BATCH = 1000
-SIZE_50GB = 50 * 1024 * 1024 * 1024
 
 logger = logging.getLogger(__name__)
+
+
+def _parse_size_string(size_str: str) -> int:
+    """
+    Parse a human-readable size string (e.g., "50GB", "100MB", "1TB") into bytes.
+
+    Supports: TB, GB, MB, KB, B (case-insensitive)
+    Uses binary units (1024-based).
+
+    Args:
+        size_str: Size string in format like "50GB", "100MB", etc.
+
+    Returns:
+        Size in bytes as integer
+
+    Raises:
+        ValueError: If the format is invalid
+    """
+    if not size_str:
+        raise ValueError("Size string cannot be empty")
+
+    # Match number and unit (case-insensitive)
+    # Pattern matches: number (int or float) + optional whitespace + unit (TB, GB, MB, KB, or B)
+    match = re.match(r"^(\d+(?:\.\d+)?)\s*((?:TB|GB|MB|KB|B))$", size_str.strip(), re.IGNORECASE)
+    if not match:
+        raise ValueError(f"Invalid size format: {size_str}. Expected format: '50GB', '100MB', etc.")
+
+    value = float(match.group(1))
+    unit = match.group(2).upper()
+
+    # Convert to bytes based on unit (binary units: 1024-based)
+    multipliers = {
+        "TB": 1024**3,  # 1 TB = 1024³ bytes
+        "GB": 1024**2,  # 1 GB = 1024² bytes
+        "MB": 1024**1,  # 1 MB = 1024 bytes
+        "KB": 1024,  # 1 KB = 1024 bytes
+        "B": 1,  # 1 B = 1 byte
+    }
+
+    if unit not in multipliers:
+        raise ValueError(f"Unsupported unit: {unit}. Supported units: TB, GB, MB, KB, B")
+
+    return int(value * multipliers[unit])
+
+
+def _get_cloudfront_max_cache_size() -> int:
+    """
+    Get the CloudFront max cache size from environment variable or use default.
+
+    Reads CLOUDFRONT_MAX_CACHE_SIZE environment variable and parses it.
+    If not set or invalid, defaults to 50GB.
+
+    Returns:
+        Max cache size in bytes
+    """
+    default_size_bytes = 50 * 1024 * 1024 * 1024  # 50GB
+
+    env_value = os.getenv("CLOUDFRONT_MAX_CACHE_SIZE")
+    if not env_value:
+        return default_size_bytes
+
+    try:
+        return _parse_size_string(env_value)
+    except ValueError as e:
+        logger.warning(
+            {
+                "message": "Invalid CLOUDFRONT_MAX_CACHE_SIZE format, using default 50GB",
+                "env_value": env_value,
+                "error": str(e),
+            }
+        )
+        return default_size_bytes
+
+
+CLOUDFRONT_MAX_CACHE_SIZE = _get_cloudfront_max_cache_size()
 
 
 class S3Provider(S3ProviderInterface):
@@ -76,16 +150,16 @@ class S3Provider(S3ProviderInterface):
     def upload_file(self, src_file: str, bucket_name: str, dst_file: str, extra_args: dict):
         """
         Uploads the local `src_file` to an S3 object in the `bucket_name` bucket with object key `dst_file`
-        Sets Cache-Control: no-cache for files larger than 50GB to prevent CloudFront caching issues
+        Sets Cache-Control: no-cache for files larger than CloudFront max cache size to prevent CloudFront caching issues
         """
-        # Check file size and set Cache-Control for large files (> 50GB)
+        # Check file size and set Cache-Control for large files (exceeding CloudFront max cache size)
         file_size = os.path.getsize(src_file)
 
         # Create a copy of extra_args to avoid modifying the original
         upload_args = extra_args.copy() if extra_args else {}
 
-        if file_size > SIZE_50GB:
-            # Set Cache-Control to no-cache to bypass CloudFront caching for large files
+        if file_size > CLOUDFRONT_MAX_CACHE_SIZE:
+            # Set Cache-Control to no-cache to bypass CloudFront caching for files larger than max cache size
             upload_args["CacheControl"] = "no-cache, no-store, must-revalidate"
             logger.info(
                 {

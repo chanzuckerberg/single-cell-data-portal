@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 """
-Script to retroactively update Cache-Control metadata on large S3 objects (> 50GB)
+Script to retroactively update Cache-Control metadata on large S3 objects (exceeding CloudFront max cache size)
 to prevent CloudFront caching issues.
 
 This script:
-1. Scans specified S3 buckets for objects larger than 50GB
+1. Scans specified S3 buckets for objects larger than CloudFront max cache size
 2. Updates their metadata to set Cache-Control: no-cache, no-store, must-revalidate
 3. Logs all updates for audit purposes
+
+The CloudFront max cache size can be configured via the CLOUDFRONT_MAX_CACHE_SIZE environment variable
+(e.g., "50GB", "100MB", "1TB"). Defaults to 50GB if not set.
 
 Usage:
     python update_large_file_cache_control.py --deployment-stage <dev|staging|prod> [--dry-run] [--bucket <bucket-name>]
@@ -30,6 +33,8 @@ from typing import List, Tuple
 import boto3
 from botocore.exceptions import ClientError
 
+from backend.layers.thirdparty.s3_provider import CLOUDFRONT_MAX_CACHE_SIZE
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -39,7 +44,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Constants
-SIZE_50GB = 50 * 1024 * 1024 * 1024  # 50GB in bytes
 CACHE_CONTROL_VALUE = "no-cache, no-store, must-revalidate"
 
 
@@ -62,7 +66,7 @@ def get_buckets_for_stage(deployment_stage: str) -> List[str]:
 
 def find_large_objects(bucket_name: str, s3_client) -> List[Tuple[str, int]]:
     """
-    Finds all objects in a bucket that are larger than 50GB.
+    Finds all objects in a bucket that are larger than CloudFront max cache size.
 
     Args:
         bucket_name: The name of the S3 bucket
@@ -86,7 +90,7 @@ def find_large_objects(bucket_name: str, s3_client) -> List[Tuple[str, int]]:
 
             for obj in page["Contents"]:
                 total_objects += 1
-                if obj["Size"] > SIZE_50GB:
+                if obj["Size"] > CLOUDFRONT_MAX_CACHE_SIZE:
                     large_objects.append((obj["Key"], obj["Size"]))
                     size_gb = obj["Size"] / (1024 * 1024 * 1024)
                     logger.info(f"Found large object: {obj['Key']} ({size_gb:.2f} GB)")
@@ -172,7 +176,9 @@ def update_object_metadata(bucket_name: str, object_key: str, s3_client, dry_run
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Update Cache-Control metadata for large S3 objects (> 50GB)")
+    parser = argparse.ArgumentParser(
+        description="Update Cache-Control metadata for large S3 objects (exceeding CloudFront max cache size)"
+    )
     parser.add_argument(
         "--deployment-stage",
         required=True,
