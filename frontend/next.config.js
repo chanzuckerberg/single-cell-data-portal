@@ -77,6 +77,10 @@ docSiteSecureHeaders.contentSecurityPolicy.directives.scriptSrc =
   docSiteScriptSrc;
 docSiteSecureHeaders.contentSecurityPolicy.directives.frameSrc =
   docSiteFrameSrc;
+// Add CloudFront domain for gene expression data files
+docSiteSecureHeaders.contentSecurityPolicy.directives.connectSrc.push(
+  "https://ge-data.cellxgene.cziscience.com"
+);
 
 module.exports = {
   /**

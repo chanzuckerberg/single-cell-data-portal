@@ -92,6 +92,17 @@ from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 logger = logging.getLogger(__name__)
 
+"""NOTE ON TERMINOLOGY (artifacts vs assets, 2025-12)
+In the business layer and persistence layer, all S3-backed files are referred to as *artifacts*. 
+This aligns with database entities such as DatasetArtifact and DatasetArtifactType,
+which defines the valid artifact types.
+
+The term *asset* is reserved for user-facing or API-facing representations of artifacts, 
+such as publicly accessible download URLs or JSON fields exposed by the REST API. 
+Configuration values like `dataset_assets_base_url` refer to these public-facing URLs and 
+therefore intentionally use *asset*.
+"""
+
 
 class BusinessLogic(BusinessLogicInterface):
     database_provider: DatabaseProviderInterface
@@ -120,25 +131,28 @@ class BusinessLogic(BusinessLogicInterface):
 
     @staticmethod
     def generate_permanent_url(
-        dataset_version: DatasetVersion, artifact_id: DatasetArtifactId, asset_type: DatasetArtifactType
+        dataset_version: DatasetVersion, artifact_id: DatasetArtifactId, artifact_type: DatasetArtifactType
     ) -> str:
         """
-        Return the permanent URL for the given asset.
+        Return the permanent URL for the given artifact.
+
+        This converts the internal artifact (identified by its DatasetArtifactId and DatasetArtifactType)
+        into a public-facing asset URL using the configured dataset_assets_base_url.
         """
-        if asset_type in [DatasetArtifactType.ATAC_INDEX, DatasetArtifactType.ATAC_FRAGMENT]:
+        if artifact_type in [DatasetArtifactType.ATAC_INDEX, DatasetArtifactType.ATAC_FRAGMENT]:
             fmt_str = "{}/{}-fragment.{}"
         else:
             fmt_str = "{}/{}.{}"
 
-        if asset_type == DatasetArtifactType.ATAC_INDEX:
+        if artifact_type == DatasetArtifactType.ATAC_INDEX:
             entity_id = [a for a in dataset_version.artifacts if a.type == DatasetArtifactType.ATAC_FRAGMENT][0].id
-        elif asset_type == DatasetArtifactType.ATAC_FRAGMENT:
+        elif artifact_type == DatasetArtifactType.ATAC_FRAGMENT:
             entity_id = artifact_id
         else:
             entity_id = dataset_version.version_id
 
         base_url = CorporaConfig().dataset_assets_base_url
-        return fmt_str.format(base_url, entity_id.id, ARTIFACT_TO_EXTENSION[asset_type])
+        return fmt_str.format(base_url, entity_id.id, ARTIFACT_TO_EXTENSION[artifact_type])
 
     @staticmethod
     def generate_dataset_citation(
@@ -998,12 +1012,12 @@ class BusinessLogic(BusinessLogicInterface):
         versions_to_delete_from_s3: List[DatasetVersion] = []
         for dv in collection_version.datasets:
             unpublished_versions = self.get_unpublished_dataset_versions(dv.canonical_dataset.dataset_id)
-            versions_to_delete_from_s3.extend(unpublished_versions)  # All unpublished s3 assets are to be deleted
+            versions_to_delete_from_s3.extend(unpublished_versions)  # All unpublished s3 artifacts are to be deleted
             if dv.canonical_dataset.published_at:
                 unpublished_versions_of_published_datasets.extend(unpublished_versions)
             else:
                 unpublished_datasets.append(dv.canonical_dataset)
-        self.delete_dataset_version_assets(versions_to_delete_from_s3)
+        self.delete_dataset_version_artifacts(versions_to_delete_from_s3)
 
         # Delete DatasetVersionTable rows and DatasetArtifactTable rows if Dataset is published
         self.database_provider.delete_dataset_versions(unpublished_versions_of_published_datasets)
@@ -1090,7 +1104,7 @@ class BusinessLogic(BusinessLogicInterface):
     def delete_dataset_versions(self, dataset_versions: List[DatasetVersion]) -> None:
         """
         Deletes a list of dataset versions and associated dataset artifact rows from the database, as well
-        as kicking off deletion of their corresponding assets from S3. Automatically preserves artifacts
+        as kicking off deletion of their corresponding artifacts from S3. Automatically preserves artifacts
         that are still referenced by other existing dataset versions.
         """
         logger.info(
@@ -1102,10 +1116,10 @@ class BusinessLogic(BusinessLogicInterface):
         # Compute artifacts_to_save once if not provided, to ensure both S3 and DB deletion use the same set
         artifacts_to_save = self._get_artifacts_to_save(dataset_versions)
 
-        self.delete_dataset_version_assets(dataset_versions, artifacts_to_save)
+        self.delete_dataset_version_artifacts(dataset_versions, artifacts_to_save)
         self.database_provider.delete_dataset_versions(dataset_versions, artifacts_to_save)
 
-    def delete_dataset_version_assets(
+    def delete_dataset_version_artifacts(
         self, dataset_versions: List[DatasetVersion], artifacts_to_save: Set[DatasetArtifact] = None
     ) -> None:
         # Get all artifacts from dataset versions being deleted
@@ -1120,7 +1134,7 @@ class BusinessLogic(BusinessLogicInterface):
         artifacts_to_delete = [a for a in all_artifacts if a not in artifacts_to_save]
         logger.info(
             {
-                "message": "Deleting dataset version assets",
+                "message": "Deleting dataset version artifacts",
                 "artifacts_to_delete": [a.id.id for a in artifacts_to_delete],
             }
         )
@@ -1136,7 +1150,7 @@ class BusinessLogic(BusinessLogicInterface):
 
     def resurrect_collection(self, collection_id: CollectionId) -> None:
         """
-        Resurrect a tombstoned Collection (untombstone Collection and un-delete public s3 assets). Doing so restores
+        Resurrect a tombstoned Collection (untombstone Collection and un-delete public s3 artifacts). Doing so restores
         accessibility of all previous Collection versions and constituent Datasets **EXCEPT** for Datasets which were
         tombstoned individually before the Collection was tombstoned as a whole; such Datasets remain tombstoned after
         resurrection of the Collection. Effectively, this restores the Collection to its most recent state immediately
@@ -1167,7 +1181,7 @@ class BusinessLogic(BusinessLogicInterface):
                 dataset_versions_to_restore.extend(version_ids)
                 datasets_to_resurrect.append(dataset_id)
 
-        # Restore s3 public assets
+        # Restore s3 public artifacts
         for dv_id in dataset_versions_to_restore:
             for ext in [ARTIFACT_TO_EXTENSION[x] for x in (DatasetArtifactType.H5AD, DatasetArtifactType.RDS)]:
                 object_key = f"{dv_id}.{ext}"
@@ -1226,7 +1240,7 @@ class BusinessLogic(BusinessLogicInterface):
                 ]
             )
 
-        # Finalize Collection publication and delete any tombstoned assets
+        # Finalize Collection publication and delete any tombstoned artifacts
         is_auto_version = version.is_auto_version
         dataset_versions_to_delete_from_s3 = self.database_provider.finalize_collection_version(
             version.collection_id,
