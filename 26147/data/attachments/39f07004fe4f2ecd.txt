@@ -1,0 +1,18 @@
+INFO     backend.layers.business.business:business.py:612 {'message': 'ingesting dataset', 'collection_version_id': 2f959b02-fe89-4d76-ad5e-6050c04576e0, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:612 {'message': 'ingesting dataset', 'collection_version_id': 2f959b02-fe89-4d76-ad5e-6050c04576e0, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:1110 {'message': 'Deleting dataset versions', 'dataset_version_ids': []}
+INFO     backend.layers.business.business:business.py:1135 {'message': 'Deleting dataset version artifacts', 'artifacts_to_delete': []}
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [323c6cfa-734e-423d-9f1a-375bc56089b8/atac_fragment] to s3://datasets/8ce2c3af-4df0-4c9d-bcc5-4dc4a5c2fdbd-fragment.tsv.bgz
+INFO     processing:process_validate_atac.py:67 Updated database with atac_fragment.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [323c6cfa-734e-423d-9f1a-375bc56089b8/atac_index] to s3://datasets/8ce2c3af-4df0-4c9d-bcc5-4dc4a5c2fdbd-fragment.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:67 Updated database with atac_index.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [201f1d8a-4b6e-490e-92d3-7feb3428b14a/atac_fragment] to s3://datasets/55ade56c-e33d-4e27-8c54-13aa57805100-fragment.tsv.bgz
+INFO     processing:process_validate_atac.py:67 Updated database with atac_fragment.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [201f1d8a-4b6e-490e-92d3-7feb3428b14a/atac_index] to s3://datasets/55ade56c-e33d-4e27-8c54-13aa57805100-fragment.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:67 Updated database with atac_index.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:224 Processing completed successfully
