@@ -7,8 +7,7 @@ from typing import Optional
 from urllib.parse import urlencode
 
 import requests
-from authlib.integrations.flask_client import OAuth
-from authlib.integrations.flask_client.remote_app import FlaskRemoteApp
+from authlib.integrations.flask_client import FlaskOAuth2App, OAuth
 from flask import Response, after_this_request, current_app, g, jsonify, make_response, redirect, request, session
 
 from backend.common.authorizer import assert_authorized_token, get_userinfo_from_auth0
@@ -17,10 +16,10 @@ from backend.common.corpora_config import CorporaAuthConfig
 # global oauth client
 from backend.common.utils.http_exceptions import ExpiredCredentialsError, UnauthorizedError
 
-oauth_client = None
+oauth_client: Optional[FlaskOAuth2App] = None
 
 
-def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
+def get_oauth_client(config: CorporaAuthConfig) -> FlaskOAuth2App:
     """Create an oauth client on the first invocation, then return oauth client for subsequent calls.
 
     :param config:  An object containing the auth configuration.
