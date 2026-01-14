@@ -25,3 +25,4 @@ tenacity==8.2.2
 tiledb
 tiledbsoma>=1.15.3 # WMG pipeline always reads the latest version of Census so we need to use the latest package version
 dask==2023.8.1
+PyYAML>=6.0.1
