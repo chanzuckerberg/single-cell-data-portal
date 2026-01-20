@@ -156,8 +156,8 @@ class CrossrefProvider(CrossrefProviderInterface):
 
                 if raw_journal is None:
                     raise CrossrefParseException("Journal node missing")
-            except Exception:
-                raise CrossrefParseException("Journal node missing") from None
+            except Exception as e:
+                raise CrossrefParseException("Journal node missing") from e
 
             journal = html.unescape(raw_journal)
 
