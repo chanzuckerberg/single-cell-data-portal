@@ -125,10 +125,10 @@ class CrossrefProvider(CrossrefProviderInterface):
         res = self._fetch_crossref_payload(doi_curie)
         if not res:
             return None, None, None
-        
+
         try:
             message = res.json()["message"]
-            
+
             # Date
             published_date = (
                 message.get("published-print") or message.get("published") or message.get("published-online")
@@ -138,12 +138,12 @@ class CrossrefProvider(CrossrefProviderInterface):
                 raise CrossrefParseException("Date node missing")
 
             published_year, published_month, published_day = self.parse_date_parts(published_date)
-            
+
             # Calculate the deposited date; used when checking for updates.
             deposited_at = None
             if "deposited" in message and (deposited_timestamp := message["deposited"].get("timestamp")) is not None:
                 deposited_at = deposited_timestamp / 1000
-            
+
             # Journal
             try:
                 raw_journal = None
@@ -157,7 +157,7 @@ class CrossrefProvider(CrossrefProviderInterface):
                 if raw_journal is None:
                     raise CrossrefParseException("Journal node missing, raw_journal is None")
             except Exception as e:
-                if isinstance(e, CrossrefParseException): # Raise the existing exception instead of swallowing it
+                if isinstance(e, CrossrefParseException):  # Raise the existing exception instead of swallowing it
                     raise e
                 else:
                     raise CrossrefParseException("Journal node missing") from e
@@ -200,7 +200,7 @@ class CrossrefProvider(CrossrefProviderInterface):
                 deposited_at,
             )
         except Exception as e:
-            if isinstance(e, CrossrefParseException): # Raise the existing exception instead of swallowing it
+            if isinstance(e, CrossrefParseException):  # Raise the existing exception instead of swallowing it
                 raise e
             else:
                 raise CrossrefParseException("Cannot parse metadata from Crossref") from e
