@@ -651,17 +651,11 @@ class TestCreateCollectionIsPreAnalysis(BaseBusinessLogicTestCase):
             test_user_name, test_curator_name, self.sample_collection_metadata, is_pre_analysis=True
         )
         # Simulate a minimal publication so that add_collection_version can find the canonical collection.
-        # This avoids calling ingest_dataset, which requires pydantic v2 (model_dump/model_dump_json).
-        from datetime import datetime
-
-        from backend.layers.common.entities import CanonicalCollection
-
-        self.database_provider.collections[collection.collection_id.id] = CanonicalCollection(
-            id=collection.collection_id,
-            version_id=collection.version_id,
-            originally_published_at=datetime.utcnow(),
-            revised_at=None,
-            tombstoned=False,
+        self.database_provider.finalize_collection_version(
+            collection.collection_id,
+            collection.version_id,
+            "3.0.0",
+            DATA_SUBMISSION_POLICY_VERSION,
         )
         new_version_id = self.database_provider.add_collection_version(collection.collection_id, is_auto_version=False)
         revision = self.database_provider.get_collection_version(new_version_id)
