@@ -335,3 +335,101 @@ def _verify_upload_and_delete_succeeded(
     datasets = data["datasets"]
     dataset_ids = [dataset.get("id") for dataset in datasets]
     assert updated_dataset_id not in dataset_ids
+
+
+# --- is_pre_analysis functional tests ---
+
+
+@skip_creation_on_prod
+def test_pre_analysis_collection_create_and_get(session, api_url, curation_api_access_token, request):
+    """Creating a collection with is_pre_analysis=True via the Curation API stores and returns the flag."""
+    headers = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
+    body = {
+        "contact_email": "functest@example.com",
+        "contact_name": "Func Test",
+        "description": "pre-analysis functional test",
+        "name": "test_pre_analysis_collection_create_and_get",
+        "is_pre_analysis": True,
+    }
+    res = session.post(f"{api_url}/curation/v1/collections", data=json.dumps(body), headers=headers)
+    assertStatusCode(requests.codes.created, res)
+    collection_id = res.json()["collection_id"]
+    request.addfinalizer(lambda: session.delete(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers))
+
+    res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers)
+    assertStatusCode(requests.codes.ok, res)
+    data = res.json()
+    assert "is_pre_analysis" in data
+    assert data["is_pre_analysis"] is True
+
+
+@skip_creation_on_prod
+def test_pre_analysis_defaults_false(session, api_url, curation_api_access_token, request):
+    """Creating a collection without is_pre_analysis returns is_pre_analysis=False."""
+    headers = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
+    body = {
+        "contact_email": "functest@example.com",
+        "contact_name": "Func Test",
+        "description": "pre-analysis default test",
+        "name": "test_pre_analysis_defaults_false",
+    }
+    res = session.post(f"{api_url}/curation/v1/collections", data=json.dumps(body), headers=headers)
+    assertStatusCode(requests.codes.created, res)
+    collection_id = res.json()["collection_id"]
+    request.addfinalizer(lambda: session.delete(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers))
+
+    res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers)
+    assertStatusCode(requests.codes.ok, res)
+    data = res.json()
+    assert "is_pre_analysis" in data
+    assert data["is_pre_analysis"] is False
+
+
+@skip_creation_on_prod
+def test_pre_analysis_patch_rejected(session, api_url, curation_api_access_token, request):
+    """Attempting to PATCH is_pre_analysis on an existing collection returns 405."""
+    headers = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
+    body = {
+        "contact_email": "functest@example.com",
+        "contact_name": "Func Test",
+        "description": "patch rejected test",
+        "name": "test_pre_analysis_patch_rejected",
+    }
+    res = session.post(f"{api_url}/curation/v1/collections", data=json.dumps(body), headers=headers)
+    assertStatusCode(requests.codes.created, res)
+    collection_id = res.json()["collection_id"]
+    request.addfinalizer(lambda: session.delete(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers))
+
+    res = session.patch(
+        f"{api_url}/curation/v1/collections/{collection_id}",
+        data=json.dumps({"is_pre_analysis": True}),
+        headers=headers,
+    )
+    assertStatusCode(405, res)
+
+
+def test_get_datasets_analysis_filter(session, api_url):
+    """GET /curation/v1/datasets with ?analysis= returns only matching datasets."""
+    # pre-analysis filter — all returned datasets must have is_pre_analysis=True
+    res = session.get(f"{api_url}/curation/v1/datasets?analysis=pre-analysis")
+    assertStatusCode(requests.codes.ok, res)
+    for dataset in res.json():
+        assert dataset.get("is_pre_analysis") is True
+
+    # post-analysis filter — all returned datasets must have is_pre_analysis=False
+    res = session.get(f"{api_url}/curation/v1/datasets?analysis=post-analysis")
+    assertStatusCode(requests.codes.ok, res)
+    for dataset in res.json():
+        assert dataset.get("is_pre_analysis") is False
+
+    # invalid value — expect 400
+    res = session.get(f"{api_url}/curation/v1/datasets?analysis=invalid")
+    assertStatusCode(400, res)
+
+
+def test_get_datasets_includes_is_pre_analysis_field(session, api_url):
+    """Every dataset returned by GET /curation/v1/datasets includes is_pre_analysis."""
+    res = session.get(f"{api_url}/curation/v1/datasets")
+    assertStatusCode(requests.codes.ok, res)
+    for dataset in res.json():
+        assert "is_pre_analysis" in dataset
