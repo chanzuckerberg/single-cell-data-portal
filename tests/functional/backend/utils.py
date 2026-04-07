@@ -1,8 +1,12 @@
 import base64
 import json
+import os
+import shutil
 import time
 from typing import Optional
 
+import boto3
+import h5py
 import requests
 from requests import Session
 from requests.adapters import HTTPAdapter, Retry
@@ -188,7 +192,8 @@ def _wait_for_dataset_status(session, api_url, dataset_id, headers):
     errors = []
     keep_trying = True
     expected_upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
-    expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", "NA", None]
+    # "SKIPPED" is valid for pre-analysis datasets (cxg is skipped) and for rds (always skipped)
+    expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", "NA", "SKIPPED", None]
     timer = time.time()
     while keep_trying:
         res = session.get(f"{api_url}/dp/v1/datasets/{dataset_id}/status", headers=headers)
@@ -212,14 +217,19 @@ def _wait_for_dataset_status(session, api_url, dataset_id, headers):
                 errors.append(f"Atac CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
             if rds_status == "FAILED":
                 errors.append(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
-            if any(
-                [
-                    (cxg_status == h5ad_status == "UPLOADED" or cxg_status == h5ad_status == "CONVERTED")
-                    and rds_status == "SKIPPED"
-                    and atac_status in ["SKIPPED", "UPLOADED", "NA", "COPIED"],
-                    errors,
-                ]
-            ):
+            # Pre-analysis datasets skip CXG conversion; regular datasets expect matching cxg/h5ad statuses.
+            pre_analysis_done = (
+                cxg_status == "SKIPPED"
+                and h5ad_status in ["UPLOADED", "CONVERTED"]
+                and rds_status == "SKIPPED"
+                and atac_status in ["SKIPPED", "NA", None]
+            )
+            regular_done = (
+                (cxg_status == h5ad_status == "UPLOADED" or cxg_status == h5ad_status == "CONVERTED")
+                and rds_status == "SKIPPED"
+                and atac_status in ["SKIPPED", "UPLOADED", "NA", "COPIED"]
+            )
+            if any([pre_analysis_done or regular_done, errors]):
                 keep_trying = False
             if time.time() >= timer + 3600:
                 raise TimeoutError(
@@ -273,3 +283,60 @@ def get_curation_api_access_token(session, api_url, config) -> str:
     )
     assertStatusCode(201, response)
     return response.json()["access_token"]
+
+
+def download_h5ad(url: str, output_path: str, chunk_size: int = 65536) -> str:
+    """Download an h5ad file from a URL (handles Dropbox preview links) to output_path."""
+    direct_url = url.replace("dl=0", "dl=1")
+    r = requests.get(direct_url, stream=True, timeout=300)
+    r.raise_for_status()
+    with open(output_path, "wb") as f:
+        for chunk in r.iter_content(chunk_size=chunk_size):
+            f.write(chunk)
+    return output_path
+
+
+def make_pre_analysis_h5ad(source_path: str, output_path: str) -> str:
+    """
+    Create a pre-analysis h5ad from a standard CellxGene-schema-compliant h5ad by:
+      - removing obsm (embeddings)
+      - removing obs['cell_type_ontology_term_id']
+      - removing uns['default_embedding']
+    Returns output_path.
+    """
+    shutil.copy2(source_path, output_path)
+    with h5py.File(output_path, "r+") as f:
+        if "obsm" in f:
+            del f["obsm"]
+        if "obs" in f and "cell_type_ontology_term_id" in f["obs"]:
+            del f["obs"]["cell_type_ontology_term_id"]
+        if "uns" in f and "default_embedding" in f["uns"]:
+            del f["uns"]["default_embedding"]
+    return output_path
+
+
+def upload_h5ad_to_s3_via_api(
+    session, api_url: str, curation_api_access_token: str, collection_id: str, local_path: str
+) -> str:
+    """
+    Retrieve temporary S3 upload credentials from the Curation API, upload the given
+    local h5ad file, and return the s3:// URL that the ingestion pipeline can download.
+    """
+    headers = {"Authorization": f"Bearer {curation_api_access_token}"}
+    res = session.get(
+        f"{api_url}/curation/v1/collections/{collection_id}/s3-upload-credentials",
+        headers=headers,
+    )
+    assertStatusCode(200, res)
+    creds = res.json()
+
+    s3_client = boto3.client(
+        "s3",
+        aws_access_key_id=creds["Credentials"]["AccessKeyId"],
+        aws_secret_access_key=creds["Credentials"]["SecretAccessKey"],
+        aws_session_token=creds["Credentials"]["SessionToken"],
+    )
+    filename = os.path.basename(local_path)
+    key = f"{creds['UploadKeyPrefix']}{filename}"
+    s3_client.upload_file(local_path, creds["Bucket"], key)
+    return f"s3://{creds['Bucket']}/{key}"
