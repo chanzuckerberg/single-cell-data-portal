@@ -58,7 +58,7 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
         3. A boolean that indicates whether the artifact is Seurat convertible
         """
 
-        return validate.validate(input_file, is_pre_release_schema=is_pre_analysis)
+        return validate.validate(input_file, pre_analysis_flag=is_pre_analysis)
 
     def migrate(self, input_file, output_file, collection_id, dataset_id) -> List[str]:
         """
@@ -78,7 +78,7 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
         from cellxgene_schema.write_labels import AnnDataLabelAppender
 
         adata = read_h5ad(input_file)
-        anndata_label_adder = AnnDataLabelAppender(adata, is_pre_release_schema=is_pre_analysis)
+        anndata_label_adder = AnnDataLabelAppender(adata, pre_analysis=is_pre_analysis)
         if not anndata_label_adder.write_labels(output_file):
             raise AddLabelsFailed(anndata_label_adder.errors)
 
