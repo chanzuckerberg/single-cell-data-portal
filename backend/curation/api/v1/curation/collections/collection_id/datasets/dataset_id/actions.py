@@ -38,7 +38,9 @@ def get(collection_id: str, dataset_id: str = None):
     # 2. the collection version is published
     use_canonical_url = collection_version.is_initial_unpublished_version() or collection_version.is_published()
 
-    response_body = reshape_dataset_for_curation_api(dataset_version, use_canonical_url)
+    response_body = reshape_dataset_for_curation_api(
+        dataset_version, use_canonical_url, is_pre_analysis=collection_version.is_pre_analysis
+    )
     return make_response(jsonify(response_body), 200)
 
 

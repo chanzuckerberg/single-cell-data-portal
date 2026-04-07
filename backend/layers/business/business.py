@@ -218,7 +218,11 @@ class BusinessLogic(BusinessLogicInterface):
         return None, None, None
 
     def create_collection(
-        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
+        self,
+        owner: str,
+        curator_name: str,
+        collection_metadata: CollectionMetadata,
+        is_pre_analysis: bool = False,
     ) -> CollectionVersion:
         """
         Creates a collection using the specified metadata. If a DOI is defined, will also
@@ -244,7 +248,9 @@ class BusinessLogic(BusinessLogicInterface):
         if errors:
             raise CollectionCreationException(errors)
 
-        created_version = self.database_provider.create_canonical_collection(owner, curator_name, collection_metadata)
+        created_version = self.database_provider.create_canonical_collection(
+            owner, curator_name, collection_metadata, is_pre_analysis=is_pre_analysis
+        )
 
         # TODO: can collapse with `create_canonical_collection`
         if publisher_metadata:
@@ -620,8 +626,9 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Validate the URIs
         # TODO: This should be done in the IngestionManifest class
+        _NON_URI_MANIFEST_FIELDS = {"flags", "is_pre_analysis"}
         for key, _url in manifest.model_dump(exclude_none=True).items():
-            if key == "flags":
+            if key in _NON_URI_MANIFEST_FIELDS:
                 continue
             _url = str(_url)
             if not self.uri_provider.validate(_url):
@@ -673,6 +680,10 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Ensure that the collection exists and is not published
         collection = self._assert_collection_version_unpublished(collection_version_id)
+
+        # Propagate collection's is_pre_analysis flag into the manifest so the processing
+        # pipeline can conditionally skip the CXG step and pass the flag to validators.
+        manifest.is_pre_analysis = collection.is_pre_analysis
 
         # Creates a dataset version that the processing pipeline will point to
         new_dataset_version: DatasetVersion

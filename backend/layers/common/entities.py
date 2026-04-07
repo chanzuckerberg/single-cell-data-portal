@@ -324,6 +324,7 @@ class CollectionVersionBase:
     has_custom_dataset_order: bool
     is_auto_version: Optional[bool]
     data_submission_policy_version: str
+    is_pre_analysis: bool = False
 
     def is_published(self) -> bool:
         """
@@ -350,19 +351,19 @@ class CollectionVersionBase:
 
 @dataclass
 class CollectionVersion(CollectionVersionBase):
-    datasets: List[DatasetVersionId]
+    datasets: List[DatasetVersionId] = field(default_factory=list)
 
 
 @dataclass
 class CollectionVersionWithDatasets(CollectionVersionBase):
-    datasets: List[DatasetVersion]
+    datasets: List[DatasetVersion] = field(default_factory=list)
 
 
 @dataclass
 class CollectionVersionWithPublishedDatasets(CollectionVersionBase):
-    datasets: List[PublishedDatasetVersion]
+    datasets: List[PublishedDatasetVersion] = field(default_factory=list)
 
 
 @dataclass
 class CollectionVersionWithPrivateDatasets(CollectionVersionBase):
-    datasets: List[PrivateDatasetVersion]
+    datasets: List[PrivateDatasetVersion] = field(default_factory=list)

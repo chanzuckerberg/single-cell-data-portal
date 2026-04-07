@@ -67,7 +67,11 @@ class BusinessLogicInterface:
         pass
 
     def create_collection(
-        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
+        self,
+        owner: str,
+        curator_name: str,
+        collection_metadata: CollectionMetadata,
+        is_pre_analysis: bool = False,
     ) -> CollectionVersion:
         pass
 

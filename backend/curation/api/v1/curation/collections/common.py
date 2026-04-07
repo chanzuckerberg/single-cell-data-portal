@@ -185,6 +185,7 @@ def reshape_for_curation_api(
             preview,
             as_version=reshape_for_version_endpoint,
             is_published=is_published,
+            is_pre_analysis=collection_version.is_pre_analysis,
         ),
         key=lambda d: d["dataset_id"],  # For stable ordering
         reverse=True,  # To stay consistent with Datasets index endpoint sorting
@@ -203,6 +204,7 @@ def reshape_for_curation_api(
         curator_name=collection_version.curator_name,
         description=collection_version.metadata.description,
         doi=doi,
+        is_pre_analysis=collection_version.is_pre_analysis,
         links=links,
         name=collection_version.metadata.name,
         published_at=published_at,
@@ -229,6 +231,7 @@ def reshape_datasets_for_curation_api(
     preview: bool = False,
     as_version: bool = False,
     is_published: bool = False,
+    is_pre_analysis: bool = False,
 ) -> List[dict]:
     business_logic = get_business_logic()
     active_datasets = []
@@ -243,7 +246,12 @@ def reshape_datasets_for_curation_api(
         dataset_versions.extend(business_logic.database_provider.get_dataset_versions_by_id(dataset_version_ids))
     for dv in dataset_versions:
         reshaped_dataset = reshape_dataset_for_curation_api(
-            dv, use_canonical_url, preview, as_canonical=not as_version, is_published=is_published
+            dv,
+            use_canonical_url,
+            preview,
+            as_canonical=not as_version,
+            is_published=is_published,
+            is_pre_analysis=is_pre_analysis,
         )
         active_datasets.append(reshaped_dataset)
     return active_datasets
@@ -256,6 +264,7 @@ def reshape_dataset_for_curation_api(
     index=False,
     as_canonical=True,
     is_published=False,
+    is_pre_analysis: bool = False,
 ) -> dict:
     ds = dict()
     # Determine what columns to include from the dataset
@@ -280,6 +289,7 @@ def reshape_dataset_for_curation_api(
 
     ds["dataset_id"] = dataset_version.dataset_id.id
     ds["dataset_version_id"] = dataset_version.version_id.id
+    ds["is_pre_analysis"] = is_pre_analysis
     # Get none preview specific dataset fields
     if not preview:
         ds["assets"] = extract_dataset_assets(dataset_version)
@@ -328,7 +338,12 @@ def reshape_dataset_for_curation_datasets_index_api(
     # Create base dataset response shape. use_canonical is true only for datasets with a visibility of
     # public; for datasets with a visibility of private, corresponding fields are calculated below.
     is_dataset_visibility_public = visibility == Visibility.PUBLIC.name
-    ds = reshape_dataset_for_curation_api(dataset_version, index=True, use_canonical_url=is_dataset_visibility_public)
+    ds = reshape_dataset_for_curation_api(
+        dataset_version,
+        index=True,
+        use_canonical_url=is_dataset_visibility_public,
+        is_pre_analysis=collection_version.is_pre_analysis,
+    )
 
     # Add visibility and revision-specific fields.
     ds["visibility"] = visibility
@@ -395,6 +410,7 @@ class EntityColumns:
         "datasets",
         "revising_in",
         "consortia",
+        "is_pre_analysis",
     ]
 
     link_cols = [

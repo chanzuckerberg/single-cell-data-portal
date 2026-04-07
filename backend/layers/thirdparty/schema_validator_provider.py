@@ -8,7 +8,7 @@ from backend.layers.processing.exceptions import AddLabelsFailed
 
 
 class SchemaValidatorProviderInterface(Protocol):
-    def validate_anndata(self, input_file: str) -> Tuple[bool, list, bool]:
+    def validate_anndata(self, input_file: str, is_pre_analysis: bool = False) -> Tuple[bool, list, bool]:
         pass
 
     def migrate(self, input_file: str, output_file: str, collection_id: str, dataset_id: str) -> List[str]:
@@ -23,9 +23,10 @@ class SchemaValidatorProviderInterface(Protocol):
         """
         pass
 
-    def add_labels(self, input_file: str, output_file: str) -> None:
+    def add_labels(self, input_file: str, output_file: str, is_pre_analysis: bool = False) -> None:
         """
         Adds labels to the provided `input_file` and writes the result to `output_file`.
+        When is_pre_analysis is True, the pre-analysis flag is passed to the label appender.
         """
         pass
 
@@ -48,7 +49,7 @@ class SchemaValidatorProviderInterface(Protocol):
 
 
 class SchemaValidatorProvider(SchemaValidatorProviderInterface):
-    def validate_anndata(self, input_file: str) -> Tuple[bool, list, bool]:
+    def validate_anndata(self, input_file: str, is_pre_analysis: bool = False) -> Tuple[bool, list, bool]:
         """
         Runs `cellxgene-schema validate` on the provided `input_file`.
         Returns a tuple that contains, in order:
@@ -57,7 +58,7 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
         3. A boolean that indicates whether the artifact is Seurat convertible
         """
 
-        return validate.validate(input_file)
+        return validate.validate(input_file, is_pre_release_schema=is_pre_analysis)
 
     def migrate(self, input_file, output_file, collection_id, dataset_id) -> List[str]:
         """
@@ -68,15 +69,16 @@ class SchemaValidatorProvider(SchemaValidatorProviderInterface):
     def get_current_schema_version(self) -> str:
         return get_current_schema_version()
 
-    def add_labels(self, input_file: str, output_file: str) -> None:
+    def add_labels(self, input_file: str, output_file: str, is_pre_analysis: bool = False) -> None:
         """
         Adds labels to the provided `input_file` and writes the result to `output_file`.
+        When is_pre_analysis is True, the pre-analysis flag is passed to the label appender.
         """
         from cellxgene_schema.utils import read_h5ad
         from cellxgene_schema.write_labels import AnnDataLabelAppender
 
         adata = read_h5ad(input_file)
-        anndata_label_adder = AnnDataLabelAppender(adata)
+        anndata_label_adder = AnnDataLabelAppender(adata, is_pre_release_schema=is_pre_analysis)
         if not anndata_label_adder.write_labels(output_file):
             raise AddLabelsFailed(anndata_label_adder.errors)
 
