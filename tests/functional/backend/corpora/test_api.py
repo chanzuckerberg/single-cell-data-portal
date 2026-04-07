@@ -1,22 +1,19 @@
 import json
-import os
-import tempfile
 
 import pytest
 import requests
 from requests import HTTPError
 
 from backend.common.constants import DATA_SUBMISSION_POLICY_VERSION
-from tests.functional.backend.constants import ATAC_SEQ_MANIFEST, DATASET_MANIFEST, DATASET_URI, VISIUM_DATASET_URI
-from tests.functional.backend.skip_reason import skip_creation_on_prod
-from tests.functional.backend.utils import (
-    _wait_for_dataset_status,
-    assertStatusCode,
-    create_test_collection,
-    download_h5ad,
-    make_pre_analysis_h5ad,
-    upload_h5ad_to_s3_via_api,
+from tests.functional.backend.constants import (
+    ATAC_SEQ_MANIFEST,
+    DATASET_MANIFEST,
+    DATASET_URI,
+    PRE_ANALYSIS_DATASET_MANIFEST,
+    VISIUM_DATASET_URI,
 )
+from tests.functional.backend.skip_reason import skip_creation_on_prod
+from tests.functional.backend.utils import assertStatusCode, create_test_collection
 
 
 @skip_creation_on_prod
@@ -453,75 +450,41 @@ def test_pre_analysis_dataset_upload_and_process(
     api_url,
     curator_cookie,
     curation_api_access_token,
+    upload_manifest,
     request,
 ):
     """
-    Full end-to-end upload test for a pre-analysis dataset:
-      1. Create a pre-analysis collection.
-      2. Build a pre-analysis h5ad by downloading the standard example and stripping
-         obsm, obs.cell_type_ontology_term_id, and uns.default_embedding.
-      3. Upload the h5ad to S3 via the Curation API credentials endpoint.
-      4. Submit an ingestion manifest with is_pre_analysis=True.
-      5. Wait for the pipeline to finish (CXG step must be SKIPPED for pre-analysis).
-      6. Assert the dataset processes without errors and the API reports is_pre_analysis=True.
+    Upload a pre-analysis h5ad to a pre-analysis collection and verify the full
+    pipeline completes (CXG conversion is skipped) and all API responses reflect
+    is_pre_analysis=True.
     """
     headers_dp = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     headers_curation = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
 
-    # 1. Create a pre-analysis collection via the Curation API.
-    collection_body = {
-        "contact_email": "functest@example.com",
-        "contact_name": "Func Test",
-        "description": "pre-analysis upload functional test",
-        "name": "test_pre_analysis_dataset_upload_and_process",
-        "is_pre_analysis": True,
-    }
-    res = session.post(f"{api_url}/curation/v1/collections", data=json.dumps(collection_body), headers=headers_curation)
+    # Create a pre-analysis collection via the Curation API (dp/v1 doesn't support is_pre_analysis).
+    res = session.post(
+        f"{api_url}/curation/v1/collections",
+        data=json.dumps(
+            {
+                "contact_email": "functest@example.com",
+                "contact_name": "Func Test",
+                "description": "pre-analysis upload functional test",
+                "name": "test_pre_analysis_dataset_upload_and_process",
+                "is_pre_analysis": True,
+            }
+        ),
+        headers=headers_curation,
+    )
     assertStatusCode(requests.codes.created, res)
     collection_id = res.json()["collection_id"]
     request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/collections/{collection_id}", headers=headers_dp))
 
-    # 2. Download the standard example h5ad and strip it down to a pre-analysis file.
-    with tempfile.TemporaryDirectory() as tmpdir:
-        source_path = os.path.join(tmpdir, "source.h5ad")
-        pre_analysis_path = os.path.join(tmpdir, "pre_analysis.h5ad")
-        download_h5ad(DATASET_URI, source_path)
-        make_pre_analysis_h5ad(source_path, pre_analysis_path)
+    # Upload the pre-analysis fixture and wait for the pipeline to finish.
+    # _wait_for_dataset_status handles the pre-analysis terminal state (cxg_status=SKIPPED).
+    result = upload_manifest(collection_id, PRE_ANALYSIS_DATASET_MANIFEST)
+    dataset_id = result["dataset_id"]
 
-        # 3. Upload the pre-analysis h5ad to the submission S3 bucket.
-        s3_url = upload_h5ad_to_s3_via_api(
-            session, api_url, curation_api_access_token, collection_id, pre_analysis_path
-        )
-
-    # 4. Create a dataset slot and submit the ingestion manifest.
-    res = session.post(f"{api_url}/curation/v1/collections/{collection_id}/datasets", headers=headers_curation)
-    assertStatusCode(201, res)
-    dataset_id = res.json()["dataset_id"]
-    request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/datasets/{dataset_id}", headers=headers_dp))
-
-    manifest = {"anndata": s3_url, "is_pre_analysis": True}
-    res = session.put(
-        f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
-        data=json.dumps(manifest),
-        headers=headers_curation,
-    )
-    assertStatusCode(202, res)
-
-    # Resolve the dataset version ID needed by the status-polling endpoint.
-    res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers_curation)
-    assertStatusCode(200, res)
-    version_id = next(d["dataset_version_id"] for d in res.json()["datasets"] if d["dataset_id"] == dataset_id)
-
-    # 5. Wait for processing. Pre-analysis pipelines skip CXG conversion.
-    result = _wait_for_dataset_status(
-        session,
-        api_url,
-        version_id,
-        {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"},
-    )
-    assert not result["errors"], f"Pre-analysis dataset processing failed: {result['errors']}"
-
-    # 6a. Verify is_pre_analysis is reflected on the collection endpoint.
+    # Verify is_pre_analysis on the collection and dataset responses.
     res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers_curation)
     assertStatusCode(200, res)
     collection_data = res.json()
@@ -529,7 +492,6 @@ def test_pre_analysis_dataset_upload_and_process(
     dataset_entry = next(d for d in collection_data["datasets"] if d["dataset_id"] == dataset_id)
     assert dataset_entry.get("is_pre_analysis") is True
 
-    # 6b. Verify the dataset endpoint returns is_pre_analysis=True.
     res = session.get(
         f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}",
         headers=headers_curation,
@@ -537,14 +499,11 @@ def test_pre_analysis_dataset_upload_and_process(
     assertStatusCode(200, res)
     assert res.json().get("is_pre_analysis") is True
 
-    # 6c. Verify it appears in the pre-analysis filter on the datasets index.
+    # Verify the dataset index filters work correctly.
     res = session.get(f"{api_url}/curation/v1/datasets?analysis=pre-analysis", headers=headers_curation)
     assertStatusCode(200, res)
-    returned_ids = [d["dataset_id"] for d in res.json()]
-    assert dataset_id in returned_ids, "Uploaded pre-analysis dataset not found in ?analysis=pre-analysis results"
+    assert dataset_id in [d["dataset_id"] for d in res.json()]
 
-    # 6d. Verify it does NOT appear in the post-analysis filter.
     res = session.get(f"{api_url}/curation/v1/datasets?analysis=post-analysis", headers=headers_curation)
     assertStatusCode(200, res)
-    returned_ids = [d["dataset_id"] for d in res.json()]
-    assert dataset_id not in returned_ids, "Pre-analysis dataset unexpectedly found in ?analysis=post-analysis results"
+    assert dataset_id not in [d["dataset_id"] for d in res.json()]
