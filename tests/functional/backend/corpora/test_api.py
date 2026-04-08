@@ -1,4 +1,3 @@
-import base64
 import json
 
 import pytest
@@ -14,7 +13,11 @@ from tests.functional.backend.constants import (
     VISIUM_DATASET_URI,
 )
 from tests.functional.backend.skip_reason import skip_creation_on_prod
-from tests.functional.backend.utils import _wait_for_dataset_status, assertStatusCode, create_test_collection
+from tests.functional.backend.utils import (
+    assertStatusCode,
+    create_test_collection,
+    wait_for_dataset_processing_via_curation_api,
+)
 
 
 @skip_creation_on_prod
@@ -449,7 +452,6 @@ def test_get_datasets_includes_is_pre_analysis_field(session, api_url):
 def test_pre_analysis_dataset_upload_and_process(
     session,
     api_url,
-    curator_cookie,
     curation_api_access_token,
     request,
 ):
@@ -458,20 +460,14 @@ def test_pre_analysis_dataset_upload_and_process(
     pipeline completes (CXG conversion is skipped) and all API responses reflect
     is_pre_analysis=True.
 
-    Collection creation uses the functest user's Bearer token (decoded from
-    curator_cookie) so that curator_cookie can poll GET /dp/v1/datasets/{id}/status,
-    which only accepts cookie auth and requires the requesting user to be the owner.
+    Everything uses the curation Bearer token — the same path a real API user takes.
+    Status is polled via GET /curation/v1/collections/{id} (processing_status field)
+    rather than the dp/v1 status endpoint, which is cookie-only and unavailable to
+    Bearer-token callers.
     """
-    # dp/v1 status endpoint only accepts cookie auth, so the collection must be owned
-    # by the same identity as curator_cookie (the functest user).  Decode the cookie
-    # to get the functest user's Bearer token for the curation API collection creation.
-    functest_access_token = json.loads(base64.b64decode(curator_cookie + "=="))["access_token"]
-    headers_functest = {"Authorization": f"Bearer {functest_access_token}", "Content-Type": "application/json"}
-    headers_curation = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
-    headers_dp = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
+    headers = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
 
-    # Create a pre-analysis collection as the functest user via the Curation API
-    # (dp/v1 doesn't support is_pre_analysis).
+    # Create a pre-analysis collection.
     res = session.post(
         f"{api_url}/curation/v1/collections",
         data=json.dumps(
@@ -483,39 +479,32 @@ def test_pre_analysis_dataset_upload_and_process(
                 "is_pre_analysis": True,
             }
         ),
-        headers=headers_functest,
+        headers=headers,
     )
     assertStatusCode(requests.codes.created, res)
     collection_id = res.json()["collection_id"]
-    request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/collections/{collection_id}", headers=headers_dp))
+    request.addfinalizer(lambda: session.delete(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers))
 
-    # Create a dataset slot and submit the manifest (super curator token).
-    res = session.post(f"{api_url}/curation/v1/collections/{collection_id}/datasets", headers=headers_curation)
+    # Create a dataset slot and submit the manifest.
+    res = session.post(f"{api_url}/curation/v1/collections/{collection_id}/datasets", headers=headers)
     assertStatusCode(201, res)
     dataset_id = res.json()["dataset_id"]
-    request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/datasets/{dataset_id}", headers=headers_dp))
 
     res = session.put(
         f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
         data=json.dumps(PRE_ANALYSIS_DATASET_MANIFEST),
-        headers=headers_curation,
+        headers=headers,
     )
     assertStatusCode(202, res)
 
-    # Resolve the version ID used by the status-polling endpoint.
-    res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers_curation)
-    assertStatusCode(200, res)
-    version_id = next(d["dataset_version_id"] for d in res.json()["datasets"] if d["dataset_id"] == dataset_id)
-
-    # Poll status with curator_cookie — the functest user owns the collection so this works.
-    # Pre-analysis datasets skip CXG; _wait_for_dataset_status handles cxg_status=SKIPPED.
-    result = _wait_for_dataset_status(session, api_url, version_id, headers_dp)
+    # Wait for processing via the curation API (Bearer-token-accessible).
+    result = wait_for_dataset_processing_via_curation_api(
+        session, api_url, curation_api_access_token, collection_id, dataset_id
+    )
     assert not result["errors"], f"Pre-analysis dataset processing failed: {result['errors']}"
 
-    dataset_id = result["dataset_id"]
-
     # Verify is_pre_analysis on the collection and dataset responses.
-    res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers_curation)
+    res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers)
     assertStatusCode(200, res)
     collection_data = res.json()
     assert collection_data.get("is_pre_analysis") is True
@@ -524,16 +513,16 @@ def test_pre_analysis_dataset_upload_and_process(
 
     res = session.get(
         f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}",
-        headers=headers_curation,
+        headers=headers,
     )
     assertStatusCode(200, res)
     assert res.json().get("is_pre_analysis") is True
 
     # Verify the dataset index filters work correctly.
-    res = session.get(f"{api_url}/curation/v1/datasets?analysis=pre-analysis", headers=headers_curation)
+    res = session.get(f"{api_url}/curation/v1/datasets?analysis=pre-analysis", headers=headers)
     assertStatusCode(200, res)
     assert dataset_id in [d["dataset_id"] for d in res.json()]
 
-    res = session.get(f"{api_url}/curation/v1/datasets?analysis=post-analysis", headers=headers_curation)
+    res = session.get(f"{api_url}/curation/v1/datasets?analysis=post-analysis", headers=headers)
     assertStatusCode(200, res)
     assert dataset_id not in [d["dataset_id"] for d in res.json()]
