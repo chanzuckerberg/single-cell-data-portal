@@ -107,7 +107,15 @@ class ProcessMain(ProcessingLogic):
         Gets called by the step function at every different step, as defined by `step_name`
         """
         self.logger.info(f"Processing dataset version {dataset_version_id}", extra={"step_name": step_name})
-        is_pre_analysis = manifest.is_pre_analysis if manifest is not None else False
+        if manifest is not None:
+            is_pre_analysis = manifest.is_pre_analysis
+        elif collection_version_id is not None:
+            # The add_labels step does not receive MANIFEST in the step function definition,
+            # so fall back to reading is_pre_analysis from the collection in the DB.
+            _cv = self.business_logic.get_collection_version(collection_version_id)
+            is_pre_analysis = _cv.is_pre_analysis if _cv is not None else False
+        else:
+            is_pre_analysis = False
         try:
             if step_name == "validate_anndata":
                 self.process_validate_h5ad.process(dataset_version_id, manifest, artifact_bucket)
