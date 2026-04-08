@@ -519,10 +519,11 @@ def test_pre_analysis_dataset_upload_and_process(
     assert res.json().get("is_pre_analysis") is True
 
     # Verify the dataset index filters work correctly.
-    res = session.get(f"{api_url}/curation/v1/datasets?analysis=pre-analysis", headers=headers)
+    # The collection is still private (unpublished), so visibility=PRIVATE is required.
+    res = session.get(f"{api_url}/curation/v1/datasets?analysis=pre-analysis&visibility=PRIVATE", headers=headers)
     assertStatusCode(200, res)
     assert dataset_id in [d["dataset_id"] for d in res.json()]
 
-    res = session.get(f"{api_url}/curation/v1/datasets?analysis=post-analysis", headers=headers)
+    res = session.get(f"{api_url}/curation/v1/datasets?analysis=post-analysis&visibility=PRIVATE", headers=headers)
     assertStatusCode(200, res)
     assert dataset_id not in [d["dataset_id"] for d in res.json()]
