@@ -128,6 +128,8 @@ class ProcessAddLabels(ProcessingLogic):
 
         def _get_term_pairs(base_term) -> List[OntologyTermId]:
             base_term_id = base_term + "_ontology_term_id"
+            if base_term not in adata.obs.columns or base_term_id not in adata.obs.columns:
+                return []
             return [
                 OntologyTermId(label=k[0], ontology_term_id=k[1])
                 for k in adata.obs.groupby([base_term, base_term_id]).groups
