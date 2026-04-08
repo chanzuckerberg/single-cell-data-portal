@@ -461,30 +461,30 @@ def test_pre_analysis_dataset_upload_and_process(
     pipeline completes (CXG conversion is skipped) and all API responses reflect
     is_pre_analysis=True.
 
-    Everything uses the curation Bearer token — the same path a real API user takes.
+    The collection is created via the dp/v1 endpoint (cookie auth) so that the same
+    user can later publish it.  Dataset upload uses the curation Bearer token.
     Status is polled via GET /curation/v1/collections/{id} (processing_status field)
     rather than the dp/v1 status endpoint, which is cookie-only and unavailable to
     Bearer-token callers.
     """
     headers = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
+    headers_dp = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
 
-    # Create a pre-analysis collection.
-    res = session.post(
-        f"{api_url}/curation/v1/collections",
-        data=json.dumps(
-            {
-                "contact_email": "functest@example.com",
-                "contact_name": "Func Test",
-                "description": "pre-analysis upload functional test",
-                "name": "test_pre_analysis_dataset_upload_and_process",
-                "is_pre_analysis": True,
-            }
-        ),
-        headers=headers,
+    # Create a pre-analysis collection via dp/v1 (cookie auth) so we can publish later.
+    collection_id = create_test_collection(
+        headers_dp,
+        request,
+        session,
+        api_url,
+        {
+            "contact_email": "functest@example.com",
+            "contact_name": "Func Test",
+            "curator_name": "Func Test",
+            "description": "pre-analysis upload functional test",
+            "name": "test_pre_analysis_dataset_upload_and_process",
+            "is_pre_analysis": True,
+        },
     )
-    assertStatusCode(requests.codes.created, res)
-    collection_id = res.json()["collection_id"]
-    request.addfinalizer(lambda: session.delete(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers))
 
     # Create a dataset slot and submit the manifest.
     res = session.post(f"{api_url}/curation/v1/collections/{collection_id}/datasets", headers=headers)
@@ -530,7 +530,6 @@ def test_pre_analysis_dataset_upload_and_process(
     assert dataset_id not in [d["dataset_id"] for d in res.json()]
 
     # Publish the collection, then verify the public analysis filter works without visibility=PRIVATE.
-    headers_dp = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
     res = session.post(
         f"{api_url}/dp/v1/collections/{collection_id}/publish", headers=headers_dp, data=json.dumps(body)

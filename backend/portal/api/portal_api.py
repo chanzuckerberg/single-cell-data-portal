@@ -408,7 +408,9 @@ def create_collection(body: dict, user: str):
     )
 
     try:
-        version = get_business_logic().create_collection(user, curator_name, metadata)
+        version = get_business_logic().create_collection(
+            user, curator_name, metadata, is_pre_analysis=body.get("is_pre_analysis", False)
+        )
     except (InvalidMetadataException, CollectionCreationException) as ex:
         raise InvalidParametersHTTPException(detail=ex.errors) from None
 
