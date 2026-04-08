@@ -1,0 +1,12 @@
+INFO     backend.layers.business.business:business.py:618 {'message': 'ingesting dataset', 'collection_version_id': 8a3b973b-1956-4f82-bb6d-c61886c97aba, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, is_pre_analysis=False), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:618 {'message': 'ingesting dataset', 'collection_version_id': 8a3b973b-1956-4f82-bb6d-c61886c97aba, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, is_pre_analysis=False), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:1121 {'message': 'Deleting dataset versions', 'dataset_version_ids': []}
+INFO     backend.layers.business.business:business.py:1146 {'message': 'Deleting dataset version artifacts', 'artifacts_to_delete': []}
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [30ae3bf1-fe1c-4ef7-bc75-4f74cdf48185/atac_fragment] to s3://datasets/f2ccbf64-3bd2-4672-9cf8-bcd5b3049d79-fragment.tsv.bgz
+INFO     processing:process_validate_atac.py:67 Updated database with atac_fragment.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:65 Uploaded [30ae3bf1-fe1c-4ef7-bc75-4f74cdf48185/atac_index] to s3://datasets/f2ccbf64-3bd2-4672-9cf8-bcd5b3049d79-fragment.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:67 Updated database with atac_index.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:224 Processing completed successfully
