@@ -106,7 +106,7 @@ const Collection: FC = () => {
   // when React Query is fetching cached `collection` and its outdated
   // `datasets`
   const isPublishable =
-    getIsPublishable(datasets) &&
+    getIsPublishable(datasets, collection.is_pre_analysis) &&
     !isUploadingLink &&
     !isFetching &&
     revisionIsPublishable(collection, isCurator);

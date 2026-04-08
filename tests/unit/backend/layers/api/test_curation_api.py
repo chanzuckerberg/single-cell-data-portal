@@ -297,6 +297,7 @@ class TestGetCollections(BaseAPIPortalTest):
         self.expected_dataset_columns = EntityColumns.dataset_metadata_preview_cols + [
             "dataset_id",
             "dataset_version_id",
+            "is_pre_analysis",
         ]
         self.expected_collection_columns = EntityColumns.collections_cols.copy()
         self.expected_collection_columns.remove("tombstone")
@@ -686,6 +687,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 "dataset_id": dataset.dataset_id.id,
                 "dataset_version_id": dataset.version_id.id,
                 "tombstone": False,
+                "is_pre_analysis": False,
                 "assets": [  # Filter out disallowed file types + properly construct url
                     {
                         "filesize": -1,
@@ -712,6 +714,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 "collection_version_id": collection_version.version_id.id,
                 "datasets": [expect_dataset],
                 "doi": None,
+                "is_pre_analysis": False,
                 "links": links,
                 "publisher_metadata": None,
                 "revision_of": None,
@@ -1047,6 +1050,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
                     "feature_biotype": ["gene"],
                     "feature_count": 400,
                     "feature_reference": ["NCBITaxon:9606"],
+                    "is_pre_analysis": False,
                     "is_primary_data": [True, False],
                     "mean_genes_per_cell": 0.5,
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
@@ -1075,6 +1079,7 @@ class TestGetCollectionVersionID(BaseAPIPortalTest):
             ],
             "description": "described",
             "doi": None,
+            "is_pre_analysis": False,
             "links": [],
             "name": "test_collection",
             "publisher_metadata": None,
@@ -3189,3 +3194,186 @@ class TestAuthToken(BaseAPIPortalTest):
         user_api_key = generate(test_user_id, test_secret)
         response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key})
         self.assertEqual(401, response.status_code)
+
+
+class TestPostCollectionIsPreAnalysis(BaseAPIPortalTest):
+    """Tests for the is_pre_analysis field on POST /v1/collections."""
+
+    def setUp(self):
+        super().setUp()
+        self.base_collection = dict(
+            name="collection",
+            description="description",
+            contact_name="john doe",
+            contact_email="johndoe@email.com",
+        )
+
+    def test__post_collection__is_pre_analysis_defaults_false(self):
+        """Creating a collection without is_pre_analysis sets it to False."""
+        response = self.app.post(
+            "/curation/v1/collections",
+            headers=self.make_owner_header(),
+            data=json.dumps(self.base_collection),
+        )
+        self.assertEqual(201, response.status_code)
+        collection_id = response.json["collection_id"]
+        version = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+        self.assertFalse(version.is_pre_analysis)
+
+    def test__post_collection__is_pre_analysis_true(self):
+        """Creating a collection with is_pre_analysis=True stores the flag correctly."""
+        body = {**self.base_collection, "is_pre_analysis": True}
+        response = self.app.post(
+            "/curation/v1/collections",
+            headers=self.make_owner_header(),
+            data=json.dumps(body),
+        )
+        self.assertEqual(201, response.status_code)
+        collection_id = response.json["collection_id"]
+        version = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+        self.assertTrue(version.is_pre_analysis)
+
+    def test__get_collection__includes_is_pre_analysis(self):
+        """GET /v1/collections/{id} returns is_pre_analysis in the response."""
+        body = {**self.base_collection, "is_pre_analysis": True}
+        post_resp = self.app.post(
+            "/curation/v1/collections",
+            headers=self.make_owner_header(),
+            data=json.dumps(body),
+        )
+        collection_id = post_resp.json["collection_id"]
+        response = self.app.get(
+            f"/curation/v1/collections/{collection_id}",
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertIn("is_pre_analysis", response.json)
+        self.assertTrue(response.json["is_pre_analysis"])
+
+    def test__get_collection__is_pre_analysis_false_by_default(self):
+        """GET response includes is_pre_analysis=False for collections created without the flag."""
+        post_resp = self.app.post(
+            "/curation/v1/collections",
+            headers=self.make_owner_header(),
+            data=json.dumps(self.base_collection),
+        )
+        collection_id = post_resp.json["collection_id"]
+        response = self.app.get(
+            f"/curation/v1/collections/{collection_id}",
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertIn("is_pre_analysis", response.json)
+        self.assertFalse(response.json["is_pre_analysis"])
+
+
+class TestPatchCollectionIsPreAnalysis(BaseAPIPortalTest):
+    """Tests that PATCH /v1/collections/{id} rejects is_pre_analysis updates."""
+
+    def test__patch_collection__rejects_is_pre_analysis(self):
+        """Attempting to update is_pre_analysis via PATCH returns 405."""
+        collection_id = self.generate_unpublished_collection().collection_id
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            headers=self.make_owner_header(),
+            data=json.dumps({"is_pre_analysis": True}),
+        )
+        self.assertEqual(405, response.status_code)
+
+    def test__patch_collection__name_update_without_is_pre_analysis_ok(self):
+        """PATCH without is_pre_analysis still works normally."""
+        collection_id = self.generate_unpublished_collection().collection_id
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            headers=self.make_owner_header(),
+            data=json.dumps({"name": "new name"}),
+        )
+        self.assertEqual(200, response.status_code)
+
+
+class TestDatasetsIndexIsPreAnalysis(BaseAPIPortalTest):
+    """Tests for the analysis query parameter on GET /v1/datasets."""
+
+    def _make_pre_analysis_collection(self, add_datasets=1):
+        """Helper: create and publish a pre-analysis collection."""
+        body = dict(
+            name="pre-analysis coll",
+            description="desc",
+            contact_name="Jane",
+            contact_email="jane@example.com",
+            is_pre_analysis=True,
+        )
+        resp = self.app.post(
+            "/curation/v1/collections",
+            headers=self.make_owner_header(),
+            data=json.dumps(body),
+        )
+        collection_id = CollectionId(resp.json["collection_id"])
+        version = self.business_logic.get_collection_version_from_canonical(collection_id)
+        for _ in range(add_datasets):
+            self.generate_dataset(collection_version=version)
+        self.business_logic.publish_collection_version(version.version_id)
+        return self.business_logic.get_collection_version(version.version_id)
+
+    def test__get_datasets__no_analysis_filter_returns_all(self):
+        """Without the analysis param, all public datasets are returned."""
+        pre = self._make_pre_analysis_collection(add_datasets=1)
+        post = self.generate_published_collection(add_datasets=1)
+        response = self.app.get("/curation/v1/datasets")
+        self.assertEqual(200, response.status_code)
+        dataset_ids = {d["dataset_id"] for d in response.json}
+        self.assertIn(pre.datasets[0].dataset_id.id, dataset_ids)
+        self.assertIn(post.datasets[0].dataset_id.id, dataset_ids)
+
+    def test__get_datasets__pre_analysis_filter(self):
+        """analysis=pre-analysis returns only datasets from pre-analysis collections."""
+        pre = self._make_pre_analysis_collection(add_datasets=1)
+        self.generate_published_collection(add_datasets=1)
+        response = self.app.get("/curation/v1/datasets?analysis=pre-analysis")
+        self.assertEqual(200, response.status_code)
+        dataset_ids = {d["dataset_id"] for d in response.json}
+        self.assertIn(pre.datasets[0].dataset_id.id, dataset_ids)
+        for d in response.json:
+            self.assertTrue(d["is_pre_analysis"])
+
+    def test__get_datasets__post_analysis_filter(self):
+        """analysis=post-analysis returns only datasets from non-pre-analysis collections."""
+        self._make_pre_analysis_collection(add_datasets=1)
+        post = self.generate_published_collection(add_datasets=1)
+        response = self.app.get("/curation/v1/datasets?analysis=post-analysis")
+        self.assertEqual(200, response.status_code)
+        dataset_ids = {d["dataset_id"] for d in response.json}
+        self.assertIn(post.datasets[0].dataset_id.id, dataset_ids)
+        for d in response.json:
+            self.assertFalse(d["is_pre_analysis"])
+
+    def test__get_datasets__invalid_analysis_filter_400(self):
+        """Invalid analysis param returns 400."""
+        response = self.app.get("/curation/v1/datasets?analysis=invalid")
+        self.assertEqual(400, response.status_code)
+
+    def test__get_datasets__is_pre_analysis_in_response(self):
+        """Each dataset in the response has an is_pre_analysis field."""
+        self.generate_published_collection(add_datasets=1)
+        response = self.app.get("/curation/v1/datasets")
+        self.assertEqual(200, response.status_code)
+        for dataset in response.json:
+            self.assertIn("is_pre_analysis", dataset)
+
+    def test__get_dataset_in_collection__is_pre_analysis_in_response(self):
+        """GET /v1/collections/{id}/datasets/{id} includes is_pre_analysis."""
+        dataset = self.generate_dataset()
+        url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}"
+        response = self.app.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertIn("is_pre_analysis", response.json)
+        self.assertFalse(response.json["is_pre_analysis"])
+
+    def test__get_dataset_in_pre_analysis_collection__is_pre_analysis_true(self):
+        """Dataset from a pre-analysis collection has is_pre_analysis=True."""
+        pre = self._make_pre_analysis_collection(add_datasets=1)
+        dataset = pre.datasets[0]
+        url = f"/curation/v1/collections/{pre.collection_id.id}/datasets/{dataset.dataset_id.id}"
+        response = self.app.get(url)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(response.json["is_pre_analysis"])

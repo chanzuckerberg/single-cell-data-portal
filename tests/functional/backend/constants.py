@@ -19,8 +19,11 @@ DATASET_URI = "https://www.dropbox.com/scl/fi/l18zfx8i45j90xejip6qk/example_vali
 
 VISIUM_DATASET_URI = "https://www.dropbox.com/scl/fi/a871dhnoqzzhkqz0pr3fj/small_visium.h5ad?rlkey=8zv1m79p4lnaqr60nl6hi6yai&st=ibim78id&dl=0"
 
+PRE_ANALYSIS_DATASET_URI = "https://www.dropbox.com/scl/fi/73zdzk3ua5vgcamhqdemx/example_pre_analysis.h5ad?rlkey=brs9qu87n6j48q55o4ymqc7l2&st=2e4rdt1z&dl=0"
+
 DATASET_MANIFEST = {"anndata": DATASET_URI}
 VISIUM_DATASET_MANIFEST = {"anndata": VISIUM_DATASET_URI}
+PRE_ANALYSIS_DATASET_MANIFEST = {"anndata": PRE_ANALYSIS_DATASET_URI, "is_pre_analysis": True}
 ATAC_SEQ_MANIFEST = {
     "anndata": "https://www.dropbox.com/scl/fi/1h9d1usgobiqgnin4s6ld/atac.h5ad?rlkey=o3aokwmez6a8tdip5p4vybv8a&st=nkamyl1n&dl=0",
     "atac_fragment": "https://www.dropbox.com/scl/fi/nexccttzlzwr3lt0oe7eq/fragments_sorted.tsv.gz?rlkey=wrajzdz0f1g5gpx4m1vwmvcfh&st=s3hbbajy&dl=0",

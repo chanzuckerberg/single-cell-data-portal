@@ -733,6 +733,18 @@ paths:
       parameters:
         - $ref: "#/components/parameters/schema_version"
         - $ref: "#/components/parameters/dataset_visibility"
+        - name: analysis
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - pre-analysis
+              - post-analysis
+          description: |
+            Filter datasets by analysis type.
+            - `pre-analysis`: return only datasets belonging to collections where `is_pre_analysis` is True.
+            - `post-analysis`: return only datasets belonging to collections where `is_pre_analysis` is False.
       responses:
         "200":
           description: OK
@@ -847,7 +859,7 @@ components:
           $ref: "#/components/schemas/collection_id"
         collection_url:
           description: |
-            The CELLxGENE Discover URL for the Collection. This points to the canonical link unless it's a revision, 
+            The CELLxGENE Discover URL for the Collection. This points to the canonical link unless it's a revision,
             in which case it points to the unpublished revision version.
           type: string
         collection_version_id:
@@ -871,6 +883,8 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
+        is_pre_analysis:
+          $ref: "#/components/schemas/is_pre_analysis"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -893,6 +907,13 @@ components:
     collection_url:
       description: The CELLxGENE Discover URL for the Collection.
       type: string
+    is_pre_analysis:
+      description: |
+        Indicates whether this Collection contains pre-analysis datasets. When True, the CXG conversion
+        step is skipped and the pre-analysis flag is passed to the validator and label appender.
+        This value is set at collection creation and cannot be changed afterwards.
+      type: boolean
+      default: false
     consortia:
       type: array
       items:
@@ -987,6 +1008,8 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
+        is_pre_analysis:
+          $ref: "#/components/schemas/is_pre_analysis"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -1034,6 +1057,8 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
+        is_pre_analysis:
+          $ref: "#/components/schemas/is_pre_analysis"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -1057,6 +1082,8 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
+        is_pre_analysis:
+          $ref: "#/components/schemas/is_pre_analysis"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -1125,6 +1152,8 @@ components:
           $ref: "#/components/schemas/feature_count"
         feature_reference:
           $ref: "#/components/schemas/feature_reference"
+        is_pre_analysis:
+          $ref: "#/components/schemas/is_pre_analysis"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         mean_genes_per_cell:
@@ -1233,6 +1262,8 @@ components:
           $ref: "#/components/schemas/donor_id"
         explorer_url:
           $ref: "#/components/schemas/explorer_url"
+        is_pre_analysis:
+          $ref: "#/components/schemas/is_pre_analysis"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         mean_genes_per_cell:

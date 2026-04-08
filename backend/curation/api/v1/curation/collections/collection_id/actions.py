@@ -51,6 +51,9 @@ def get(collection_id: str, token_info: dict) -> Response:
 def patch(collection_id: str, body: dict, token_info: dict) -> Response:
     user_info = UserInfo(token_info)
 
+    if "is_pre_analysis" in body:
+        raise MethodNotAllowedException(detail="'is_pre_analysis' cannot be modified after collection creation.")
+
     if "links" in body and not body["links"]:
         raise InvalidParametersHTTPException(detail="If provided, the 'links' array may not be empty")
 

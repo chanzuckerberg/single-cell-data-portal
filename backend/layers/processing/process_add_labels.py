@@ -58,17 +58,22 @@ class ProcessAddLabels(ProcessingLogic):
 
     @logit
     def add_labels(
-        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, local_filename: str
+        self,
+        collection_version_id: CollectionVersionId,
+        dataset_version_id: DatasetVersionId,
+        local_filename: str,
+        is_pre_analysis: bool = False,
     ) -> str:
         """
         labels the specified dataset file and updates the processing status in the database
         :param dataset_version_id: version ID of the dataset to update
         :param collection_version_id: version ID of the collection dataset is being uploaded to
         :param local_filename: file name of the dataset to validate and label
+        :param is_pre_analysis: whether to apply pre-analysis label rules
         :return: file name of labeled dataset, boolean indicating if seurat conversion is possible
         """
         output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
-        self.schema_validator.add_labels(local_filename, output_filename)
+        self.schema_validator.add_labels(local_filename, output_filename, is_pre_analysis=is_pre_analysis)
         self.populate_dataset_citation(collection_version_id, dataset_version_id, output_filename)
         self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
         return output_filename
@@ -123,6 +128,8 @@ class ProcessAddLabels(ProcessingLogic):
 
         def _get_term_pairs(base_term) -> List[OntologyTermId]:
             base_term_id = base_term + "_ontology_term_id"
+            if base_term not in adata.obs.columns or base_term_id not in adata.obs.columns:
+                return []
             return [
                 OntologyTermId(label=k[0], ontology_term_id=k[1])
                 for k in adata.obs.groupby([base_term, base_term_id]).groups
@@ -198,6 +205,7 @@ class ProcessAddLabels(ProcessingLogic):
         dataset_version_id: DatasetVersionId,
         artifact_bucket: str,
         datasets_bucket: str,
+        is_pre_analysis: bool = False,
     ):
         """
         1. Download the original dataset from URI
@@ -208,6 +216,7 @@ class ProcessAddLabels(ProcessingLogic):
         :param dataset_version_id:
         :param artifact_bucket:
         :param datasets_bucket:
+        :param is_pre_analysis: whether to apply pre-analysis label rules
         :return:
         """
         self.update_processing_status(dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID)
@@ -220,7 +229,10 @@ class ProcessAddLabels(ProcessingLogic):
         # label the dataset
         try:
             file_with_labels = self.add_labels(
-                collection_version_id, dataset_version_id, original_h5ad_artifact_file_name
+                collection_version_id,
+                dataset_version_id,
+                original_h5ad_artifact_file_name,
+                is_pre_analysis=is_pre_analysis,
             )
         except Exception as e:
             self.logger.exception(f"An unexpected error occurred while adding labels to the data set: {e}")
