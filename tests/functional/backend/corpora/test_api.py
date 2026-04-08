@@ -1,3 +1,4 @@
+import base64
 import json
 
 import pytest
@@ -448,6 +449,7 @@ def test_get_datasets_includes_is_pre_analysis_field(session, api_url):
 def test_pre_analysis_dataset_upload_and_process(
     session,
     api_url,
+    curator_cookie,
     curation_api_access_token,
     request,
 ):
@@ -456,13 +458,20 @@ def test_pre_analysis_dataset_upload_and_process(
     pipeline completes (CXG conversion is skipped) and all API responses reflect
     is_pre_analysis=True.
 
-    All steps use the curation Bearer token so that the collection owner matches
-    the identity used for status polling (avoiding 403s from upload_manifest's
-    curator_cookie status check).
+    Collection creation uses the functest user's Bearer token (decoded from
+    curator_cookie) so that curator_cookie can poll GET /dp/v1/datasets/{id}/status,
+    which only accepts cookie auth and requires the requesting user to be the owner.
     """
+    # dp/v1 status endpoint only accepts cookie auth, so the collection must be owned
+    # by the same identity as curator_cookie (the functest user).  Decode the cookie
+    # to get the functest user's Bearer token for the curation API collection creation.
+    functest_access_token = json.loads(base64.b64decode(curator_cookie + "=="))["access_token"]
+    headers_functest = {"Authorization": f"Bearer {functest_access_token}", "Content-Type": "application/json"}
     headers_curation = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
+    headers_dp = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
 
-    # Create a pre-analysis collection via the Curation API (dp/v1 doesn't support is_pre_analysis).
+    # Create a pre-analysis collection as the functest user via the Curation API
+    # (dp/v1 doesn't support is_pre_analysis).
     res = session.post(
         f"{api_url}/curation/v1/collections",
         data=json.dumps(
@@ -474,23 +483,17 @@ def test_pre_analysis_dataset_upload_and_process(
                 "is_pre_analysis": True,
             }
         ),
-        headers=headers_curation,
+        headers=headers_functest,
     )
     assertStatusCode(requests.codes.created, res)
     collection_id = res.json()["collection_id"]
-    request.addfinalizer(
-        lambda: session.delete(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers_curation)
-    )
+    request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/collections/{collection_id}", headers=headers_dp))
 
-    # Create a dataset slot and submit the manifest.
+    # Create a dataset slot and submit the manifest (super curator token).
     res = session.post(f"{api_url}/curation/v1/collections/{collection_id}/datasets", headers=headers_curation)
     assertStatusCode(201, res)
     dataset_id = res.json()["dataset_id"]
-    request.addfinalizer(
-        lambda: session.delete(
-            f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}", headers=headers_curation
-        )
-    )
+    request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/datasets/{dataset_id}", headers=headers_dp))
 
     res = session.put(
         f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
@@ -504,9 +507,9 @@ def test_pre_analysis_dataset_upload_and_process(
     assertStatusCode(200, res)
     version_id = next(d["dataset_version_id"] for d in res.json()["datasets"] if d["dataset_id"] == dataset_id)
 
-    # Wait for the pipeline to finish using the same Bearer token throughout.
+    # Poll status with curator_cookie — the functest user owns the collection so this works.
     # Pre-analysis datasets skip CXG; _wait_for_dataset_status handles cxg_status=SKIPPED.
-    result = _wait_for_dataset_status(session, api_url, version_id, headers_curation)
+    result = _wait_for_dataset_status(session, api_url, version_id, headers_dp)
     assert not result["errors"], f"Pre-analysis dataset processing failed: {result['errors']}"
 
     dataset_id = result["dataset_id"]
