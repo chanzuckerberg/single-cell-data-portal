@@ -1167,6 +1167,8 @@ components:
         organism:
           $ref: "#/components/schemas/dataset_organism"
           nullable: true
+        perturbation_types:
+          $ref: "#/components/schemas/perturbation_types"
         processing_status:
           $ref: "#/components/schemas/processing_status_dataset"
         processing_status_detail:
@@ -1276,6 +1278,8 @@ components:
           type: string
         organism:
           $ref: "#/components/schemas/dataset_organism"
+        perturbation_types:
+          $ref: "#/components/schemas/perturbation_types"
         processing_status:
           $ref: "#/components/schemas/processing_status_dataset"
         processing_status_detail:
@@ -1393,6 +1397,8 @@ components:
         organism:
           $ref: "#/components/schemas/dataset_organism"
           nullable: true
+        perturbation_types:
+          $ref: "#/components/schemas/perturbation_types"
         published_at:
           $ref: "#/components/schemas/dataset_version_published_at"
         raw_data_location:
@@ -1679,6 +1685,16 @@ components:
         published_year:
           type: number
       type: object
+    perturbation_types:
+      description: |
+        List of unique perturbation types present across all observations in the dataset. Values are sourced from
+        obs['perturbation_types'], with 'na' and null values excluded. Items are in ascending lexical order.
+        If the dataset does not contain a 'perturbation_types' obs column, this field is null.
+      type: array
+      items:
+        type: string
+      nullable: true
+      example: ["CRISPR", "ORF"]
     raw_data_location:
       description: Location in dataset's AnnData artifact where raw (i.e. non-normalized) matrix data is stored
       type: string

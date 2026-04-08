@@ -444,6 +444,7 @@ class EntityColumns:
         "donor_id",
         "citation",
         "spatial",
+        "perturbation_types",
     ]
 
     dataset_metadata_cols = [

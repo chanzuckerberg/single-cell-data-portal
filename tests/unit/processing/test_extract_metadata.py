@@ -179,6 +179,8 @@ class TestAddLabels(BaseProcessingTest):
 
         self.assertEqual(extracted_metadata.raw_data_location, "X")
         self.assertEqual(extracted_metadata.spatial, None)
+        # No perturbation_types column in obs → should be None
+        self.assertIsNone(extracted_metadata.perturbation_types)
 
     def test_extract_metadata_organism_uns(self):
         # Same setup as before, but organism terms are in uns instead of obs
@@ -446,6 +448,74 @@ class TestAddLabels(BaseProcessingTest):
         self.assertEqual(extracted_metadata.mean_genes_per_cell, 0)
 
         self.assertEqual(extracted_metadata.raw_data_location, "raw.X")
+
+    def _make_minimal_adata(self, extra_obs_cols=None):
+        """Build a minimal AnnData suitable for extract_metadata tests."""
+        n = 5
+        obs_data = {
+            "tissue": ["lung"] * n,
+            "tissue_ontology_term_id": ["UBERON:01"] * n,
+            "tissue_type": ["tissue"] * n,
+            "assay": ["10x"] * n,
+            "assay_ontology_term_id": ["EFO:001"] * n,
+            "disease": ["healthy"] * n,
+            "disease_ontology_term_id": ["MONDO:123"] * n,
+            "sex": ["male"] * n,
+            "sex_ontology_term_id": ["M"] * n,
+            "self_reported_ethnicity": ["unknown"] * n,
+            "self_reported_ethnicity_ontology_term_id": ["unknown"] * n,
+            "development_stage": ["adult"] * n,
+            "development_stage_ontology_term_id": ["HsapDv:0"] * n,
+            "organism": ["Homo sapiens"] * n,
+            "organism_ontology_term_id": ["NCBITaxon:9606"] * n,
+            "is_primary_data": [True] * n,
+            "cell_type": ["B cell"] * n,
+            "cell_type_ontology_term_id": ["CL:001"] * n,
+            "suspension_type": ["cell"] * n,
+            "donor_id": ["D1"] * n,
+        }
+        if extra_obs_cols:
+            obs_data.update(extra_obs_cols)
+        obs = pandas.DataFrame(obs_data, index=[str(i) for i in range(n)])
+        var = pandas.DataFrame(
+            {"feature_biotype": ["gene"] * 3, "feature_reference": ["NCBITaxon:9606"] * 3},
+            index=["A", "B", "C"],
+        )
+        uns = {"title": "minimal dataset", "schema_version": "3.0.0"}
+        X = from_array(np.ones((n, 3), dtype=int))
+        return anndata.AnnData(X=X, obs=obs, var=var, uns=uns)
+
+    def test_extract_metadata_perturbation_types_with_column(self):
+        """perturbation_types with mixed values: 'na' and None excluded, result sorted lexically."""
+        adata = self._make_minimal_adata(
+            extra_obs_cols={
+                "perturbation_types": ["CRISPR", "na", "ORF", "CRISPR", None],
+            }
+        )
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted = self.pal.extract_metadata(f.name)
+        self.assertEqual(extracted.perturbation_types, ["CRISPR", "ORF"])
+
+    def test_extract_metadata_perturbation_types_without_column(self):
+        """When obs has no perturbation_types column, result is None."""
+        adata = self._make_minimal_adata()
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted = self.pal.extract_metadata(f.name)
+        self.assertIsNone(extracted.perturbation_types)
+
+    def test_extract_metadata_perturbation_types_all_excluded(self):
+        """When all perturbation_types values are 'na' or None, result is an empty list."""
+        adata = self._make_minimal_adata(
+            extra_obs_cols={
+                "perturbation_types": ["na", "na", None, "na", None],
+            }
+        )
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted = self.pal.extract_metadata(f.name)
+        self.assertEqual(extracted.perturbation_types, [])
 
     def test_get_spatial_metadata__is_single_and_fullres_true(self):
         spatial_dict = {
