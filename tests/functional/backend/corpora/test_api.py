@@ -13,7 +13,7 @@ from tests.functional.backend.constants import (
     VISIUM_DATASET_URI,
 )
 from tests.functional.backend.skip_reason import skip_creation_on_prod
-from tests.functional.backend.utils import assertStatusCode, create_test_collection
+from tests.functional.backend.utils import _wait_for_dataset_status, assertStatusCode, create_test_collection
 
 
 @skip_creation_on_prod
@@ -448,17 +448,18 @@ def test_get_datasets_includes_is_pre_analysis_field(session, api_url):
 def test_pre_analysis_dataset_upload_and_process(
     session,
     api_url,
-    curator_cookie,
     curation_api_access_token,
-    upload_manifest,
     request,
 ):
     """
     Upload a pre-analysis h5ad to a pre-analysis collection and verify the full
     pipeline completes (CXG conversion is skipped) and all API responses reflect
     is_pre_analysis=True.
+
+    All steps use the curation Bearer token so that the collection owner matches
+    the identity used for status polling (avoiding 403s from upload_manifest's
+    curator_cookie status check).
     """
-    headers_dp = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
     headers_curation = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
 
     # Create a pre-analysis collection via the Curation API (dp/v1 doesn't support is_pre_analysis).
@@ -477,11 +478,37 @@ def test_pre_analysis_dataset_upload_and_process(
     )
     assertStatusCode(requests.codes.created, res)
     collection_id = res.json()["collection_id"]
-    request.addfinalizer(lambda: session.delete(f"{api_url}/dp/v1/collections/{collection_id}", headers=headers_dp))
+    request.addfinalizer(
+        lambda: session.delete(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers_curation)
+    )
 
-    # Upload the pre-analysis fixture and wait for the pipeline to finish.
-    # _wait_for_dataset_status handles the pre-analysis terminal state (cxg_status=SKIPPED).
-    result = upload_manifest(collection_id, PRE_ANALYSIS_DATASET_MANIFEST)
+    # Create a dataset slot and submit the manifest.
+    res = session.post(f"{api_url}/curation/v1/collections/{collection_id}/datasets", headers=headers_curation)
+    assertStatusCode(201, res)
+    dataset_id = res.json()["dataset_id"]
+    request.addfinalizer(
+        lambda: session.delete(
+            f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}", headers=headers_curation
+        )
+    )
+
+    res = session.put(
+        f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
+        data=json.dumps(PRE_ANALYSIS_DATASET_MANIFEST),
+        headers=headers_curation,
+    )
+    assertStatusCode(202, res)
+
+    # Resolve the version ID used by the status-polling endpoint.
+    res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers_curation)
+    assertStatusCode(200, res)
+    version_id = next(d["dataset_version_id"] for d in res.json()["datasets"] if d["dataset_id"] == dataset_id)
+
+    # Wait for the pipeline to finish using the same Bearer token throughout.
+    # Pre-analysis datasets skip CXG; _wait_for_dataset_status handles cxg_status=SKIPPED.
+    result = _wait_for_dataset_status(session, api_url, version_id, headers_curation)
+    assert not result["errors"], f"Pre-analysis dataset processing failed: {result['errors']}"
+
     dataset_id = result["dataset_id"]
 
     # Verify is_pre_analysis on the collection and dataset responses.
