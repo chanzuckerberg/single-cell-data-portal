@@ -1,1 +1,0 @@
-INFO     backend.layers.business.business:business.py:612 {'message': 'ingesting dataset', 'collection_version_id': 409c9f72-6e45-4390-a4e6-f2a91eb7a27e, 'manifest': IngestionManifest(anndata=HttpUrl('https://dataset_assets_domain/9ffc5b34-d79a-4d66-8e28-c76057ac018c.h5ad'), atac_fragment=None), 'current_dataset_version_id': 9ffc5b34-d79a-4d66-8e28-c76057ac018c}
