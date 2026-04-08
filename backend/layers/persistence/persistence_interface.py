@@ -29,7 +29,7 @@ class PersistenceException(Exception):
 
 class DatabaseProviderInterface:
     def create_canonical_collection(
-        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
+        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata, is_pre_analysis: bool = False
     ) -> CollectionVersion:
         """
         Creates a new canonical collection, generating a canonical collection_id and a new version_id.

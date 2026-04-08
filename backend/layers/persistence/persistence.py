@@ -120,6 +120,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             has_custom_dataset_order=row.has_custom_dataset_order,
             is_auto_version=row.is_auto_version,
             data_submission_policy_version=row.data_submission_policy_version,
+            is_pre_analysis=bool(row.is_pre_analysis) if row.is_pre_analysis is not None else False,
         )
 
     def _row_to_collection_version_with_datasets(
@@ -142,6 +143,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             has_custom_dataset_order=row.has_custom_dataset_order,
             is_auto_version=row.is_auto_version,
             data_submission_policy_version=row.data_submission_policy_version,
+            is_pre_analysis=bool(row.is_pre_analysis) if row.is_pre_analysis is not None else False,
         )
 
     def _row_to_canonical_dataset(self, row: Any):
@@ -226,7 +228,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             )
 
     def create_canonical_collection(
-        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
+        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata, is_pre_analysis: bool = False
     ) -> CollectionVersion:
         """
         Creates a new canonical collection, generating a canonical collection_id and a new version_id.
@@ -253,6 +255,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             has_custom_dataset_order=False,
             is_auto_version=False,
             data_submission_policy_version=None,
+            is_pre_analysis=is_pre_analysis,
         )
 
         with self._manage_session() as session:
@@ -653,6 +656,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 has_custom_dataset_order=current_version.has_custom_dataset_order,
                 is_auto_version=is_auto_version,
                 data_submission_policy_version=None,
+                is_pre_analysis=current_version.is_pre_analysis,
             )
             session.add(new_version)
             return CollectionVersionId(new_version_id)

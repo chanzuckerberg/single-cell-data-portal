@@ -98,8 +98,12 @@ def post(body: dict, token_info: dict):
         body.get("consortia", []),
     )
 
+    is_pre_analysis = body.get("is_pre_analysis", False)
+
     try:
-        version = get_business_logic().create_collection(token_info["sub"], token_info["curator_name"], metadata)
+        version = get_business_logic().create_collection(
+            token_info["sub"], token_info["curator_name"], metadata, is_pre_analysis=is_pre_analysis
+        )
     except InvalidMetadataException as ex:
         errors.extend(ex.errors)
     except CollectionCreationException as ex:

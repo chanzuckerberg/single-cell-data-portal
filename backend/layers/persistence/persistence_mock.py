@@ -65,7 +65,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     # TODO: add publisher_metadata here?
     def create_canonical_collection(
-        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
+        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata, is_pre_analysis: bool = False
     ) -> CollectionVersion:
         collection_id = CollectionId()
         version_id = CollectionVersionId()
@@ -85,6 +85,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             has_custom_dataset_order=False,
             is_auto_version=False,
             data_submission_policy_version=None,
+            is_pre_analysis=is_pre_analysis,
         )
         self.collections_versions[version_id.id] = version
         # Don't set mappings here - those will be set when publishing the collection!
@@ -238,6 +239,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             has_custom_dataset_order=current_version.has_custom_dataset_order,
             is_auto_version=is_auto_version,
             data_submission_policy_version=None,
+            is_pre_analysis=current_version.is_pre_analysis,
         )
         self.collections_versions[new_version_id.id] = collection_version
         return new_version_id

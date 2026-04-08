@@ -162,6 +162,10 @@ resource "aws_sfn_state_machine" "state_machine" {
         "ContainerOverrides": {
           "Environment": [
             {
+              "Name": "MANIFEST",
+              "Value.$": "$.manifest"
+            },
+            {
               "Name": "DATASET_VERSION_ID",
               "Value.$": "$.dataset_version_id"
             },
@@ -214,6 +218,10 @@ resource "aws_sfn_state_machine" "state_machine" {
         "JobQueue.$": "$.job_queue",
         "ContainerOverrides": {
           "Environment": [
+            {
+              "Name": "MANIFEST",
+              "Value.$": "$.manifest"
+            },
             {
               "Name": "DATASET_VERSION_ID",
               "Value.$": "$.dataset_version_id"

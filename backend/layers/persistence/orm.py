@@ -37,6 +37,7 @@ class CollectionVersionTable:
     has_custom_dataset_order = Column(BOOLEAN)
     is_auto_version = Column(BOOLEAN)
     data_submission_policy_version = Column(String)
+    is_pre_analysis = Column(BOOLEAN)
 
 
 @mapper_registry.mapped
