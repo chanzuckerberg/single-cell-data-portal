@@ -306,6 +306,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
 
     # Always return consortia
     response["consortia"] = collection.metadata.consortia
+    response["is_pre_analysis"] = collection.is_pre_analysis
     return response
 
 

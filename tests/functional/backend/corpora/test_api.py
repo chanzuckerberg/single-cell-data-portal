@@ -453,6 +453,7 @@ def test_pre_analysis_dataset_upload_and_process(
     session,
     api_url,
     curation_api_access_token,
+    curator_cookie,
     request,
 ):
     """
@@ -525,5 +526,22 @@ def test_pre_analysis_dataset_upload_and_process(
     assert dataset_id in [d["dataset_id"] for d in res.json()]
 
     res = session.get(f"{api_url}/curation/v1/datasets?analysis=post-analysis&visibility=PRIVATE", headers=headers)
+    assertStatusCode(200, res)
+    assert dataset_id not in [d["dataset_id"] for d in res.json()]
+
+    # Publish the collection, then verify the public analysis filter works without visibility=PRIVATE.
+    headers_dp = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
+    body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
+    res = session.post(
+        f"{api_url}/dp/v1/collections/{collection_id}/publish", headers=headers_dp, data=json.dumps(body)
+    )
+    assertStatusCode(requests.codes.accepted, res)
+
+    # After publishing the collection is public, so the filter should work without visibility=PRIVATE.
+    res = session.get(f"{api_url}/curation/v1/datasets?analysis=pre-analysis", headers=headers)
+    assertStatusCode(200, res)
+    assert dataset_id in [d["dataset_id"] for d in res.json()]
+
+    res = session.get(f"{api_url}/curation/v1/datasets?analysis=post-analysis", headers=headers)
     assertStatusCode(200, res)
     assert dataset_id not in [d["dataset_id"] for d in res.json()]
