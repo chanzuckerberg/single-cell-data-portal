@@ -1,0 +1,2 @@
+INFO     backend.layers.business.business:business.py:618 {'message': 'ingesting dataset', 'collection_version_id': 93d58b6e-ba46-46a2-912a-4104b10dbab9, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, is_pre_analysis=False), 'current_dataset_version_id': None}
+INFO     processing:process.py:109 Processing dataset version 62448844-cb89-4443-89e4-7597c4e08e1a

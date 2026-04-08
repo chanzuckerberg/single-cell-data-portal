@@ -1,2 +1,0 @@
-{"levelname": "ERROR", "asctime": "2026-01-05T17:52:51.005Z", "name": "backend.layers.thirdparty.s3_provider", "message": "", "lineno": 129, "pathname": "/single-cell-data-portal/backend/layers/thirdparty/s3_provider.py", "request_id": "", "errors": ["error"], "bucket_name": "bucket"}
-{"levelname": "ERROR", "asctime": "2026-01-05T17:52:51.005Z", "name": "backend.layers.thirdparty.s3_provider", "message": "", "lineno": 129, "pathname": "/single-cell-data-portal/backend/layers/thirdparty/s3_provider.py", "request_id": "", "errors": ["error"], "bucket_name": "bucket"}
