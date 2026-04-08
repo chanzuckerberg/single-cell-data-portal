@@ -1,3 +1,0 @@
-INFO     backend.layers.business.business:business.py:1586 {'message': 'Restoring previous collection version', 'collection_id': '02b6ee11-9438-4173-b05e-0255072a1072', 'replace_version_id': '4d9aade8-b99f-47f2-8974-151c852a1c0a', 'restored_version_id': '7c4d74ea-d290-4e82-bfc7-ea197b445d50'}
-INFO     backend.layers.business.business:business.py:1110 {'message': 'Deleting dataset versions', 'dataset_version_ids': ['ad8578a3-5dff-449b-8554-f4598bd12876']}
-INFO     backend.layers.business.business:business.py:1135 {'message': 'Deleting dataset version artifacts', 'artifacts_to_delete': []}
