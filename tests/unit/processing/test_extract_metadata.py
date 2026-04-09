@@ -540,9 +540,8 @@ class TestAddLabels(BaseProcessingTest):
     def test_extract_metadata_genetic_perturbation_strategy_no_perturbations_excluded(self):
         """'no perturbations' sentinel values are excluded from the result."""
         adata = self._make_minimal_adata(
-            n=3,
             extra_obs_cols={
-                "genetic_perturbation_strategy": ["CRISPR", "no perturbations", "no perturbations"],
+                "genetic_perturbation_strategy": ["CRISPR", "no perturbations", "no perturbations", "CRISPR", "CRISPR"],
             },
         )
         with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
