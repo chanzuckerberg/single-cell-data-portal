@@ -20,6 +20,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
+    GeneticPerturbationMetadata,
 )
 
 
@@ -297,6 +298,18 @@ class DatabaseProviderInterface:
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         """
         Sets the metadata for a dataset version
+        """
+
+    def set_dataset_genetic_perturbations(
+        self, version_id: DatasetVersionId, genetic_perturbations: Optional[GeneticPerturbationMetadata]
+    ) -> None:
+        """
+        Sets the genetic_perturbations for a dataset version
+        """
+
+    def get_dataset_genetic_perturbations(self, version_id: DatasetVersionId) -> Optional[GeneticPerturbationMetadata]:
+        """
+        Returns the genetic_perturbations for a dataset version, or None if not present
         """
 
     def add_dataset_to_collection_version_mapping(

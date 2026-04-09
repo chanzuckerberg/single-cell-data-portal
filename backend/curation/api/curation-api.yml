@@ -510,6 +510,34 @@ paths:
         "410":
           $ref: "#/components/responses/410"
 
+  /v1/collections/{collection_id}/datasets/{dataset_id}/genetic_perturbations:
+    get:
+      summary: Fetch the full genetic_perturbations dictionary for a Dataset.
+      description: |
+        Returns the complete `uns['genetic_perturbations']` dictionary for the Dataset, keyed by perturbation ID.
+        If the Dataset was not processed from a file containing `uns['genetic_perturbations']`, the
+        `genetic_perturbations` field in the response will be `null`.
+      operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.genetic_perturbations.actions.get
+      tags:
+        - Collection
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+        - $ref: "#/components/parameters/path_dataset_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  genetic_perturbations:
+                    $ref: "#/components/schemas/genetic_perturbations_dict"
+        "404":
+          $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
+
   /v1/collections/{collection_id}/datasets/{dataset_id}/manifest:
     get:
       summary: Get manifest for a dataset
@@ -1695,6 +1723,43 @@ components:
         published_year:
           type: number
       type: object
+    genetic_perturbation_entry:
+      description: |
+        Metadata for a single genetic perturbation, as defined in uns['genetic_perturbations'] per the
+        CELLxGENE schema.
+      type: object
+      properties:
+        role:
+          type: string
+          description: The role of the perturbation (e.g. "KO", "overexpression").
+        protospacer_sequence:
+          type: string
+          nullable: true
+          description: The protospacer sequence for CRISPR-based perturbations.
+        protospacer_adjacent_motif:
+          type: string
+          nullable: true
+          description: The PAM sequence for the protospacer.
+        derived_genomic_regions:
+          type: array
+          items:
+            type: string
+          description: Genomic regions derived from this perturbation.
+        derived_features:
+          type: object
+          additionalProperties:
+            type: string
+          description: Map of feature IDs to feature names derived from this perturbation.
+      required:
+        - role
+    genetic_perturbations_dict:
+      description: |
+        The full uns['genetic_perturbations'] dictionary from the dataset, keyed by perturbation ID.
+        Each value is a genetic_perturbation_entry. Null if the dataset has no genetic perturbations data.
+      nullable: true
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/genetic_perturbation_entry"
     genetic_perturbation_strategy:
       description: |
         List of unique genetic perturbation strategies present across all observations in the dataset. Values are

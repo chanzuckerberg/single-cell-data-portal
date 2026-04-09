@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import h5py
 import numpy
@@ -14,6 +14,7 @@ from backend.layers.common.entities import (
     DatasetStatusKey,
     DatasetValidationStatus,
     DatasetVersionId,
+    GeneticPerturbationMetadata,
     OntologyTermId,
     SpatialMetadata,
     TissueOntologyTermId,
@@ -111,7 +112,7 @@ class ProcessAddLabels(ProcessingLogic):
         return SpatialMetadata(is_single=bool(is_single), has_fullres=has_fullres)
 
     @logit
-    def extract_metadata(self, filename) -> DatasetMetadata:
+    def extract_metadata(self, filename) -> Tuple[DatasetMetadata, Optional[GeneticPerturbationMetadata]]:
         """Pull metadata out of the AnnData file to insert into the dataset table."""
 
         adata = read_h5ad(filename)
@@ -185,7 +186,13 @@ class ProcessAddLabels(ProcessingLogic):
             values = adata.obs["genetic_perturbation_strategy"].dropna().unique()
             return sorted(v for v in values if v not in _excluded)
 
-        return DatasetMetadata(
+        def _get_genetic_perturbation_metadata() -> Optional[GeneticPerturbationMetadata]:
+            gp = adata.uns.get("genetic_perturbations")
+            if gp is None:
+                return None
+            return GeneticPerturbationMetadata.from_dict(dict(gp))
+
+        dataset_metadata = DatasetMetadata(
             name=adata.uns["title"],
             organism=_get_organism_terms(),
             tissue=_get_tissue_terms(),
@@ -215,6 +222,7 @@ class ProcessAddLabels(ProcessingLogic):
             perturbation_types=_get_perturbation_types(),
             genetic_perturbation_strategy=_get_genetic_perturbation_strategy(),
         )
+        return dataset_metadata, _get_genetic_perturbation_metadata()
 
     def process(
         self,
@@ -255,8 +263,9 @@ class ProcessAddLabels(ProcessingLogic):
             self.logger.exception(f"An unexpected error occurred while adding labels to the data set: {e}")
             raise AddLabelsFailed() from e
         # Process metadata
-        metadata = self.extract_metadata(file_with_labels)
+        metadata, gp_metadata = self.extract_metadata(file_with_labels)
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
+        self.business_logic.set_dataset_genetic_perturbations(dataset_version_id, gp_metadata)
         # Upload the labeled dataset to the artifact bucket
         self.create_artifact(
             file_with_labels,

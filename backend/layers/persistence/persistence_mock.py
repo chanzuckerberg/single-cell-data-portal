@@ -23,6 +23,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
+    GeneticPerturbationMetadata,
 )
 from backend.layers.common.helpers import sort_datasets_by_cell_count
 from backend.layers.persistence.persistence import DatabaseProviderInterface
@@ -55,6 +56,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     # Dataset artifacts
     dataset_artifacts: Dict[str, DatasetArtifact]
 
+    # genetic_perturbations keyed by dataset_version_id
+    dataset_genetic_perturbations: Dict[str, Optional[GeneticPerturbationMetadata]]
+
     def __init__(self) -> None:
         super().__init__()
         self.collections = {}  # rename to: active_collections
@@ -62,6 +66,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.datasets = {}  # rename to: active_datasets
         self.datasets_versions = {}
         self.dataset_artifacts = {}
+        self.dataset_genetic_perturbations = {}
 
     # TODO: add publisher_metadata here?
     def create_canonical_collection(
@@ -591,6 +596,14 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         version = self.datasets_versions[version_id.id]
         version.metadata = copy.deepcopy(metadata)
+
+    def set_dataset_genetic_perturbations(
+        self, version_id: DatasetVersionId, genetic_perturbations: Optional[GeneticPerturbationMetadata]
+    ) -> None:
+        self.dataset_genetic_perturbations[version_id.id] = copy.deepcopy(genetic_perturbations)
+
+    def get_dataset_genetic_perturbations(self, version_id: DatasetVersionId) -> Optional[GeneticPerturbationMetadata]:
+        return copy.deepcopy(self.dataset_genetic_perturbations.get(version_id.id))
 
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         dataset_version = self.datasets_versions[version_id.id]

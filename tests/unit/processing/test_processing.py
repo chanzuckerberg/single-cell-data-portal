@@ -72,6 +72,7 @@ class ProcessingTest(BaseProcessingTest):
     @patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg")
     def test_process_anndata(self, mock_cxg, mock_extract_h5ad, mock_dataset_citation):
         mock_cxg.return_value = "local.cxg"
+        mock_extract_h5ad.return_value = (Mock(), None)
 
         dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         manifest = IngestionManifest(anndata=dropbox_uri)
