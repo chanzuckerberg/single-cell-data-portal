@@ -173,8 +173,9 @@ class ProcessAddLabels(ProcessingLogic):
         def _get_perturbation_types() -> Optional[List[str]]:
             if "perturbation_types" not in adata.obs.columns:
                 return None
+            _excluded = {"na", "no perturbations"}
             values = adata.obs["perturbation_types"].dropna().unique()
-            filtered = sorted(v for v in values if v != "na")
+            filtered = sorted(v for v in values if v not in _excluded)
             return filtered if filtered else []
 
         return DatasetMetadata(

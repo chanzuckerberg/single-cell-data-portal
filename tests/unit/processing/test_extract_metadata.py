@@ -486,10 +486,10 @@ class TestAddLabels(BaseProcessingTest):
         return anndata.AnnData(X=X, obs=obs, var=var, uns=uns)
 
     def test_extract_metadata_perturbation_types_with_column(self):
-        """perturbation_types with mixed values: 'na' and None excluded, result sorted lexically."""
+        """perturbation_types with mixed values: excluded sentinels and None dropped, result sorted lexically."""
         adata = self._make_minimal_adata(
             extra_obs_cols={
-                "perturbation_types": ["CRISPR", "na", "ORF", "CRISPR", None],
+                "perturbation_types": ["CRISPR", "na", "ORF", "CRISPR", None, "no perturbations"],
             }
         )
         with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
@@ -506,10 +506,10 @@ class TestAddLabels(BaseProcessingTest):
         self.assertIsNone(extracted.perturbation_types)
 
     def test_extract_metadata_perturbation_types_all_excluded(self):
-        """When all perturbation_types values are 'na' or None, result is an empty list."""
+        """When all perturbation_types values are excluded sentinels or None, result is an empty list."""
         adata = self._make_minimal_adata(
             extra_obs_cols={
-                "perturbation_types": ["na", "na", None, "na", None],
+                "perturbation_types": ["na", "no perturbations", None, "na", None],
             }
         )
         with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
