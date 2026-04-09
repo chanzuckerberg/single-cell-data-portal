@@ -1494,6 +1494,8 @@ components:
           $ref: "#/components/schemas/dataset_id"
         organism:
           $ref: "#/components/schemas/dataset_organism"
+        perturbation_types:
+          $ref: "#/components/schemas/perturbation_types"
         tissue:
           $ref: "#/components/schemas/dataset_tissue"
         suspension_type:
