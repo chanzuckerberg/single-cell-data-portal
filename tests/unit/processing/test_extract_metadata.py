@@ -489,7 +489,7 @@ class TestAddLabels(BaseProcessingTest):
         """perturbation_types with mixed values: excluded sentinels and None dropped, result sorted lexically."""
         adata = self._make_minimal_adata(
             extra_obs_cols={
-                "perturbation_types": ["CRISPR", "na", "ORF", "CRISPR", None, "no perturbations"],
+                "perturbation_types": ["CRISPR", "na", "ORF", "no perturbations", None],
             }
         )
         with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
