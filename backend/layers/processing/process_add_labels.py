@@ -178,6 +178,11 @@ class ProcessAddLabels(ProcessingLogic):
             filtered = sorted(v for v in values if v not in _excluded)
             return filtered if filtered else []
 
+        def _get_genetic_perturbation_strategy() -> Optional[List[str]]:
+            if "genetic_perturbation_strategy" not in adata.obs.columns:
+                return None
+            return sorted(adata.obs["genetic_perturbation_strategy"].dropna().unique())
+
         return DatasetMetadata(
             name=adata.uns["title"],
             organism=_get_organism_terms(),
@@ -206,6 +211,7 @@ class ProcessAddLabels(ProcessingLogic):
             citation=adata.uns.get("citation"),
             spatial=self.get_spatial_metadata(adata.uns["spatial"]) if "spatial" in adata.uns else None,
             perturbation_types=_get_perturbation_types(),
+            genetic_perturbation_strategy=_get_genetic_perturbation_strategy(),
         )
 
     def process(

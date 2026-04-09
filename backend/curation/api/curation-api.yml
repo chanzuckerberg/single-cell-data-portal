@@ -1167,6 +1167,8 @@ components:
         organism:
           $ref: "#/components/schemas/dataset_organism"
           nullable: true
+        genetic_perturbation_strategy:
+          $ref: "#/components/schemas/genetic_perturbation_strategy"
         perturbation_types:
           $ref: "#/components/schemas/perturbation_types"
         processing_status:
@@ -1278,6 +1280,8 @@ components:
           type: string
         organism:
           $ref: "#/components/schemas/dataset_organism"
+        genetic_perturbation_strategy:
+          $ref: "#/components/schemas/genetic_perturbation_strategy"
         perturbation_types:
           $ref: "#/components/schemas/perturbation_types"
         processing_status:
@@ -1397,6 +1401,8 @@ components:
         organism:
           $ref: "#/components/schemas/dataset_organism"
           nullable: true
+        genetic_perturbation_strategy:
+          $ref: "#/components/schemas/genetic_perturbation_strategy"
         perturbation_types:
           $ref: "#/components/schemas/perturbation_types"
         published_at:
@@ -1494,6 +1500,8 @@ components:
           $ref: "#/components/schemas/dataset_id"
         organism:
           $ref: "#/components/schemas/dataset_organism"
+        genetic_perturbation_strategy:
+          $ref: "#/components/schemas/genetic_perturbation_strategy"
         perturbation_types:
           $ref: "#/components/schemas/perturbation_types"
         tissue:
@@ -1687,6 +1695,16 @@ components:
         published_year:
           type: number
       type: object
+    genetic_perturbation_strategy:
+      description: |
+        List of unique genetic perturbation strategies present across all observations in the dataset. Values are
+        sourced from obs['genetic_perturbation_strategy'], with null values excluded. Items are in ascending lexical
+        order. If the dataset does not contain a 'genetic_perturbation_strategy' obs column, this field is null.
+      type: array
+      items:
+        type: string
+      nullable: true
+      example: ["CRISPR", "CRISPRi"]
     perturbation_types:
       description: |
         List of unique perturbation types present across all observations in the dataset. Values are sourced from

@@ -517,6 +517,38 @@ class TestAddLabels(BaseProcessingTest):
             extracted = self.pal.extract_metadata(f.name)
         self.assertEqual(extracted.perturbation_types, [])
 
+    def test_extract_metadata_genetic_perturbation_strategy_with_column(self):
+        """genetic_perturbation_strategy with several values across obs: result is unique, sorted, NaN dropped."""
+        adata = self._make_minimal_adata(
+            extra_obs_cols={
+                "genetic_perturbation_strategy": ["CRISPR", "CRISPRi", "CRISPR", None, "ORF"],
+            }
+        )
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted = self.pal.extract_metadata(f.name)
+        self.assertEqual(extracted.genetic_perturbation_strategy, ["CRISPR", "CRISPRi", "ORF"])
+
+    def test_extract_metadata_genetic_perturbation_strategy_without_column(self):
+        """When obs has no genetic_perturbation_strategy column, result is None."""
+        adata = self._make_minimal_adata()
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted = self.pal.extract_metadata(f.name)
+        self.assertIsNone(extracted.genetic_perturbation_strategy)
+
+    def test_extract_metadata_genetic_perturbation_strategy_all_null(self):
+        """When all genetic_perturbation_strategy values are null, result is an empty list."""
+        adata = self._make_minimal_adata(
+            extra_obs_cols={
+                "genetic_perturbation_strategy": [None, None, None, None, None],
+            }
+        )
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted = self.pal.extract_metadata(f.name)
+        self.assertEqual(extracted.genetic_perturbation_strategy, [])
+
     def test_get_spatial_metadata__is_single_and_fullres_true(self):
         spatial_dict = {
             "is_single": np.bool_(True),

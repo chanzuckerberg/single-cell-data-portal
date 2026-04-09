@@ -291,6 +291,7 @@ def reshape_dataset_for_curation_api(
     ds["dataset_version_id"] = dataset_version.version_id.id
     ds["is_pre_analysis"] = is_pre_analysis
     if dataset_version.metadata is not None:
+        ds["genetic_perturbation_strategy"] = ds.get("genetic_perturbation_strategy")
         ds["perturbation_types"] = ds.get("perturbation_types")
     # Get none preview specific dataset fields
     if not preview:
@@ -426,6 +427,7 @@ class EntityColumns:
         "assay",
         "disease",
         "organism",
+        "genetic_perturbation_strategy",
         "perturbation_types",
         "suspension_type",
     ]
