@@ -226,6 +226,7 @@ class DatasetMetadata:
     primary_cell_count: Optional[int] = None
     spatial: Optional[SpatialMetadata] = None
     perturbation_types: Optional[List[str]] = None
+    genetic_perturbation_strategy: Optional[List[str]] = None
 
 
 @dataclass
