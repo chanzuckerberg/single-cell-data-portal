@@ -226,6 +226,7 @@ class DatasetMetadata:
     raw_data_location: Optional[str] = None
     primary_cell_count: Optional[int] = None
     spatial: Optional[SpatialMetadata] = None
+    perturbation_types: Optional[List[str]] = None
 
 
 @dataclass

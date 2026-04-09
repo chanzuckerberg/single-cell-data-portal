@@ -9,6 +9,7 @@ from tests.functional.backend.constants import (
     ATAC_SEQ_MANIFEST,
     DATASET_MANIFEST,
     DATASET_URI,
+    PERTURBATION_DATASET_MANIFEST,
     PRE_ANALYSIS_DATASET_MANIFEST,
     VISIUM_DATASET_URI,
 )
@@ -544,3 +545,99 @@ def test_pre_analysis_dataset_upload_and_process(
     res = session.get(f"{api_url}/curation/v1/datasets?analysis=post-analysis", headers=headers)
     assertStatusCode(200, res)
     assert dataset_id not in [d["dataset_id"] for d in res.json()]
+
+
+# --- perturbation_types functional tests ---
+
+
+def test_get_datasets_includes_perturbation_types_field(session, api_url):
+    """Every published dataset returned by GET /curation/v1/datasets includes a perturbation_types field."""
+    res = session.get(f"{api_url}/curation/v1/datasets")
+    assertStatusCode(requests.codes.ok, res)
+    for dataset in res.json():
+        assert "perturbation_types" in dataset
+
+
+@skip_creation_on_prod
+def test_perturbation_dataset_upload_and_process(
+    session,
+    api_url,
+    curation_api_access_token,
+    curator_cookie,
+    request,
+):
+    """
+    Upload a perturbation (pre-analysis) h5ad and verify the full pipeline succeeds and
+    perturbation_types is correctly populated and returned by all GET /collection and
+    GET /dataset endpoints.
+    """
+    headers = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
+    headers_dp = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
+
+    collection_id = create_test_collection(
+        headers_dp,
+        request,
+        session,
+        api_url,
+        {
+            "contact_email": "functest@example.com",
+            "contact_name": "Func Test",
+            "curator_name": "Func Test",
+            "description": "perturbation_types functional test",
+            "name": "test_perturbation_dataset_upload_and_process",
+            "is_pre_analysis": True,
+        },
+    )
+
+    # Create dataset slot and submit manifest.
+    res = session.post(f"{api_url}/curation/v1/collections/{collection_id}/datasets", headers=headers)
+    assertStatusCode(201, res)
+    dataset_id = res.json()["dataset_id"]
+
+    res = session.put(
+        f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
+        data=json.dumps(PERTURBATION_DATASET_MANIFEST),
+        headers=headers,
+    )
+    assertStatusCode(202, res)
+
+    result = wait_for_dataset_processing_via_curation_api(
+        session, api_url, curation_api_access_token, collection_id, dataset_id
+    )
+    assert not result["errors"], f"Perturbation dataset processing failed: {result['errors']}"
+
+    # --- Verify GET /curation/v1/collections/{id} ---
+    res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers)
+    assertStatusCode(200, res)
+    collection_data = res.json()
+    dataset_entry = next(d for d in collection_data["datasets"] if d["dataset_id"] == dataset_id)
+    assert "perturbation_types" in dataset_entry
+    assert isinstance(dataset_entry["perturbation_types"], list)
+    assert dataset_entry["perturbation_types"] == sorted(dataset_entry["perturbation_types"])
+
+    # --- Verify GET /curation/v1/collections/{id}/datasets/{id} ---
+    res = session.get(
+        f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}",
+        headers=headers,
+    )
+    assertStatusCode(200, res)
+    dataset_data = res.json()
+    assert "perturbation_types" in dataset_data
+    assert isinstance(dataset_data["perturbation_types"], list)
+    # Values must exclude 'na'/None and be lexically sorted.
+    assert "na" not in dataset_data["perturbation_types"]
+    assert None not in dataset_data["perturbation_types"]
+    assert dataset_data["perturbation_types"] == sorted(dataset_data["perturbation_types"])
+
+    # --- Publish and verify public GET /curation/v1/collections/{id} ---
+    body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
+    res = session.post(
+        f"{api_url}/dp/v1/collections/{collection_id}/publish", headers=headers_dp, data=json.dumps(body)
+    )
+    assertStatusCode(requests.codes.accepted, res)
+
+    res = session.get(f"{api_url}/curation/v1/collections/{collection_id}")
+    assertStatusCode(200, res)
+    public_collection = res.json()
+    public_dataset = next(d for d in public_collection["datasets"] if d["dataset_id"] == dataset_id)
+    assert "perturbation_types" in public_dataset
