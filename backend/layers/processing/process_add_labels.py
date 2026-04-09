@@ -170,6 +170,14 @@ class ProcessAddLabels(ProcessingLogic):
             else:
                 return _get_term_pairs("organism")
 
+        def _get_perturbation_types() -> Optional[List[str]]:
+            if "perturbation_types" not in adata.obs.columns:
+                return None
+            _excluded = {"na", "no perturbations"}
+            values = adata.obs["perturbation_types"].dropna().unique()
+            filtered = sorted(v for v in values if v not in _excluded)
+            return filtered if filtered else []
+
         return DatasetMetadata(
             name=adata.uns["title"],
             organism=_get_organism_terms(),
@@ -197,6 +205,7 @@ class ProcessAddLabels(ProcessingLogic):
             raw_data_location="raw.X" if adata.raw else "X",
             citation=adata.uns.get("citation"),
             spatial=self.get_spatial_metadata(adata.uns["spatial"]) if "spatial" in adata.uns else None,
+            perturbation_types=_get_perturbation_types(),
         )
 
     def process(
