@@ -517,6 +517,38 @@ class TestAddLabels(BaseProcessingTest):
             extracted = self.pal.extract_metadata(f.name)
         self.assertEqual(extracted.perturbation_types, [])
 
+    def test_extract_metadata_genetic_perturbation_strategy_with_column(self):
+        """Unique valid values are returned deduped and in ascending lexical order."""
+        adata = self._make_minimal_adata(
+            extra_obs_cols={
+                "genetic_perturbation_strategy": ["CRISPR", "CRISPRi", "CRISPR", "no perturbations", "ORF"],
+            }
+        )
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted = self.pal.extract_metadata(f.name)
+        self.assertEqual(extracted.genetic_perturbation_strategy, ["CRISPR", "CRISPRi", "ORF"])
+
+    def test_extract_metadata_genetic_perturbation_strategy_without_column(self):
+        """When obs has no genetic_perturbation_strategy column, result is None."""
+        adata = self._make_minimal_adata()
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted = self.pal.extract_metadata(f.name)
+        self.assertIsNone(extracted.genetic_perturbation_strategy)
+
+    def test_extract_metadata_genetic_perturbation_strategy_no_perturbations_excluded(self):
+        """'no perturbations' sentinel values are excluded from the result."""
+        adata = self._make_minimal_adata(
+            extra_obs_cols={
+                "genetic_perturbation_strategy": ["CRISPR", "no perturbations", "no perturbations", "CRISPR", "CRISPR"],
+            },
+        )
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted = self.pal.extract_metadata(f.name)
+        self.assertEqual(extracted.genetic_perturbation_strategy, ["CRISPR"])
+
     def test_get_spatial_metadata__is_single_and_fullres_true(self):
         spatial_dict = {
             "is_single": np.bool_(True),

@@ -641,3 +641,101 @@ def test_perturbation_dataset_upload_and_process(
     public_collection = res.json()
     public_dataset = next(d for d in public_collection["datasets"] if d["dataset_id"] == dataset_id)
     assert "perturbation_types" in public_dataset
+
+
+# --- genetic_perturbation_strategy functional tests ---
+
+
+def test_get_datasets_includes_genetic_perturbation_strategy_field(session, api_url):
+    """Every published dataset returned by GET /curation/v1/datasets includes a genetic_perturbation_strategy field."""
+    res = session.get(f"{api_url}/curation/v1/datasets")
+    assertStatusCode(requests.codes.ok, res)
+    for dataset in res.json():
+        assert "genetic_perturbation_strategy" in dataset
+
+
+@skip_creation_on_prod
+def test_genetic_perturbation_strategy_upload_and_process(
+    session,
+    api_url,
+    curation_api_access_token,
+    curator_cookie,
+    request,
+):
+    """
+    Upload a perturbation (pre-analysis) h5ad and verify the full pipeline succeeds and
+    genetic_perturbation_strategy is correctly populated and returned by all GET /collection and
+    GET /dataset endpoints.
+    """
+    headers = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
+    headers_dp = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
+
+    collection_id = create_test_collection(
+        headers_dp,
+        request,
+        session,
+        api_url,
+        {
+            "contact_email": "functest@example.com",
+            "contact_name": "Func Test",
+            "curator_name": "Func Test",
+            "description": "genetic_perturbation_strategy functional test",
+            "name": "test_genetic_perturbation_strategy_upload_and_process",
+            "is_pre_analysis": True,
+        },
+    )
+
+    # Create dataset slot and submit manifest.
+    res = session.post(f"{api_url}/curation/v1/collections/{collection_id}/datasets", headers=headers)
+    assertStatusCode(201, res)
+    dataset_id = res.json()["dataset_id"]
+
+    res = session.put(
+        f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
+        data=json.dumps(PERTURBATION_DATASET_MANIFEST),
+        headers=headers,
+    )
+    assertStatusCode(202, res)
+
+    result = wait_for_dataset_processing_via_curation_api(
+        session, api_url, curation_api_access_token, collection_id, dataset_id
+    )
+    assert not result["errors"], f"Perturbation dataset processing failed: {result['errors']}"
+
+    # --- Verify GET /curation/v1/collections/{id} ---
+    res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers)
+    assertStatusCode(200, res)
+    collection_data = res.json()
+    dataset_entry = next(d for d in collection_data["datasets"] if d["dataset_id"] == dataset_id)
+    assert "genetic_perturbation_strategy" in dataset_entry
+    gps = dataset_entry["genetic_perturbation_strategy"]
+    assert gps is None or isinstance(gps, list)
+    if isinstance(gps, list):
+        assert gps == sorted(gps)
+
+    # --- Verify GET /curation/v1/collections/{id}/datasets/{id} ---
+    res = session.get(
+        f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}",
+        headers=headers,
+    )
+    assertStatusCode(200, res)
+    dataset_data = res.json()
+    assert "genetic_perturbation_strategy" in dataset_data
+    gps = dataset_data["genetic_perturbation_strategy"]
+    assert gps is None or isinstance(gps, list)
+    if isinstance(gps, list):
+        assert None not in gps
+        assert gps == sorted(gps)
+
+    # --- Publish and verify public GET /curation/v1/collections/{id} ---
+    body = {"data_submission_policy_version": DATA_SUBMISSION_POLICY_VERSION}
+    res = session.post(
+        f"{api_url}/dp/v1/collections/{collection_id}/publish", headers=headers_dp, data=json.dumps(body)
+    )
+    assertStatusCode(requests.codes.accepted, res)
+
+    res = session.get(f"{api_url}/curation/v1/collections/{collection_id}")
+    assertStatusCode(200, res)
+    public_collection = res.json()
+    public_dataset = next(d for d in public_collection["datasets"] if d["dataset_id"] == dataset_id)
+    assert "genetic_perturbation_strategy" in public_dataset
