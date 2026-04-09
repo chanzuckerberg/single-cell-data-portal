@@ -1698,8 +1698,9 @@ components:
     genetic_perturbation_strategy:
       description: |
         List of unique genetic perturbation strategies present across all observations in the dataset. Values are
-        sourced from obs['genetic_perturbation_strategy'], with null values excluded. Items are in ascending lexical
-        order. If the dataset does not contain a 'genetic_perturbation_strategy' obs column, this field is null.
+        sourced from obs['genetic_perturbation_strategy'], with 'no perturbations' and null values excluded. Items
+        are in ascending lexical order. If the dataset does not contain a 'genetic_perturbation_strategy' obs
+        column, this field is null.
       type: array
       items:
         type: string

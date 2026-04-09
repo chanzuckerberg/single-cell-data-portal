@@ -181,7 +181,9 @@ class ProcessAddLabels(ProcessingLogic):
         def _get_genetic_perturbation_strategy() -> Optional[List[str]]:
             if "genetic_perturbation_strategy" not in adata.obs.columns:
                 return None
-            return sorted(adata.obs["genetic_perturbation_strategy"].dropna().unique())
+            _excluded = {"no perturbations"}
+            values = adata.obs["genetic_perturbation_strategy"].dropna().unique()
+            return sorted(v for v in values if v not in _excluded)
 
         return DatasetMetadata(
             name=adata.uns["title"],
