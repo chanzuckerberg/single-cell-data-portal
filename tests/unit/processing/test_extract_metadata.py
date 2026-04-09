@@ -541,7 +541,7 @@ class TestAddLabels(BaseProcessingTest):
         """When all genetic_perturbation_strategy values are null, result is an empty list."""
         adata = self._make_minimal_adata(
             extra_obs_cols={
-                "genetic_perturbation_strategy": [None, None, None, None, None],
+                "genetic_perturbation_strategy": pandas.array([pandas.NA] * 5, dtype="string"),
             }
         )
         with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
