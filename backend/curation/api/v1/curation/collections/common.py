@@ -80,9 +80,13 @@ def extract_dataset_assets(dataset_version: DatasetVersion):
     for asset in dataset_version.artifacts:
         if asset.type not in allowed_dataset_asset_types:
             continue
-        filesize = get_business_logic().s3_provider.get_file_size(asset.uri)
-        if filesize is None:
-            filesize = -1
+        if asset.filesize is not None:
+            filesize = asset.filesize
+        else:
+            # Fallback for rows not yet backfilled; remove once backfill is confirmed complete.
+            filesize = get_business_logic().s3_provider.get_file_size(asset.uri)
+            if filesize is None:
+                filesize = -1
         url = BusinessLogic.generate_permanent_url(dataset_version, asset.id, asset.type)
         result = {
             "filesize": filesize,

@@ -563,10 +563,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         artifact_type: str,
         artifact_uri: str,
         artifact_id: Optional[DatasetArtifactId] = None,
+        filesize: Optional[int] = None,
     ) -> DatasetArtifactId:
         version = self.datasets_versions[dataset_version_id.id]
         artifact_id = artifact_id if artifact_id else DatasetArtifactId()
-        dataset_artifact = DatasetArtifact(artifact_id, artifact_type, artifact_uri)
+        dataset_artifact = DatasetArtifact(artifact_id, artifact_type, artifact_uri, filesize)
         version.artifacts.append(dataset_artifact)
         self.dataset_artifacts[artifact_id.id] = dataset_artifact
         return artifact_id

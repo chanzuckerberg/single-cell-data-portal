@@ -166,6 +166,7 @@ class DatasetArtifact:
     id: DatasetArtifactId
     type: DatasetArtifactType
     uri: str
+    filesize: Optional[int] = None
 
     def get_file_name(self):
         return urlparse(self.uri).path.split("/")[-1]

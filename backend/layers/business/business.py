@@ -959,6 +959,7 @@ class BusinessLogic(BusinessLogicInterface):
         artifact_type: DatasetArtifactType,
         artifact_uri: str,
         artifact_id: Optional[DatasetArtifactId] = None,
+        filesize: Optional[int] = None,
     ) -> DatasetArtifactId:
         """
         Registers an artifact to a dataset version.
@@ -967,7 +968,7 @@ class BusinessLogic(BusinessLogicInterface):
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
 
         return self.database_provider.create_dataset_artifact(
-            dataset_version_id, artifact_type, artifact_uri, artifact_id
+            dataset_version_id, artifact_type, artifact_uri, artifact_id, filesize
         )
 
     def update_dataset_artifact(self, artifact_id: DatasetArtifactId, artifact_uri: str) -> None:
