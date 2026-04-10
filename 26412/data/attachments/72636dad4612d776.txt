@@ -1,1 +1,0 @@
-INFO     backend.layers.business.business:business.py:618 {'message': 'ingesting dataset', 'collection_version_id': 581fee7d-26f7-40b6-9c55-a733bf2a8004, 'manifest': IngestionManifest(anndata=HttpUrl('https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0'), atac_fragment=None, is_pre_analysis=False), 'current_dataset_version_id': None}
