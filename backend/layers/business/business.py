@@ -74,6 +74,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
+    GeneticPerturbationMetadata,
     Link,
     PrivateDatasetVersion,
     PublishedDatasetVersion,
@@ -776,6 +777,22 @@ class BusinessLogic(BusinessLogicInterface):
         Sets the metadata for a dataset version
         """
         self.database_provider.set_dataset_metadata(dataset_version_id, metadata)
+
+    def set_dataset_genetic_perturbations(
+        self, dataset_version_id: DatasetVersionId, genetic_perturbations: Optional[GeneticPerturbationMetadata]
+    ) -> None:
+        """
+        Sets the genetic_perturbations for a dataset version
+        """
+        self.database_provider.set_dataset_genetic_perturbations(dataset_version_id, genetic_perturbations)
+
+    def get_dataset_genetic_perturbations(
+        self, dataset_version_id: DatasetVersionId
+    ) -> Optional[GeneticPerturbationMetadata]:
+        """
+        Returns the genetic_perturbations for a dataset version, or None if not present
+        """
+        return self.database_provider.get_dataset_genetic_perturbations(dataset_version_id)
 
     def update_dataset_artifact_metadata(
         self,

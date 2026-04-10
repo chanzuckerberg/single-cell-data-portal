@@ -2,7 +2,7 @@ import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import Dict, List, Optional
 from urllib.parse import urlparse
 
 from dataclasses_json import dataclass_json
@@ -195,6 +195,33 @@ class TissueOntologyTermId(OntologyTermId):
 class SpatialMetadata:
     is_single: bool
     has_fullres: bool
+
+
+@dataclass_json
+@dataclass
+class GeneticPerturbationEntry:
+    role: str
+    protospacer_sequence: Optional[str] = None
+    protospacer_adjacent_motif: Optional[str] = None
+    derived_genomic_regions: List[str] = field(default_factory=list)
+    derived_features: Dict[str, str] = field(default_factory=dict)
+
+
+@dataclass
+class GeneticPerturbationMetadata:
+    """
+    Typed container for uns['genetic_perturbations'].
+    Top-level keys are perturbation IDs; values are GeneticPerturbationEntry instances.
+    """
+
+    perturbations: Dict[str, GeneticPerturbationEntry]
+
+    def to_dict(self) -> dict:
+        return {pid: entry.to_dict() for pid, entry in self.perturbations.items()}
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "GeneticPerturbationMetadata":
+        return cls(perturbations={pid: GeneticPerturbationEntry.from_dict(v) for pid, v in data.items()})
 
 
 @dataclass_json

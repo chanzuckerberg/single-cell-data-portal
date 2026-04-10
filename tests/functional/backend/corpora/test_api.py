@@ -739,3 +739,111 @@ def test_genetic_perturbation_strategy_upload_and_process(
     public_collection = res.json()
     public_dataset = next(d for d in public_collection["datasets"] if d["dataset_id"] == dataset_id)
     assert "genetic_perturbation_strategy" in public_dataset
+
+
+@skip_creation_on_prod
+def test_genetic_perturbations_dict_endpoint(
+    session,
+    api_url,
+    curation_api_access_token,
+    curator_cookie,
+    request,
+):
+    """
+    Upload a perturbation (pre-analysis) h5ad, process it, then verify
+    GET /curation/v1/collections/{id}/datasets/{id}/genetic_perturbations returns
+    the expected shape (dict keyed by perturbation ID with typed entry fields).
+    Also verifies that a dataset without genetic_perturbations returns null.
+    """
+    headers = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
+    headers_dp = {"Cookie": f"cxguser={curator_cookie}", "Content-Type": "application/json"}
+
+    # --- Collection + dataset with perturbations ---
+    collection_id = create_test_collection(
+        headers_dp,
+        request,
+        session,
+        api_url,
+        {
+            "contact_email": "functest@example.com",
+            "contact_name": "Func Test",
+            "curator_name": "Func Test",
+            "description": "genetic_perturbations dict functional test",
+            "name": "test_genetic_perturbations_dict_endpoint",
+            "is_pre_analysis": True,
+        },
+    )
+
+    res = session.post(f"{api_url}/curation/v1/collections/{collection_id}/datasets", headers=headers)
+    assertStatusCode(201, res)
+    dataset_id = res.json()["dataset_id"]
+
+    res = session.put(
+        f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/manifest",
+        data=json.dumps(PERTURBATION_DATASET_MANIFEST),
+        headers=headers,
+    )
+    assertStatusCode(202, res)
+
+    result = wait_for_dataset_processing_via_curation_api(
+        session, api_url, curation_api_access_token, collection_id, dataset_id
+    )
+    assert not result["errors"], f"Perturbation dataset processing failed: {result['errors']}"
+
+    # --- Verify GET .../genetic_perturbations response shape ---
+    gp_url = f"{api_url}/curation/v1/collections/{collection_id}/datasets/{dataset_id}/genetic_perturbations"
+    res = session.get(gp_url, headers=headers)
+    assertStatusCode(200, res)
+    body = res.json()
+
+    assert "genetic_perturbations" in body
+    gp = body["genetic_perturbations"]
+
+    if gp is not None:
+        assert isinstance(gp, dict), "genetic_perturbations should be a dict keyed by perturbation ID"
+        for pid, entry in gp.items():
+            assert isinstance(pid, str), "perturbation ID must be a string"
+            assert "role" in entry, f"entry {pid} missing 'role'"
+            assert "derived_genomic_regions" in entry, f"entry {pid} missing 'derived_genomic_regions'"
+            assert "derived_features" in entry, f"entry {pid} missing 'derived_features'"
+            assert isinstance(entry["derived_genomic_regions"], list)
+            assert isinstance(entry["derived_features"], dict)
+
+    # --- Dataset without genetic_perturbations returns null ---
+    collection_id_plain = create_test_collection(
+        headers_dp,
+        request,
+        session,
+        api_url,
+        {
+            "contact_email": "functest@example.com",
+            "contact_name": "Func Test",
+            "curator_name": "Func Test",
+            "description": "plain dataset for genetic_perturbations null check",
+            "name": "test_genetic_perturbations_dict_endpoint_null",
+        },
+    )
+
+    res = session.post(f"{api_url}/curation/v1/collections/{collection_id_plain}/datasets", headers=headers)
+    assertStatusCode(201, res)
+    plain_dataset_id = res.json()["dataset_id"]
+
+    res = session.put(
+        f"{api_url}/curation/v1/collections/{collection_id_plain}/datasets/{plain_dataset_id}/manifest",
+        data=json.dumps(DATASET_MANIFEST),
+        headers=headers,
+    )
+    assertStatusCode(202, res)
+
+    result = wait_for_dataset_processing_via_curation_api(
+        session, api_url, curation_api_access_token, collection_id_plain, plain_dataset_id
+    )
+    assert not result["errors"], f"Plain dataset processing failed: {result['errors']}"
+
+    gp_url_plain = (
+        f"{api_url}/curation/v1/collections/{collection_id_plain}/datasets/{plain_dataset_id}/genetic_perturbations"
+    )
+    res = session.get(gp_url_plain, headers=headers)
+    assertStatusCode(200, res)
+    plain_body = res.json()
+    assert plain_body["genetic_perturbations"] is None
