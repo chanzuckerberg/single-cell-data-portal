@@ -157,6 +157,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             DatasetArtifactId(str(row.id)),
             DatasetArtifactType[row.type],
             row.uri,
+            row.filesize,
         )
 
     def _row_to_dataset_version(self, row: Any, canonical_dataset: CanonicalDataset, artifacts: List[DatasetArtifact]):
@@ -927,12 +928,13 @@ class DatabaseProvider(DatabaseProviderInterface):
         artifact_type: DatasetArtifactType,
         artifact_uri: str,
         artifact_id: Optional[DatasetArtifactId] = None,
+        filesize: Optional[int] = None,
     ) -> DatasetArtifactId:
         """
         Adds a dataset artifact to an existing dataset version.
         """
         artifact_id = artifact_id if artifact_id else DatasetArtifactId()
-        artifact = DatasetArtifactTable(id=artifact_id.id, type=artifact_type.name, uri=artifact_uri)
+        artifact = DatasetArtifactTable(id=artifact_id.id, type=artifact_type.name, uri=artifact_uri, filesize=filesize)
         with self._get_serializable_session() as session:
             session.add(artifact)
             dataset_version = session.query(DatasetVersionTable).filter_by(id=dataset_version_id.id).one()

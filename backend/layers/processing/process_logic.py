@@ -95,10 +95,11 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     ):
         self.update_processing_status(dataset_version_id, processing_status_key, DatasetConversionStatus.UPLOADING)
         try:
+            filesize = os.path.getsize(file_name)
             key = "/".join([key_prefix, basename(file_name)])
             s3_uri = self.upload_artifact(file_name, key, artifact_bucket)
             self.logger.info(f"Uploaded [{dataset_version_id}/{file_name}] to {s3_uri}")
-            self.business_logic.add_dataset_artifact(dataset_version_id, artifact_type, s3_uri)
+            self.business_logic.add_dataset_artifact(dataset_version_id, artifact_type, s3_uri, filesize=filesize)
             self.logger.info(f"Updated database with {artifact_type}.")
             if datasets_bucket:
                 key = ".".join([key_prefix, ARTIFACT_TO_EXTENSION[artifact_type]])
