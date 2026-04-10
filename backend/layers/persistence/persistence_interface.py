@@ -243,6 +243,7 @@ class DatabaseProviderInterface:
         artifact_type: str,
         artifact_uri: str,
         artifact_id: Optional[DatasetArtifactId] = None,
+        filesize: Optional[int] = None,
     ) -> DatasetArtifactId:
         """
         Create a dataset artifact to add to a dataset version.
