@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN, JSON, UUID
 from sqlalchemy.orm import registry
 from sqlalchemy.schema import MetaData
@@ -69,3 +69,4 @@ class DatasetArtifactTable:
     id = Column(UUID(as_uuid=True), primary_key=True)
     type = Column(String)
     uri = Column(String)
+    filesize = Column(BigInteger, nullable=True)

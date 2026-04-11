@@ -99,7 +99,7 @@ class BusinessLogicInterface:
     def delete_collection(self, collection_id: CollectionId) -> None:
         pass
 
-    def delete_dataset_version_assets(
+    def delete_dataset_version_artifacts(
         self, dataset_versions: List[DatasetVersion], artifacts_to_save: Set[DatasetArtifact] = None
     ) -> None:
         pass
@@ -174,6 +174,7 @@ class BusinessLogicInterface:
         artifact_type: str,
         artifact_uri: str,
         artifact_id: Optional[DatasetArtifactId] = None,
+        filesize: Optional[int] = None,
     ) -> DatasetArtifactId:
         pass
 

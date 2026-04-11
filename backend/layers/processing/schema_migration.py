@@ -330,7 +330,7 @@ class SchemaMigrate(ProcessingLogic):
         Generate a report of the schema migration process. This function will download all the error and migration
         :param artifact_bucket: The bucket where the schema migration artifacts are stored.
         :param execution_id: the execution id of the AWS SFN schema migration in progress.
-        :param dry_run: If dry_run is True, then a report will be returned without deleting any s3 assets or report to
+        :param dry_run: If dry_run is True, then a report will be returned without deleting any s3 artifacts or report to
             slack.
         :return: a json report of the schema migration process
         """

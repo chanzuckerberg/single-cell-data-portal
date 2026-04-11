@@ -357,6 +357,56 @@ class TestCrossrefProvider(unittest.TestCase):
             provider.fetch_metadata("test_doi")
 
     @patch("backend.common.providers.crossref_provider.requests.get")
+    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    def test__provider_does_not_swallow_date_node_exception_strings(self, mock_config, mock_get):
+        response = Response()
+        response.status_code = 200
+        response._content = str.encode(json.dumps({"message": {}}))
+        mock_get.return_value = response
+
+        provider = CrossrefProvider()
+        with self.assertRaises(CrossrefParseException) as ctx:
+            provider.fetch_metadata("test_doi")
+        assert str(ctx.exception) == "Date node missing"
+
+    @patch("backend.common.providers.crossref_provider.requests.get")
+    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    def test__provider_does_not_swallow_raw_journal_exception_strings(self, mock_config, mock_get):
+        response = Response()
+        response.status_code = 200
+        response._content = str.encode(
+            json.dumps({"message": {"published": {"date-parts": ["1900"]}}})  # published exists, no raw journal
+        )
+        mock_get.return_value = response
+
+        provider = CrossrefProvider()
+        with self.assertRaises(CrossrefParseException) as ctx:
+            provider.fetch_metadata("test_doi")
+        assert str(ctx.exception) == "Journal node missing, raw_journal is None"
+
+    @patch("backend.common.providers.crossref_provider.requests.get")
+    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    def test__provider_does_not_swallow_raw_journal_node_exception_strings(self, mock_config, mock_get):
+        response = Response()
+        response.status_code = 200
+        response._content = str.encode(
+            json.dumps(
+                {  # published exists, no raw journal
+                    "message": {
+                        "published": {"date-parts": ["1900"]},
+                        "container-title": 1,  # Bad value in key should throw exception
+                    }
+                }
+            )
+        )
+        mock_get.return_value = response
+
+        provider = CrossrefProvider()
+        with self.assertRaises(CrossrefParseException) as ctx:
+            provider.fetch_metadata("test_doi")
+        assert str(ctx.exception) == "Journal node missing"
+
+    @patch("backend.common.providers.crossref_provider.requests.get")
     def test__get_title_and_citation_from_doi(self, mock_get):
         provider = CrossrefProvider()
         provider.crossref_api_key = "test_key"

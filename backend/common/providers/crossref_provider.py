@@ -155,9 +155,12 @@ class CrossrefProvider(CrossrefProviderInterface):
                     raw_journal = message["institution"][0]["name"]
 
                 if raw_journal is None:
-                    raise CrossrefParseException("Journal node missing")
-            except Exception:
-                raise CrossrefParseException("Journal node missing") from None
+                    raise CrossrefParseException("Journal node missing, raw_journal is None")
+            except Exception as e:
+                if isinstance(e, CrossrefParseException):  # Raise the existing exception instead of swallowing it
+                    raise e
+                else:
+                    raise CrossrefParseException("Journal node missing") from e
 
             journal = html.unescape(raw_journal)
 
@@ -197,7 +200,10 @@ class CrossrefProvider(CrossrefProviderInterface):
                 deposited_at,
             )
         except Exception as e:
-            raise CrossrefParseException("Cannot parse metadata from Crossref") from e
+            if isinstance(e, CrossrefParseException):  # Raise the existing exception instead of swallowing it
+                raise e
+            else:
+                raise CrossrefParseException("Cannot parse metadata from Crossref") from e
 
     def fetch_published_metadata(
         self, doi_response_message: dict
