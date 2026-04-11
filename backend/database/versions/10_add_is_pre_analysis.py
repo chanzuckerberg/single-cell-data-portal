@@ -1,7 +1,7 @@
 """add is_pre_analysis flag to CollectionVersion
 
-Revision ID: 09_add_is_pre_analysis
-Revises: 08_92c817dddc7d
+Revision ID: 10_add_is_pre_analysis
+Revises: 09_add_artifact_filesize
 Create Date: 2026-04-07
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "09_add_is_pre_analysis"
-down_revision = "08_92c817dddc7d"
+revision = "10_add_is_pre_analysis"
+down_revision = "09_add_artifact_filesize"
 branch_labels = None
 depends_on = None
 

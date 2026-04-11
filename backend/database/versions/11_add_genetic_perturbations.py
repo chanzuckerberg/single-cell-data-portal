@@ -1,7 +1,7 @@
 """add genetic_perturbations column to DatasetVersion
 
-Revision ID: 10_add_genetic_perturbations
-Revises: 09_add_is_pre_analysis
+Revision ID: 11_add_genetic_perturbations
+Revises: 10_add_is_pre_analysis
 Create Date: 2026-04-09
 
 Stores the full uns['genetic_perturbations'] dictionary as a separate nullable JSON column
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "10_add_genetic_perturbations"
-down_revision = "09_add_is_pre_analysis"
+revision = "11_add_genetic_perturbations"
+down_revision = "10_add_is_pre_analysis"
 branch_labels = None
 depends_on = None
 
