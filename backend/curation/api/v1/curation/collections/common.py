@@ -128,6 +128,7 @@ def reshape_for_curation_api(
     user_info: UserInfo = None,
     reshape_for_version_endpoint: bool = False,
     preview: bool = False,
+    revising_in_map: Optional[dict] = None,
 ) -> dict:
     """
     Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
@@ -135,6 +136,11 @@ def reshape_for_curation_api(
     :param user_info:
     :param reshape_for_version_endpoint CollectionVersion is being returned in a version endpoint
     :param preview: bool - whether the dataset is in preview form or not.
+    :param revising_in_map: optional pre-loaded {canonical_collection_id: CollectionVersion} of the
+        most recently created unpublished version per collection. When provided, avoids a per-collection
+        DB call to get_unpublished_collection_version_from_canonical for every published collection the
+        user owns (critical for super curators who own all collections). Callers that omit this fall back
+        to the existing per-collection lookup.
     :return: the response.
     """
     business_logic = get_business_logic()
@@ -149,6 +155,8 @@ def reshape_for_curation_api(
             revision_of = None
             if not user_info or not user_info.is_user_owner_or_allowed(collection_version.owner):
                 _revising_in = None
+            elif revising_in_map is not None:
+                _revising_in = revising_in_map.get(collection_version.collection_id.id)
             else:
                 _revising_in = business_logic.get_unpublished_collection_version_from_canonical(
                     collection_version.collection_id
