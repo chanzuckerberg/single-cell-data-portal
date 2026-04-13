@@ -59,9 +59,22 @@ def get(visibility: str, token_info: dict, curator: str = None):
         for cv in collection_versions:
             cv.datasets = [dataset_map[dvid.id] for dvid in cv.datasets if dvid.id in dataset_map]
 
+    # Pre-load all unpublished collection versions in a single batch so reshape_for_curation_api
+    # can look up "revising_in" without issuing a per-collection DB query.  Only needed for
+    # authenticated users (unauthenticated callers never see revising_in).
+    revising_in_map = {}
+    if user_info and not user_info.is_none():
+        for uv in business_logic.database_provider.get_unpublished_collection_versions():
+            cid = uv.collection_id.id
+            # Keep the most-recently-created unpublished version per canonical collection.
+            if cid not in revising_in_map or uv.created_at > revising_in_map[cid].created_at:
+                revising_in_map[cid] = uv
+
     resp_collections = []
     for collection_version in collection_versions:
-        resp_collection = reshape_for_curation_api(collection_version, user_info, preview=True)
+        resp_collection = reshape_for_curation_api(
+            collection_version, user_info, preview=True, revising_in_map=revising_in_map
+        )
         resp_collections.append(resp_collection)
     return jsonify(resp_collections)
 
