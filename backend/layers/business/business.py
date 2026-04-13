@@ -375,6 +375,8 @@ class BusinessLogic(BusinessLogicInterface):
         # TODO: instead of `is_published`, we should probably call this `is_active_and_published`
         if filter.is_published is True:
             iterable = self.database_provider.get_all_mapped_collection_versions()
+        elif filter.is_published is False:
+            iterable = self.database_provider.get_unpublished_collection_versions()
         else:
             iterable = self.database_provider.get_all_collections_versions()
 
@@ -801,15 +803,11 @@ class BusinessLogic(BusinessLogicInterface):
         datasets, _ = self.database_provider.get_all_mapped_datasets_and_collections()
         return datasets
 
-    def get_datasets_for_collections(self, collections: Iterable[CollectionVersion]) -> Iterable[DatasetVersion]:
-        datasets = []
+    def get_datasets_for_collections(self, collections: Iterable[CollectionVersion]) -> List[DatasetVersion]:
+        all_ids: List[DatasetVersionId] = []
         for collection in collections:
-            datasest_ids = [d.id for d in collection.datasets]
-            collection_datasets: List[DatasetVersion] = [
-                self.database_provider.get_dataset_version(DatasetVersionId(id)) for id in datasest_ids
-            ]
-            datasets.extend(collection_datasets)
-        return datasets
+            all_ids.extend(collection.datasets)
+        return self.database_provider.get_dataset_versions_by_id(all_ids) if all_ids else []
 
     def get_private_collection_versions_with_datasets(
         self, owner: str = None
@@ -1497,7 +1495,12 @@ class BusinessLogic(BusinessLogicInterface):
         [datasets_by_collection_id[d.collection_id.id].append(d) for d in mapped_dataset_versions]
 
         # Construct dict of collection_id: [all published Collection versions]
-        all_collections_versions = self.database_provider.get_all_collections_versions()
+        # Use a targeted query instead of get_all_collections_versions() to avoid 4 full-table scans;
+        # we only need published versions for the active collection IDs.
+        relevant_collection_ids = [c.collection_id.id for c in mapped_collection_versions]
+        all_collections_versions = self.database_provider.get_published_collection_versions_for_collections(
+            relevant_collection_ids
+        )
         collection_versions_by_collection_id = defaultdict(list)
         [collection_versions_by_collection_id[c.collection_id.id].append(c) for c in all_collections_versions]
 
