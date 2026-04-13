@@ -149,6 +149,17 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 included_dataset_version_ids.append(d_v_id)
             yield updated_version
 
+    def get_published_collection_versions_for_collections(self, collection_ids: List[str]) -> List[CollectionVersion]:
+        result = []
+        for version in self.collections_versions.values():
+            updated_version = self._update_version_with_canonical(version)
+            if str(updated_version.collection_id.id) not in collection_ids:
+                continue
+            if updated_version.published_at is None:
+                continue
+            result.append(updated_version)
+        return result
+
     def get_canonical_collection(self, collection_id: CollectionId) -> Optional[CanonicalCollection]:
         return self.collections.get(collection_id.id, None)
 

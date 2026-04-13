@@ -76,6 +76,12 @@ class DatabaseProviderInterface:
         TODO: for performance reasons, it might be necessary to add a filtering parameter here.
         """
 
+    def get_published_collection_versions_for_collections(self, collection_ids: List[str]) -> List[CollectionVersion]:
+        """
+        Returns all published collection versions for the given canonical collection IDs.
+        Targeted alternative to get_all_collections_versions() for published_at lookups.
+        """
+
     def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:
         """
         Retrieves all the collection versions that are mapped to a canonical collection.
