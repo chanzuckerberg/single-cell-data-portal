@@ -41,8 +41,26 @@ def get(visibility: str, token_info: dict, curator: str = None):
 
     logging.info(filters)
 
+    business_logic = get_business_logic()
+
+    # Buffer all matching collection versions so we can bulk-load their datasets in one shot.
+    collection_versions = list(business_logic.get_collections(CollectionQueryFilter(**filters)))
+
+    # Collect every dataset version ID across all collections and load them in a single DB round-trip
+    # (3 queries total instead of 3 queries × N collections).
+    all_dv_ids = []
+    for cv in collection_versions:
+        all_dv_ids.extend(cv.datasets)  # DatasetVersionId objects
+
+    if all_dv_ids:
+        dataset_map = {
+            dv.version_id.id: dv for dv in business_logic.database_provider.get_dataset_versions_by_id(all_dv_ids)
+        }
+        for cv in collection_versions:
+            cv.datasets = [dataset_map[dvid.id] for dvid in cv.datasets if dvid.id in dataset_map]
+
     resp_collections = []
-    for collection_version in get_business_logic().get_collections(CollectionQueryFilter(**filters)):
+    for collection_version in collection_versions:
         resp_collection = reshape_for_curation_api(collection_version, user_info, preview=True)
         resp_collections.append(resp_collection)
     return jsonify(resp_collections)

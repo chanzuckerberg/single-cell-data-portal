@@ -475,6 +475,71 @@ class DatabaseProvider(DatabaseProviderInterface):
 
             return result
 
+    def get_unpublished_collection_versions(self) -> List[CollectionVersion]:
+        """
+        Returns all collection versions with published_at IS NULL (unpublished/draft).
+
+        Targeted alternative to get_all_collections_versions() for the is_published=False filter case.
+        Runs 2 filtered queries instead of 4 full-table scans: unpublished CVs filtered at the DB
+        level, plus their canonical collections. Tombstone dataset pre-filtering (queries 3 & 4 in
+        get_all_collections_versions) is skipped because get_dataset_versions_by_id already excludes
+        tombstoned datasets downstream.
+        """
+        with self._manage_session() as session:
+            versions = session.query(CollectionVersionTable).filter(CollectionVersionTable.published_at.is_(None)).all()
+            if not versions:
+                return []
+            collection_ids = list({str(v.collection_id) for v in versions})
+            canonical_map = {
+                str(row.id): CanonicalCollection(
+                    CollectionId(str(row.id)),
+                    CollectionVersionId(str(row.version_id)) if row.version_id else None,
+                    row.originally_published_at,
+                    row.revised_at,
+                    row.tombstone,
+                )
+                for row in session.query(CollectionTable)
+                .filter(CollectionTable.id.in_(collection_ids))
+                .filter(CollectionTable.tombstone.isnot(True))
+                .all()
+            }
+            return [
+                self._row_to_collection_version(v, canonical_map[str(v.collection_id)])
+                for v in versions
+                if str(v.collection_id) in canonical_map
+            ]
+
+    def get_published_collection_versions_for_collections(self, collection_ids: List[str]) -> List[CollectionVersion]:
+        """
+        Returns all published (non-NULL published_at) collection versions for the given canonical collection IDs.
+
+        Targeted alternative to get_all_collections_versions() for the published_at lookup in
+        _map_collection_version_to_published_dataset_versions(). Runs 2 filtered queries instead of 4
+        full-table scans, skipping tombstone and dataset-version-mapping lookups not needed here.
+        """
+        with self._manage_session() as session:
+            canonical_map = {
+                str(row.id): CanonicalCollection(
+                    CollectionId(str(row.id)),
+                    CollectionVersionId(str(row.version_id)) if row.version_id else None,
+                    row.originally_published_at,
+                    row.revised_at,
+                    row.tombstone,
+                )
+                for row in session.query(CollectionTable).filter(CollectionTable.id.in_(collection_ids)).all()
+            }
+            versions = (
+                session.query(CollectionVersionTable)
+                .filter(CollectionVersionTable.collection_id.in_(collection_ids))
+                .filter(CollectionVersionTable.published_at.isnot(None))
+                .all()
+            )
+            return [
+                self._row_to_collection_version(v, canonical_map[str(v.collection_id)])
+                for v in versions
+                if str(v.collection_id) in canonical_map
+            ]
+
     def get_all_mapped_collection_versions(self, get_tombstoned: bool = False) -> Iterable[CollectionVersion]:
         """
         Retrieves all the collection versions that are mapped to a canonical collection. This method does not require
