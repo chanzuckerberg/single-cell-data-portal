@@ -375,6 +375,8 @@ class BusinessLogic(BusinessLogicInterface):
         # TODO: instead of `is_published`, we should probably call this `is_active_and_published`
         if filter.is_published is True:
             iterable = self.database_provider.get_all_mapped_collection_versions()
+        elif filter.is_published is False:
+            iterable = self.database_provider.get_unpublished_collection_versions()
         else:
             iterable = self.database_provider.get_all_collections_versions()
 

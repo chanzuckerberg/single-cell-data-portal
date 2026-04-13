@@ -76,6 +76,12 @@ class DatabaseProviderInterface:
         TODO: for performance reasons, it might be necessary to add a filtering parameter here.
         """
 
+    def get_unpublished_collection_versions(self) -> List[CollectionVersion]:
+        """
+        Returns all collection versions with published_at IS NULL.
+        Targeted alternative to get_all_collections_versions() for the is_published=False filter case.
+        """
+
     def get_published_collection_versions_for_collections(self, collection_ids: List[str]) -> List[CollectionVersion]:
         """
         Returns all published collection versions for the given canonical collection IDs.
