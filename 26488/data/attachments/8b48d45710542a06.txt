@@ -1,0 +1,9 @@
+INFO     backend.layers.business.business:business.py:612 {'message': 'ingesting dataset', 'collection_version_id': 437d8805-e99c-4d0c-b36b-a138211509c0, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:1107 {'message': 'Deleting dataset versions', 'dataset_version_ids': []}
+INFO     backend.layers.business.business:business.py:1132 {'message': 'Deleting dataset version artifacts', 'artifacts_to_delete': []}
+INFO     backend.layers.business.business:business.py:612 {'message': 'ingesting dataset', 'collection_version_id': 7419b8bd-d7cd-466e-a867-ffa6946331d0, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:1107 {'message': 'Deleting dataset versions', 'dataset_version_ids': []}
+INFO     backend.layers.business.business:business.py:1132 {'message': 'Deleting dataset version artifacts', 'artifacts_to_delete': []}
+INFO     root:actions.py:42 {'is_published': True, 'curator_name': 'Not A Curator'}
+INFO     root:actions.py:42 {'is_published': True, 'curator_name': 'John Smith'}
+INFO     root:actions.py:42 {'is_published': False, 'curator_name': 'John Smith'}
