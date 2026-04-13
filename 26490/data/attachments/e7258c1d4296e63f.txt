@@ -1,0 +1,43 @@
+INFO     backend.layers.business.business:business.py:614 {'message': 'ingesting dataset', 'collection_version_id': 110ecd39-f085-4177-b607-a12a1e01f586, 'manifest': IngestionManifest(anndata=HttpUrl('https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0'), atac_fragment=None), 'current_dataset_version_id': None}
+INFO     processing:process.py:109 Processing dataset version d4778c0b-35b6-4391-aab9-17cf2d1ae4ca
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:26 Start download_from_source_uri
+INFO     processing:logger.py:28 Complete download_from_source_uri
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:101 Uploaded [d4778c0b-35b6-4391-aab9-17cf2d1ae4ca/raw.h5ad] to s3://fake_bucket_name/d4778c0b-35b6-4391-aab9-17cf2d1ae4ca/raw.h5ad
+INFO     processing:process_logic.py:103 Updated database with raw_h5ad.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:26 Start validate_h5ad_file
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:28 Complete validate_h5ad_file
+INFO     processing:process.py:109 Processing dataset version d4778c0b-35b6-4391-aab9-17cf2d1ae4ca
+INFO     processing:logger.py:26 Start download_from_source_uri
+INFO     processing:logger.py:28 Complete download_from_source_uri
+INFO     processing:process_validate_atac.py:115 Fragment is optional and not present. Skipping fragment validation.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process.py:109 Processing dataset version d4778c0b-35b6-4391-aab9-17cf2d1ae4ca
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:26 Start add_labels
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:28 Complete add_labels
+INFO     processing:logger.py:26 Start create_artifact
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:101 Uploaded [d4778c0b-35b6-4391-aab9-17cf2d1ae4ca/local.h5ad] to s3://fake_bucket_name/d4778c0b-35b6-4391-aab9-17cf2d1ae4ca/local.h5ad
+INFO     processing:process_logic.py:103 Updated database with h5ad.
+INFO     processing:process_logic.py:107 Uploaded [d4778c0b-35b6-4391-aab9-17cf2d1ae4ca/local.h5ad] to s3://fake_datasets_bucket/d4778c0b-35b6-4391-aab9-17cf2d1ae4ca.h5ad
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:logger.py:28 Complete create_artifact
+INFO     processing:process.py:109 Processing dataset version d4778c0b-35b6-4391-aab9-17cf2d1ae4ca
+INFO     processing:process_logic.py:121 Converting local.h5ad
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_logic.py:127 Finished converting <MagicMock name='make_cxg' id='140236910709200'> in 0:00:00.001883
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_cxg.py:157 Updating database with cxg artifact for dataset d4778c0b-35b6-4391-aab9-17cf2d1ae4ca. s3_uri is s3://fake_cxg_bucket/d4778c0b-35b6-4391-aab9-17cf2d1ae4ca.cxg/
+INFO     processing:process_logic.py:49 Updating processing status
