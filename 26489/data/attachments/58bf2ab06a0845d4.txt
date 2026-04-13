@@ -1,0 +1,8 @@
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:66 Uploaded [b794ffb4-7f57-4657-97c1-1aa4a08b1fba/atac_fragment] to s3://datasets/6be1c7c6-096a-4ac1-aa38-c0ff997285fe-fragment.tsv.bgz
+INFO     processing:process_validate_atac.py:70 Updated database with atac_fragment.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:66 Uploaded [b794ffb4-7f57-4657-97c1-1aa4a08b1fba/atac_index] to s3://datasets/6be1c7c6-096a-4ac1-aa38-c0ff997285fe-fragment.tsv.bgz.tbi
+INFO     processing:process_validate_atac.py:70 Updated database with atac_index.
+INFO     processing:process_logic.py:49 Updating processing status
+INFO     processing:process_validate_atac.py:227 Processing completed successfully
