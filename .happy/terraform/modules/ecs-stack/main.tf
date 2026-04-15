@@ -38,7 +38,7 @@ locals {
   backend_wmg_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "${local.backend_wmg_workers}",
     "--bind", "0.0.0.0:5000", "backend.wmg.server.app:app", "--max-requests", "10000", "--timeout", "180",
     "--keep-alive", "61", "--log-level", "info"]    
-  data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/seed_data_05_09_add_is_pre_analysis.sql"
+  data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/seed_data_05_11_add_genetic_perturbations.sql"
 
   vpc_id                          = local.secret["cloud_env"]["vpc_id"]
   subnets                         = local.secret["cloud_env"]["private_subnets"]
