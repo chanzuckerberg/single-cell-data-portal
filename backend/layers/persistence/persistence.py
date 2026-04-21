@@ -155,7 +155,7 @@ class DatabaseProvider(DatabaseProviderInterface):
     def _row_to_dataset_artifact(self, row: Any):
         return DatasetArtifact(
             DatasetArtifactId(str(row.id)),
-            DatasetArtifactType[row.type],
+            DatasetArtifactType(row.type),
             row.uri,
         )
 

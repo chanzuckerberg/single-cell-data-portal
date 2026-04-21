@@ -123,6 +123,76 @@ def register_routes(app, api_base_paths):
     app.register_error_handler(ProblemException, handle_corpora_error)
     app.register_error_handler(Exception, handle_internal_server_error)
 
+    # Cellxgene proxy to satisfy CSP requirements
+    # Routes requests to the correct cellxgene instance based on session_key (composite: dataset_id_port)
+    def cellxgene_proxy_request(dataset_id, path=""):
+        import requests
+        try:
+            # Import cellxgene_sessions and helper functions from portal_api
+            from backend.portal.api.portal_api import cellxgene_sessions, update_session_access
+            
+            # dataset_id parameter actually contains the composite key (dataset_id_port)
+            session_key = dataset_id
+            
+            # Look up the port for this session using composite key
+            if session_key not in cellxgene_sessions:
+                app.logger.error(f"Cellxgene session not found for key {session_key}")
+                return Response("Cellxgene session not found", status=404)
+            
+            # Update last_accessed timestamp for this session using composite key
+            update_session_access(session_key)
+            
+            port = cellxgene_sessions[session_key]["port"]
+            
+            # Build the URL to the correct cellxgene instance
+            cellxgene_url = f"http://127.0.0.1:{port}/{path}"
+            if request.query_string:
+                cellxgene_url += f"?{request.query_string.decode()}"
+            
+            # Prepare headers for cellxgene request
+            # Remove 'accept-encoding' to prevent gzip compression from cellxgene
+            # The requests library will handle any compression automatically
+            header_dict = {
+                k: v for k, v in request.headers
+                if k.lower() not in ['host', 'connection', 'accept-encoding']
+            }
+            
+            # Use streaming to avoid truncation of large responses
+            resp = requests.request(
+                method=request.method,
+                url=cellxgene_url,
+                headers=header_dict,
+                data=request.get_data(),
+                timeout=30,
+                stream=True
+            )
+            
+            # Read all content to ensure complete response
+            content = b''
+            for chunk in resp.iter_content(chunk_size=8192):
+                if chunk:
+                    content += chunk
+            
+            # Create response with content
+            response = Response(content, status=resp.status_code)
+            
+            # Copy important headers from cellxgene response
+            for header, value in resp.headers.items():
+                if header.lower() not in ['content-encoding', 'transfer-encoding', 'connection', 'content-length']:
+                    response.headers[header] = value
+            
+            # Set content type if not already set
+            if 'Content-Type' not in response.headers:
+                response.headers['Content-Type'] = resp.headers.get('Content-Type', 'text/html; charset=utf-8')
+            
+            return response
+        except Exception as e:
+            app.logger.error(f"Cellxgene proxy error: {str(e)}")
+            return Response("Cellxgene unavailable", status=502)
+    
+    app.add_url_rule("/cellxgene-proxy/<dataset_id>", "cellxgene_proxy", cellxgene_proxy_request, defaults={"path": ""}, methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"])
+    app.add_url_rule("/cellxgene-proxy/<dataset_id>/<path:path>", "cellxgene_proxy_path", cellxgene_proxy_request, methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"])
+
     if DEPLOYMENT_STAGE == "test":
 
         def raise_exception():
@@ -180,6 +250,11 @@ def create_api_app(api_paths_and_spec_files, **server_args):
 
     app = configure_flask_app(app)
     register_routes(app, [base_path for base_path, _ in api_paths_and_spec_files])
+    
+    # Start the cellxgene session cleanup task
+    from backend.portal.api.portal_api import start_cleanup_task
+    start_cleanup_task()
+    
     return app
 
 

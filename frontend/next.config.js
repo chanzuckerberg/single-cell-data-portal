@@ -50,8 +50,7 @@ const defaultSecureHeaders = {
       fontSrc: ["'self'"],
       formAction: ["'self'", HUBSPOT_FORMS_URL],
       frameAncestors: ["'none'"],
-      // 4513(thuang): Comment out frameSrc for now until we figure out a compliant way to embed
-      // frameSrc: [TWITTER_URL, WISTIA_URL],
+      frameSrc: ["'self'", configs.API_URL],
       imgSrc: ["'self'", "data:", HUBSPOT_FORMS_URL],
       manifestSrc: ["'self'"],
       mediaSrc: ["'self'"],

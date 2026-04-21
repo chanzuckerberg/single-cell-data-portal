@@ -656,6 +656,33 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
+  /v1/datasets/{dataset_id}/cellxgene-launch:
+    get:
+      tags:
+        - datasets
+      summary: Launch cellxgene visualization for H5AD file
+      operationId: backend.portal.api.portal_api.launch_cellxgene_visualization
+      parameters:
+        - $ref: "#/components/parameters/path_dataset_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dataset_id:
+                    type: string
+                  cellxgene_url:
+                    type: string
+                  cellxgene_command:
+                    type: string
+                  status:
+                    type: string
+        "404":
+          $ref: "#/components/responses/404"
+
   /v1/datasets/{dataset_id}/status:
     get:
       tags:

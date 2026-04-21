@@ -293,6 +293,14 @@ services:
       - RESTART_ON_FAILURE=yes
       - DEV_MODE_COOKIES=1
       - IS_DOCKER_DEV=yes # This skips some unit tests.
+      - FRONTEND_URL=https://frontend.corporanet.local:3000
+      - BACKEND_URL=https://backend.corporanet.local:5000
+      - CELLXGENE_PORT_START=8888
+      - CELLXGENE_PORT_END=8999
+      - CELLXGENE_SESSION_TIMEOUT=7200
+      - CELLXGENE_MAX_CONCURRENT=100
+      - CELLXGENE_BUCKET=corpora-data-dev # cellxgene-bucket
+      - AWS_ENDPOINT_URL=http://localstack:4566 # the standard environment variable for AWS SDK v3 to get file size in download function
     volumes:
       # Mount dirs in a layout suitable for running tests.
       - .:/single-cell-data-portal
@@ -370,7 +378,7 @@ services:
     depends_on:
       - localstack
     ports:
-      - "5001:5000"
+      - "5002:5000"
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true

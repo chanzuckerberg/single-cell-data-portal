@@ -8,6 +8,7 @@ from sqlalchemy_utils import create_database, database_exists, drop_database
 
 env = os.environ.get("DEPLOYMENT_STAGE")
 from backend.common.corpora_config import CorporaDbConfig
+from tests.unit.backend.fixtures.test_db import DatabaseFixture
 
 # Importing tests.unit overwrites our deployment stage env var.
 # So we're putting it back here.
@@ -20,7 +21,6 @@ os.environ["DEPLOYMENT_STAGE"] = env
 @click.option("--populate-data/--skip-populate", default=True, help="Add test data to db.")
 @click.option("--drop-db/--skip-drop-db", default=False, help="Drop Database.")
 def run_db_stuff(create_schema, recreate_db, populate_data, drop_db):
-    # Create schema.
     if create_schema:
         engine = create_engine(CorporaDbConfig().database_uri)
         if not database_exists(engine.url):
@@ -30,7 +30,15 @@ def run_db_stuff(create_schema, recreate_db, populate_data, drop_db):
             print("Database already exists")
             exit(1)
 
-    # Drop database
+    if recreate_db or populate_data:
+        testdb = DatabaseFixture(real_data=True)
+
+    if recreate_db:
+        testdb.create_db()
+ 
+    # if populate_data:
+    #     testdb.populate_test_data()
+
     if drop_db:
         engine = create_engine(CorporaDbConfig().database_uri)
         if database_exists(engine.url):

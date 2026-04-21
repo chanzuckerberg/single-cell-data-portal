@@ -178,12 +178,14 @@ class DatasetArtifact:
         return hash((self.id, self.type, self.uri))
 
 
+@dataclass_json
 @dataclass
 class OntologyTermId:
     label: str
     ontology_term_id: str
 
 
+@dataclass_json
 @dataclass
 class TissueOntologyTermId(OntologyTermId):
     tissue_type: Optional[str] = None
@@ -276,6 +278,7 @@ class PrivateDatasetVersion(DatasetVersion):
     collection_version_id: CollectionVersionId
 
 
+@dataclass_json
 @dataclass
 class Link:
     name: Optional[str]

@@ -1,6 +1,11 @@
 import dataclasses
 import itertools
 import logging
+import os
+import time
+import threading
+import subprocess
+import requests
 from datetime import datetime
 from typing import Iterable, List, Optional, Tuple
 from urllib.parse import urlparse
@@ -58,6 +63,123 @@ from backend.layers.thirdparty.uri_provider import FileInfoException
 from backend.portal.api import explorer_url
 from backend.portal.api.enrichment import enrich_dataset_with_ancestors
 from backend.portal.api.providers import get_business_logic, get_cloudfront_provider
+
+# Cellxgene configuration variables (from environment with defaults)
+CELLXGENE_PORT_START = int(os.getenv("CELLXGENE_PORT_START", "8888"))
+CELLXGENE_PORT_END = int(os.getenv("CELLXGENE_PORT_END", "8999"))
+CELLXGENE_SESSION_TIMEOUT = int(os.getenv("CELLXGENE_SESSION_TIMEOUT", "7200"))  # 2 hours in seconds
+CELLXGENE_MAX_CONCURRENT = int(os.getenv("CELLXGENE_MAX_CONCURRENT", "100"))
+
+# Global dictionary to track active cellxgene sessions
+# Format: {dataset_id: {"port": int, "process": Popen, "last_accessed": timestamp}}
+cellxgene_sessions = {}
+
+
+def get_available_port():
+    """
+    Find an available port in the cellxgene port range.
+    Returns a port number if available, or None if all ports are in use.
+    """
+    used_ports = set(session["port"] for session in cellxgene_sessions.values())
+    for port in range(CELLXGENE_PORT_START, CELLXGENE_PORT_END + 1):
+        if port not in used_ports:
+            return port
+    return None
+
+
+def register_session(dataset_id: str, port: int, process):
+    """
+    Register a cellxgene session in the global tracking dict.
+    Uses composite key (dataset_id_port) to allow multiple concurrent sessions of same dataset.
+    
+    Args:
+        dataset_id: The dataset identifier
+        port: The port number cellxgene is running on
+        process: The subprocess.Popen object for the cellxgene process
+    """
+    import time
+    session_key = f"{dataset_id}_{port}"
+    cellxgene_sessions[session_key] = {
+        "port": port,
+        "process": process,
+        "last_accessed": time.time()
+    }
+    logging.info(f"Registered cellxgene session for dataset {dataset_id} on port {port} (key: {session_key})")
+
+
+def update_session_access(session_key: str):
+    """
+    Update the last_accessed timestamp for a session.
+    Called whenever the session is accessed via the proxy.
+    
+    Args:
+        session_key: The composite session key (dataset_id_port)
+    """
+    import time
+    if session_key in cellxgene_sessions:
+        cellxgene_sessions[session_key]["last_accessed"] = time.time()
+
+
+def cleanup_old_sessions():
+    """
+    Remove cellxgene sessions that have been inactive for longer than CELLXGENE_SESSION_TIMEOUT.
+    Kills the associated process and frees up the port.
+    """
+    import time
+    import signal
+    
+    current_time = time.time()
+    sessions_to_remove = []
+    
+    for session_key, session in cellxgene_sessions.items():
+        elapsed = current_time - session["last_accessed"]
+        if elapsed > CELLXGENE_SESSION_TIMEOUT:
+            sessions_to_remove.append((session_key, session))
+    
+    for session_key, session in sessions_to_remove:
+        try:
+            # Kill the cellxgene process
+            process = session["process"]
+            if process.poll() is None:  # Process is still running
+                process.terminate()
+                try:
+                    process.wait(timeout=5)
+                except:
+                    # Force kill if terminate doesn't work
+                    process.kill()
+            
+            # Remove from tracking dict
+            del cellxgene_sessions[session_key]
+            elapsed_hours = elapsed / 3600
+            logging.info(f"Cleaned up cellxgene session {session_key} (inactive for {elapsed_hours:.1f} hours)")
+        except Exception as e:
+            logging.error(f"Error cleaning up session {session_key}: {str(e)}")
+
+
+def start_cleanup_task():
+    """
+    Start a background thread that periodically cleans up old cellxgene sessions.
+    This prevents long-running instances from consuming resources indefinitely.
+    """
+    import threading
+    import time
+    
+    def cleanup_loop():
+        # Wait 5 minutes before starting cleanup checks
+        time.sleep(300)
+        while True:
+            try:
+                cleanup_old_sessions()
+                # Check every 5 minutes for sessions to clean up
+                time.sleep(300)
+            except Exception as e:
+                logging.error(f"Error in cleanup loop: {str(e)}")
+                time.sleep(300)
+    
+    # Start cleanup thread as daemon so it doesn't block app shutdown
+    cleanup_thread = threading.Thread(target=cleanup_loop, daemon=True)
+    cleanup_thread.start()
+    logging.info("Started cellxgene session cleanup task")
 
 
 def get_collections_list(from_date: int = None, to_date: int = None, token_info: Optional[dict] = None):
@@ -940,3 +1062,160 @@ def get_dataset_identifiers(url: str):
         "tombstoned": False,  # No longer applicable
     }
     return make_response(jsonify(dataset_identifiers), 200)
+
+def launch_cellxgene_visualization(dataset_id: str):
+    """
+    Launch cellxgene visualization for an H5AD file.
+    
+    Use the H5AD file from S3 and launches cellxgene on it,
+    returning a proxy URL where the visualization is accessible via HTTPS.
+    """
+    import os
+    import boto3
+    import subprocess
+    import tempfile
+    import time
+    import socket
+    
+    try:
+        # Get S3 endpoint URL and construct HTTP URL for cellxgene
+        endpoint_url = os.getenv("BOTO_ENDPOINT_URL")
+        if not endpoint_url:
+            logging.error("BOTO_ENDPOINT_URL not configured")
+            return make_response(
+                jsonify({
+                    "error": "S3 endpoint not configured",
+                    "dataset_id": dataset_id,
+                }),
+                500
+            )
+        
+        # File location in S3
+        bucket = os.getenv("CELLXGENE_BUCKET", "cellxgene-bucket")
+        key = f"{dataset_id}.h5ad"
+        
+        # Construct HTTP URL from BOTO_ENDPOINT_URL (cellxgene will handle remote access)
+        file_path = f"{endpoint_url}/{bucket}/{key}"
+        logging.info(f"Using S3 HTTP URL for cellxgene: {file_path}")
+        
+        # Cellxgene port - use dynamic allocation
+        # Check concurrency limit first
+        if len(cellxgene_sessions) >= CELLXGENE_MAX_CONCURRENT:
+            logging.warning(f"Max concurrent cellxgene instances ({CELLXGENE_MAX_CONCURRENT}) reached")
+            return make_response(
+                jsonify({
+                    "error": f"Maximum concurrent instances ({CELLXGENE_MAX_CONCURRENT}) reached. Please try again later.",
+                    "dataset_id": dataset_id,
+                }),
+                503
+            )
+        
+        # Get available port
+        port = get_available_port()
+        if port is None:
+            logging.error("No available ports for cellxgene")
+            return make_response(
+                jsonify({
+                    "error": "No available ports for cellxgene",
+                    "dataset_id": dataset_id,
+                }),
+                503
+            )
+        
+        logging.info(f"Allocated port {port} for dataset {dataset_id}")
+        
+        # Create outputs directory for user-generated annotations if not exists
+        outputs_dir = "./outputs"
+        try:
+            if not os.path.exists(outputs_dir):
+                os.makedirs(outputs_dir)
+                logging.info(f"Created outputs directory: {outputs_dir}")
+        except Exception as e:
+            logging.warning(f"Could not create outputs directory: {str(e)}")
+        
+        # Launch cellxgene in background (subprocess naturally runs async)
+        cmd = f"yes | cellxgene launch {file_path} --port {port} --host 127.0.0.1 --user-generated-data-dir ./outputs --disable-annotations --disable-gene-sets-save"
+        logging.info(f"Launching cellxgene with command: {cmd}")
+        
+        # Capture stderr to see any errors
+        stderr_file = open(f"/tmp/cellxgene_{dataset_id}.log", "w")
+        proc = subprocess.Popen(
+            cmd, 
+            shell=True, 
+            stdout=stderr_file, 
+            stderr=subprocess.STDOUT,
+            text=True
+        )
+        
+        # Wait for cellxgene to start - verify it's actually responding to HTTP requests
+        # Not just that the port is open, but that it can serve HTML
+        cellxgene_ready = False
+        max_wait = 30  # Wait up to 30 seconds
+        elapsed = 0
+        
+        while elapsed < max_wait:
+            try:
+                # Try to make an actual HTTP request to cellxgene
+                # This ensures it's fully initialized, not just listening on the port
+                import requests
+                response = requests.get(f'http://127.0.0.1:{port}/', timeout=2)
+                if response.status_code < 500:  # Any response that's not a server error means it's ready
+                    cellxgene_ready = True
+                    logging.info(f"Cellxgene is ready and responding on port {port} (status: {response.status_code})")
+                    break
+            except Exception as e:
+                # Still initializing - keep waiting
+                pass
+            
+            time.sleep(1)
+            elapsed += 1
+        
+        if not cellxgene_ready:
+            logging.error(f"Cellxgene failed to start within {max_wait} seconds")
+            
+            # Read and log cellxgene output for debugging
+            try:
+                with open(f"/tmp/cellxgene_{dataset_id}.log", "r") as f:
+                    cellxgene_output = f.read()
+                    if cellxgene_output:
+                        logging.error(f"Cellxgene output:\n{cellxgene_output}")
+            except Exception:
+                pass
+            
+            proc.terminate()
+            return make_response(
+                jsonify({
+                    "error": "Cellxgene failed to start",
+                    "dataset_id": dataset_id,
+                }),
+                500
+            )
+        
+        logging.info(f"Cellxgene launch completed for {dataset_id} on port {port}")
+        
+        # Register the session in global tracking (uses composite key: dataset_id_port)
+        register_session(dataset_id, port, proc)
+        
+        # Return proxy URL through backend (satisfies CSP requirement for iframes)
+        # Include composite key (dataset_id_port) in URL to support multiple sessions of same dataset
+        backend_url = os.getenv("BACKEND_URL", "https://backend.corporanet.local:5000")
+        cellxgene_url = f"{backend_url}/cellxgene-proxy/{dataset_id}_{port}/"
+        
+        return make_response(
+            jsonify({
+                "dataset_id": dataset_id,
+                "cellxgene_url": cellxgene_url,
+                "cellxgene_command": cmd,
+                "status": "launching",
+            }),
+            200
+        )
+    except Exception as e:
+        logging.error(f"Error launching cellxgene for {dataset_id}: {str(e)}")
+        return make_response(
+            jsonify({
+                "error": "Failed to launch cellxgene",
+                "dataset_id": dataset_id,
+            }),
+            500
+        )

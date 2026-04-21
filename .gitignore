@@ -157,3 +157,6 @@ loginState.json
 
 # AI task documentation
 ai_task_docs/
+
+/outputs
+/my_stuff

@@ -14,8 +14,11 @@ Flask-Cors>=3.0.6
 flask-server-timing>=0.1.2
 gunicorn[gevent]==22.0.0
 matplotlib>=3.6.3, <3.7 # 3.7.0 isn't compatible with scanpy: https://github.com/scverse/scanpy/issues/2411
+numba>=0.56.0
+pandas>=1.3.0
 psutil>=5.9.5, <6
 psycopg2-binary==2.*
+pyarrow>=1.0,<11.0
 pydantic<3
 python-jose[cryptography]>=3.1.0
 python-json-logger
@@ -27,3 +30,6 @@ SQLAlchemy==2.*
 tenacity
 tiledb
 Werkzeug==2.2.3
+# cellxgene for h5ad file serving (1.1.2 compatible with Flask 2.2.3)
+cellxgene==1.1.2
+fsspec==0.7.4
