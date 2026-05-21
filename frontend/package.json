@@ -61,7 +61,7 @@
     "sass": "^1.63.6"
   },
   "devDependencies": {
-    "@aws-sdk/client-secrets-manager": "^3.369.0",
+    "@aws-sdk/client-secrets-manager": "^3.1051.0",
     "@babel/core": "^7.22.9",
     "@babel/preset-react": "^7.22.5",
     "@babel/preset-typescript": "^7.22.5",
@@ -87,7 +87,7 @@
     "@typescript-eslint/parser": "^5.62.0",
     "adm-zip": "^0.5.10",
     "allure-commandline": "^2.23.0",
-    "allure-playwright": "^2.4.0",
+    "allure-playwright": "^2.15.1",
     "babel-eslint": "^10.1.0",
     "concurrently": "^6.5.1",
     "eslint": "^8.53.0",
