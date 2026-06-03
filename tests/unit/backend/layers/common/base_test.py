@@ -200,12 +200,15 @@ class BaseTest(unittest.TestCase):
         add_datasets: int = 0,
         metadata=None,
         dataset_schema_version="3.0.0",
+        is_pre_analysis: bool = False,
     ) -> CollectionVersion:
         links = links or []
         if not metadata:
             metadata = copy.deepcopy(self.sample_collection_metadata)
             metadata.links = links
-        collection = self.business_logic.create_collection(owner, curator_name, metadata)
+        collection = self.business_logic.create_collection(
+            owner, curator_name, metadata, is_pre_analysis=is_pre_analysis
+        )
 
         for _ in range(add_datasets):
             metadata = copy.deepcopy(self.sample_dataset_metadata)
@@ -237,6 +240,7 @@ class BaseTest(unittest.TestCase):
         curator_name: str = "Jane Smith",
         metadata=None,
         dataset_schema_version="3.0.0",
+        is_pre_analysis: bool = False,
     ) -> CollectionVersionWithDatasets:
         links = links or []
         unpublished_collection = self.generate_unpublished_collection(
@@ -246,6 +250,7 @@ class BaseTest(unittest.TestCase):
             add_datasets=add_datasets,
             metadata=metadata,
             dataset_schema_version=dataset_schema_version,
+            is_pre_analysis=is_pre_analysis,
         )
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)

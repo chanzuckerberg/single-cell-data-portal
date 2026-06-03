@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Tuple
 
 import h5py
 import numpy
@@ -14,6 +14,7 @@ from backend.layers.common.entities import (
     DatasetStatusKey,
     DatasetValidationStatus,
     DatasetVersionId,
+    GeneticPerturbationMetadata,
     OntologyTermId,
     SpatialMetadata,
     TissueOntologyTermId,
@@ -58,17 +59,22 @@ class ProcessAddLabels(ProcessingLogic):
 
     @logit
     def add_labels(
-        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, local_filename: str
+        self,
+        collection_version_id: CollectionVersionId,
+        dataset_version_id: DatasetVersionId,
+        local_filename: str,
+        is_pre_analysis: bool = False,
     ) -> str:
         """
         labels the specified dataset file and updates the processing status in the database
         :param dataset_version_id: version ID of the dataset to update
         :param collection_version_id: version ID of the collection dataset is being uploaded to
         :param local_filename: file name of the dataset to validate and label
+        :param is_pre_analysis: whether to apply pre-analysis label rules
         :return: file name of labeled dataset, boolean indicating if seurat conversion is possible
         """
         output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
-        self.schema_validator.add_labels(local_filename, output_filename)
+        self.schema_validator.add_labels(local_filename, output_filename, is_pre_analysis=is_pre_analysis)
         self.populate_dataset_citation(collection_version_id, dataset_version_id, output_filename)
         self.update_processing_status(dataset_version_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
         return output_filename
@@ -106,7 +112,7 @@ class ProcessAddLabels(ProcessingLogic):
         return SpatialMetadata(is_single=bool(is_single), has_fullres=has_fullres)
 
     @logit
-    def extract_metadata(self, filename) -> DatasetMetadata:
+    def extract_metadata(self, filename) -> Tuple[DatasetMetadata, Optional[GeneticPerturbationMetadata]]:
         """Pull metadata out of the AnnData file to insert into the dataset table."""
 
         adata = read_h5ad(filename)
@@ -123,6 +129,8 @@ class ProcessAddLabels(ProcessingLogic):
 
         def _get_term_pairs(base_term) -> List[OntologyTermId]:
             base_term_id = base_term + "_ontology_term_id"
+            if base_term not in adata.obs.columns or base_term_id not in adata.obs.columns:
+                return []
             return [
                 OntologyTermId(label=k[0], ontology_term_id=k[1])
                 for k in adata.obs.groupby([base_term, base_term_id]).groups
@@ -163,7 +171,28 @@ class ProcessAddLabels(ProcessingLogic):
             else:
                 return _get_term_pairs("organism")
 
-        return DatasetMetadata(
+        def _get_perturbation_types() -> Optional[List[str]]:
+            if "perturbation_types" not in adata.obs.columns:
+                return None
+            _excluded = {"na", "no perturbations"}
+            values = adata.obs["perturbation_types"].dropna().unique()
+            filtered = sorted(v for v in values if v not in _excluded)
+            return filtered if filtered else []
+
+        def _get_genetic_perturbation_strategy() -> Optional[List[str]]:
+            if "genetic_perturbation_strategy" not in adata.obs.columns:
+                return None
+            _excluded = {"no perturbations"}
+            values = adata.obs["genetic_perturbation_strategy"].dropna().unique()
+            return sorted(v for v in values if v not in _excluded)
+
+        def _get_genetic_perturbation_metadata() -> Optional[GeneticPerturbationMetadata]:
+            gp = adata.uns.get("genetic_perturbations")
+            if gp is None:
+                return None
+            return GeneticPerturbationMetadata.from_dict(dict(gp))
+
+        dataset_metadata = DatasetMetadata(
             name=adata.uns["title"],
             organism=_get_organism_terms(),
             tissue=_get_tissue_terms(),
@@ -190,7 +219,10 @@ class ProcessAddLabels(ProcessingLogic):
             raw_data_location="raw.X" if adata.raw else "X",
             citation=adata.uns.get("citation"),
             spatial=self.get_spatial_metadata(adata.uns["spatial"]) if "spatial" in adata.uns else None,
+            perturbation_types=_get_perturbation_types(),
+            genetic_perturbation_strategy=_get_genetic_perturbation_strategy(),
         )
+        return dataset_metadata, _get_genetic_perturbation_metadata()
 
     def process(
         self,
@@ -198,6 +230,7 @@ class ProcessAddLabels(ProcessingLogic):
         dataset_version_id: DatasetVersionId,
         artifact_bucket: str,
         datasets_bucket: str,
+        is_pre_analysis: bool = False,
     ):
         """
         1. Download the original dataset from URI
@@ -208,6 +241,7 @@ class ProcessAddLabels(ProcessingLogic):
         :param dataset_version_id:
         :param artifact_bucket:
         :param datasets_bucket:
+        :param is_pre_analysis: whether to apply pre-analysis label rules
         :return:
         """
         self.update_processing_status(dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID)
@@ -220,14 +254,18 @@ class ProcessAddLabels(ProcessingLogic):
         # label the dataset
         try:
             file_with_labels = self.add_labels(
-                collection_version_id, dataset_version_id, original_h5ad_artifact_file_name
+                collection_version_id,
+                dataset_version_id,
+                original_h5ad_artifact_file_name,
+                is_pre_analysis=is_pre_analysis,
             )
         except Exception as e:
             self.logger.exception(f"An unexpected error occurred while adding labels to the data set: {e}")
             raise AddLabelsFailed() from e
         # Process metadata
-        metadata = self.extract_metadata(file_with_labels)
+        metadata, gp_metadata = self.extract_metadata(file_with_labels)
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
+        self.business_logic.set_dataset_genetic_perturbations(dataset_version_id, gp_metadata)
         # Upload the labeled dataset to the artifact bucket
         self.create_artifact(
             file_with_labels,

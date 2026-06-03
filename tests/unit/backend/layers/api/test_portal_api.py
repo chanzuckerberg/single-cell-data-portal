@@ -196,6 +196,7 @@ class TestCollection(BaseAPIPortalTest):
             ],
             "description": "described",
             "id": mock.ANY,
+            "is_pre_analysis": False,
             "links": [],
             "name": "test_collection",
             "published_at": mock.ANY,

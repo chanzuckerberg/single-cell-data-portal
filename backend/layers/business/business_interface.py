@@ -22,6 +22,7 @@ from backend.layers.common.entities import (
     DatasetStatusKey,
     DatasetVersion,
     DatasetVersionId,
+    GeneticPerturbationMetadata,
     PublishedDatasetVersion,
 )
 from backend.layers.common.ingestion_manifest import IngestionManifest
@@ -67,7 +68,11 @@ class BusinessLogicInterface:
         pass
 
     def create_collection(
-        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
+        self,
+        owner: str,
+        curator_name: str,
+        collection_metadata: CollectionMetadata,
+        is_pre_analysis: bool = False,
     ) -> CollectionVersion:
         pass
 
@@ -149,6 +154,16 @@ class BusinessLogicInterface:
         pass
 
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
+        pass
+
+    def set_dataset_genetic_perturbations(
+        self, dataset_version_id: DatasetVersionId, genetic_perturbations: Optional[GeneticPerturbationMetadata]
+    ) -> None:
+        pass
+
+    def get_dataset_genetic_perturbations(
+        self, dataset_version_id: DatasetVersionId
+    ) -> Optional[GeneticPerturbationMetadata]:
         pass
 
     def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:

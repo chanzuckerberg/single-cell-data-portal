@@ -37,6 +37,7 @@ class CollectionVersionTable:
     has_custom_dataset_order = Column(BOOLEAN)
     is_auto_version = Column(BOOLEAN)
     data_submission_policy_version = Column(String)
+    is_pre_analysis = Column(BOOLEAN)
 
 
 @mapper_registry.mapped
@@ -58,6 +59,7 @@ class DatasetVersionTable:
     collection_id = Column(UUID(as_uuid=True))
     created_at = Column(DateTime)
     dataset_metadata = Column(JSON)
+    genetic_perturbations = Column(JSON)
     artifacts = Column(ARRAY(UUID(as_uuid=True)))
     status = Column(JSON)
 

@@ -188,7 +188,8 @@ def _wait_for_dataset_status(session, api_url, dataset_id, headers):
     errors = []
     keep_trying = True
     expected_upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
-    expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", "NA", None]
+    # "SKIPPED" is valid for pre-analysis datasets (cxg is skipped) and for rds (always skipped)
+    expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", "NA", "SKIPPED", None]
     timer = time.time()
     while keep_trying:
         res = session.get(f"{api_url}/dp/v1/datasets/{dataset_id}/status", headers=headers)
@@ -212,14 +213,19 @@ def _wait_for_dataset_status(session, api_url, dataset_id, headers):
                 errors.append(f"Atac CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
             if rds_status == "FAILED":
                 errors.append(f"RDS CONVERSION FAILED. Status: {data}, Check logs for dataset: {dataset_id}")
-            if any(
-                [
-                    (cxg_status == h5ad_status == "UPLOADED" or cxg_status == h5ad_status == "CONVERTED")
-                    and rds_status == "SKIPPED"
-                    and atac_status in ["SKIPPED", "UPLOADED", "NA", "COPIED"],
-                    errors,
-                ]
-            ):
+            # Pre-analysis datasets skip CXG conversion; regular datasets expect matching cxg/h5ad statuses.
+            pre_analysis_done = (
+                cxg_status == "SKIPPED"
+                and h5ad_status in ["UPLOADED", "CONVERTED"]
+                and rds_status == "SKIPPED"
+                and atac_status in ["SKIPPED", "NA", None]
+            )
+            regular_done = (
+                (cxg_status == h5ad_status == "UPLOADED" or cxg_status == h5ad_status == "CONVERTED")
+                and rds_status == "SKIPPED"
+                and atac_status in ["SKIPPED", "UPLOADED", "NA", "COPIED"]
+            )
+            if any([pre_analysis_done or regular_done, errors]):
                 keep_trying = False
             if time.time() >= timer + 3600:
                 raise TimeoutError(
@@ -273,3 +279,38 @@ def get_curation_api_access_token(session, api_url, config) -> str:
     )
     assertStatusCode(201, response)
     return response.json()["access_token"]
+
+
+def wait_for_dataset_processing_via_curation_api(
+    session, api_url: str, curation_api_access_token: str, collection_id: str, dataset_id: str
+) -> dict:
+    """
+    Poll GET /curation/v1/collections/{collection_id} until the given dataset reaches
+    a terminal processing_status (SUCCESS or FAILURE/VALIDATION_FAILURE/PIPELINE_FAILURE).
+
+    This is the correct way for curation API callers to wait for processing — the
+    dp/v1 status endpoint only accepts cookie auth and is not available to Bearer-token
+    clients.  Returns {"dataset_id": dataset_id, "errors": [...]}.
+    """
+    headers = {"Authorization": f"Bearer {curation_api_access_token}", "Content-Type": "application/json"}
+    terminal_ok = {"SUCCESS"}
+    terminal_err = {"FAILURE", "VALIDATION_FAILURE", "PIPELINE_FAILURE"}
+    timer = time.time()
+    while True:
+        res = session.get(f"{api_url}/curation/v1/collections/{collection_id}", headers=headers)
+        assertStatusCode(200, res)
+        datasets = res.json().get("datasets", [])
+        dataset = next((d for d in datasets if d["dataset_id"] == dataset_id), None)
+        if dataset is not None:
+            status = dataset.get("processing_status")
+            if status in terminal_ok:
+                return {"dataset_id": dataset_id, "errors": []}
+            if status in terminal_err:
+                detail = dataset.get("processing_status_detail", "")
+                return {"dataset_id": dataset_id, "errors": [f"{status}: {detail}"]}
+        if time.time() >= timer + 3600:
+            raise TimeoutError(
+                f"Dataset processing timed out after 1 h. "
+                f"collection_id={collection_id} dataset_id={dataset_id} last_status={status!r}"
+            )
+        time.sleep(10)
