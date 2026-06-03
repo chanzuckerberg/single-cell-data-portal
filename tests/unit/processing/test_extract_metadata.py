@@ -6,7 +6,13 @@ import numpy as np
 import pandas
 from dask.array import from_array
 
-from backend.layers.common.entities import OntologyTermId, SpatialMetadata, TissueOntologyTermId
+from backend.layers.common.entities import (
+    GeneticPerturbationEntry,
+    GeneticPerturbationMetadata,
+    OntologyTermId,
+    SpatialMetadata,
+    TissueOntologyTermId,
+)
 from backend.layers.processing.process_add_labels import ProcessAddLabels
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
 from tests.unit.processing.base_processing_test import BaseProcessingTest
@@ -106,7 +112,7 @@ class TestAddLabels(BaseProcessingTest):
 
         with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
             adata.write_h5ad(f.name)
-            extracted_metadata = self.pal.extract_metadata(f.name)
+            extracted_metadata, _ = self.pal.extract_metadata(f.name)
 
         self.assertEqual(extracted_metadata.organism, [OntologyTermId("Homo sapiens", "NCBITaxon:8505")])
 
@@ -179,6 +185,8 @@ class TestAddLabels(BaseProcessingTest):
 
         self.assertEqual(extracted_metadata.raw_data_location, "X")
         self.assertEqual(extracted_metadata.spatial, None)
+        # No perturbation_types column in obs → should be None
+        self.assertIsNone(extracted_metadata.perturbation_types)
 
     def test_extract_metadata_organism_uns(self):
         # Same setup as before, but organism terms are in uns instead of obs
@@ -268,7 +276,7 @@ class TestAddLabels(BaseProcessingTest):
 
         with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
             adata.write_h5ad(f.name)
-            extracted_metadata = self.pal.extract_metadata(f.name)
+            extracted_metadata, _ = self.pal.extract_metadata(f.name)
 
         self.assertEqual(extracted_metadata.organism, [OntologyTermId("Homo sapiens", "NCBITaxon:8505")])
 
@@ -439,13 +447,113 @@ class TestAddLabels(BaseProcessingTest):
 
         with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
             adata.write_h5ad(f.name)
-            extracted_metadata = self.pal.extract_metadata(f.name)
+            extracted_metadata, _ = self.pal.extract_metadata(f.name)
 
         # Verify that the "my_awesome_wonky_layer" was read and not the default X layer. The layer contains only zeros
         # which should result in a mean_genes_per_cell value of 0 compared to 3 if the X layer was read.
         self.assertEqual(extracted_metadata.mean_genes_per_cell, 0)
 
         self.assertEqual(extracted_metadata.raw_data_location, "raw.X")
+
+    def _make_minimal_adata(self, extra_obs_cols=None):
+        """Build a minimal AnnData suitable for extract_metadata tests."""
+        n = 5
+        obs_data = {
+            "tissue": ["lung"] * n,
+            "tissue_ontology_term_id": ["UBERON:01"] * n,
+            "tissue_type": ["tissue"] * n,
+            "assay": ["10x"] * n,
+            "assay_ontology_term_id": ["EFO:001"] * n,
+            "disease": ["healthy"] * n,
+            "disease_ontology_term_id": ["MONDO:123"] * n,
+            "sex": ["male"] * n,
+            "sex_ontology_term_id": ["M"] * n,
+            "self_reported_ethnicity": ["unknown"] * n,
+            "self_reported_ethnicity_ontology_term_id": ["unknown"] * n,
+            "development_stage": ["adult"] * n,
+            "development_stage_ontology_term_id": ["HsapDv:0"] * n,
+            "organism": ["Homo sapiens"] * n,
+            "organism_ontology_term_id": ["NCBITaxon:9606"] * n,
+            "is_primary_data": [True] * n,
+            "cell_type": ["B cell"] * n,
+            "cell_type_ontology_term_id": ["CL:001"] * n,
+            "suspension_type": ["cell"] * n,
+            "donor_id": ["D1"] * n,
+        }
+        if extra_obs_cols:
+            obs_data.update(extra_obs_cols)
+        obs = pandas.DataFrame(obs_data, index=[str(i) for i in range(n)])
+        var = pandas.DataFrame(
+            {"feature_biotype": ["gene"] * 3, "feature_reference": ["NCBITaxon:9606"] * 3},
+            index=["A", "B", "C"],
+        )
+        uns = {"title": "minimal dataset", "schema_version": "3.0.0"}
+        X = from_array(np.ones((n, 3), dtype=int))
+        return anndata.AnnData(X=X, obs=obs, var=var, uns=uns)
+
+    def test_extract_metadata_perturbation_types_with_column(self):
+        """perturbation_types with mixed values: excluded sentinels and None dropped, result sorted lexically."""
+        adata = self._make_minimal_adata(
+            extra_obs_cols={
+                "perturbation_types": ["CRISPR", "na", "ORF", "no perturbations", None],
+            }
+        )
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted, _ = self.pal.extract_metadata(f.name)
+        self.assertEqual(extracted.perturbation_types, ["CRISPR", "ORF"])
+
+    def test_extract_metadata_perturbation_types_without_column(self):
+        """When obs has no perturbation_types column, result is None."""
+        adata = self._make_minimal_adata()
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted, _ = self.pal.extract_metadata(f.name)
+        self.assertIsNone(extracted.perturbation_types)
+
+    def test_extract_metadata_perturbation_types_all_excluded(self):
+        """When all perturbation_types values are excluded sentinels or None, result is an empty list."""
+        adata = self._make_minimal_adata(
+            extra_obs_cols={
+                "perturbation_types": ["na", "no perturbations", None, "na", None],
+            }
+        )
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted, _ = self.pal.extract_metadata(f.name)
+        self.assertEqual(extracted.perturbation_types, [])
+
+    def test_extract_metadata_genetic_perturbation_strategy_with_column(self):
+        """Unique valid values are returned deduped and in ascending lexical order."""
+        adata = self._make_minimal_adata(
+            extra_obs_cols={
+                "genetic_perturbation_strategy": ["CRISPR", "CRISPRi", "CRISPR", "no perturbations", "ORF"],
+            }
+        )
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted, _ = self.pal.extract_metadata(f.name)
+        self.assertEqual(extracted.genetic_perturbation_strategy, ["CRISPR", "CRISPRi", "ORF"])
+
+    def test_extract_metadata_genetic_perturbation_strategy_without_column(self):
+        """When obs has no genetic_perturbation_strategy column, result is None."""
+        adata = self._make_minimal_adata()
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted, _ = self.pal.extract_metadata(f.name)
+        self.assertIsNone(extracted.genetic_perturbation_strategy)
+
+    def test_extract_metadata_genetic_perturbation_strategy_no_perturbations_excluded(self):
+        """'no perturbations' sentinel values are excluded from the result."""
+        adata = self._make_minimal_adata(
+            extra_obs_cols={
+                "genetic_perturbation_strategy": ["CRISPR", "no perturbations", "no perturbations", "CRISPR", "CRISPR"],
+            },
+        )
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            extracted, _ = self.pal.extract_metadata(f.name)
+        self.assertEqual(extracted.genetic_perturbation_strategy, ["CRISPR"])
 
     def test_get_spatial_metadata__is_single_and_fullres_true(self):
         spatial_dict = {
@@ -474,3 +582,77 @@ class TestAddLabels(BaseProcessingTest):
         self.assertEqual(
             self.pal.get_spatial_metadata(spatial_dict), SpatialMetadata(is_single=False, has_fullres=False)
         )
+
+    # --- GeneticPerturbationMetadata extraction tests ---
+
+    def test_extract_metadata_genetic_perturbation_metadata_absent(self):
+        """Returns None as the second tuple element when uns has no 'genetic_perturbations' key."""
+        adata = self._make_minimal_adata()
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            _, gp_metadata = self.pal.extract_metadata(f.name)
+        self.assertIsNone(gp_metadata)
+
+    def test_extract_metadata_genetic_perturbation_metadata_present(self):
+        """Returns a GeneticPerturbationMetadata with correctly typed entries when uns has 'genetic_perturbations'."""
+        gp_dict = {
+            "p1": {
+                "role": "KO",
+                "protospacer_sequence": "ACGTACGT",
+                "protospacer_adjacent_motif": "NGG",
+                "derived_genomic_regions": ["chr1:100-200"],
+                "derived_features": {"ENSG00000001": "GENE1"},
+            },
+            "p2": {
+                "role": "overexpression",
+                "protospacer_sequence": None,
+                "protospacer_adjacent_motif": None,
+                "derived_genomic_regions": [],
+                "derived_features": {},
+            },
+        }
+        adata = self._make_minimal_adata()
+        adata.uns["genetic_perturbations"] = gp_dict
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            _, gp_metadata = self.pal.extract_metadata(f.name)
+
+        self.assertIsInstance(gp_metadata, GeneticPerturbationMetadata)
+        self.assertIn("p1", gp_metadata.perturbations)
+        self.assertIn("p2", gp_metadata.perturbations)
+
+        p1 = gp_metadata.perturbations["p1"]
+        self.assertIsInstance(p1, GeneticPerturbationEntry)
+        self.assertEqual(p1.role, "KO")
+        self.assertEqual(p1.protospacer_sequence, "ACGTACGT")
+        self.assertEqual(p1.protospacer_adjacent_motif, "NGG")
+        self.assertEqual(p1.derived_genomic_regions, ["chr1:100-200"])
+        self.assertEqual(p1.derived_features, {"ENSG00000001": "GENE1"})
+
+        p2 = gp_metadata.perturbations["p2"]
+        self.assertEqual(p2.role, "overexpression")
+        self.assertEqual(p2.derived_genomic_regions, [])
+        self.assertEqual(p2.derived_features, {})
+
+    def test_extract_metadata_genetic_perturbation_metadata_to_dict_roundtrip(self):
+        """GeneticPerturbationMetadata.to_dict() / from_dict() round-trips correctly."""
+        original = {
+            "p1": {
+                "role": "KO",
+                "protospacer_sequence": "ACGT",
+                "protospacer_adjacent_motif": None,
+                "derived_genomic_regions": ["chr2:500-600"],
+                "derived_features": {"ENSG00000002": "GENE2"},
+            }
+        }
+        gp_metadata = GeneticPerturbationMetadata.from_dict(original)
+        self.assertEqual(gp_metadata.to_dict(), original)
+
+    def test_extract_metadata_returns_tuple(self):
+        """extract_metadata always returns a 2-tuple of (DatasetMetadata, Optional[GeneticPerturbationMetadata])."""
+        adata = self._make_minimal_adata()
+        with tempfile.NamedTemporaryFile(suffix=".h5ad") as f:
+            adata.write_h5ad(f.name)
+            result = self.pal.extract_metadata(f.name)
+        self.assertIsInstance(result, tuple)
+        self.assertEqual(len(result), 2)

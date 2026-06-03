@@ -7,13 +7,19 @@ from backend.layers.common.entities import Visibility
 from backend.portal.api.providers import get_business_logic
 
 
-def get(token_info: dict, schema_version: str = None, visibility: str = None):
+def get(token_info: dict, schema_version: str = None, visibility: str = None, analysis: str = None):
     """
     Datasets index endpoint to retrieve full metadata. Only return Dataset data for which the curator is authorized.
     :param token_info: access token info.
     :param schema_version: the schema version to filter the datasets by, PUBLIC Datasets only.
     :param visibility: the Visibility in string form.
+    :param analysis: filter by analysis type: "pre-analysis" (is_pre_analysis=True) or
+                     "post-analysis" (is_pre_analysis=False). If not provided, all datasets are returned.
     """
+    if analysis is not None and analysis not in ("pre-analysis", "post-analysis"):
+        raise InvalidParametersHTTPException(
+            detail="Invalid analysis parameter. Must be 'pre-analysis' or 'post-analysis'."
+        )
 
     # Handle retrieval of private datasets.
     if visibility == Visibility.PRIVATE.name:
@@ -44,9 +50,13 @@ def get(token_info: dict, schema_version: str = None, visibility: str = None):
             schema_version
         )
 
-    # Shape datasets for response.
+    # Shape datasets for response, applying optional analysis filter.
     all_datasets_with_collection_name_and_doi = []
     for collection in collections_with_datasets:
+        if analysis == "pre-analysis" and not collection.is_pre_analysis:
+            continue
+        if analysis == "post-analysis" and collection.is_pre_analysis:
+            continue
         for dataset in collection.datasets:
             dataset_response_obj = reshape_dataset_for_curation_datasets_index_api(visibility, collection, dataset)
             all_datasets_with_collection_name_and_doi.append(dataset_response_obj)

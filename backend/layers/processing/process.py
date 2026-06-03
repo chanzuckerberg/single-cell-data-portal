@@ -107,6 +107,7 @@ class ProcessMain(ProcessingLogic):
         Gets called by the step function at every different step, as defined by `step_name`
         """
         self.logger.info(f"Processing dataset version {dataset_version_id}", extra={"step_name": step_name})
+        is_pre_analysis = manifest.is_pre_analysis if manifest is not None else False
         try:
             if step_name == "validate_anndata":
                 self.process_validate_h5ad.process(dataset_version_id, manifest, artifact_bucket)
@@ -119,12 +120,28 @@ class ProcessMain(ProcessingLogic):
                 )
             elif step_name == "add_labels":
                 self.process_add_labels.process(
-                    collection_version_id, dataset_version_id, artifact_bucket, datasets_bucket
+                    collection_version_id,
+                    dataset_version_id,
+                    artifact_bucket,
+                    datasets_bucket,
+                    is_pre_analysis=is_pre_analysis,
                 )
             elif step_name == "cxg":
-                self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket)
+                if is_pre_analysis:
+                    self.logger.info(f"Skipping CXG conversion for pre-analysis dataset {dataset_version_id}")
+                    self.update_processing_status(
+                        dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.SKIPPED
+                    )
+                else:
+                    self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket)
             elif step_name == "cxg_remaster":
-                self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket, is_reprocess=True)
+                if is_pre_analysis:
+                    self.logger.info(f"Skipping CXG remaster for pre-analysis dataset {dataset_version_id}")
+                    self.update_processing_status(
+                        dataset_version_id, DatasetStatusKey.CXG, DatasetConversionStatus.SKIPPED
+                    )
+                else:
+                    self.process_cxg.process(dataset_version_id, artifact_bucket, cxg_bucket, is_reprocess=True)
             else:
                 self.logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 

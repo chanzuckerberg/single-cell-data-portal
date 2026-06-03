@@ -105,6 +105,9 @@ paths:
                   $ref: "#/components/schemas/links"
                 consortia:
                   $ref: "#/components/schemas/consortia"
+                is_pre_analysis:
+                  type: boolean
+                  description: Whether this collection contains pre-analysis datasets.
       responses:
         "201":
           description: A new collection has been created.

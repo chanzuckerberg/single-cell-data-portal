@@ -80,11 +80,14 @@ class ProcessValidateH5AD(ProcessingLogic):
         return local_filename
 
     @logit
-    def validate_h5ad_file(self, dataset_version_id: DatasetVersionId, local_filename: str) -> None:
+    def validate_h5ad_file(
+        self, dataset_version_id: DatasetVersionId, local_filename: str, is_pre_analysis: bool = False
+    ) -> None:
         """
         Validates the specified dataset file and updates the processing status in the database
         :param dataset_version_id: version ID of the dataset to update
         :param local_filename: file name of the dataset to validate and label
+        :param is_pre_analysis: whether to apply pre-analysis validation rules
         :return: boolean indicating if seurat conversion is possible
         """
         self.update_processing_status(
@@ -92,7 +95,9 @@ class ProcessValidateH5AD(ProcessingLogic):
         )
 
         try:
-            is_valid, errors, can_convert_to_seurat = self.schema_validator.validate_anndata(local_filename)
+            is_valid, errors, can_convert_to_seurat = self.schema_validator.validate_anndata(
+                local_filename, is_pre_analysis=is_pre_analysis
+            )
         except Exception as e:
             self.logger.exception("validation failed")
             self.update_processing_status(
@@ -131,4 +136,4 @@ class ProcessValidateH5AD(ProcessingLogic):
         local_filename = self.upload_raw_h5ad(dataset_version_id, anndata_uri, artifact_bucket, key_prefix)
 
         # Validate and label the dataset
-        self.validate_h5ad_file(dataset_version_id, local_filename)
+        self.validate_h5ad_file(dataset_version_id, local_filename, is_pre_analysis=manifest.is_pre_analysis)

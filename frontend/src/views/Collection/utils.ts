@@ -148,11 +148,20 @@ function createLinkTypesToLinks(links: Link[]) {
   return linkTypesToLinks;
 }
 
-export function getIsPublishable(datasets: Array<Dataset>): boolean {
+export function getIsPublishable(
+  datasets: Array<Dataset>,
+  isPreAnalysis = false
+): boolean {
   return (
     datasets?.length > 0 &&
     datasets.every((dataset) => {
       const assets = dataset.dataset_assets;
+      // Pre-analysis datasets intentionally skip CXG conversion, so only H5AD is required
+      if (isPreAnalysis) {
+        return assets.some(
+          (asset) => asset.filetype === DATASET_ASSET_FORMAT.H5AD
+        );
+      }
       const numOfDeployments = dataset.dataset_deployments.length;
       // Assets must contain a cxg and an h5ad. RDS (Seurat) are no longer mandatory for publishing
       return (

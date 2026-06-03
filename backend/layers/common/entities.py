@@ -2,7 +2,7 @@ import uuid
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import Dict, List, Optional
 from urllib.parse import urlparse
 
 from dataclasses_json import dataclass_json
@@ -199,6 +199,33 @@ class SpatialMetadata:
 
 @dataclass_json
 @dataclass
+class GeneticPerturbationEntry:
+    role: str
+    protospacer_sequence: Optional[str] = None
+    protospacer_adjacent_motif: Optional[str] = None
+    derived_genomic_regions: List[str] = field(default_factory=list)
+    derived_features: Dict[str, str] = field(default_factory=dict)
+
+
+@dataclass
+class GeneticPerturbationMetadata:
+    """
+    Typed container for uns['genetic_perturbations'].
+    Top-level keys are perturbation IDs; values are GeneticPerturbationEntry instances.
+    """
+
+    perturbations: Dict[str, GeneticPerturbationEntry]
+
+    def to_dict(self) -> dict:
+        return {pid: entry.to_dict() for pid, entry in self.perturbations.items()}
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "GeneticPerturbationMetadata":
+        return cls(perturbations={pid: GeneticPerturbationEntry.from_dict(v) for pid, v in data.items()})
+
+
+@dataclass_json
+@dataclass
 class DatasetMetadata:
     name: str
     schema_version: str
@@ -226,6 +253,8 @@ class DatasetMetadata:
     raw_data_location: Optional[str] = None
     primary_cell_count: Optional[int] = None
     spatial: Optional[SpatialMetadata] = None
+    perturbation_types: Optional[List[str]] = None
+    genetic_perturbation_strategy: Optional[List[str]] = None
 
 
 @dataclass
@@ -325,6 +354,7 @@ class CollectionVersionBase:
     has_custom_dataset_order: bool
     is_auto_version: Optional[bool]
     data_submission_policy_version: str
+    is_pre_analysis: bool = False
 
     def is_published(self) -> bool:
         """
@@ -351,19 +381,19 @@ class CollectionVersionBase:
 
 @dataclass
 class CollectionVersion(CollectionVersionBase):
-    datasets: List[DatasetVersionId]
+    datasets: List[DatasetVersionId] = field(default_factory=list)
 
 
 @dataclass
 class CollectionVersionWithDatasets(CollectionVersionBase):
-    datasets: List[DatasetVersion]
+    datasets: List[DatasetVersion] = field(default_factory=list)
 
 
 @dataclass
 class CollectionVersionWithPublishedDatasets(CollectionVersionBase):
-    datasets: List[PublishedDatasetVersion]
+    datasets: List[PublishedDatasetVersion] = field(default_factory=list)
 
 
 @dataclass
 class CollectionVersionWithPrivateDatasets(CollectionVersionBase):
-    datasets: List[PrivateDatasetVersion]
+    datasets: List[PrivateDatasetVersion] = field(default_factory=list)

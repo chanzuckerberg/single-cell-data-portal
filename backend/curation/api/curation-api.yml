@@ -510,6 +510,34 @@ paths:
         "410":
           $ref: "#/components/responses/410"
 
+  /v1/collections/{collection_id}/datasets/{dataset_id}/genetic_perturbations:
+    get:
+      summary: Fetch the full genetic_perturbations dictionary for a Dataset.
+      description: |
+        Returns the complete `uns['genetic_perturbations']` dictionary for the Dataset, keyed by perturbation ID.
+        If the Dataset was not processed from a file containing `uns['genetic_perturbations']`, the
+        `genetic_perturbations` field in the response will be `null`.
+      operationId: backend.curation.api.v1.curation.collections.collection_id.datasets.dataset_id.genetic_perturbations.actions.get
+      tags:
+        - Collection
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+        - $ref: "#/components/parameters/path_dataset_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  genetic_perturbations:
+                    $ref: "#/components/schemas/genetic_perturbations_dict"
+        "404":
+          $ref: "#/components/responses/404"
+        "410":
+          $ref: "#/components/responses/410"
+
   /v1/collections/{collection_id}/datasets/{dataset_id}/manifest:
     get:
       summary: Get manifest for a dataset
@@ -733,6 +761,18 @@ paths:
       parameters:
         - $ref: "#/components/parameters/schema_version"
         - $ref: "#/components/parameters/dataset_visibility"
+        - name: analysis
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - pre-analysis
+              - post-analysis
+          description: |
+            Filter datasets by analysis type.
+            - `pre-analysis`: return only datasets belonging to collections where `is_pre_analysis` is True.
+            - `post-analysis`: return only datasets belonging to collections where `is_pre_analysis` is False.
       responses:
         "200":
           description: OK
@@ -847,7 +887,7 @@ components:
           $ref: "#/components/schemas/collection_id"
         collection_url:
           description: |
-            The CELLxGENE Discover URL for the Collection. This points to the canonical link unless it's a revision, 
+            The CELLxGENE Discover URL for the Collection. This points to the canonical link unless it's a revision,
             in which case it points to the unpublished revision version.
           type: string
         collection_version_id:
@@ -871,6 +911,8 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
+        is_pre_analysis:
+          $ref: "#/components/schemas/is_pre_analysis"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -893,6 +935,13 @@ components:
     collection_url:
       description: The CELLxGENE Discover URL for the Collection.
       type: string
+    is_pre_analysis:
+      description: |
+        Indicates whether this Collection contains pre-analysis datasets. When True, the CXG conversion
+        step is skipped and the pre-analysis flag is passed to the validator and label appender.
+        This value is set at collection creation and cannot be changed afterwards.
+      type: boolean
+      default: false
     consortia:
       type: array
       items:
@@ -987,6 +1036,8 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
+        is_pre_analysis:
+          $ref: "#/components/schemas/is_pre_analysis"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -1034,6 +1085,8 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
+        is_pre_analysis:
+          $ref: "#/components/schemas/is_pre_analysis"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -1057,6 +1110,8 @@ components:
           $ref: "#/components/schemas/collection_description"
         doi:
           $ref: "#/components/schemas/doi"
+        is_pre_analysis:
+          $ref: "#/components/schemas/is_pre_analysis"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -1125,6 +1180,8 @@ components:
           $ref: "#/components/schemas/feature_count"
         feature_reference:
           $ref: "#/components/schemas/feature_reference"
+        is_pre_analysis:
+          $ref: "#/components/schemas/is_pre_analysis"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         mean_genes_per_cell:
@@ -1138,6 +1195,10 @@ components:
         organism:
           $ref: "#/components/schemas/dataset_organism"
           nullable: true
+        genetic_perturbation_strategy:
+          $ref: "#/components/schemas/genetic_perturbation_strategy"
+        perturbation_types:
+          $ref: "#/components/schemas/perturbation_types"
         processing_status:
           $ref: "#/components/schemas/processing_status_dataset"
         processing_status_detail:
@@ -1233,6 +1294,8 @@ components:
           $ref: "#/components/schemas/donor_id"
         explorer_url:
           $ref: "#/components/schemas/explorer_url"
+        is_pre_analysis:
+          $ref: "#/components/schemas/is_pre_analysis"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         mean_genes_per_cell:
@@ -1245,6 +1308,10 @@ components:
           type: string
         organism:
           $ref: "#/components/schemas/dataset_organism"
+        genetic_perturbation_strategy:
+          $ref: "#/components/schemas/genetic_perturbation_strategy"
+        perturbation_types:
+          $ref: "#/components/schemas/perturbation_types"
         processing_status:
           $ref: "#/components/schemas/processing_status_dataset"
         processing_status_detail:
@@ -1362,6 +1429,10 @@ components:
         organism:
           $ref: "#/components/schemas/dataset_organism"
           nullable: true
+        genetic_perturbation_strategy:
+          $ref: "#/components/schemas/genetic_perturbation_strategy"
+        perturbation_types:
+          $ref: "#/components/schemas/perturbation_types"
         published_at:
           $ref: "#/components/schemas/dataset_version_published_at"
         raw_data_location:
@@ -1457,6 +1528,10 @@ components:
           $ref: "#/components/schemas/dataset_id"
         organism:
           $ref: "#/components/schemas/dataset_organism"
+        genetic_perturbation_strategy:
+          $ref: "#/components/schemas/genetic_perturbation_strategy"
+        perturbation_types:
+          $ref: "#/components/schemas/perturbation_types"
         tissue:
           $ref: "#/components/schemas/dataset_tissue"
         suspension_type:
@@ -1648,6 +1723,64 @@ components:
         published_year:
           type: number
       type: object
+    genetic_perturbation_entry:
+      description: |
+        Metadata for a single genetic perturbation, as defined in uns['genetic_perturbations'] per the
+        CELLxGENE schema.
+      type: object
+      properties:
+        role:
+          type: string
+          description: The role of the perturbation (e.g. "KO", "overexpression").
+        protospacer_sequence:
+          type: string
+          nullable: true
+          description: The protospacer sequence for CRISPR-based perturbations.
+        protospacer_adjacent_motif:
+          type: string
+          nullable: true
+          description: The PAM sequence for the protospacer.
+        derived_genomic_regions:
+          type: array
+          items:
+            type: string
+          description: Genomic regions derived from this perturbation.
+        derived_features:
+          type: object
+          additionalProperties:
+            type: string
+          description: Map of feature IDs to feature names derived from this perturbation.
+      required:
+        - role
+    genetic_perturbations_dict:
+      description: |
+        The full uns['genetic_perturbations'] dictionary from the dataset, keyed by perturbation ID.
+        Each value is a genetic_perturbation_entry. Null if the dataset has no genetic perturbations data.
+      nullable: true
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/genetic_perturbation_entry"
+    genetic_perturbation_strategy:
+      description: |
+        List of unique genetic perturbation strategies present across all observations in the dataset. Values are
+        sourced from obs['genetic_perturbation_strategy'], with 'no perturbations' and null values excluded. Items
+        are in ascending lexical order. If the dataset does not contain a 'genetic_perturbation_strategy' obs
+        column, this field is null.
+      type: array
+      items:
+        type: string
+      nullable: true
+      example: ["CRISPR", "CRISPRi"]
+    perturbation_types:
+      description: |
+        List of unique perturbation types present across all observations in the dataset. Values are sourced from
+        obs['perturbation_types'], with 'na' and null values excluded. Items are in ascending lexical order.
+        If the dataset does not contain a 'perturbation_types' obs column, this field is null.
+      type: array
+      items:
+        type: string
+      nullable: true
+      example: ["CRISPR", "ORF"]
     raw_data_location:
       description: Location in dataset's AnnData artifact where raw (i.e. non-normalized) matrix data is stored
       type: string
