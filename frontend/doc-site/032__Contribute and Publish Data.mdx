@@ -109,6 +109,16 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
     - [EFO]
   - **suspension_type**
     - `cell`, `nucleus`, or `na`
+  - **experimental_condition_ontology_term_id** _optional_
+    - should describe any known condition/factor thought to, or being tested to, have an impact on the measurement being taken, not necessarily any known condition/factor involved in the experiment
+    - chemical [CHEBI](https://www.ebi.ac.uk/ols4/ontologies/chebi/classes/http%253A%252F%252Fpurl.obolibrary.org%252Fobo%252FCHEBI_24431?lang=en)
+    - diet [EFO](https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0002755)
+    - temperature [EFO:0001702](https://www.ebi.ac.uk/ols4/ontologies/efo/classes?obo_id=EFO%3A0001702)
+    - protein [UniProt](https://www.uniprot.org/) submitted as `uniprot:P28906`
+    - antibody [UniProt](https://www.uniprot.org/) submitted as `anti-uniprot:P28906`
+    - unperturbed samples use `na`
+    - multiple <code>&nbsp;||&nbsp;</code>-delimited terms may be used if appropriate
+    - genetic (see below)
 - **Embeddings in obsm**:
   - one or more two-dimensional embeddings, prefixed with 'X\_'
 - **Features in var & raw.var (if present)**:
