@@ -150,6 +150,17 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
   - Follows the 5-column tabular format produced by [Cell Ranger](https://www.10xgenomics.com/support/software/cell-ranger-atac/latest/analysis/outputs/fragments-file)
   - Barcode values must match the values in the obs index of the corresponding AnnData object
   - [This notebook](https://github.com/Lattice-Data/lattice-tools/blob/main/cellxgene_resources/curation_fragments.ipynb) may be helpful to curate from Cell Ranger outputs
+- **Additional genetic perturbation standards**
+  - currently only supported for human, mouse, or zebrafish
+  - **uns['genetic_perturbations']** dictionary
+    - see [the schema](https://chanzuckerberg.github.io/single-cell-curation/latest-schema.html#genetic_perturbations) for specifics
+  - **obs['genetic_perturbation_id']**
+    - identifer corresponding to the uns['genetic_perturbations'] key(s)
+    - multiple <code>&nbsp;||&nbsp;</code>-delimited terms may be used if appropriate
+    - `na` for the lack of genetic perturbations
+  - **obs['genetic_perturbation_strategy']**
+    - `control`, `CRISPR activation screen`, `CRISPR interference screen`, `CRISPR knockout mutant`, or `CRISPR knockout screen`
+    - `na` if corresponding genetic_perturbation_id is `na`
 
 ## Data Submission Policy
 
