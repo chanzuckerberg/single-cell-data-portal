@@ -42,7 +42,7 @@ class ProcessingTest(BaseProcessingTest):
 
         # TODO: ideally use a real h5ad
         processor = ProcessAddLabels(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
-        processor.extract_metadata = Mock()
+        processor.extract_metadata = Mock(return_value=(Mock(), None))
         processor.populate_dataset_citation = Mock()
         processor.process(collection.version_id, dataset_version_id, "fake_bucket_name", "fake_datasets_bucket")
 

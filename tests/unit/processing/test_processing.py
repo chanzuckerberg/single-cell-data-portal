@@ -72,6 +72,7 @@ class ProcessingTest(BaseProcessingTest):
     @patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg")
     def test_process_anndata(self, mock_cxg, mock_extract_h5ad, mock_dataset_citation):
         mock_cxg.return_value = "local.cxg"
+        mock_extract_h5ad.return_value = (Mock(), None)
 
         dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         manifest = IngestionManifest(anndata=dropbox_uri)
@@ -268,3 +269,98 @@ class ProcessingTest(BaseProcessingTest):
 
             # Assert upload_directory was called after deletion
             mock_upload_directory.assert_called_once_with("local.cxg", s3_uri)
+
+
+class TestPreAnalysisProcessing(BaseProcessingTest):
+    """Tests for CXG skipping when is_pre_analysis=True in the manifest."""
+
+    def _make_manifest(self, is_pre_analysis: bool) -> IngestionManifest:
+        return IngestionManifest(anndata="https://fake.url/file.h5ad", is_pre_analysis=is_pre_analysis)
+
+    def test_cxg_step_skipped_for_pre_analysis(self):
+        """When is_pre_analysis=True, the cxg step sets status to SKIPPED without running ProcessCxg."""
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, _ = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None, None)
+        manifest = self._make_manifest(is_pre_analysis=True)
+        pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+
+        with patch.object(pm.process_cxg, "process") as mock_cxg:
+            result = pm.process(
+                collection.version_id,
+                dataset_version_id,
+                "cxg",
+                manifest,
+                "fake_bucket",
+                "fake_datasets_bucket",
+                "fake_cxg_bucket",
+            )
+
+        self.assertTrue(result)
+        mock_cxg.assert_not_called()
+        status = self.business_logic.get_dataset_status(dataset_version_id)
+        self.assertEqual(DatasetConversionStatus.SKIPPED, status.cxg_status)
+
+    def test_cxg_remaster_step_skipped_for_pre_analysis(self):
+        """When is_pre_analysis=True, cxg_remaster is also skipped."""
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, _ = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None, None)
+        manifest = self._make_manifest(is_pre_analysis=True)
+        pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+
+        with patch.object(pm.process_cxg, "process") as mock_cxg:
+            result = pm.process(
+                collection.version_id,
+                dataset_version_id,
+                "cxg_remaster",
+                manifest,
+                "fake_bucket",
+                "fake_datasets_bucket",
+                "fake_cxg_bucket",
+            )
+
+        self.assertTrue(result)
+        mock_cxg.assert_not_called()
+        status = self.business_logic.get_dataset_status(dataset_version_id)
+        self.assertEqual(DatasetConversionStatus.SKIPPED, status.cxg_status)
+
+    def test_cxg_step_runs_for_non_pre_analysis(self):
+        """When is_pre_analysis=False, the cxg step runs normally."""
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, _ = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None, None)
+        manifest = self._make_manifest(is_pre_analysis=False)
+        pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+
+        with patch.object(pm.process_cxg, "process") as mock_cxg:
+            pm.process(
+                collection.version_id,
+                dataset_version_id,
+                "cxg",
+                manifest,
+                "fake_bucket",
+                "fake_datasets_bucket",
+                "fake_cxg_bucket",
+            )
+
+        mock_cxg.assert_called_once()
+
+    def test_add_labels_passes_is_pre_analysis(self):
+        """add_labels step passes is_pre_analysis flag to schema_validator."""
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, _ = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None, None)
+        manifest = self._make_manifest(is_pre_analysis=True)
+        pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.schema_validator)
+
+        with patch.object(pm.process_add_labels, "process") as mock_add_labels:
+            pm.process(
+                collection.version_id,
+                dataset_version_id,
+                "add_labels",
+                manifest,
+                "fake_bucket",
+                "fake_datasets_bucket",
+                "fake_cxg_bucket",
+            )
+
+        mock_add_labels.assert_called_once()
+        call_kwargs = mock_add_labels.call_args[1]
+        self.assertTrue(call_kwargs.get("is_pre_analysis"))

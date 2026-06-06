@@ -91,6 +91,7 @@ export interface Collection {
   contact_name: string;
   description: string;
   id: string;
+  is_pre_analysis?: boolean;
   organs: string[];
   name: string;
   owner: string;

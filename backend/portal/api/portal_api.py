@@ -306,6 +306,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
 
     # Always return consortia
     response["consortia"] = collection.metadata.consortia
+    response["is_pre_analysis"] = collection.is_pre_analysis
     return response
 
 
@@ -407,7 +408,9 @@ def create_collection(body: dict, user: str):
     )
 
     try:
-        version = get_business_logic().create_collection(user, curator_name, metadata)
+        version = get_business_logic().create_collection(
+            user, curator_name, metadata, is_pre_analysis=body.get("is_pre_analysis", False)
+        )
     except (InvalidMetadataException, CollectionCreationException) as ex:
         raise InvalidParametersHTTPException(detail=ex.errors) from None
 

@@ -624,6 +624,72 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
             self.assertIsNone(version.published_at)
 
 
+class TestCreateCollectionIsPreAnalysis(BaseBusinessLogicTestCase):
+    """Tests for the is_pre_analysis flag on collection creation."""
+
+    def test_create_collection_is_pre_analysis_defaults_to_false(self):
+        """is_pre_analysis defaults to False when not provided."""
+        collection = self.business_logic.create_collection(
+            test_user_name, test_curator_name, self.sample_collection_metadata
+        )
+        self.assertFalse(collection.is_pre_analysis)
+        collection_from_db = self.database_provider.get_collection_version(collection.version_id)
+        self.assertFalse(collection_from_db.is_pre_analysis)
+
+    def test_create_collection_is_pre_analysis_true(self):
+        """is_pre_analysis=True is persisted and returned."""
+        collection = self.business_logic.create_collection(
+            test_user_name, test_curator_name, self.sample_collection_metadata, is_pre_analysis=True
+        )
+        self.assertTrue(collection.is_pre_analysis)
+        collection_from_db = self.database_provider.get_collection_version(collection.version_id)
+        self.assertTrue(collection_from_db.is_pre_analysis)
+
+    def test_create_collection_revision_inherits_is_pre_analysis(self):
+        """Creating a revision of a pre-analysis collection copies is_pre_analysis to the new version."""
+        collection = self.business_logic.create_collection(
+            test_user_name, test_curator_name, self.sample_collection_metadata, is_pre_analysis=True
+        )
+        # Simulate a minimal publication so that add_collection_version can find the canonical collection.
+        self.database_provider.finalize_collection_version(
+            collection.collection_id,
+            collection.version_id,
+            "3.0.0",
+            DATA_SUBMISSION_POLICY_VERSION,
+        )
+        new_version_id = self.database_provider.add_collection_version(collection.collection_id, is_auto_version=False)
+        revision = self.database_provider.get_collection_version(new_version_id)
+        self.assertTrue(revision.is_pre_analysis)
+
+
+class TestIngestDatasetIsPreAnalysis(BaseBusinessLogicTestCase):
+    """Tests that is_pre_analysis is injected into the manifest when ingesting datasets."""
+
+    def test_ingest_dataset_injects_is_pre_analysis_false(self):
+        """Manifest gets is_pre_analysis=False for normal collections."""
+        import json
+
+        collection = self.business_logic.create_collection(
+            test_user_name, test_curator_name, self.sample_collection_metadata, is_pre_analysis=False
+        )
+        self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None, None)
+        raw_manifest = self.step_function_provider.start_step_function.call_args[0][2]
+        manifest_dict = json.loads(raw_manifest)
+        self.assertFalse(manifest_dict["is_pre_analysis"])
+
+    def test_ingest_dataset_injects_is_pre_analysis_true(self):
+        """Manifest gets is_pre_analysis=True for pre-analysis collections."""
+        import json
+
+        collection = self.business_logic.create_collection(
+            test_user_name, test_curator_name, self.sample_collection_metadata, is_pre_analysis=True
+        )
+        self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None, None)
+        raw_manifest = self.step_function_provider.start_step_function.call_args[0][2]
+        manifest_dict = json.loads(raw_manifest)
+        self.assertTrue(manifest_dict["is_pre_analysis"])
+
+
 class TestUpdateCollection(BaseBusinessLogicTestCase):
     """
     Tests operations that can update an unpublished collection version. Also tests that these operations cannot be
@@ -905,7 +971,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.step_function_provider.start_step_function.assert_called_once_with(
             revision.version_id,
             new_dataset_version_id,
-            f'{{"anndata":"s3://artifacts/{dataset_version.version_id}/raw.h5ad","atac_fragment":null}}',
+            f'{{"anndata":"s3://artifacts/{dataset_version.version_id}/raw.h5ad","atac_fragment":null,"is_pre_analysis":false}}',
         )
 
     def test_reingest_published_anndata_dataset__not_h5ad(self):
@@ -963,7 +1029,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.step_function_provider.start_step_function.assert_called_once_with(
             revision.version_id,
             new_dataset_version_id,
-            f'{{"anndata":"s3://artifacts/{dataset_version.version_id}/raw.h5ad","atac_fragment":"{fragment_url}"}}',
+            f'{{"anndata":"s3://artifacts/{dataset_version.version_id}/raw.h5ad","atac_fragment":"{fragment_url}","is_pre_analysis":false}}',
         )
 
     def test_reingest_published_atac_dataset__not_atac(self):

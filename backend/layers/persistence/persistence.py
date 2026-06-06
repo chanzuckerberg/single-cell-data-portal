@@ -36,6 +36,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
+    GeneticPerturbationMetadata,
 )
 from backend.layers.common.helpers import set_revised_at_field, sort_datasets_by_cell_count
 from backend.layers.persistence.constants import SCHEMA_NAME
@@ -120,6 +121,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             has_custom_dataset_order=row.has_custom_dataset_order,
             is_auto_version=row.is_auto_version,
             data_submission_policy_version=row.data_submission_policy_version,
+            is_pre_analysis=bool(row.is_pre_analysis) if row.is_pre_analysis is not None else False,
         )
 
     def _row_to_collection_version_with_datasets(
@@ -142,6 +144,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             has_custom_dataset_order=row.has_custom_dataset_order,
             is_auto_version=row.is_auto_version,
             data_submission_policy_version=row.data_submission_policy_version,
+            is_pre_analysis=bool(row.is_pre_analysis) if row.is_pre_analysis is not None else False,
         )
 
     def _row_to_canonical_dataset(self, row: Any):
@@ -226,7 +229,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             )
 
     def create_canonical_collection(
-        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
+        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata, is_pre_analysis: bool = False
     ) -> CollectionVersion:
         """
         Creates a new canonical collection, generating a canonical collection_id and a new version_id.
@@ -253,6 +256,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             has_custom_dataset_order=False,
             is_auto_version=False,
             data_submission_policy_version=None,
+            is_pre_analysis=is_pre_analysis,
         )
 
         with self._manage_session() as session:
@@ -653,6 +657,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 has_custom_dataset_order=current_version.has_custom_dataset_order,
                 is_auto_version=is_auto_version,
                 data_submission_policy_version=None,
+                is_pre_analysis=current_version.is_pre_analysis,
             )
             session.add(new_version)
             return CollectionVersionId(new_version_id)
@@ -1099,6 +1104,26 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
             dataset_version.dataset_metadata = metadata.to_dict()
+
+    def set_dataset_genetic_perturbations(
+        self, version_id: DatasetVersionId, genetic_perturbations: Optional[GeneticPerturbationMetadata]
+    ) -> None:
+        """
+        Sets the genetic_perturbations for a dataset version
+        """
+        with self._manage_session() as session:
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=version_id.id).one()
+            dataset_version.genetic_perturbations = genetic_perturbations.to_dict() if genetic_perturbations else None
+
+    def get_dataset_genetic_perturbations(self, version_id: DatasetVersionId) -> Optional[GeneticPerturbationMetadata]:
+        """
+        Returns the genetic_perturbations for a dataset version, or None if not present
+        """
+        with self._manage_session() as session:
+            result = session.query(DatasetVersionTable.genetic_perturbations).filter_by(id=version_id.id).one_or_none()
+        if result is None or result[0] is None:
+            return None
+        return GeneticPerturbationMetadata.from_dict(result[0])
 
     def add_dataset_to_collection_version_mapping(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
