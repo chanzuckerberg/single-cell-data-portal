@@ -158,8 +158,9 @@ The full schema is documented [here](https://chanzuckerberg.github.io/single-cel
     - multiple <code>&nbsp;||&nbsp;</code>-delimited terms may be used if appropriate
     - `na` for the lack of genetic perturbations
   - **obs['genetic_perturbation_strategy']**
-    - `control`, `CRISPR activation screen`, `CRISPR interference screen`, `CRISPR knockout mutant`, or `CRISPR knockout screen`
-    - `na` if corresponding genetic_perturbation_id is `na`
+    - `CRISPR activation screen`, `CRISPR interference screen`, `CRISPR knockout mutant`, or `CRISPR knockout screen`
+    - `control` if the uns['genetic_perturbation']['id']['role'] value(s) corresponding to all the relevant obs['genetic_perturbation_id'] are `control`
+    - `no perturbations` if corresponding genetic_perturbation_id is `na`
 
 ## Data Submission Policy
 
