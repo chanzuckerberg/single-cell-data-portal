@@ -1,0 +1,2 @@
+INFO     processing:logger.py:26 Start extract_metadata
+INFO     processing:logger.py:28 Complete extract_metadata
