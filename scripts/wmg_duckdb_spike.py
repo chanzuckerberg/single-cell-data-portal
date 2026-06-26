@@ -43,6 +43,10 @@ def _pick(snapshot, col, n=3):
 def normalize(df):
     df = df.reset_index()
     df = df[[c for c in df.columns if c != "index"]]
+    # TileDB ascii cols come back as bytes; DuckDB returns str. Decode so the two compare equal.
+    for c in df.columns:
+        if df[c].dtype == object:
+            df[c] = df[c].map(lambda v: v.decode() if isinstance(v, (bytes, bytearray)) else v)
     df = df.sort_values(list(df.columns)).reset_index(drop=True)
     for c in df.select_dtypes("float").columns:
         df[c] = df[c].round(4)
