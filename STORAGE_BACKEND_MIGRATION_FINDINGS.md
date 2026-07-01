@@ -1,13 +1,20 @@
-# Storage backend migration: TileDB → Zarr / Parquet — findings
+# Storage backend migration: TileDB → Zarr / Parquet / Lance — findings
 
 Investigation into moving off TileDB for two different datasets in the single-cell stack:
 
 1. **Explorer per-dataset expression matrix** (`.cxg`) → **Zarr** — ✅ works, deployed to rdev.
-2. **WMG / census expression cube** → **Zarr** (analysis) and **Parquet+DuckDB** (spiked) — ❌ don't migrate.
+2. **WMG / census expression cube** → **Zarr** (analysis), **Parquet+DuckDB** (spiked), **Lance**
+   (spiked, sorted + unsorted, real cube) — ❌ don't migrate.
 
 The headline: **match the storage format to the data's geometry.** A dense per-dataset tensor and a
 sparse predicate-filtered OLAP cube are different shapes, and they want different backends — even
 though both happen to use TileDB today.
+
+Migration-options status for the cube (§4): every non-TileDB backend that preserves correctness was
+either analysed out (Zarr) or benchmarked on the real 351M-row cube and **failed the no-regression
+gate** — DuckDB (35–150× slower), Lance unsorted (1.2–10.7×), Lance clustered on the TileDB dim order
+(unchanged). TileDB's multi-dimensional coordinate tiling is the load-bearing feature and has no
+equivalent among the candidates. Keep TileDB.
 
 ---
 
@@ -101,6 +108,170 @@ only win for large-fraction scans/aggregations; WMG is not that.)
 
 > Note: the *source* of the cube is `cellxgene-census` via `tiledbsoma` (itself TileDB, owned
 > upstream). A full TileDB exit isn't possible without forking census ingestion regardless.
+
+---
+
+## 3. The three artifacts, two axes
+
+All three single-cell artifacts in play sit on the **same TileDB storage engine**, but they split
+along two *independent* axes: **API layer** (the SOMA data model vs. raw TileDB core) and **data
+geometry** (per-cell tensor vs. OLAP aggregate). It's the geometry — not the API layer — that decides
+whether Zarr fits.
+
+| | **Census corpus** | **WMG cube** | **Explorer `.cxg`** |
+|---|---|---|---|
+| Produced by | Census team (upstream) | `backend/wmg/pipeline/` | `backend/layers/processing/process_cxg.py` |
+| Input | — (the atlas itself) | Census corpus (SOMA) | labeled `local.h5ad` (per dataset) |
+| Library | **`tiledbsoma`** | **`tiledb` core** | **`tiledb` core** |
+| API layer | SOMA data model | raw arrays | raw TileDB group |
+| Geometry | per-cell **tensor** (AnnData) | **OLAP aggregate** | per-cell **tensor** (AnnData) |
+| Structure | `Experiment`: obs/var/X/obsm | standalone arrays (`expression_summary`, `cell_counts`…) | group: `X`, `obs`, `var`, `uns`, `emb/`, metadata |
+| Granularity | cell × gene nonzero (billions) | (gene, tissue, organism, …) → `sum`/`sqsum`/`nnz` | cell × gene nonzero (one dataset) |
+| X storage | SOMA sparse `X` layer | n/a (it *is* the aggregate) | sparse if <25% dense else dense; dims `obs`/`var` uint32, tiles 256/2048, byteshuffle+zstd-7, attr float32 |
+| Index / dims | integer `soma_joinid` | `gene`/`tissue`/`organism` ontology IDs | **positional** `obs`/`var` (uint32 0..N) |
+| obs/var | SOMA DataFrames | filter attrs live in the cube | dense 1-col TileDB arrays, zstd-22, categoricals as uint32 codes |
+| Scope | whole atlas, both organisms | whole atlas, aggregated | **one dataset** |
+| Access pattern | `axis_query` cell/gene slices | predicate-filtered aggregate point-lookups | random cell/gene **X slicing** + full obs load |
+| Query engine | TileDB `QueryCondition` pushdown (obs/var `value_filter`) | TileDB `QueryCondition` + indexed-dim slicing — **load-bearing** | **none** — positional slicing only; compute runs in-process |
+| Destination | `s3://cellxgene-census-public-us-west-2/...` | `s3://{WMG_BUCKET}/snapshots/v5/...` | `s3://{cellxgene_bucket}/{dataset_version_id}.cxg/` |
+| **Zarr migration** | candidate (AnnData-native) | ❌ keep TileDB | ✅ **proven** (Explorer `poc/zarr-adaptor`) |
+
+The `.cxg` is what shows the two axes are independent: the corpus is tensor-shaped *and* SOMA; the
+`.cxg` is tensor-shaped *but raw TileDB core* (no SOMA model — just positional `obs`/`var` dims and a
+float32 X attr). So "TileDB-SOMA vs plain TileDB" is **not** the same distinction as "tensor vs OLAP."
+The `.cxg` is the lower-level cousin of the corpus: same AnnData geometry, per-dataset, hand-built on
+core TileDB for Explorer's interactive matrix slicing — which is exactly why it migrated to Zarr cleanly.
+
+> Note: the cube's *source* is the Census corpus, read via `cellxgene_census.open_soma(census_version="latest")`,
+> which resolves through `release.json` to `s3://cellxgene-census-public-us-west-2/cell-census/<build-date>/soma/`
+> (us-west-2, CZI-owned, upstream). A full TileDB exit isn't possible without forking census ingestion regardless.
+
+---
+
+## 4. If we *did* migrate the cube off TileDB — options that won't regress
+
+The §2 verdict is "keep TileDB." But if a future driver forces a TileDB exit anyway (e.g. dropping the
+C++ dependency, or aligning the cube with an object-store/ML-native stack), these are the only options
+that can avoid a latency regression. Investigated 2026-06-30.
+
+### The reframe: replace the *layout property*, not "the engine"
+
+TileDB's 6–15 ms didn't come from a query planner — it came from the data being **sorted/tiled on the
+indexed dims**, so a few-gene lookup is a direct slice and latency scales with *result* size, not
+*table* size. DuckDB lost because it's scan-first (ART index unused for `IN`-lists). So the
+non-negotiable requirement for any replacement is: **the storage layout itself must index the leading
+dims** so the engine reads only matching rows. That filter eliminates most candidates up front:
+
+| Ruled OUT | Why |
+|---|---|
+| DuckDB / Parquet-as-table | proven 35–150× slower — full scan (§2b) |
+| chDB querying raw Parquet | same scan trap — chDB only wins on its own MergeTree storage, not on Parquet |
+| Zarr | no query engine at all (§2a) |
+| In-memory pandas scan | O(n) mask, scales with table size |
+
+### Viable options
+
+**A. ClickHouse MergeTree** (server, or `chDB` embedded with a persistent MergeTree DB)
+- *Engine replacement:* SQL. `ORDER BY (organism, tissue, gene)` → sparse primary index; `WHERE gene
+  IN (...)` binary-searches in-memory index marks and reads only matching 8192-row granules. Filter
+  dims get bloom/set data-skipping indexes. `sum`/`sqsum`/`nnz` already precomputed → query is a
+  projected filter.
+- *Perf:* ms-range selective queries on billion-row tables are the documented design point — likely
+  parity-or-better; server-side aggregation shrinks payload. Real improvement is architectural (SQL,
+  scale, could unify the 7 arrays + the `group_id` diffexp shape).
+- *Scope:* largest. A server breaks the "sync a dir from S3" snapshot model (needs DB restore /
+  always-on service). `chDB` embedded avoids the server — in-process, same granule-skipping — the lazy
+  way to get the index without running ClickHouse.
+- *Risk:* verify `IN`-list-on-PK-prefix prunes as expected on the real snapshot.
+
+**B. Lance** (embedded, object-store-native) — *spiked on the real cube; closest candidate but still regresses (details below)*
+- *Engine replacement:* Lance scanner + scalar indexes — `BTREE` on `gene`, `BITMAP` on low-cardinality
+  dims (`organism`/`tissue`/`cell_type`). Lance's bitmap search time "scales linearly with the number of
+  values the query requires" — result-size, not table-size. Exactly the property we need.
+- *Perf:* should match/beat the point-lookup; aggregates aren't engine-precomputed but result sets are
+  1–6k rows (trivial). Must be benchmarked — same "looks right in theory" spot DuckDB fooled us in.
+- *Scope:* medium; keeps today's architecture (embedded, no server, dir-to-S3 snapshot), aligns with the
+  scverse/FM-training direction (same ecosystem pull as the zarr ask).
+- *Risk:* OLAP-aggregate maturity; verify scalar-index pruning empirically.
+
+**Spiked on the real cube (2026-06-30) — better than DuckDB, still regresses, fails the gate.**
+Built `LanceCensusCubeQuery` behind the seam (`query_lance.py`), exported the real v5 staging snapshot
+(`1760292291`, `expression_summary` = 351,721,698 rows) TileDB → Parquet → Lance, with BTREE on
+`gene_ontology_term_id` + BITMAP on the low-cardinality dims. **Parity: PASS everywhere.**
+
+| case | parity | rows | TileDB | Lance | vs TileDB |
+|---|---|---|---|---|---|
+| default — genes only (60M cube) | PASS | 8,691 | 8.1 ms | 10.0 ms | 1.2× slower |
+| genes + tissues (351M) | PASS | 2,072 | 11.8 ms | 70.8 ms | 6.0× slower |
+| genes + cell_types (351M) | PASS | 3,122 | 11.5 ms | 123.4 ms | 10.7× slower |
+
+Lance is a large improvement over DuckDB (35–150× → 1.2–10.7×) and hits near-parity on the small
+default cube, but **regresses on the 351M-row cube → fails the ≤-TileDB gate.** Why: the scalar index
+returns matching row-ids cheaply, but the data isn't *clustered* on those dims, so Lance does a
+scattered "take" of thousands of rows spread across 351M, vs TileDB's **contiguous tile slice** on its
+sorted `(gene, tissue, organism)` dims. Regression scales with match scatter (secondary `cell_type`
+filter is worst). The lesson sharpens: **the sort/clustering layout — not merely having an index — is
+what makes TileDB fast.**
+
+**Sorted/clustered Lance (2026-06-30) — sorting did NOT help; the gap is structural.** Rebuilt the
+cube as Lance clustered on the TileDB dim order `(gene, tissue, organism)` (DuckDB out-of-core sort
+streamed into Lance) + the same scalar indexes, then re-benchmarked:
+
+| case | rows | TileDB | unsorted Lance | **sorted Lance** |
+|---|---|---|---|---|
+| default — genes only (60M) | 8,691 | ~7 ms | 10.0 ms | 8.9 ms |
+| genes + tissues (351M) | 2,072 | ~12 ms | 70.8 ms | 69.6 ms |
+| genes + cell_types (351M) | 3,122 | ~11 ms | 123.4 ms | 121.5 ms |
+
+Clustering moved nothing. A per-predicate diagnostic on the sorted 351M cube shows why:
+
+| filter | rows matched | latency |
+|---|---|---|
+| gene only | 13,979 | 35.5 ms |
+| organism only | 319,599,548 | 11,251 ms |
+| gene + organism | 13,979 | 44.1 ms |
+| gene + tissue | 396 | 37.6 ms |
+| gene + tissue + organism | 396 | 42.3 ms |
+
+Two structural facts, neither tunable by layout:
+1. **~35–44 ms fixed floor** for any gene-selective query — does not scale down with result size
+   (396 rows costs the same as 14k). TileDB does the same lookups in 6–12 ms → Lance is ~3–6× slower
+   even at its best.
+2. **Low-cardinality dims produce dataset-sized bitmaps.** `organism` alone matches 319M rows (11 s, a
+   roaring bitmap over half the table); survivable only because `gene` is ANDed first, but the secondary
+   `cell_type` filter pays a bitmap-intersection cost that scales with **table size, not result size**.
+
+Root cause: TileDB intersects predicates in **multi-dimensional coordinate space** and addresses the
+exact cells; Lance intersects in **row-id/bitmap space** (fixed floor + low-card-bitmap cost). That's an
+architectural difference, not a knob. **Verdict: Lance can't meet the no-regression gate — keep TileDB.**
+Of all candidates Lance is the closest (1.2–10.7× vs DuckDB's 35–150×) and is what you'd reach for *if*
+a TileDB exit were ever forced, but on this access pattern TileDB's multi-dim tiling has no equivalent.
+
+Artifacts: `backend/common/census_cube/data/query_lance.py`, `scripts/wmg_build_lance.py`,
+`scripts/wmg_build_lance_sorted.py`, `scripts/wmg_lance_spike_realcube.py`.
+
+**C. DIY: partition by gene + manifest index** — rebuild the tiling yourself. Guaranteed result-size
+access, but it's literally reimplementing TileDB's dimension tiling in app code. If you're rebuilding
+TileDB, keep TileDB. Only justified if dropping the C++ dep is the *sole* goal — and A/B do it with
+less code you own.
+
+### Scope (common to any choice — the seam bounds it)
+
+The DuckDB spike proved the swap is contained to one class. Five surfaces:
+
+1. **Query** — reimplement `CensusCubeQuery._query`. Must cover both shapes: `expression_summary`
+   (gene/tissue/organism) *and* the diffexp cubes' integer `group_id` key.
+2. **Write** — 7 array writers in `backend/wmg/pipeline/` → new-format writers.
+3. **Snapshot/load** — `snapshot.py` open + S3 sync + `latest_snapshot_identifier` versioning. Lance/DIY
+   keep the dir-to-S3 model; ClickHouse-server breaks it (chDB-embedded avoids this — biggest scope delta).
+4. **Gate** — reuse the real-cube parity + latency harness from the spike.
+5. **Source unchanged** — still reads TileDB-SOMA census. Never a full TileDB exit, whatever you pick.
+
+### The hard gate
+
+Before committing to any candidate: run the existing harness on the 351M-row staging snapshot and
+require median latency for all three query shapes to be **≤ TileDB's**. That benchmark is what flipped
+DuckDB from "2× faster" (toy fixture) to "150× slower" (real cube) — nothing ships on theory.
 
 ---
 
