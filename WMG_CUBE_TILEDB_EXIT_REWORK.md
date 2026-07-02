@@ -314,6 +314,30 @@ from S3 + local cache (fast cold start, S3 latency on cold granules); (b) sync t
 local disk as `container_init.sh` does today, serve read-only over the local path (local-disk latency +
 server concurrency — closest to current ops). Default to (b). chDB stays the **build-side** engine.
 
+**Sidecar validated locally (2026-07-02).** Ran a real `clickhouse-server` (26.7) with the same 4
+cubes (351M-row `expression_summary`) and drove it with socket clients
+(`scripts/wmg_ch_sidecar_concurrency.py`, clickhouse-connect over HTTP):
+
+| clients | thru q/s | p50 | p95 | p99 |
+|---|---|---|---|---|
+| 1 | 40 | 20.7 ms | 44.4 ms | 50.4 ms |
+| 5 | 280 | 20.7 ms | 27.8 ms | 30.9 ms |
+| 10 | 327 | 26.9 ms | 75.0 ms | 100.8 ms |
+
+The two things the embedded model failed, both fixed:
+- **gevent overlap:** 10 concurrent greenlets = **4.1×** a single query (OVERLAPPED) vs embedded chDB's
+  **14.7×** (serialized). The socket call yields to the hub — confirmed empirically.
+- **Memory:** ONE server process at **296 MB peak** served all clients, vs embedded's ~789 MB × N
+  workers. No multiplication, no per-worker copies, no dir lock. Throughput (280–327 q/s at 5–10
+  clients) matches/beats TileDB's 5-worker 230 q/s.
+
+**Honest caveat:** per-query p50 ≈ 20 ms vs embedded chDB's 4–5 ms and TileDB's 7–14 ms. The ~15 ms
+gap is **HTTP transport + result serialization overhead**, not engine time (the server executes in the
+same few ms). Still well inside the <10 s budget; reducible via the **native protocol** (port 9000,
+`clickhouse-driver`) instead of HTTP. The 10-client p99 (100 ms) is laptop core contention, not a
+server limit. Net: the sidecar trades ~15 ms/query of transport for shared memory, real concurrency,
+and backpressure — the right trade for a serving tier.
+
 ---
 
 ## 10. Recommendation
@@ -329,8 +353,9 @@ worker. Both risky questions are now de-risked.
 1. **Full rework** per §5 — the 7 writers, snapshot wiring, and swap `_open_cube`/`create_ctx` for a CH
    client. The query seam (`query_chdb.py`) is already written and validated.
 2. **Stand up the sidecar** — clickhouse-server in the ECS task with a read-only `web`/`s3_plain` (or
-   local read-only) disk; re-run the concurrency harness against it (queries as socket calls) to
-   confirm p99 under load and shared-cache memory fit the 16 GB task.
+   local read-only) disk. The serving model is already validated locally (§9: gevent overlaps 4.1×,
+   one ~300 MB server); what remains is the **read-only disk wiring** + switching the client to the
+   **native protocol** (port 9000) to shave the ~15 ms HTTP overhead, then a run on real ECS hardware.
 3. **Tune the secondary `cell_type` shape** if the 1.2× matters (`set` skip-index or sort-key change),
    and `LowCardinality(String)` on the ontology-ID columns to shrink the ~17 GB DB.
 
@@ -344,5 +369,6 @@ now; reach for the chDB-build + CH-sidecar path when forced.
 
 _Companion spike artifacts (throwaway, not production): `query_chdb.py` (the one that passed),
 `query_duckdb.py`, `query_lance.py`, `scripts/wmg_build_chdb.py`, `scripts/wmg_chdb_spike_realcube.py`,
-`scripts/wmg_chdb_spike_diffexp.py`, `scripts/wmg_chdb_spike_concurrency.py` (process-pool load + RSS +
-gevent check), and the Lance/DuckDB equivalents. See the findings doc's Artifacts section._
+`scripts/wmg_chdb_spike_diffexp.py`, `scripts/wmg_chdb_spike_concurrency.py` (embedded process-pool +
+RSS + gevent check), `scripts/wmg_ch_sidecar_concurrency.py` (clickhouse-server sidecar: socket-client
+load + gevent overlap), and the Lance/DuckDB equivalents. See the findings doc's Artifacts section._
