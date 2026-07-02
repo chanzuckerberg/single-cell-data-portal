@@ -338,6 +338,24 @@ same few ms). Still well inside the <10 s budget; reducible via the **native pro
 server limit. Net: the sidecar trades ~15 ms/query of transport for shared memory, real concurrency,
 and backpressure — the right trade for a serving tier.
 
+**Read-only `web` disk validated locally (2026-07-02).** Built a MergeTree (synthetic, real
+`expression_summary` schema, 30M rows), ran `clickhouse static-files-disk-uploader` → served the
+static files over HTTP → attached read-only from fresh server(s) via `disk(type=web)` + an LRU cache
+disk. This is the mechanics of the "build once → publish to S3 → serve read-only" model:
+- **Read-only attach works** — 30M rows, 1 part, no writes to the served data.
+- **Cache cold→warm:** a gene-selective query ran **52.6 ms cold** (granules fetched over HTTP, cache
+  dropped) → **4.5 ms warm** (local LRU cache) — warm matches local-disk speed; ~12×.
+- **Multi-instance:** two independent servers attached the *same* static data and answered
+  concurrently, identical results, no lock contention (the 3-prod-instances-share-one-S3-snapshot
+  model).
+
+Two setup gotchas (mock-specific, not architecture): (1) the web disk requests
+`<endpoint>/store/<3-char-prefix>/<uuid>/…`, but the uploader writes `<prefix>/<uuid>/` *without* the
+`store/` level — serve under a `store/` dir or it silently attaches with 0 rows; (2) the web disk uses
+HTTP **Range** requests, which plain `python -m http.server` doesn't support (HTTP 416) — real S3/nginx
+do; use `rangehttpserver` for the mock. **Not proven** (localhost has ~0 network latency): real cold-read
+latency, where each cold granule is a 10–100 ms S3 GET — that needs a real S3 bucket + the full cube.
+
 ---
 
 ## 10. Recommendation
@@ -353,9 +371,11 @@ worker. Both risky questions are now de-risked.
 1. **Full rework** per §5 — the 7 writers, snapshot wiring, and swap `_open_cube`/`create_ctx` for a CH
    client. The query seam (`query_chdb.py`) is already written and validated.
 2. **Stand up the sidecar** — clickhouse-server in the ECS task with a read-only `web`/`s3_plain` (or
-   local read-only) disk. The serving model is already validated locally (§9: gevent overlaps 4.1×,
-   one ~300 MB server); what remains is the **read-only disk wiring** + switching the client to the
-   **native protocol** (port 9000) to shave the ~15 ms HTTP overhead, then a run on real ECS hardware.
+   local read-only) disk. Both the serving model (§9: gevent overlaps 4.1×, one ~300 MB server) and
+   the read-only web-disk mechanics (§9: attach + cache cold→warm + multi-instance concurrent attach)
+   are validated locally. What remains: **real cold-read latency** against an actual S3 bucket (the
+   one thing localhost can't measure), the **native protocol** (port 9000) to shave the ~15 ms HTTP
+   overhead, and a run on real ECS hardware.
 3. **Tune the secondary `cell_type` shape** if the 1.2× matters (`set` skip-index or sort-key change),
    and `LowCardinality(String)` on the ontology-ID columns to shrink the ~17 GB DB.
 
