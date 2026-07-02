@@ -19,7 +19,9 @@ verdict is now two-part: **keep TileDB today** (no driver forces a change and Ti
 but **if a cube exit is ever forced, chDB-embedded is a proven-viable target** — the first backend
 whose storage layout (MergeTree sparse primary index, granule-pruned `IN`-list lookups) reproduces
 what makes TileDB fast. Full rework scope in
-[`WMG_CUBE_TILEDB_EXIT_REWORK.md`](WMG_CUBE_TILEDB_EXIT_REWORK.md).
+[`WMG_CUBE_TILEDB_EXIT_REWORK.md`](WMG_CUBE_TILEDB_EXIT_REWORK.md); the architectural *why* (coordinate
+tiling vs sorted-columnar prefix index) in
+[`CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md`](CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md).
 
 ---
 
@@ -219,8 +221,12 @@ dims** so the engine reads only matching rows. That filter eliminates most candi
 - *Scope:* `chDB` embedded keeps the in-process, dir-to-S3 snapshot model — no server, no terraform
   change. (A ClickHouse *server* would break the dir-to-S3 model; not needed.)
 - *Caveats:* secondary `cell_type` filter is the one shape ~1.2× slower (marginal, tunable via a `set`
-  index or adding cell_type to the sort key); DB is ~17 GB vs TileDB ~7.6 GB (~2.2×); measured
-  warm-cache, single-process, local disk — not yet tested under gevent concurrency or at deploy scale.
+  index or adding cell_type to the sort key); DB is ~17 GB vs TileDB ~7.6 GB (~2.2×).
+- *Concurrency:* a follow-up spike showed embedded chDB is the wrong *serving* engine under load
+  (exclusive dir lock → can't share a dir across workers; in-process gevent queries serialize ~15×).
+  The fix is to **build with chDB, serve with a clickhouse-server sidecar over a read-only `web`/
+  `s3_plain` disk** — queries become socket calls (gevent-friendly), caches shared, backpressure
+  enforced. Full analysis in the rework doc §9.
 
 **B. Lance** (embedded, object-store-native) — *spiked on the real cube; closest candidate but still regresses (details below)*
 - *Engine replacement:* Lance scanner + scalar indexes — `BTREE` on `gene`, `BITMAP` on low-cardinality

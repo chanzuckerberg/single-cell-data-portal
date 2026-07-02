@@ -29,6 +29,9 @@ There is no full TileDB exit; there is a **cube** exit.
 
 ## 2. What makes TileDB fast (the thing a replacement must reproduce)
 
+> Deeper architectural comparison (coordinate tiling vs sorted-columnar prefix index, sparsity, query
+> engine, deployment): [`CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md`](CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md).
+
 The cube's 6–15 ms interactive latency does **not** come from a query planner. It comes from the
 data being **sorted/tiled on its indexed dimensions** (`gene`, `tissue`, `organism`), so a
 few-gene point-lookup is a **direct contiguous slice** and latency scales with *result* size, not
@@ -222,8 +225,8 @@ secondary `cell_type` shape only.
 | diffexp (full / simple) | 254M / 61M rows | 16–20 ms | 6–10 ms | ✅ |
 
 The **per-predicate diagnostic** that exposed Lance's gap confirmed the primary-key prefix prunes to
-3 / 42,969 granules for gene-selective lookups (§4). **Still to run before committing to the exit:**
-concurrency/gevent-under-load and deploy-scale (memory footprint on a 16 GB Fargate task) tests.
+3 / 42,969 granules for gene-selective lookups (§4). Concurrency + deploy-scale were also run — see §9;
+they change *how you deploy* chDB, not whether the latency holds.
 
 ---
 
@@ -256,30 +259,90 @@ cube-exit scope.
 
 ---
 
-## 9. Recommendation
+## 9. Concurrency & deployment architecture
 
-**chDB-embedded is a proven-viable exit target.** The read-path risk this whole effort circled —
-"can any non-TileDB engine meet the selective-lookup latency?" — is answered: **yes, chDB does**,
-with parity on every shape and faster-than-TileDB on 4 of 5 (main + diffexp), because its MergeTree
-primary index reproduces TileDB's result-size granule access. That's the hard part, and it's done.
+The realcube latency numbers (§4) were single-query, single-process. Prod is 5 gunicorn/gevent workers
+in a 16 GB Fargate task. A concurrency spike (`scripts/wmg_chdb_spike_concurrency.py`, process pool +
+per-worker DB, RSS sampling, gevent check) surfaced a hard architectural fact:
+**embedded chDB is the wrong *serving* engine under concurrency — but the MergeTree it builds is not.**
 
-**What's left before an exit is real work, not research** (in order):
-1. **Concurrency + scale test** — run the seam under gevent load and confirm the ~17 GB DB fits a
-   16 GB Fargate task's memory budget (or size up). This is the one remaining unknown that could
-   still sink it.
-2. **Full rework** per §5 — the 7 writers, `_open_cube`/`create_ctx`, snapshot wiring. The query
-   seam (`query_chdb.py`) is already written and validated.
-3. **Tune the secondary `cell_type` shape** if the 1.2× matters (a `set` skip-index or sort-key change).
+**What the spike measured (real cube, this laptop):**
 
-**But still: don't start that work absent a driver.** The cube meets its budget on TileDB today, and
-a cube exit doesn't remove TileDB from the deployment anyway (the source read is upstream SOMA, §8).
-The value of this spike is *optionality* — if a driver lands (dropping the C++ dep, an object-store
-mandate), the risky question is already de-risked and the path is chDB-embedded, not a research
-project. Keep TileDB now; reach for chDB when forced.
+| backend | workers | thru q/s | p50 | p95 | p99 | peak RSS |
+|---|---|---|---|---|---|---|
+| TileDB | 1 / 5 / 10 | 83 / 230 / 185 | 6 / 9 / 17 ms | 11 / 18 / 37 ms | 18 / 26 / 58 ms | 0.2 / 1.4 / 2.5 GB |
+| chDB | 1 | 175 | 4.1 ms | 5.6 ms | 7.6 ms | 0.8 GB |
+| chDB | 3+ | — | — | — | — | **fails** (see below) |
+
+Three findings, none about latency:
+1. **chDB takes an exclusive lock on its data dir** (`Cannot lock file …/status`). Multiple processes
+   **cannot share one on-disk DB** — the "5 workers share the S3-synced snapshot" model doesn't work.
+2. **Per-worker copies are wasteful *and* fragile.** N workers → N × ~17 GB disk, and cloning a
+   persisted chDB dir fails to reopen (`Directory metadata/wmg already exists` / `EmbeddedServer
+   BAD_ARGUMENTS`) — you'd have to rebuild each copy from Parquet.
+3. **In-process concurrency serializes.** 10 gevent greenlets took **14.7×** a single warm query — a
+   native chDB call blocks the event loop, so a worker gets zero query overlap. (TileDB shares a
+   read-only dir fine and scales to 5 workers; that's the incumbent model chDB-embedded can't match.)
+
+**The fix (ClickHouse-native, confirmed in CH docs): build embedded, serve with a server sidecar over
+a read-only disk.**
+
+```
+Pipeline (offline):  build MergeTree with chDB/clickhouse-local → clickhouse-static-files-uploader
+                     → s3://…/snapshots/vN/<id>/   (mirrors today's dir-to-S3 + latest_snapshot_identifier)
+ECS task:
+  ├─ gunicorn+gevent workers — CensusCubeQuery talks to CH over localhost (HTTP/native client)
+  └─ clickhouse-server sidecar — read-only `web` / `s3_plain` disk over the S3 snapshot + local cache disk
+```
+
+ClickHouse's **read-only `web`/`s3_plain` disk** is purpose-built for this: *"a read-only disk, its
+data is only read and never modified,"* prepared offline with `clickhouse-static-files-uploader`, and
+**multiple independent instances can attach the same data concurrently** (immutable → no consistency
+issue), with an LRU **local cache disk** for hot granules. This resolves every finding at once:
+
+| Spike finding | Sidecar + read-only disk |
+|---|---|
+| dir lock (can't share a dir) | one server owns the data; workers are clients |
+| per-worker memory ×N | one server, **shared** caches — not multiplied |
+| per-worker disk copies (N×17 GB) | read-only S3 disk + local cache — no copies |
+| **gevent serialization (14.7×)** | queries become **localhost socket calls** → gevent yields; the in-process blocking disappears |
+| OOM crash under load | server enforces `max_concurrent_queries` + memory limits → backpressure |
+
+**Cost:** it's a localhost **sidecar container** in the ECS task def — not pure-embedded, but not a
+managed cluster either (no separate service, no replication). Two variants: (a) `web` disk straight
+from S3 + local cache (fast cold start, S3 latency on cold granules); (b) sync the static MergeTree to
+local disk as `container_init.sh` does today, serve read-only over the local path (local-disk latency +
+server concurrency — closest to current ops). Default to (b). chDB stays the **build-side** engine.
+
+---
+
+## 10. Recommendation
+
+**chDB-embedded answers the hard question; the deployment shape is a clickhouse-server sidecar.** The
+read-path risk this whole effort circled — "can any non-TileDB engine meet the selective-lookup
+latency?" — is answered: **yes**, parity on every shape and faster than TileDB on 4 of 5, because the
+MergeTree primary index reproduces TileDB's result-size granule access. Concurrency then showed the
+*serving* layer must be a server sidecar over a read-only disk (§9), not the embedded engine in each
+worker. Both risky questions are now de-risked.
+
+**What's left is real work, not research** (in order):
+1. **Full rework** per §5 — the 7 writers, snapshot wiring, and swap `_open_cube`/`create_ctx` for a CH
+   client. The query seam (`query_chdb.py`) is already written and validated.
+2. **Stand up the sidecar** — clickhouse-server in the ECS task with a read-only `web`/`s3_plain` (or
+   local read-only) disk; re-run the concurrency harness against it (queries as socket calls) to
+   confirm p99 under load and shared-cache memory fit the 16 GB task.
+3. **Tune the secondary `cell_type` shape** if the 1.2× matters (`set` skip-index or sort-key change),
+   and `LowCardinality(String)` on the ontology-ID columns to shrink the ~17 GB DB.
+
+**But still: don't start that work absent a driver.** The cube meets its budget on TileDB today, and a
+cube exit doesn't remove TileDB from the deployment anyway (the source read is upstream SOMA, §8). The
+value of this spike is *optionality* — if a driver lands (dropping the C++ dep, an object-store
+mandate), the storage-and-serving path is now known end-to-end, not a research project. Keep TileDB
+now; reach for the chDB-build + CH-sidecar path when forced.
 
 ---
 
 _Companion spike artifacts (throwaway, not production): `query_chdb.py` (the one that passed),
 `query_duckdb.py`, `query_lance.py`, `scripts/wmg_build_chdb.py`, `scripts/wmg_chdb_spike_realcube.py`,
-`scripts/wmg_chdb_spike_diffexp.py`, and the Lance/DuckDB equivalents. See the findings doc's
-Artifacts section._
+`scripts/wmg_chdb_spike_diffexp.py`, `scripts/wmg_chdb_spike_concurrency.py` (process-pool load + RSS +
+gevent check), and the Lance/DuckDB equivalents. See the findings doc's Artifacts section._
