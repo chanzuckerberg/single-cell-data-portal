@@ -107,7 +107,12 @@ of magnitude. Keep TileDB — its dimension tiling is the feature, not incidenta
 only win for large-fraction scans/aggregations; WMG is not that.)
 
 > Note: the *source* of the cube is `cellxgene-census` via `tiledbsoma` (itself TileDB, owned
-> upstream). A full TileDB exit isn't possible without forking census ingestion regardless.
+> upstream). The corpus is geometrically a Zarr candidate (§3 — same AnnData/tensor shape as the
+> `.cxg`), but that migration is CZI's to make, not the data portal's. From this repo's side the
+> read leaves TileDB only two ways: (a) CZI republishes the integrated corpus in a non-TileDB format
+> upstream, or (b) fork census ingestion from the per-dataset source H5ADs (`download_source_h5ad`) —
+> the raw pre-integration inputs, which means re-harmonizing the corpus yourself. Neither is a
+> storage-format swap in this repo, and there is no non-TileDB path to the *integrated* corpus today.
 
 ---
 
@@ -142,9 +147,24 @@ float32 X attr). So "TileDB-SOMA vs plain TileDB" is **not** the same distinctio
 The `.cxg` is the lower-level cousin of the corpus: same AnnData geometry, per-dataset, hand-built on
 core TileDB for Explorer's interactive matrix slicing — which is exactly why it migrated to Zarr cleanly.
 
-> Note: the cube's *source* is the Census corpus, read via `cellxgene_census.open_soma(census_version="latest")`,
-> which resolves through `release.json` to `s3://cellxgene-census-public-us-west-2/cell-census/<build-date>/soma/`
-> (us-west-2, CZI-owned, upstream). A full TileDB exit isn't possible without forking census ingestion regardless.
+> Note: the cube's *source* is the Census corpus, read via `cellxgene_census.open_soma(census_version="latest")`.
+> Resolution is plain JSON-over-HTTPS (`census.cellxgene.cziscience.com/.../release.json`), but it returns a
+> `soma` locator (`s3://cellxgene-data-public/cell-census/<date>/soma/`, us-west-2, CZI-owned) that opens through
+> `tiledbsoma` — i.e. TileDB. `get_anndata` is *not* a non-TileDB path; it reads through `tiledbsoma` too. The one
+> TileDB-free artifact census offers is the per-dataset source H5ADs (`.../h5ads/<dataset_id>.h5ad`), but those are
+> pre-integration raw inputs. The corpus's tensor geometry means it *is* a Zarr candidate (the "candidate" cell
+> below), but that migration is upstream (CZI's) — this repo can only reach a non-TileDB read by consuming a
+> future CZI republish or by forking ingestion from the source H5ADs. Neither is a storage-format swap here.
+
+> External corroboration: CZI's [`chanzuckerberg/multimodal-slicing`](https://github.com/chanzuckerberg/multimodal-slicing)
+> spike (Nov 2025) independently validates the corpus→Zarr candidate cell. It converts ~662 census-derived
+> per-dataset h5ads to Zarr on S3 and serves lazy cell/gene slicing with obs-metadata filtering — the same
+> **tensor geometry and positional-slicing access pattern** as the `.cxg` (no query engine; in-process compute),
+> confirming the tensor→Zarr thesis on a second dataset. It also builds a shared "gene universe" (79,948 genes)
+> to remap each dataset's local gene indices into a common space — i.e. a partial reimplementation of census's
+> upstream harmonization, which is exactly the "fork ingestion" route (b) above, no longer hypothetical. Note it
+> is a small-scale, I/O-bound demo (second-scale queries) and **makes no claim on the OLAP cube's workload** —
+> it corroborates the Zarr half of this doc, not the "keep TileDB for the cube" verdict.
 
 ---
 
@@ -153,6 +173,9 @@ core TileDB for Explorer's interactive matrix slicing — which is exactly why i
 The §2 verdict is "keep TileDB." But if a future driver forces a TileDB exit anyway (e.g. dropping the
 C++ dependency, or aligning the cube with an object-store/ML-native stack), these are the only options
 that can avoid a latency regression. Investigated 2026-06-30.
+
+> Full rework scope for a forced cube exit — layers, touchpoints, per-layer rework, benchmarks, and
+> testing — lives in the sibling doc [`WMG_CUBE_TILEDB_EXIT_REWORK.md`](WMG_CUBE_TILEDB_EXIT_REWORK.md).
 
 ### The reframe: replace the *layout property*, not "the engine"
 
