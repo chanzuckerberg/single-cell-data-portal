@@ -140,25 +140,45 @@ The §2 requirement (layout must cluster the leading dims → result-size access
 | chDB querying raw Parquet | analyzed | same scan trap (chDB only wins on its own MergeTree) — **OUT** |
 | Zarr | analyzed | no query engine at all — **OUT** |
 | In-memory pandas | analyzed | O(n) mask, scales with table size — **OUT** |
-| **ClickHouse MergeTree — embedded via chDB (persistent MergeTree DB)** | **not spiked** | **RECOMMENDED path to spike if forced** |
-| ClickHouse MergeTree — server | not spiked | works, but breaks the dir-to-S3 model (always-on service) |
+| **ClickHouse MergeTree — embedded via chDB (persistent MergeTree DB)** | **spiked 2026-07-02 — PASSED** | **the viable exit target** |
+| ClickHouse MergeTree — server | not spiked | works, but breaks the dir-to-S3 model (always-on service); embedded is preferred |
 | DIY: partition-by-gene + manifest index | analyzed | reimplements TileDB tiling in app code — only if dropping the C++ dep is the *sole* goal |
 
-**Why chDB-embedded is the pick.** `ORDER BY (organism, tissue, gene)` builds a sparse primary
+**Why chDB-embedded is the pick.** `ORDER BY (organism, gene, tissue)` builds a sparse primary
 index; `WHERE gene IN (...)` binary-searches in-memory index marks and reads only the matching
 8192-row granules — **result-size access**, the property §2 requires, and structurally closer to
 TileDB's coordinate model than Lance's row-id/bitmap space. It keeps today's architecture:
 in-process (no server), dir-to-S3 snapshot, embedded engine — the lazy way to get granule-skipping
 without running a ClickHouse cluster. `sum`/`sqsum`/`nnz` are already precomputed, so a query is a
-projected filter, and server-side aggregation could shrink payloads. It also aligns with the same
-SQL/ML-native ecosystem pull behind the Explorer Zarr work.
+projected filter. It also aligns with the same SQL/ML-native ecosystem pull behind the Explorer Zarr work.
 
-**Why it's still unproven.** This is exactly the "looks right in theory" position DuckDB was in
-before benchmarking flipped it from "2× faster" (toy fixture) to "150× slower" (real cube). The
-load-bearing risk to verify: that an `IN`-list on the **primary-key prefix** actually prunes
-granules on the real 351M-row snapshot (not a full-part scan), and that the secondary
-low-cardinality filters don't reintroduce Lance's bitmap-intersection cost. Nothing ships on
-theory (§6).
+**Spiked on the real cube (2026-07-02) — PASSED the gate. First candidate that does.** Built
+`ChdbCensusCubeQuery` behind the seam (`query_chdb.py`) + `wmg_build_chdb.py` (Parquet → MergeTree),
+exported the real v5 staging snapshot (`1760292291`, `expression_summary` = 351,721,698 rows), and
+ran the same real-cube harness Lance/DuckDB failed. **Parity: PASS on every shape** (main +
+diffexp).
+
+| shape | rows | TileDB | chDB | vs TileDB |
+|---|---|---|---|---|
+| default — genes only (60M) | 1,430 | 7.9 ms | 4.9 ms | **1.6× faster** |
+| genes + tissues (351M) | 90 | 13.9 ms | 3.9 ms | **3.6× faster** |
+| genes + cell_types (secondary, 351M) | 103 | 8.5 ms | 10.0 ms | 1.2× slower |
+| diffexp — full group_ids | 39,372 | 19.6 ms | 10.2 ms | **1.9× faster** |
+| diffexp — simple group_ids | 39,372 | 16.1 ms | 6.4 ms | **2.5× faster** |
+
+Granule diagnostic (the exact test that killed Lance): gene-selective lookups prune to **3 / 42,969
+granules** in ~2–3 ms. Where Lance's scalar index returned row-ids but then did a scattered take with
+a ~35 ms floor, chDB's MergeTree primary key does a contiguous granule slice — the same result-size
+access TileDB gets from coordinate tiling. This is the layout property §2 demanded, finally
+reproduced.
+
+**Caveats (honest bounds on the result).** (1) The secondary `cell_type` filter is the one shape
+~1.2× slower — marginal and absolute-fine (10 ms), tunable via a `set` index or adding cell_type to
+the sort key. (2) DB is ~17 GB vs TileDB ~7.6 GB (~2.2×). (3) Measured warm-cache, single-process,
+local disk — same conditions as the TileDB baseline (fair), but **not yet tested under gevent
+concurrency or at deploy scale**; that's the next thing to verify before committing to the exit.
+(4) The `organism`-only diagnostic number is a `count()` optimization, not a data-materializing
+measure — the main-table cases are the honest latency.
 
 ---
 
@@ -185,33 +205,36 @@ contract (`latest_snapshot_identifier`, schema-version pinning).
 
 ## 6. Benchmarks & the hard gate
 
-**Reuse the spike harness** — the `scripts/wmg_*_spike_realcube.py` pattern that already exists for
-DuckDB and Lance: parity + latency on the **real v5 staging snapshot** (`1760292291`,
-`expression_summary` = 351,721,698 rows). Adding a chDB backend is a new `query_chdb.py` behind the
-seam plus a `wmg_build_chdb.py` exporter (TileDB → Parquet → MergeTree), then the same runner.
+**Done — the harness ran and chDB passed (2026-07-02).** Reused the `scripts/wmg_*_spike_realcube.py`
+pattern on the **real v5 staging snapshot** (`1760292291`, `expression_summary` = 351,721,698 rows):
+`query_chdb.py` behind the seam, `wmg_build_chdb.py` (TileDB → Parquet → MergeTree), the realcube
+runner, and `wmg_chdb_spike_diffexp.py` for the diffexp path. Full results table in §4.
 
-**The gate (what flipped DuckDB from "faster" to "150× slower"):** median latency for all three
-query shapes must be **≤ TileDB's**:
+**The gate (what flipped DuckDB from "faster" to "150× slower"):** median latency for all query
+shapes must be **≤ TileDB's**. Result: **chDB met it** — faster on 4 of 5 shapes, 1.2× slower on the
+secondary `cell_type` shape only.
 
-| Shape | Cube size | TileDB baseline |
-|---|---|---|
-| default — genes only | 60M rows | 6–10 ms |
-| genes + tissues | 351M rows | 9–14 ms |
-| genes + cell_types | 351M rows | 6–15 ms |
+| Shape | Cube size | TileDB baseline | chDB | gate |
+|---|---|---|---|---|
+| default — genes only | 60M rows | 6–10 ms | 4.9 ms | ✅ |
+| genes + tissues | 351M rows | 9–14 ms | 3.9 ms | ✅ |
+| genes + cell_types | 351M rows | 6–15 ms | 10.0 ms | ⚠️ 1.2× (marginal) |
+| diffexp (full / simple) | 254M / 61M rows | 16–20 ms | 6–10 ms | ✅ |
 
-Plus the **per-predicate diagnostic** that exposed Lance's structural gap: measure `gene`-only,
-`organism`-only, and the AND-combinations separately, to confirm the primary-key prefix prunes and
-low-cardinality dims don't blow up. If any shape regresses, the candidate is out — same bar Lance
-failed.
+The **per-predicate diagnostic** that exposed Lance's gap confirmed the primary-key prefix prunes to
+3 / 42,969 granules for gene-selective lookups (§4). **Still to run before committing to the exit:**
+concurrency/gevent-under-load and deploy-scale (memory footprint on a 16 GB Fargate task) tests.
 
 ---
 
 ## 7. Testing & parity
 
-**Parity:** numerically identical to TileDB for `expression_summary`
-(default/indexed/secondary-filter variants), `cell_counts`, `marker_genes`, and the diffexp tuple
-— the same parity check the DuckDB and Lance spikes passed (PASS everywhere; latency was the only
-failure).
+**Parity:** chDB is numerically identical to TileDB for `expression_summary`
+(default/indexed/secondary-filter variants), `cell_counts`, and the diffexp tuple — **verified PASS
+on the real cube** (the diffexp check needed the spurious `reset_index()` "index" column dropped; the
+underlying data was already identical). `marker_genes` parity not separately asserted in the run but
+uses the same `_query` path. This is the same parity bar DuckDB and Lance also passed — the
+difference is chDB also passes on **latency**, which they didn't.
 
 **Test surface:** the seam contract itself — the 8 methods and their DataFrame shapes. Existing
 unit tests under WMG/DE that construct `CensusCubeQuery` exercise this; a new backend must pass
@@ -235,19 +258,28 @@ cube-exit scope.
 
 ## 9. Recommendation
 
-**Don't spike now.** No driver forces a TileDB exit, the cube meets its latency budget on TileDB,
-and the source read stays TileDB regardless — so a cube exit doesn't even remove the dependency
-from the deployment. This doc is the runbook, not a work order.
+**chDB-embedded is a proven-viable exit target.** The read-path risk this whole effort circled —
+"can any non-TileDB engine meet the selective-lookup latency?" — is answered: **yes, chDB does**,
+with parity on every shape and faster-than-TileDB on 4 of 5 (main + diffexp), because its MergeTree
+primary index reproduces TileDB's result-size granule access. That's the hard part, and it's done.
 
-**If an exit is forced:** benchmark **chDB-embedded first** — it's the only untested candidate
-whose storage model can plausibly meet the ≤-TileDB gate, and it preserves the embedded,
-dir-to-S3, no-server architecture. Run it through the existing real-cube harness and the hard gate
-in §6 before writing any writer or deploy code. If chDB fails the gate the way Lance did, the
-honest fallback is DIY partition-by-gene — i.e. rebuilding TileDB's tiling yourself — at which
-point keeping TileDB is the lazy and correct answer.
+**What's left before an exit is real work, not research** (in order):
+1. **Concurrency + scale test** — run the seam under gevent load and confirm the ~17 GB DB fits a
+   16 GB Fargate task's memory budget (or size up). This is the one remaining unknown that could
+   still sink it.
+2. **Full rework** per §5 — the 7 writers, `_open_cube`/`create_ctx`, snapshot wiring. The query
+   seam (`query_chdb.py`) is already written and validated.
+3. **Tune the secondary `cell_type` shape** if the 1.2× matters (a `set` skip-index or sort-key change).
+
+**But still: don't start that work absent a driver.** The cube meets its budget on TileDB today, and
+a cube exit doesn't remove TileDB from the deployment anyway (the source read is upstream SOMA, §8).
+The value of this spike is *optionality* — if a driver lands (dropping the C++ dep, an object-store
+mandate), the risky question is already de-risked and the path is chDB-embedded, not a research
+project. Keep TileDB now; reach for chDB when forced.
 
 ---
 
-_Companion spike artifacts (throwaway, not production): `query_duckdb.py`, `query_lance.py`,
-`scripts/wmg_*_spike_realcube.py`, `scripts/wmg_build_lance*.py`. See the findings doc's Artifacts
-section._
+_Companion spike artifacts (throwaway, not production): `query_chdb.py` (the one that passed),
+`query_duckdb.py`, `query_lance.py`, `scripts/wmg_build_chdb.py`, `scripts/wmg_chdb_spike_realcube.py`,
+`scripts/wmg_chdb_spike_diffexp.py`, and the Lance/DuckDB equivalents. See the findings doc's
+Artifacts section._

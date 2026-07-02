@@ -10,11 +10,16 @@ The headline: **match the storage format to the data's geometry.** A dense per-d
 sparse predicate-filtered OLAP cube are different shapes, and they want different backends — even
 though both happen to use TileDB today.
 
-Migration-options status for the cube (§4): every non-TileDB backend that preserves correctness was
-either analysed out (Zarr) or benchmarked on the real 351M-row cube and **failed the no-regression
-gate** — DuckDB (35–150× slower), Lance unsorted (1.2–10.7×), Lance clustered on the TileDB dim order
-(unchanged). TileDB's multi-dimensional coordinate tiling is the load-bearing feature and has no
-equivalent among the candidates. Keep TileDB.
+Migration-options status for the cube (§4): most non-TileDB backends were either analysed out (Zarr)
+or benchmarked on the real 351M-row cube and **failed the no-regression gate** — DuckDB (35–150×
+slower), Lance unsorted (1.2–10.7×), Lance clustered on the TileDB dim order (unchanged). **One
+candidate passed: chDB (embedded ClickHouse MergeTree)** — spiked 2026-07-02 on the real cube, parity
+on every shape and *faster* than TileDB on the main and diffexp paths (see §4). So the accurate
+verdict is now two-part: **keep TileDB today** (no driver forces a change and TileDB meets the budget),
+but **if a cube exit is ever forced, chDB-embedded is a proven-viable target** — the first backend
+whose storage layout (MergeTree sparse primary index, granule-pruned `IN`-list lookups) reproduces
+what makes TileDB fast. Full rework scope in
+[`WMG_CUBE_TILEDB_EXIT_REWORK.md`](WMG_CUBE_TILEDB_EXIT_REWORK.md).
 
 ---
 
@@ -194,18 +199,28 @@ dims** so the engine reads only matching rows. That filter eliminates most candi
 
 ### Viable options
 
-**A. ClickHouse MergeTree** (server, or `chDB` embedded with a persistent MergeTree DB)
-- *Engine replacement:* SQL. `ORDER BY (organism, tissue, gene)` → sparse primary index; `WHERE gene
+**A. ClickHouse MergeTree — embedded via `chDB`** ✅ *spiked on the real cube 2026-07-02; PASSED the gate — the only candidate that does*
+- *Engine replacement:* SQL. `ORDER BY (organism, gene, tissue)` → sparse primary index; `WHERE gene
   IN (...)` binary-searches in-memory index marks and reads only matching 8192-row granules. Filter
-  dims get bloom/set data-skipping indexes. `sum`/`sqsum`/`nnz` already precomputed → query is a
-  projected filter.
-- *Perf:* ms-range selective queries on billion-row tables are the documented design point — likely
-  parity-or-better; server-side aggregation shrinks payload. Real improvement is architectural (SQL,
-  scale, could unify the 7 arrays + the `group_id` diffexp shape).
-- *Scope:* largest. A server breaks the "sync a dir from S3" snapshot model (needs DB restore /
-  always-on service). `chDB` embedded avoids the server — in-process, same granule-skipping — the lazy
-  way to get the index without running ClickHouse.
-- *Risk:* verify `IN`-list-on-PK-prefix prunes as expected on the real snapshot.
+  dims get bloom data-skipping indexes. `sum`/`sqsum`/`nnz` already precomputed → query is a projected
+  filter. Diffexp cubes keyed `ORDER BY (group_id)`.
+- *Perf (real 351M cube, parity PASS everywhere):*
+
+  | shape | TileDB | chDB | vs TileDB |
+  |---|---|---|---|
+  | default — genes only (60M) | 7.9 ms | 4.9 ms | **1.6× faster** |
+  | genes + tissues (351M) | 13.9 ms | 3.9 ms | **3.6× faster** |
+  | genes + cell_types (secondary, 351M) | 8.5 ms | 10.0 ms | 1.2× slower |
+  | diffexp — full group_ids | 19.6 ms | 10.2 ms | **1.9× faster** |
+  | diffexp — simple group_ids | 16.1 ms | 6.4 ms | **2.5× faster** |
+
+  Granule diagnostic: gene-selective lookups prune to **3 / 42,969 granules** (~2–3 ms) — the
+  result-size access TileDB has and Lance's row-id/bitmap model lacked (Lance had a ~35 ms floor).
+- *Scope:* `chDB` embedded keeps the in-process, dir-to-S3 snapshot model — no server, no terraform
+  change. (A ClickHouse *server* would break the dir-to-S3 model; not needed.)
+- *Caveats:* secondary `cell_type` filter is the one shape ~1.2× slower (marginal, tunable via a `set`
+  index or adding cell_type to the sort key); DB is ~17 GB vs TileDB ~7.6 GB (~2.2×); measured
+  warm-cache, single-process, local disk — not yet tested under gevent concurrency or at deploy scale.
 
 **B. Lance** (embedded, object-store-native) — *spiked on the real cube; closest candidate but still regresses (details below)*
 - *Engine replacement:* Lance scanner + scalar indexes — `BTREE` on `gene`, `BITMAP` on low-cardinality
@@ -324,12 +339,21 @@ the spike on real data is what surfaced it. A small in-memory fixture initially 
 - `scripts/wmg_cluster_parquet.py` — gene-sort Parquet for row-group pruning.
 - `scripts/wmg_build_duckdb_db.py` — load into native indexed DuckDB DB.
 - `scripts/wmg_duckdb_spike_realcube.py` — real-snapshot benchmark.
+- `backend/common/census_cube/data/query_chdb.py` — **chDB (MergeTree) backend behind the seam (the one that passed)**.
+- `scripts/wmg_build_chdb.py` — Parquet → MergeTree (ORDER BY primary index + bloom skip-indexes).
+- `scripts/wmg_chdb_spike_realcube.py` — real-snapshot benchmark + granule-pruning diagnostic.
+- `scripts/wmg_chdb_spike_diffexp.py` — diffexp-path parity + latency.
 
 **Reproduce the WMG benchmark** (needs a local cube snapshot dir + the spike venv):
 ```
 PYTHONPATH=. python scripts/wmg_export_cube_to_parquet.py <snapshot_dir> <pq_dir>
+# DuckDB (regresses):
 PYTHONPATH=. python scripts/wmg_build_duckdb_db.py <pq_dir> <db.duckdb>
 PYTHONPATH=. python scripts/wmg_duckdb_spike_realcube.py <snapshot_dir> <db.duckdb>
+# chDB (passes):
+PYTHONPATH=. python scripts/wmg_build_chdb.py <pq_dir> <chdb_dir>
+PYTHONPATH=. python scripts/wmg_chdb_spike_realcube.py <snapshot_dir> <chdb_dir>
+PYTHONPATH=. python scripts/wmg_chdb_spike_diffexp.py <snapshot_dir> <chdb_dir>
 ```
 
 _These are throwaway spikes; not production code._
