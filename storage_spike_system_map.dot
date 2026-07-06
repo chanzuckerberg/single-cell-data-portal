@@ -1,0 +1,47 @@
+digraph storage_spike {
+  rankdir=TB;
+  bgcolor="white";
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=12, margin="0.18,0.12"];
+  edge [fontname="Helvetica", fontsize=10, color="#555555"];
+
+  // neutral endpoints
+  datasets [label=<<B>Public single-cell datasets</B>>, fillcolor="#EFEFEF", color="#BBBBBB"];
+  users    [label=<<B>Users</B>>, shape=oval, fillcolor="#EFEFEF", color="#BBBBBB"];
+
+  // cellxgene-census (amber)
+  census [label=<<B>CENSUS CORPUS</B> &#9635; TileDB<BR/><FONT POINT-SIZE="10">cellxgene-census repo</FONT><BR/><FONT POINT-SIZE="9" COLOR="#8A6D1B">biggest build + public API &#8594; leave as-is</FONT>>,
+          fillcolor="#FDE9C8", color="#E0A63B"];
+
+  // single-cell-data-portal (blue)
+  cube [label=<<B>WMG CUBE</B> &#9635; TileDB<BR/><FONT POINT-SIZE="10">single-cell-data-portal repo</FONT><BR/><FONT POINT-SIZE="9" COLOR="#2E5A8F">fast today &#183; alternative proven (not built)</FONT>>,
+        fillcolor="#D6E4F5", color="#4A78B5"];
+  api  [label=<<B>WMG / Differential-Expression API</B><BR/><FONT POINT-SIZE="10">single-cell-data-portal repo</FONT>>,
+        fillcolor="#D6E4F5", color="#4A78B5"];
+
+  // single-cell-explorer (green)
+  expmatrix [label=<<B>EXPLORER MATRIX</B> &#9635; TileDB<BR/><FONT POINT-SIZE="10">single-cell-explorer repo</FONT><BR/><FONT POINT-SIZE="9" COLOR="#4B7A2E">Zarr replacement already proven</FONT>>,
+             fillcolor="#D9EAD3", color="#6AA84F"];
+  expapp [label=<<B>Explorer app</B><BR/><FONT POINT-SIZE="10">single-cell-explorer repo</FONT>>,
+          fillcolor="#D9EAD3", color="#6AA84F"];
+
+  // main flow
+  datasets -> census [label="CZI builds"];
+  census   -> cube    [label="aggregated offline\n(once per build)"];
+  cube     -> api;
+  api      -> users;
+
+  // explorer flow
+  datasets  -> expmatrix;
+  expmatrix -> expapp;
+  expapp    -> users;
+
+  // legend
+  subgraph cluster_legend {
+    label=<<B>All three are CZI repos (chanzuckerberg org) &#183; &#9635; = stored in TileDB today</B>>;
+    labeljust="l"; fontname="Helvetica"; fontsize=11; color="#CCCCCC"; style="rounded";
+    l1 [label="cellxgene-census", fillcolor="#FDE9C8", color="#E0A63B", fontsize=10];
+    l2 [label="single-cell-data-portal", fillcolor="#D6E4F5", color="#4A78B5", fontsize=10];
+    l3 [label="single-cell-explorer", fillcolor="#D9EAD3", color="#6AA84F", fontsize=10];
+    l1 -> l2 -> l3 [style=invis];
+  }
+}
