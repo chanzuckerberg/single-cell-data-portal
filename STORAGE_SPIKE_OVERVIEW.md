@@ -50,7 +50,11 @@ layer-by-layer exit scope.
 
 **The residual:** even a perfect cube exit leaves TileDB in the offline build, because the cube's
 source is the Census corpus (TileDB-SOMA, read via `open_soma`). That corpus is an external,
-CZI-owned, 512-GiB weekly build — and the read is pipeline-only, never on the serving path. Scoped in
+CZI-owned, 512-GiB weekly build — and, though the portal's read of it is offline (pipeline-only, never
+on the portal serving path), the same TileDB-SOMA object is also the storage engine under the **public
+`cellxgene-census` reader API** (Python/R, read live over S3 by a broad external community). So the
+corpus format is a stable public contract the portal doesn't own — reinforcing "leave it," and making
+an upstream non-TileDB **SOMA backend** the only clean exit. Scoped in
 [census corpus generation](CENSUS_CORPUS_GENERATION_SCOPE.md).
 
 ## Recommendation

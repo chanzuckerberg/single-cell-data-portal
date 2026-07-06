@@ -48,7 +48,8 @@ system-level tissues. (Note: the pipeline's `corpus_path` variable is a **misnom
 local *cube output* directory, not an input corpus.)
 
 So "moving the Census corpus off TileDB" is **not a change in this repo** — it's a change to an
-external, CZI-owned build that runs weekly at datacenter scale. That framing bounds every option in §4.
+external, CZI-owned build that runs weekly at datacenter scale *and* to the public API that serves it
+(§3). That framing bounds every option in §4.
 
 ---
 
@@ -106,23 +107,52 @@ aliases → releases (`latest` = weekly, ~1-month retention; `stable`/`V#` = LTS
 
 ---
 
-## 3. Where TileDB actually sits — build-time vs serve-time
+## 3. Where TileDB sits — the portal's read *and* the public API
 
-The load-bearing distinction that shrinks this residual's urgency:
+Two things about the corpus's TileDB dependency, one narrow and one wide.
+
+**Narrow — inside the portal, the corpus read is offline-only.**
 
 - **Serving** (the WMG/DE API tier) does **not** touch the corpus. It reads only the cube. So a
   TileDB-free *serving* tier is already achievable via the chDB cube — no corpus change needed.
 - **The corpus read is offline, pipeline-only** — it happens once per snapshot build in the WMG
-  pipeline job (`open_soma` above), not on any request path.
+  pipeline job (`open_soma` above), not on any portal request path.
 
-So the residual is a **build-image dependency**, not a serving one: `tiledbsoma` must be installed
-in the offline cube-build job because that's what reads the Census. Removing it means the *upstream
-corpus* must exist in a non-TileDB form.
+So *for the portal* the residual is a **build-image dependency**, not a serving one: `tiledbsoma`
+must be installed in the offline cube-build job because that's what reads the Census.
 
-**Why `open_soma` == TileDB, structurally.** SOMA is an **API spec** (stack-agnostic by design);
-`tiledbsoma` is currently the **only production implementation**. So today "read the Census via SOMA"
-and "read TileDB" are the same statement — not by WMG's choice but because no other SOMA backend
-ships. That is exactly the seam option (d) in §4 leans on.
+**Wide — the TileDB-SOMA object is itself a live public API, not a portal-private file.** The same
+corpus the WMG pipeline reads offline is *also* served — live, lazily, over anonymous S3 — as the
+public **cellxgene-census reader API**
+([docs](https://chanzuckerberg.github.io/cellxgene-census/)). This is a whole consumption surface
+*beyond* the portal, and it reads TileDB directly on every call:
+
+- **Python `cellxgene_census` + R `cellxgene.census`.** `open_soma()` opens the corpus straight from
+  `s3://cellxgene-data-public/cell-census/<tag>/soma/` via TileDB VFS
+  (`vfs.s3.no_sign_request=true`, us-west-2), resolving the build through a public
+  `release.json`/`mirrors.json`, and returns a **live `tiledbsoma.Collection`** — no local copy.
+  On top: `get_anndata` / `get_seurat` / `get_single_cell_experiment`, `get_obs`/`get_var`,
+  `get_presence_matrix`, plus an `experimental` layer (embeddings, PyTorch/Geneformer/HuggingFace ML
+  loaders).
+- **Broad external userbase, format-as-contract.** R+Python near-parity, ~24 tutorial notebooks, a
+  community embeddings-contribution ecosystem (a separate `cellxgene-contrib-public` bucket +
+  `contributions.json`), and a versioning model (`stable` LTS / weekly `latest` / `V#`) explicitly
+  designed so users can **pin a build for reproducibility**. The reader's `tiledbsoma` version is
+  pinned to the builder's specifically for read-compatibility — i.e. the on-disk TileDB-SOMA layout
+  is treated as a **stable public contract**.
+
+So the corpus's TileDB isn't only a portal build-image detail — it's the storage engine under a live
+public API that **CZI operates and many independent clients read directly**. The
+`single-cell-data-portal` is **one consumer among many**; it doesn't own or operate that API.
+
+**Why `open_soma` == TileDB, structurally — and why that cuts two ways.** SOMA is an **API spec**
+(stack-agnostic by design), but `tiledbsoma` is currently the **only production implementation**, and
+the reader API is coupled to it *specifically* — hard `tiledbsoma` dependency, TileDB VFS S3 read
+path, public TileDB config keys (`get_default_soma_context`). So today "read the Census via SOMA" and
+"read TileDB" are the same statement. This is why a format change (§4 option c) would break far more
+than WMG — it breaks the public reader API for the whole community — and simultaneously why a
+non-TileDB **SOMA backend** (§4 option d) is the only clean exit: the SOMA abstraction is the one seam
+that could carry the entire ecosystem, not just the portal, onto a new store.
 
 ---
 
@@ -150,25 +180,33 @@ fork of CZI's integration in perpetuity, not a one-time format swap. (Cf. the ge
 noted in the findings doc.)
 
 **Why (c) is the worst trade.** It's (b)'s ongoing ownership burden *plus* the full 512-GiB build,
-just to change the on-disk format of an artifact that already works. It aligns thematically with the
-Explorer `.cxg`→Zarr direction ("corpus is a per-cell tensor → Zarr fits", per the summary), and
-that alignment is real — but it only makes sense pushed **upstream into CZI's builder**, where one
-change serves every Census consumer, not forked here for WMG alone.
+just to change the on-disk format of an artifact that already works — and, per §3, that artifact is a
+**public API contract**. A portal fork that emits Zarr/Parquet either forks the public
+`cellxgene_census`/`cellxgene.census` reader too (breaking every external Python/R/embeddings/ML
+client) or diverges silently from the corpus the rest of the world reads. It aligns thematically with
+the Explorer `.cxg`→Zarr direction ("corpus is a per-cell tensor → Zarr fits", per the summary), and
+that alignment is real — but it only makes sense pushed **upstream into CZI's builder + reader**, as a
+SOMA-backend change (option d), where one change serves every Census consumer. Never a portal fork.
 
 ---
 
 ## 5. Recommendation
 
-**Keep consuming the upstream TileDB-SOMA corpus (option a).** It is the lazy-correct choice: the
-residual is offline-only, upstream-owned, and datacenter-scale, and a TileDB-free *serving* tier
-(the actual goal of the cube spike) needs nothing from the corpus.
+**Keep consuming the upstream TileDB-SOMA corpus (option a).** It is the lazy-correct choice: for the
+portal the residual is offline-only, and a TileDB-free *serving* tier (the actual goal of the cube
+spike) needs nothing from the corpus. And more decisively — the corpus format is not the portal's to
+change: it's an **upstream-owned, datacenter-scale build** *and* a **live public API contract** (§3)
+read directly by a large external Python/R/ML ecosystem. Any format move ripples across all of that,
+not just WMG.
 
 If a full-stack TileDB purge is ever mandated, the order of preference is:
-1. **(d) upstream non-TileDB SOMA backend** — least portal code, one change serves all consumers;
-   pursue as an upstream ask/contribution, not a fork.
+1. **(d) upstream non-TileDB SOMA backend** — least portal code, and the *only* path that carries the
+   whole ecosystem (portal + public reader API) at once via the SOMA seam. Pursue as an upstream
+   ask/contribution, not a fork.
 2. **(b) source-H5AD bypass** — only if (d) never lands and the mandate is hard; accept owning
-   integration.
-3. **(c) fork the builder** — avoid; only viable as an upstream contribution to CZI's builder.
+   integration. Portal-local, so it sidesteps (but doesn't help) the public API.
+3. **(c) fork the builder** — avoid; it either breaks or forks the public reader API. Only viable as
+   an upstream builder+reader change, i.e. it collapses into (d).
 
 This reinforces the spike's standing verdict: **keep TileDB today, buy optionality.** The corpus is
 the part of the stack the portal least controls and least needs to change — de-risking it means
