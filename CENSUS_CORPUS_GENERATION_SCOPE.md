@@ -166,7 +166,7 @@ measured in *who owns the work* and *how much*, not in latency (there's nothing 
 | a | **Leave it — consume upstream TileDB-SOMA as-is** | Nothing. `open_soma` stays; TileDB lives only in the offline build image | ~0 | **Recommended** |
 | b | **Bypass the corpus — build the cube from source H5ADs** | Ingest the pre-integration H5ADs Census already publishes (`.../<tag>/h5ads/`), then re-implement CZI's cross-dataset **integration + gene-universe harmonization** to reproduce today's `axis_query` semantics | Large, **portal-owned, ongoing** (tracks upstream schema/integration changes forever) | Fallback only if forced |
 | c | **Fork the builder to emit Zarr/Parquet** (obs/var → Parquet, X → sparse Zarr) | Fork `cellxgene_census_builder`, replace the SOMA/TileDB writer layer in `build_soma/`; still run the 512-GiB weekly build; WMG re-aggregates from the new format | **Largest.** Forking a datacenter-scale upstream build CZI owns and reruns weekly | Only as an *upstream contribution*, never a portal fork |
-| d | **Wait for / contribute a non-TileDB SOMA backend** | If an Arrow/Zarr-backed SOMA implementation lands upstream, `open_soma` becomes TileDB-free with **~no portal change** (§3 seam) | Low portal-side; long horizon, not portal-controlled | Best *if* it materializes; not actionable today |
+| d | **Wait for / contribute a non-TileDB SOMA backend** | If an Arrow/Zarr-backed SOMA implementation lands upstream, `open_soma` becomes TileDB-free with **small, bounded portal change** — swap deps + re-point ~4 census-read files off direct `tiledbsoma` symbols (§6); does *not* alone remove TileDB from the portal (the WMG cube is separately TileDB) | Low portal-side; long horizon, not portal-controlled | Best *if* it materializes; not actionable today |
 
 **Why (a) is the default and not a cop-out.** The residual is offline-only (§3), the artifact is
 upstream-owned (§1), and the build is enormous (§2). Nothing in the portal forces its removal: the
@@ -269,9 +269,19 @@ Assuming **B1**, the work is four tracks plus two closers:
    but for a *filtered per-cell tensor* workload (obs-filter + sparse X slice over S3), not an OLAP
    aggregate. Zarr fit the Explorer `.cxg` tensor, but that was dense per-dataset reads; census-scale
    filtered SOMA queries are a different test — the real risk to prove.
-6. **Portal payoff.** Near-zero portal code: once upstream publishes a non-TileDB SOMA build,
-   `open_soma("latest")` resolves to it and you drop `tiledbsoma`'s C++ from the cube-build image.
-   That's the whole reason B1 is the only clean exit.
+6. **Portal payoff — small, but not nil, and not sufficient alone.** Because the portal codes against
+   the SOMA abstraction, the code churn is bounded to the **census-read seam**, ~4 files
+   (`expression_summary_and_cell_counts.py`, `dataset_metadata.py`, `cell_counts.py`,
+   `expression_summary.py`) — swap the `cellxgene-census`/`tiledbsoma` deps for the new SOMA-backend
+   package and re-point the direct `tiledbsoma` / `ExperimentAxisQuery` / `soma.AxisQuery` references
+   to the generalized SOMA namespace (`somacore`), then re-validate cube parity + read performance.
+   **Crucially, this does NOT by itself remove TileDB from the portal.** The portal has a *second*,
+   independent TileDB usage — its own WMG cube (raw `import tiledb` across ~20 files:
+   `cube_schema*.py`, `snapshot.py`, `data/tiledb.py`, most `pipeline/*.py`), which an upstream corpus
+   change leaves untouched. Dropping the TileDB **C++ dependency entirely** requires *both* this
+   corpus change *and* the separate chDB cube exit ([`WMG_CUBE_TILEDB_EXIT_REWORK.md`](WMG_CUBE_TILEDB_EXIT_REWORK.md));
+   either alone leaves the C++ core in the image via the other. B1 is still the only clean exit *for
+   the corpus read* — but "clean" means small/bounded portal churn, not zero.
 
 ### Bottom line
 
