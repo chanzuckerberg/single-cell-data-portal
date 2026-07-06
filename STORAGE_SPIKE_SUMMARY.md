@@ -9,7 +9,8 @@ regardless. This is a de-risking spike, not a migration.
 Branch: `spike/wmg-parquet-duckdb` (pushed to `chanzuckerberg/single-cell-data-portal`, no PR, not
 merged). Detail docs: [findings](STORAGE_BACKEND_MIGRATION_FINDINGS.md) ·
 [forced-exit rework](WMG_CUBE_TILEDB_EXIT_REWORK.md) ·
-[CH-vs-TileDB architecture](CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md).
+[CH-vs-TileDB architecture](CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md) ·
+[census corpus generation](CENSUS_CORPUS_GENERATION_SCOPE.md).
 
 ---
 
@@ -100,7 +101,9 @@ locally:
 read via `cellxgene_census.open_soma` → `tiledbsoma` (TileDB). The only TileDB-free artifact census
 publishes is the per-dataset *pre-integration* source H5ADs; using them means re-implementing CZI's
 integration (a fork of upstream ingestion). So even a perfect cube exit leaves TileDB in the pipeline
-unless CZI republishes the integrated corpus in another format.
+unless CZI republishes the integrated corpus in another format. Scoped in detail —
+what the corpus build is, where its TileDB dependency actually sits (offline build-image, not
+serving), and the options — in [`CENSUS_CORPUS_GENERATION_SCOPE.md`](CENSUS_CORPUS_GENERATION_SCOPE.md).
 
 ---
 
@@ -138,7 +141,7 @@ seam (the DuckDB/Lance/chDB spikes are the proof the swap is contained).
 ## Artifacts
 
 **Docs (repo root):** `STORAGE_BACKEND_MIGRATION_FINDINGS.md`, `WMG_CUBE_TILEDB_EXIT_REWORK.md`,
-`CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md`, this summary.
+`CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md`, `CENSUS_CORPUS_GENERATION_SCOPE.md`, this summary.
 
 **Backend seam (throwaway spikes):** `backend/common/census_cube/data/query_{chdb,duckdb,lance}.py`.
 
