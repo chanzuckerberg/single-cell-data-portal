@@ -1,5 +1,7 @@
 # Storage backend migration: TileDB → Zarr / Parquet / Lance — findings
 
+> For a one-page synthesis of the whole spike, see [`STORAGE_SPIKE_SUMMARY.md`](STORAGE_SPIKE_SUMMARY.md).
+
 Investigation into moving off TileDB for two different datasets in the single-cell stack:
 
 1. **Explorer per-dataset expression matrix** (`.cxg`) → **Zarr** — ✅ works, deployed to rdev.
