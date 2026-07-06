@@ -211,3 +211,78 @@ If a full-stack TileDB purge is ever mandated, the order of preference is:
 This reinforces the spike's standing verdict: **keep TileDB today, buy optionality.** The corpus is
 the part of the stack the portal least controls and least needs to change — de-risking it means
 knowing the paths above exist, not walking one now.
+
+---
+
+## 6. If forced — the high-level scope
+
+The first move is to split what "move the corpus off TileDB" actually means, because two very
+different mandates hide in that sentence.
+
+### Mandate A — "drop the TileDB C++ dependency from *our* deployment"
+
+Then you don't touch the corpus at all. It stays TileDB-SOMA upstream; only how the *portal* gets its
+data changes:
+- Serve the cube from **chDB** (already de-risked — see [`WMG_CUBE_TILEDB_EXIT_REWORK.md`](WMG_CUBE_TILEDB_EXIT_REWORK.md)),
+  removing TileDB from the *serving* image; and
+- for the build image, take the **source-H5AD bypass** (option b): ingest the pre-integration H5ADs
+  and re-implement the integration / gene-harmonization yourself.
+
+**Scope:** portal-owned, bounded, no upstream coordination — but you now own cross-dataset integration
+in perpetuity. This is the realistic "forced" path if the driver is *our* dependency hygiene.
+
+### Mandate B — "the corpus format itself must not be TileDB anywhere"
+
+This is the big one, and it is **fundamentally an upstream (CZI) effort, not a portal one** — the
+corpus is both a datacenter-scale build *and* the public reader API (§3). The load-bearing decision is
+the **target backend**, which forces a sub-fork:
+
+- **B1 — do it through SOMA (strongly preferred).** SOMA is backend-agnostic; if a non-TileDB SOMA
+  backend (Zarr/Arrow-native) exists, `open_soma()` keeps working and the whole ecosystem moves at
+  once. The catch: **no production non-TileDB SOMA backend ships today**, so this likely means
+  *building or adopting one* — writing a storage engine (SparseNDArray, DataFrame, Collection,
+  `AxisQuery` predicate pushdown, lazy remote S3 reads), not doing a migration. **This item dominates
+  cost and risk.**
+- **B2 — abandon SOMA, bespoke layout** (obs/var → Parquet, X → sparse Zarr). Cheaper to write but
+  loses the reader API entirely and must rebuild it (Python + R). Fragments the ecosystem — mentioned
+  only to be dismissed.
+
+Assuming **B1**, the work is four tracks plus two closers:
+
+1. **Backend (dominant cost).** A non-TileDB SOMA implementation at production quality: SOMA API over
+   Zarr/Arrow, anonymous S3 remote reads, and critically **predicate pushdown on `obs`** (census reads
+   filter on `is_primary_data` / `nnz` / `cell_type` — exactly TileDB-SOMA's strength) plus efficient
+   sparse `X` slicing. Where the effort lives.
+2. **Write side — the builder.** Extend `cellxgene_census_builder`'s writer layer (`build_soma/`,
+   `globals.py` platform config) to emit the new backend. The 5-step pipeline and the 512-GiB build
+   stay; you swap only the SOMA-write target. With a real SOMA backend this is a re-point, not a
+   rewrite.
+3. **Read side — the public API.** The reader is coupled to `tiledbsoma` *specifically*
+   (`get_default_soma_context` → `SOMATileDBContext`, `vfs.s3.*` keys, pinned `tiledbsoma`).
+   Generalize those to be backend-agnostic; `get_anndata`/`get_seurat`/`get_presence_matrix` +
+   embeddings/ML loaders ride on SOMA unchanged *if* B1 holds.
+4. **Contract & ecosystem migration.** The corpus is a versioned public reproducibility contract
+   (`stable`/`latest`/`V#`) — no hard cut. Expect a **dual-publish deprecation window** (both formats
+   for N releases), migrating the embeddings-contribution bucket + `contributions.json` +
+   `census_contrib` tooling, R/Python parity, and comms for users pinning builds.
+5. **Performance re-validation.** The same "does the layout meet read latency" gate the cube spike ran,
+   but for a *filtered per-cell tensor* workload (obs-filter + sparse X slice over S3), not an OLAP
+   aggregate. Zarr fit the Explorer `.cxg` tensor, but that was dense per-dataset reads; census-scale
+   filtered SOMA queries are a different test — the real risk to prove.
+6. **Portal payoff.** Near-zero portal code: once upstream publishes a non-TileDB SOMA build,
+   `open_soma("latest")` resolves to it and you drop `tiledbsoma`'s C++ from the cube-build image.
+   That's the whole reason B1 is the only clean exit.
+
+### Bottom line
+
+| | Mandate A (portal dep hygiene) | Mandate B (corpus format) |
+|---|---|---|
+| Owner | Portal team | **CZI / upstream**; portal can only ask |
+| Approach | chDB cube + source-H5AD bypass | non-TileDB SOMA backend (B1) |
+| Dominant cost | Owning integration forever | **Building a production SOMA backend** |
+| Portal code if done | Moderate | ~nil |
+
+If forced tomorrow and the driver is *our* dependency, do **Mandate A**. If it's a true format
+mandate, the honest scope is "help CZI stand up a non-TileDB SOMA backend" — a storage-engine project
+measured in quarters and shared across the community, not a portal migration. The portal's leverage is
+to raise it upstream, not to fork.
