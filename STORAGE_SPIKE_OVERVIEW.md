@@ -1,4 +1,4 @@
-# Storage-backend spike — overview (why / what / recommendation)
+# Storage-backend spike — overview (why / what / options)
 
 The one-page entry point to the TileDB storage spike. Distills the whole effort; each claim links
 to the detailed doc that backs it. Read this first; go deeper only where you need to.
@@ -17,10 +17,11 @@ to the detailed doc that backs it. Read this first; go deeper only where you nee
 three CZI components — the WMG cube and Explorer matrices (in `single-cell-data-portal` and
 `single-cell-explorer`) and the Census corpus they read (in `cellxgene-census`). *(All three are CZI
 `chanzuckerberg` repos; the boundaries here are component/team, not organizational.)* A move would
-only be driven by something specific — dropping the native C++ dependency, or an org-wide
-object-store / ML-native (Zarr/Arrow/SQL) storage mandate. **Nothing forces that today**, so this was
-a **de-risking spike, not a migration**: prove whether an exit is possible and know the path, before
-any driver lands.
+be driven by something specific — dropping the native C++ dependency, or an org-wide
+object-store / ML-native (Zarr/Arrow/SQL) storage standard. This was a **de-risking spike** that
+scoped the move independent of the driver: establish whether an exit is possible per component and map
+the path, so the decision on whether and when to move can be made on facts. That decision is
+product/leadership's; this analysis informs it.
 
 ## What we found
 
@@ -30,7 +31,7 @@ its own answer. Full evidence in the [findings doc](STORAGE_BACKEND_MIGRATION_FI
 | Artifact | Geometry | Verdict | Detail |
 |---|---|---|---|
 | **Explorer per-dataset matrix (`.cxg`)** | per-cell **tensor** | **Zarr works** — proven in `single-cell-explorer` (PR #1369, ran in rdev) | [findings §1](STORAGE_BACKEND_MIGRATION_FINDINGS.md) |
-| **WMG cube** | sparse predicate-filtered **OLAP aggregate** | **Keep TileDB now; a chDB exit is viable if forced** | [rework](WMG_CUBE_TILEDB_EXIT_REWORK.md) · [architecture](CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md) |
+| **WMG cube** | sparse predicate-filtered **OLAP aggregate** | **chDB replacement validated (matches TileDB); other candidates regress; not yet built** | [rework](WMG_CUBE_TILEDB_EXIT_REWORK.md) · [architecture](CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md) |
 | **Census corpus (source)** | integrated per-cell **tensor** | **Leave as-is** — separate CZI repo (`cellxgene-census`) + a public API; the data-portal only reads it offline | [census scope](CENSUS_CORPUS_GENERATION_SCOPE.md) |
 
 The load-bearing lesson from the cube work: **the property that matters is the storage *layout*, not
@@ -60,11 +61,10 @@ owned by another CZI team — reinforcing "leave it," and making a non-TileDB **
 Census stack) the only clean exit. Scoped in
 [census corpus generation](CENSUS_CORPUS_GENERATION_SCOPE.md).
 
-## Recommendation
+## Options & path forward
 
-**Keep TileDB today.** No driver forces a change, every artifact meets its budget, and the value of
-the spike is **optionality** — the exit path per artifact is now known and de-risked, not a research
-project:
+**Each component has a proven or validated path off TileDB** — so a move is execution, not research.
+Whether and when to move is a product/leadership decision; the paths, per component:
 
 - **Explorer `.cxg`** → **Zarr** (proven).
 - **WMG cube** (only if forced) → **build with embedded chDB → publish a read-only MergeTree to S3 →
@@ -76,7 +76,7 @@ project:
   **not** a data-portal fork of the `cellxgene-census` builder. This is one CZI program across the
   three components, led with the `cellxgene-census` team, not an external ask.
 
-**In one line:** don't migrate now; reach for these paths only when a concrete driver appears.
+**In one line:** the paths are ready and de-risked; whether and when to move is product's to decide.
 
 ---
 

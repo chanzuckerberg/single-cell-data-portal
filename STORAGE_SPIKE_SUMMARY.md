@@ -1,10 +1,10 @@
 # WMG storage-backend spike — summary
 
-**Question:** can the single-cell stack move off TileDB? **Answer:** it depends on the dataset's
-*geometry*, and for the WMG cube specifically we now know both whether an alternative works (yes, chDB)
-and how it would be deployed (a clickhouse-server sidecar). **Standing verdict: keep TileDB today** —
-nothing forces a change, TileDB meets the latency budget, and the cube's upstream source is TileDB
-regardless. This is a de-risking spike, not a migration.
+**Question:** can the single-cell stack move off TileDB, and how? **Answer:** it depends on the
+dataset's *geometry*, and for the WMG cube specifically we now know both that an alternative works
+(chDB) and how it would be deployed (a clickhouse-server sidecar). **This is a de-risking spike that
+analyzes the options and de-risks the path** — whether and when to move is a product/leadership
+decision this analysis informs, not one it makes.
 
 Branch: `spike/wmg-parquet-duckdb` (pushed to `chanzuckerberg/single-cell-data-portal`, no PR, not
 merged). Detail docs: [findings](STORAGE_BACKEND_MIGRATION_FINDINGS.md) ·
@@ -29,9 +29,8 @@ merged). Detail docs: [findings](STORAGE_BACKEND_MIGRATION_FINDINGS.md) ·
 - **Concurrency:** embedded chDB is the wrong *serving* engine (dir lock, gevent serializes 14.7×), but
   a **clickhouse-server sidecar** fixes it (gevent overlaps, one shared ~300 MB process) and the
   read-only S3 `web`-disk serving model is validated locally.
-- **Net:** a cube exit is viable end-to-end *if forced* — build with chDB, serve with a CH sidecar over
-  a read-only S3 disk — but there's no driver to do it now, and it wouldn't remove TileDB from the
-  deployment anyway (below).
+- **Net:** a cube exit is viable end-to-end — build with chDB, serve with a CH sidecar over a
+  read-only S3 disk — though it wouldn't, on its own, remove TileDB from the deployment (below).
 
 ---
 
@@ -120,12 +119,11 @@ WMG organizes its 7 cubes. See the [architecture doc](CLICKHOUSE_VS_TILEDB_ARCHI
 
 ---
 
-## Recommendation
+## Options & path forward
 
-**Keep TileDB now.** No driver forces a change, the cube meets its budget, and a cube exit wouldn't
-remove TileDB from the deployment (source read is upstream SOMA). The spike's value is **optionality**:
-if a driver lands (dropping the C++ dependency, an object-store/ML-native mandate), the path is known
-and de-risked, not a research project —
+**A cube exit is feasible and de-risked.** Two facts to weight the decision (which is product's to
+make): a cube exit alone wouldn't remove TileDB from the deployment (the source read is the Census
+corpus, SOMA), and the validated path is ready to execute, not a research project —
 
 > **build with embedded chDB → publish a read-only MergeTree to S3 → serve with a clickhouse-server
 > sidecar over a read-only `web`/`s3_plain` disk (+ local cache), workers as socket clients.**

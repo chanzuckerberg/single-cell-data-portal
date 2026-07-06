@@ -6,7 +6,7 @@ Investigation into moving off TileDB for two different datasets in the single-ce
 
 1. **Explorer per-dataset expression matrix** (`.cxg`) → **Zarr** — ✅ works, deployed to rdev.
 2. **WMG / census expression cube** → **Zarr** (analysis), **Parquet+DuckDB** (spiked), **Lance**
-   (spiked, sorted + unsorted, real cube) — ❌ don't migrate.
+   (spiked, sorted + unsorted, real cube) — ❌ these candidates regress; **chDB** is the one that passes.
 
 The headline: **match the storage format to the data's geometry.** A dense per-dataset tensor and a
 sparse predicate-filtered OLAP cube are different shapes, and they want different backends — even
@@ -16,11 +16,11 @@ Migration-options status for the cube (§4): most non-TileDB backends were eithe
 or benchmarked on the real 351M-row cube and **failed the no-regression gate** — DuckDB (35–150×
 slower), Lance unsorted (1.2–10.7×), Lance clustered on the TileDB dim order (unchanged). **One
 candidate passed: chDB (embedded ClickHouse MergeTree)** — spiked 2026-07-02 on the real cube, parity
-on every shape and *faster* than TileDB on the main and diffexp paths (see §4). So the accurate
-verdict is now two-part: **keep TileDB today** (no driver forces a change and TileDB meets the budget),
-but **if a cube exit is ever forced, chDB-embedded is a proven-viable target** — the first backend
-whose storage layout (MergeTree sparse primary index, granule-pruned `IN`-list lookups) reproduces
-what makes TileDB fast. Full rework scope in
+on every shape and *faster* than TileDB on the main and diffexp paths (see §4). So the analysis
+result: among tested backends, **chDB-embedded is the one proven-viable cube replacement** — the first
+backend whose storage layout (MergeTree sparse primary index, granule-pruned `IN`-list lookups)
+reproduces what makes TileDB fast — while DuckDB and Lance regress. Whether and when to act on that is
+a product decision; the technical path is de-risked. Full rework scope in
 [`WMG_CUBE_TILEDB_EXIT_REWORK.md`](WMG_CUBE_TILEDB_EXIT_REWORK.md); the architectural *why* (coordinate
 tiling vs sorted-columnar prefix index) in
 [`CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md`](CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md).
@@ -56,7 +56,7 @@ scope for the POC.
 
 ---
 
-## 2. WMG / census cube — DON'T migrate
+## 2. WMG / census cube — only one backend passes the gate
 
 **Repo:** `single-cell-data-portal`, branch `spike/wmg-parquet-duckdb`.
 
@@ -112,8 +112,8 @@ point-lookups — an indexed-access workload, which is TileDB's strength and Duc
 **Storage got worse too:** TileDB 4.2 GB → Parquet 5.0 GB → native DuckDB DB **17.8 GB** (with indexes).
 
 **Verdict:** Migrating the WMG cube to Parquet+DuckDB would regress interactive latency by 1–2 orders
-of magnitude. Keep TileDB — its dimension tiling is the feature, not incidental. (Parquet+DuckDB would
-only win for large-fraction scans/aggregations; WMG is not that.)
+of magnitude — so DuckDB is not a viable replacement. TileDB's dimension tiling is the feature here,
+not incidental. (Parquet+DuckDB would only win for large-fraction scans/aggregations; WMG is not that.)
 
 > Note: the *source* of the cube is `cellxgene-census` via `tiledbsoma` (itself TileDB, owned
 > upstream). The corpus is geometrically a Zarr candidate (§3 — same AnnData/tensor shape as the
@@ -148,7 +148,7 @@ whether Zarr fits.
 | Access pattern | `axis_query` cell/gene slices | predicate-filtered aggregate point-lookups | random cell/gene **X slicing** + full obs load |
 | Query engine | TileDB `QueryCondition` pushdown (obs/var `value_filter`) | TileDB `QueryCondition` + indexed-dim slicing — **load-bearing** | **none** — positional slicing only; compute runs in-process |
 | Destination | `s3://cellxgene-census-public-us-west-2/...` | `s3://{WMG_BUCKET}/snapshots/v5/...` | `s3://{cellxgene_bucket}/{dataset_version_id}.cxg/` |
-| **Zarr migration** | candidate (AnnData-native) | ❌ keep TileDB | ✅ **proven** (Explorer `poc/zarr-adaptor`) |
+| **Zarr migration** | candidate (AnnData-native) | ❌ not viable for the cube | ✅ **proven** (Explorer `poc/zarr-adaptor`) |
 
 The `.cxg` is what shows the two axes are independent: the corpus is tensor-shaped *and* SOMA; the
 `.cxg` is tensor-shaped *but raw TileDB core* (no SOMA model — just positional `obs`/`var` dims and a
@@ -173,15 +173,15 @@ core TileDB for Explorer's interactive matrix slicing — which is exactly why i
 > to remap each dataset's local gene indices into a common space — i.e. a partial reimplementation of census's
 > upstream harmonization, which is exactly the "fork ingestion" route (b) above, no longer hypothetical. Note it
 > is a small-scale, I/O-bound demo (second-scale queries) and **makes no claim on the OLAP cube's workload** —
-> it corroborates the Zarr half of this doc, not the "keep TileDB for the cube" verdict.
+> it corroborates the Zarr half of this doc, not the cube findings (where common columnar engines regress).
 
 ---
 
 ## 4. If we *did* migrate the cube off TileDB — options that won't regress
 
-The §2 verdict is "keep TileDB." But if a future driver forces a TileDB exit anyway (e.g. dropping the
-C++ dependency, or aligning the cube with an object-store/ML-native stack), these are the only options
-that can avoid a latency regression. Investigated 2026-06-30.
+§2 found that among common columnar engines only chDB matches TileDB on the cube. If a cube exit is
+pursued (e.g. to drop the C++ dependency, or to align the cube with an object-store/ML-native stack),
+these are the only options that can avoid a latency regression. Investigated 2026-06-30.
 
 > Full rework scope for a forced cube exit — layers, touchpoints, per-layer rework, benchmarks, and
 > testing — lives in the sibling doc [`WMG_CUBE_TILEDB_EXIT_REWORK.md`](WMG_CUBE_TILEDB_EXIT_REWORK.md).
@@ -289,17 +289,17 @@ Two structural facts, neither tunable by layout:
 
 Root cause: TileDB intersects predicates in **multi-dimensional coordinate space** and addresses the
 exact cells; Lance intersects in **row-id/bitmap space** (fixed floor + low-card-bitmap cost). That's an
-architectural difference, not a knob. **Verdict: Lance can't meet the no-regression gate — keep TileDB.**
-Of all candidates Lance is the closest (1.2–10.7× vs DuckDB's 35–150×) and is what you'd reach for *if*
-a TileDB exit were ever forced, but on this access pattern TileDB's multi-dim tiling has no equivalent.
+architectural difference, not a knob. **Verdict: Lance can't meet the no-regression gate — not a
+viable cube replacement.** Of all candidates Lance is the closest (1.2–10.7× vs DuckDB's 35–150×), but
+on this access pattern TileDB's multi-dim tiling has no equivalent; chDB is the one that closes the gap.
 
 Artifacts: `backend/common/census_cube/data/query_lance.py`, `scripts/wmg_build_lance.py`,
 `scripts/wmg_build_lance_sorted.py`, `scripts/wmg_lance_spike_realcube.py`.
 
 **C. DIY: partition by gene + manifest index** — rebuild the tiling yourself. Guaranteed result-size
-access, but it's literally reimplementing TileDB's dimension tiling in app code. If you're rebuilding
-TileDB, keep TileDB. Only justified if dropping the C++ dep is the *sole* goal — and A/B do it with
-less code you own.
+access, but it's literally reimplementing TileDB's dimension tiling in app code — if you're rebuilding
+TileDB, TileDB already does it better. Only justified if dropping the C++ dep is the *sole* goal — and
+A/B do it with less code you own.
 
 ### Scope (common to any choice — the seam bounds it)
 
@@ -325,8 +325,9 @@ DuckDB from "2× faster" (toy fixture) to "150× slower" (real cube) — nothing
 
 - **Dense per-dataset tensor (Explorer X / AnnData)** → **Zarr**. Slicing a hyperslab is the job; no
   query engine needed.
-- **Sparse predicate-filtered OLAP cube with selective lookups (WMG)** → **keep TileDB**. The indexed
-  dimension tiling is exactly what makes the interactive API fast; neither Zarr nor DuckDB replaces it.
+- **Sparse predicate-filtered OLAP cube with selective lookups (WMG)** → **TileDB or an equivalent
+  sorted-columnar store (chDB)**. The indexed dimension tiling is what makes the interactive API fast;
+  Zarr and DuckDB don't replace it — only chDB's MergeTree reproduces it.
 
 The early intuition ("the cube is a columnar table → Parquet+DuckDB") was plausible but **wrong**, and
 the spike on real data is what surfaced it. A small in-memory fixture initially showed DuckDB ~2×

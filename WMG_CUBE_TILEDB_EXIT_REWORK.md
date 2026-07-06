@@ -1,18 +1,19 @@
 # Rebuilding the WMG cube query engine to exit TileDB — rework scope
 
 Sibling to [`STORAGE_BACKEND_MIGRATION_FINDINGS.md`](STORAGE_BACKEND_MIGRATION_FINDINGS.md). That
-doc's verdict stands: **keep TileDB for the WMG cube** — every spiked backend regresses. This doc
-answers a *different* question: **if a TileDB exit for the cube were forced anyway, what would it
-actually take** to rebuild the query engine and every supporting layer? It weighs all options and
-inventories the layers, indexing, rework scope, benchmarks, testing, and touchpoints.
+doc's finding: among tested backends, **chDB is the one that matches TileDB for the WMG cube** —
+DuckDB and Lance regress. This doc answers a *different* question: **what a TileDB exit for the cube
+would actually take** to rebuild the query engine and every supporting layer. It weighs all options and
+inventories the layers, indexing, rework scope, benchmarks, testing, and touchpoints — so the work is
+scoped whether or not a move is prioritized.
 
 ---
 
 ## 1. Context & scope
 
-**Premise:** a future driver forces a TileDB exit for the cube (e.g. dropping the TileDB C++
-dependency from the deployment, or an org-wide object-store/ML-native storage mandate). Nothing
-forces this today — see the recommendation in §9.
+**Premise:** a TileDB exit for the cube is pursued (e.g. to drop the TileDB C++ dependency from the
+deployment, or to align with an org-wide object-store/ML-native storage standard). This doc scopes that
+exit whether or not a driver exists today — the go/no-go is a product decision (see §10).
 
 **In scope — the cube's own layers:**
 - **Query/read** — the `CensusCubeQuery` seam and its consumers.
@@ -358,7 +359,7 @@ latency, where each cold granule is a 10–100 ms S3 GET — that needs a real S
 
 ---
 
-## 10. Recommendation
+## 10. Summary & path forward
 
 **chDB-embedded answers the hard question; the deployment shape is a clickhouse-server sidecar.** The
 read-path risk this whole effort circled — "can any non-TileDB engine meet the selective-lookup
@@ -379,11 +380,11 @@ worker. Both risky questions are now de-risked.
 3. **Tune the secondary `cell_type` shape** if the 1.2× matters (`set` skip-index or sort-key change),
    and `LowCardinality(String)` on the ontology-ID columns to shrink the ~17 GB DB.
 
-**But still: don't start that work absent a driver.** The cube meets its budget on TileDB today, and a
-cube exit doesn't remove TileDB from the deployment anyway (the source read is upstream SOMA, §8). The
-value of this spike is *optionality* — if a driver lands (dropping the C++ dep, an object-store
-mandate), the storage-and-serving path is now known end-to-end, not a research project. Keep TileDB
-now; reach for the chDB-build + CH-sidecar path when forced.
+**Whether and when to start this work is a product/leadership decision** — this doc gives the scope and
+cost to make it. Two facts to weight it: a cube exit doesn't, on its own, remove TileDB from the
+deployment (the source read is the Census corpus, SOMA, §8), and the storage-and-serving path is known
+end-to-end — execution, not research. The chDB-build + CH-sidecar path is validated and ready when the
+decision is to proceed.
 
 ---
 
