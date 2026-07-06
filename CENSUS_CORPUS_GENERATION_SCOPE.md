@@ -24,15 +24,20 @@ residual:
 
 **Corpus vs cube — the distinction this whole doc rests on.**
 
-- The **cube** is WMG's own artifact: 7 precomputed TileDB arrays of *aggregate* stats
-  (`nnz`/`sum`/`sqsum`, cell counts) keyed by gene/tissue/organism/cell-type/etc. Built and owned
-  in *this* repo (`backend/wmg/pipeline/`). The cube spike is entirely about this.
-- The **corpus** is the upstream CZI **Census**: the harmonized, integrated per-cell
-  expression matrix for all of CELLxGENE, published as a TileDB-SOMA object. Built and owned in a
-  **different, CZI-owned repo** — `../cellxgene-census/tools/cellxgene_census_builder/`. This repo
-  only *reads* it.
+> **Note on ownership.** All three repos in this spike — `single-cell-data-portal`,
+> `cellxgene-census`, `single-cell-explorer` — are **CZI** (`chanzuckerberg` org). The boundaries in
+> this doc are **component / repo / team** boundaries *inside* CZI, not organizational ones. So a
+> corpus change is a **cross-team CZI effort**, not an external dependency or "someone else's call."
 
-The portal builds **no corpus of its own.** WMG opens the upstream Census read-only and aggregates
+- The **cube** is WMG's own artifact: 7 precomputed TileDB arrays of *aggregate* stats
+  (`nnz`/`sum`/`sqsum`, cell counts) keyed by gene/tissue/organism/cell-type/etc. Built in the
+  **data-portal repo** (`backend/wmg/pipeline/`). The cube spike is entirely about this.
+- The **corpus** is the **Census**: the harmonized, integrated per-cell
+  expression matrix for all of CELLxGENE, published as a TileDB-SOMA object. Built in a
+  **different CZI repo (a separate team)** — `../cellxgene-census/tools/cellxgene_census_builder/`.
+  The data-portal repo only *reads* it.
+
+The data-portal builds **no corpus of its own.** WMG opens the Census read-only and aggregates
 it down to the cube:
 
 ```
@@ -47,9 +52,9 @@ The `value_filter` (`backend/wmg/pipeline/constants.py:130` `CensusParameters`) 
 system-level tissues. (Note: the pipeline's `corpus_path` variable is a **misnomer** — it's the
 local *cube output* directory, not an input corpus.)
 
-So "moving the Census corpus off TileDB" is **not a change in this repo** — it's a change to an
-external, CZI-owned build that runs weekly at datacenter scale *and* to the public API that serves it
-(§3). That framing bounds every option in §4.
+So "moving the Census corpus off TileDB" is **not a change in the data-portal repo** — it's a change
+to a datacenter-scale weekly build in another CZI repo (the `cellxgene-census` team) *and* to the
+public API that serves it (§3). A cross-team CZI effort. That framing bounds every option in §4.
 
 ---
 
@@ -141,9 +146,10 @@ public **cellxgene-census reader API**
   pinned to the builder's specifically for read-compatibility — i.e. the on-disk TileDB-SOMA layout
   is treated as a **stable public contract**.
 
-So the corpus's TileDB isn't only a portal build-image detail — it's the storage engine under a live
-public API that **CZI operates and many independent clients read directly**. The
-`single-cell-data-portal` is **one consumer among many**; it doesn't own or operate that API.
+So the corpus's TileDB isn't only a data-portal build-image detail — it's the storage engine under a
+live public API that **many independent clients read directly**. The `single-cell-data-portal` is
+**one consumer among many** — including **external, non-CZI researchers** — and that reader API is
+owned by another CZI team (the `cellxgene-census` repo), not the data-portal team.
 
 **Why `open_soma` == TileDB, structurally — and why that cuts two ways.** SOMA is an **API spec**
 (stack-agnostic by design), but `tiledbsoma` is currently the **only production implementation**, and
@@ -158,59 +164,61 @@ that could carry the entire ecosystem, not just the portal, onto a new store.
 
 ## 4. Options
 
-The §1 framing — external, CZI-owned, 512-GiB weekly build — is the filter. "What it takes" is
-measured in *who owns the work* and *how much*, not in latency (there's nothing to benchmark).
+The §1 framing — a datacenter-scale weekly build in another CZI repo, serving a public API — is the
+filter. "What it takes" is measured in *which CZI team does the work* and *how much*, not in latency
+(there's nothing to benchmark).
 
 | # | Option | What it takes | Cost | Verdict |
 |---|---|---|---|---|
-| a | **Leave it — consume upstream TileDB-SOMA as-is** | Nothing. `open_soma` stays; TileDB lives only in the offline build image | ~0 | **Recommended** |
-| b | **Bypass the corpus — build the cube from source H5ADs** | Ingest the pre-integration H5ADs Census already publishes (`.../<tag>/h5ads/`), then re-implement CZI's cross-dataset **integration + gene-universe harmonization** to reproduce today's `axis_query` semantics | Large, **portal-owned, ongoing** (tracks upstream schema/integration changes forever) | Fallback only if forced |
-| c | **Fork the builder to emit Zarr/Parquet** (obs/var → Parquet, X → sparse Zarr) | Fork `cellxgene_census_builder`, replace the SOMA/TileDB writer layer in `build_soma/`; still run the 512-GiB weekly build; WMG re-aggregates from the new format | **Largest.** Forking a datacenter-scale upstream build CZI owns and reruns weekly | Only as an *upstream contribution*, never a portal fork |
-| d | **Wait for / contribute a non-TileDB SOMA backend** | If an Arrow/Zarr-backed SOMA implementation lands upstream, `open_soma` becomes TileDB-free with **small, bounded portal change** — swap deps + re-point ~4 census-read files off direct `tiledbsoma` symbols (§6); does *not* alone remove TileDB from the portal (the WMG cube is separately TileDB) | Low portal-side; long horizon, not portal-controlled | Best *if* it materializes; not actionable today |
+| a | **Leave it — consume the TileDB-SOMA corpus as-is** | Nothing. `open_soma` stays; TileDB lives only in the offline build image | ~0 | **Recommended** |
+| b | **Bypass the corpus — build the cube from source H5ADs** | Ingest the pre-integration H5ADs the Census already publishes (`.../<tag>/h5ads/`), then re-implement the cross-dataset **integration + gene-universe harmonization** to reproduce today's `axis_query` semantics | Large, **data-portal-owned, ongoing** (tracks Census schema/integration changes forever) | Fallback only if forced |
+| c | **Change the builder to emit Zarr/Parquet** (obs/var → Parquet, X → sparse Zarr) | In `cellxgene-census`, replace the SOMA/TileDB writer layer in `build_soma/`; still run the 512-GiB weekly build; WMG re-aggregates from the new format | **Largest.** Reworking a datacenter-scale build + breaking the on-disk format | Only done in the `cellxgene-census` repo itself, never a data-portal fork |
+| d | **Add a non-TileDB SOMA backend** | If an Arrow/Zarr-backed SOMA implementation lands in the Census stack, `open_soma` becomes TileDB-free with **small, bounded data-portal change** — swap deps + re-point ~4 census-read files off direct `tiledbsoma` symbols (§6); does *not* alone remove TileDB from the data-portal (the WMG cube is separately TileDB) | Low data-portal-side; long horizon, needs the `cellxgene-census` team | Best *if* it materializes; not actionable today |
 
 **Why (a) is the default and not a cop-out.** The residual is offline-only (§3), the artifact is
-upstream-owned (§1), and the build is enormous (§2). Nothing in the portal forces its removal: the
-one thing the cube spike wanted — a TileDB-free serving tier — is reachable without touching the
-corpus at all.
+built and served by another CZI team (§1), and the build is enormous (§2). Nothing in the data-portal
+forces its removal: the one thing the cube spike wanted — a TileDB-free serving tier — is reachable
+without touching the corpus at all.
 
 **Why (b) is heavier than it looks.** The published H5ADs are *pre-integration* raw inputs. WMG's
 `value_filter` + `axis_query` run over the *harmonized* corpus (unioned gene universe, normalized X,
-consistent ontology terms). Consuming raw H5ADs means owning that harmonization — i.e. maintaining a
-fork of CZI's integration in perpetuity, not a one-time format swap. (Cf. the gene-universe work
-noted in the findings doc.)
+consistent ontology terms). Consuming raw H5ADs means owning that harmonization in the data-portal —
+i.e. maintaining a parallel copy of the Census integration in perpetuity, not a one-time format swap.
+(Cf. the gene-universe work noted in the findings doc.)
 
 **Why (c) is the worst trade.** It's (b)'s ongoing ownership burden *plus* the full 512-GiB build,
 just to change the on-disk format of an artifact that already works — and, per §3, that artifact is a
-**public API contract**. A portal fork that emits Zarr/Parquet either forks the public
+**public API contract**. A data-portal-side fork that emits Zarr/Parquet either forks the public
 `cellxgene_census`/`cellxgene.census` reader too (breaking every external Python/R/embeddings/ML
 client) or diverges silently from the corpus the rest of the world reads. It aligns thematically with
 the Explorer `.cxg`→Zarr direction ("corpus is a per-cell tensor → Zarr fits", per the summary), and
-that alignment is real — but it only makes sense pushed **upstream into CZI's builder + reader**, as a
-SOMA-backend change (option d), where one change serves every Census consumer. Never a portal fork.
+that alignment is real — but it only makes sense done **in the `cellxgene-census` repo itself (builder
++ reader)**, as a SOMA-backend change (option d), where one change serves every Census consumer. Never
+a data-portal fork.
 
 ---
 
 ## 5. Recommendation
 
-**Keep consuming the upstream TileDB-SOMA corpus (option a).** It is the lazy-correct choice: for the
-portal the residual is offline-only, and a TileDB-free *serving* tier (the actual goal of the cube
-spike) needs nothing from the corpus. And more decisively — the corpus format is not the portal's to
-change: it's an **upstream-owned, datacenter-scale build** *and* a **live public API contract** (§3)
-read directly by a large external Python/R/ML ecosystem. Any format move ripples across all of that,
-not just WMG.
+**Keep consuming the TileDB-SOMA corpus (option a).** It is the lazy-correct choice: for the
+data-portal the residual is offline-only, and a TileDB-free *serving* tier (the actual goal of the
+cube spike) needs nothing from the corpus. And more decisively — the corpus format isn't the
+data-portal team's to change alone: it's a **datacenter-scale build in another CZI repo** *and* a
+**live public API contract** (§3) read directly by a large external Python/R/ML ecosystem. Any format
+move ripples across all of that, not just WMG.
 
 If a full-stack TileDB purge is ever mandated, the order of preference is:
-1. **(d) upstream non-TileDB SOMA backend** — least portal code, and the *only* path that carries the
-   whole ecosystem (portal + public reader API) at once via the SOMA seam. Pursue as an upstream
-   ask/contribution, not a fork.
+1. **(d) non-TileDB SOMA backend in the Census stack** — least data-portal code, and the *only* path
+   that carries the whole ecosystem (data-portal + public reader API) at once via the SOMA seam. Drive
+   it with the `cellxgene-census` team, not as a fork.
 2. **(b) source-H5AD bypass** — only if (d) never lands and the mandate is hard; accept owning
-   integration. Portal-local, so it sidesteps (but doesn't help) the public API.
-3. **(c) fork the builder** — avoid; it either breaks or forks the public reader API. Only viable as
-   an upstream builder+reader change, i.e. it collapses into (d).
+   integration. Data-portal-local, so it sidesteps (but doesn't help) the public API.
+3. **(c) change the builder** — avoid; it either breaks or forks the public reader API. Only viable as
+   a `cellxgene-census` builder+reader change, i.e. it collapses into (d).
 
 This reinforces the spike's standing verdict: **keep TileDB today, buy optionality.** The corpus is
-the part of the stack the portal least controls and least needs to change — de-risking it means
-knowing the paths above exist, not walking one now.
+the part of the stack the data-portal team least controls and least needs to change — de-risking it
+means knowing the paths above exist, not walking one now.
 
 ---
 
@@ -221,21 +229,22 @@ different mandates hide in that sentence.
 
 ### Mandate A — "drop the TileDB C++ dependency from *our* deployment"
 
-Then you don't touch the corpus at all. It stays TileDB-SOMA upstream; only how the *portal* gets its
+Then you don't touch the corpus at all. It stays TileDB-SOMA; only how the *data-portal* gets its
 data changes:
 - Serve the cube from **chDB** (already de-risked — see [`WMG_CUBE_TILEDB_EXIT_REWORK.md`](WMG_CUBE_TILEDB_EXIT_REWORK.md)),
   removing TileDB from the *serving* image; and
 - for the build image, take the **source-H5AD bypass** (option b): ingest the pre-integration H5ADs
-  and re-implement the integration / gene-harmonization yourself.
+  and re-implement the integration / gene-harmonization in the data-portal.
 
-**Scope:** portal-owned, bounded, no upstream coordination — but you now own cross-dataset integration
-in perpetuity. This is the realistic "forced" path if the driver is *our* dependency hygiene.
+**Scope:** data-portal-owned, bounded, no cross-team coordination — but the data-portal now owns
+cross-dataset integration in perpetuity. This is the realistic "forced" path if the driver is the
+data-portal's dependency hygiene.
 
 ### Mandate B — "the corpus format itself must not be TileDB anywhere"
 
-This is the big one, and it is **fundamentally an upstream (CZI) effort, not a portal one** — the
-corpus is both a datacenter-scale build *and* the public reader API (§3). The load-bearing decision is
-the **target backend**, which forces a sub-fork:
+This is the big one, and it is **fundamentally a `cellxgene-census` effort, not a data-portal one**
+(a different CZI team/repo) — the corpus is both a datacenter-scale build *and* the public reader API
+(§3). The load-bearing decision is the **target backend**, which forces a sub-fork:
 
 - **B1 — do it through SOMA (strongly preferred).** SOMA is backend-agnostic; if a non-TileDB SOMA
   backend (Zarr/Arrow-native) exists, `open_soma()` keeps working and the whole ecosystem moves at
@@ -275,24 +284,25 @@ Assuming **B1**, the work is four tracks plus two closers:
    `expression_summary.py`) — swap the `cellxgene-census`/`tiledbsoma` deps for the new SOMA-backend
    package and re-point the direct `tiledbsoma` / `ExperimentAxisQuery` / `soma.AxisQuery` references
    to the generalized SOMA namespace (`somacore`), then re-validate cube parity + read performance.
-   **Crucially, this does NOT by itself remove TileDB from the portal.** The portal has a *second*,
-   independent TileDB usage — its own WMG cube (raw `import tiledb` across ~20 files:
-   `cube_schema*.py`, `snapshot.py`, `data/tiledb.py`, most `pipeline/*.py`), which an upstream corpus
+   **Crucially, this does NOT by itself remove TileDB from the data-portal.** The data-portal has a
+   *second*, independent TileDB usage — its own WMG cube (raw `import tiledb` across ~20 files:
+   `cube_schema*.py`, `snapshot.py`, `data/tiledb.py`, most `pipeline/*.py`), which a corpus format
    change leaves untouched. Dropping the TileDB **C++ dependency entirely** requires *both* this
    corpus change *and* the separate chDB cube exit ([`WMG_CUBE_TILEDB_EXIT_REWORK.md`](WMG_CUBE_TILEDB_EXIT_REWORK.md));
    either alone leaves the C++ core in the image via the other. B1 is still the only clean exit *for
-   the corpus read* — but "clean" means small/bounded portal churn, not zero.
+   the corpus read* — but "clean" means small/bounded data-portal churn, not zero.
 
 ### Bottom line
 
-| | Mandate A (portal dep hygiene) | Mandate B (corpus format) |
+| | Mandate A (data-portal dep hygiene) | Mandate B (corpus format) |
 |---|---|---|
-| Owner | Portal team | **CZI / upstream**; portal can only ask |
+| Lead CZI team | data-portal | **`cellxgene-census`** (with data-portal); cross-team, not a data-portal-only call |
 | Approach | chDB cube + source-H5AD bypass | non-TileDB SOMA backend (B1) |
 | Dominant cost | Owning integration forever | **Building a production SOMA backend** |
-| Portal code if done | Moderate | ~nil |
+| Data-portal code if done | Moderate | Small, bounded (not zero — §6.6) |
 
-If forced tomorrow and the driver is *our* dependency, do **Mandate A**. If it's a true format
-mandate, the honest scope is "help CZI stand up a non-TileDB SOMA backend" — a storage-engine project
-measured in quarters and shared across the community, not a portal migration. The portal's leverage is
-to raise it upstream, not to fork.
+If forced tomorrow and the driver is the data-portal's dependency, do **Mandate A**. If it's a true
+format mandate, the honest scope is "stand up a non-TileDB SOMA backend in the Census stack" — a
+storage-engine project measured in quarters and shared across the community, not a data-portal
+migration. It's one CZI program spanning the mapped components; the data-portal team drives it with
+the `cellxgene-census` team rather than forking.

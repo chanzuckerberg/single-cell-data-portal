@@ -13,8 +13,10 @@ to the detailed doc that backs it. Read this first; go deeper only where you nee
 
 ## Why
 
-**Question: can the single-cell stack move off TileDB?** TileDB is a C++ storage engine embedded
-across the portal (WMG cube, Explorer matrices) and inherited from the upstream Census. A move would
+**Question: can the single-cell stack move off TileDB?** TileDB is a C++ storage engine used across
+three CZI components — the WMG cube and Explorer matrices (in `single-cell-data-portal` and
+`single-cell-explorer`) and the Census corpus they read (in `cellxgene-census`). *(All three are CZI
+`chanzuckerberg` repos; the boundaries here are component/team, not organizational.)* A move would
 only be driven by something specific — dropping the native C++ dependency, or an org-wide
 object-store / ML-native (Zarr/Arrow/SQL) storage mandate. **Nothing forces that today**, so this was
 a **de-risking spike, not a migration**: prove whether an exit is possible and know the path, before
@@ -29,7 +31,7 @@ its own answer. Full evidence in the [findings doc](STORAGE_BACKEND_MIGRATION_FI
 |---|---|---|---|
 | **Explorer per-dataset matrix (`.cxg`)** | per-cell **tensor** | **Zarr works** — proven in `single-cell-explorer` (PR #1369, ran in rdev) | [findings §1](STORAGE_BACKEND_MIGRATION_FINDINGS.md) |
 | **WMG cube** | sparse predicate-filtered **OLAP aggregate** | **Keep TileDB now; a chDB exit is viable if forced** | [rework](WMG_CUBE_TILEDB_EXIT_REWORK.md) · [architecture](CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md) |
-| **Census corpus (upstream source)** | integrated per-cell **tensor**, CZI-owned | **Leave as-is** — offline-only residual, not portal-controlled | [census scope](CENSUS_CORPUS_GENERATION_SCOPE.md) |
+| **Census corpus (source)** | integrated per-cell **tensor** | **Leave as-is** — separate CZI repo (`cellxgene-census`) + a public API; the data-portal only reads it offline | [census scope](CENSUS_CORPUS_GENERATION_SCOPE.md) |
 
 The load-bearing lesson from the cube work: **the property that matters is the storage *layout*, not
 the query engine or the "columnar" label.** TileDB is fast because it clusters/tiles data on the
@@ -49,12 +51,13 @@ why the two engines behave differently, and the [rework doc](WMG_CUBE_TILEDB_EXI
 layer-by-layer exit scope.
 
 **The residual:** even a perfect cube exit leaves TileDB in the offline build, because the cube's
-source is the Census corpus (TileDB-SOMA, read via `open_soma`). That corpus is an external,
-CZI-owned, 512-GiB weekly build — and, though the portal's read of it is offline (pipeline-only, never
-on the portal serving path), the same TileDB-SOMA object is also the storage engine under the **public
-`cellxgene-census` reader API** (Python/R, read live over S3 by a broad external community). So the
-corpus format is a stable public contract the portal doesn't own — reinforcing "leave it," and making
-an upstream non-TileDB **SOMA backend** the only clean exit. Scoped in
+source is the Census corpus (TileDB-SOMA, read via `open_soma`). That corpus is a 512-GiB weekly build
+in a different CZI repo (`cellxgene-census`) — and, though the data-portal's read of it is offline
+(pipeline-only, never on the data-portal serving path), the same TileDB-SOMA object is also the storage
+engine under the **public `cellxgene-census` reader API** (Python/R, read live over S3 by a broad
+community that includes external, non-CZI users). So the corpus format is a stable public contract
+owned by another CZI team — reinforcing "leave it," and making a non-TileDB **SOMA backend** (in the
+Census stack) the only clean exit. Scoped in
 [census corpus generation](CENSUS_CORPUS_GENERATION_SCOPE.md).
 
 ## Recommendation
@@ -68,9 +71,10 @@ project:
   serve with a clickhouse-server sidecar** over a read-only `web`/`s3_plain` disk. What's left is
   implementation (7 pipeline writers, snapshot wiring, swap the `CensusCubeQuery` seam) plus two
   things a laptop can't verify: real-S3 cold-read latency and behavior on ECS hardware.
-- **Census corpus** → **leave as upstream TileDB-SOMA.** If a full TileDB purge is ever mandated, the
-  lowest-effort paths are an upstream non-TileDB SOMA backend or a source-H5AD bypass — **not** forking
-  CZI's builder.
+- **Census corpus** → **leave as TileDB-SOMA.** If a full TileDB purge is ever mandated, the
+  lowest-effort paths are a non-TileDB SOMA backend in the Census stack or a source-H5AD bypass —
+  **not** a data-portal fork of the `cellxgene-census` builder. This is one CZI program across the
+  three components, led with the `cellxgene-census` team, not an external ask.
 
 **In one line:** don't migrate now; reach for these paths only when a concrete driver appears.
 
