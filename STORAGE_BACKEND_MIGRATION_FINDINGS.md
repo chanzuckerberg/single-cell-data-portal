@@ -115,13 +115,15 @@ point-lookups — an indexed-access workload, which is TileDB's strength and Duc
 of magnitude — so DuckDB is not a viable replacement. TileDB's dimension tiling is the feature here,
 not incidental. (Parquet+DuckDB would only win for large-fraction scans/aggregations; WMG is not that.)
 
-> Note: the *source* of the cube is `cellxgene-census` via `tiledbsoma` (itself TileDB, owned
-> upstream). The corpus is geometrically a Zarr candidate (§3 — same AnnData/tensor shape as the
-> `.cxg`), but that migration is CZI's to make, not the data portal's. From this repo's side the
-> read leaves TileDB only two ways: (a) CZI republishes the integrated corpus in a non-TileDB format
-> upstream, or (b) fork census ingestion from the per-dataset source H5ADs (`download_source_h5ad`) —
-> the raw pre-integration inputs, which means re-harmonizing the corpus yourself. Neither is a
-> storage-format swap in this repo, and there is no non-TileDB path to the *integrated* corpus today.
+> Note: the *source* of the cube is `cellxgene-census` via `tiledbsoma` (itself TileDB). All these
+> repos are CZI (`chanzuckerberg`) — the corpus just lives in a different repo/team. The corpus is
+> geometrically a Zarr candidate (§3 — same AnnData/tensor shape as the `.cxg`), but that migration
+> lives in the `cellxgene-census` repo, not the data-portal. From the data-portal's side the read
+> leaves TileDB only two ways: (a) the `cellxgene-census` team republishes the integrated corpus in a
+> non-TileDB format, or (b) the data-portal reimplements census ingestion from the per-dataset source
+> H5ADs (`download_source_h5ad`) — the raw pre-integration inputs, which means re-harmonizing the
+> corpus itself. Neither is a storage-format swap in the data-portal, and there is no non-TileDB path
+> to the *integrated* corpus today.
 
 ---
 
@@ -134,7 +136,7 @@ whether Zarr fits.
 
 | | **Census corpus** | **WMG cube** | **Explorer `.cxg`** |
 |---|---|---|---|
-| Produced by | Census team (upstream) | `backend/wmg/pipeline/` | `backend/layers/processing/process_cxg.py` |
+| Produced by | `cellxgene-census` repo (CZI) | `backend/wmg/pipeline/` | `backend/layers/processing/process_cxg.py` |
 | Input | — (the atlas itself) | Census corpus (SOMA) | labeled `local.h5ad` (per dataset) |
 | Library | **`tiledbsoma`** | **`tiledb` core** | **`tiledb` core** |
 | API layer | SOMA data model | raw arrays | raw TileDB group |
@@ -158,12 +160,13 @@ core TileDB for Explorer's interactive matrix slicing — which is exactly why i
 
 > Note: the cube's *source* is the Census corpus, read via `cellxgene_census.open_soma(census_version="latest")`.
 > Resolution is plain JSON-over-HTTPS (`census.cellxgene.cziscience.com/.../release.json`), but it returns a
-> `soma` locator (`s3://cellxgene-data-public/cell-census/<date>/soma/`, us-west-2, CZI-owned) that opens through
-> `tiledbsoma` — i.e. TileDB. `get_anndata` is *not* a non-TileDB path; it reads through `tiledbsoma` too. The one
-> TileDB-free artifact census offers is the per-dataset source H5ADs (`.../h5ads/<dataset_id>.h5ad`), but those are
-> pre-integration raw inputs. The corpus's tensor geometry means it *is* a Zarr candidate (the "candidate" cell
-> below), but that migration is upstream (CZI's) — this repo can only reach a non-TileDB read by consuming a
-> future CZI republish or by forking ingestion from the source H5ADs. Neither is a storage-format swap here.
+> `soma` locator (`s3://cellxgene-data-public/cell-census/<date>/soma/`, us-west-2, the `cellxgene-census` bucket)
+> that opens through `tiledbsoma` — i.e. TileDB. `get_anndata` is *not* a non-TileDB path; it reads through `tiledbsoma`
+> too. The one TileDB-free artifact census offers is the per-dataset source H5ADs (`.../h5ads/<dataset_id>.h5ad`), but
+> those are pre-integration raw inputs. The corpus's tensor geometry means it *is* a Zarr candidate (the "candidate"
+> cell below), but that migration lives in the `cellxgene-census` repo (a different CZI team) — the data-portal can
+> only reach a non-TileDB read by consuming a future republish from that team or by reimplementing ingestion from the
+> source H5ADs. Neither is a storage-format swap in the data-portal.
 
 > External corroboration: CZI's [`chanzuckerberg/multimodal-slicing`](https://github.com/chanzuckerberg/multimodal-slicing)
 > spike (Nov 2025) independently validates the corpus→Zarr candidate cell. It converts ~662 census-derived

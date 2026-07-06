@@ -98,9 +98,10 @@ locally:
 
 **7. The residual — why this never fully removes TileDB.** The cube's *source* is the Census corpus,
 read via `cellxgene_census.open_soma` → `tiledbsoma` (TileDB). The only TileDB-free artifact census
-publishes is the per-dataset *pre-integration* source H5ADs; using them means re-implementing CZI's
-integration (a fork of upstream ingestion). So even a perfect cube exit leaves TileDB in the pipeline
-unless CZI republishes the integrated corpus in another format. Scoped in detail —
+publishes is the per-dataset *pre-integration* source H5ADs; using them means re-implementing the
+census integration in the data-portal (a reimplementation of the `cellxgene-census` ingestion). So
+even a perfect cube exit leaves TileDB in the pipeline unless the corpus is republished in another
+format by the `cellxgene-census` team (a different CZI repo). Scoped in detail —
 what the corpus build is, where its TileDB dependency actually sits (offline build-image, not
 serving), and the options — in [`CENSUS_CORPUS_GENERATION_SCOPE.md`](CENSUS_CORPUS_GENERATION_SCOPE.md).
 

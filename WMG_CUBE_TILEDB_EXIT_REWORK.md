@@ -20,11 +20,12 @@ exit whether or not a driver exists today — the go/no-go is a product decision
 - **Write/build** — the 7 TileDB array writers in the WMG pipeline.
 - **Snapshot/load/deploy** — how the cube is opened, versioned, synced, and served.
 
-**Out of scope — the upstream source read (residual, stays TileDB):** the pipeline reads the
+**Out of scope — the source read (residual, stays TileDB):** the pipeline reads the
 Census corpus via `cellxgene_census.open_soma(...)` → `tiledbsoma`, which *is* TileDB. Removing
-that isn't a storage-format swap in this repo — it means forking CZI's census integration (see
-§8 and the findings doc's §3 footnotes). Every option below still reads TileDB-SOMA at ingest.
-There is no full TileDB exit; there is a **cube** exit.
+that isn't a storage-format swap in the data-portal — it needs either the `cellxgene-census` team
+(a different CZI repo) to change the corpus format, or the data-portal to reimplement census
+integration (see §8 and the findings doc's §3 footnotes). Every option below still reads TileDB-SOMA
+at ingest. There is no full TileDB exit from the data-portal alone; there is a **cube** exit.
 
 ---
 
@@ -252,11 +253,12 @@ DuckDB/Lance spikes are the proof).
 Even a perfect cube exit does **not** remove TileDB from the deployment, because the pipeline
 ingests the Census corpus via `tiledbsoma`. Census publishes one TileDB-free artifact — the
 per-dataset source H5ADs — but those are *pre-integration* raw inputs; reproducing the pipeline's
-cross-corpus `axis_query` over them means re-harmonizing every dataset yourself (a fork of CZI's
-integration, cf. `chanzuckerberg/multimodal-slicing`'s gene-universe work noted in the findings
-doc). The read leaves TileDB only if (a) CZI republishes the integrated corpus in a non-TileDB
-format upstream, or (b) that fork is undertaken. Both are separate, larger efforts outside this
-cube-exit scope.
+cross-corpus `axis_query` over them means re-harmonizing every dataset in the data-portal (a
+reimplementation of the `cellxgene-census` integration, cf. `chanzuckerberg/multimodal-slicing`'s
+gene-universe work noted in the findings doc). The read leaves TileDB only if (a) the
+`cellxgene-census` team republishes the integrated corpus in a non-TileDB format, or (b) that
+reimplementation is undertaken. Both are separate, larger efforts outside this cube-exit scope —
+and all within CZI, across repos/teams.
 
 ---
 
