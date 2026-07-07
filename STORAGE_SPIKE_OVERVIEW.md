@@ -68,14 +68,14 @@ Census stack) the only clean exit. Scoped in
 Whether and when to move is a product/leadership decision; the paths, per component:
 
 - **Explorer `.cxg`** → **Zarr** (proven).
-- **WMG cube** (only if forced) → **build with embedded chDB → publish a read-only MergeTree to S3 →
-  serve with a clickhouse-server sidecar** over a read-only `web`/`s3_plain` disk. What's left is
-  implementation (7 pipeline writers, snapshot wiring, swap the `CensusCubeQuery` seam) plus two
-  things a laptop can't verify: real-S3 cold-read latency and behavior on ECS hardware.
-- **Census corpus** → **leave as TileDB-SOMA.** If a full TileDB purge is ever mandated, the
-  lowest-effort paths are a non-TileDB SOMA backend in the Census stack or a source-H5AD bypass —
-  **not** a data-portal fork of the `cellxgene-census` builder. This is one CZI program across the
-  three components, led with the `cellxgene-census` team, not an external ask.
+- **WMG cube** → **build with embedded chDB → publish a read-only MergeTree to S3 → serve with a
+  clickhouse-server sidecar** over a read-only `web`/`s3_plain` disk. What's left is implementation
+  (7 pipeline writers, snapshot wiring, swap the `CensusCubeQuery` seam) plus two things a laptop can't
+  verify: real-S3 cold-read latency and behavior on ECS hardware.
+- **Census corpus** → the heaviest, most coordination-sensitive component. The paths (lowest-effort
+  first) are a non-TileDB SOMA backend in the Census stack or a source-H5AD bypass — **not** a
+  data-portal fork of the `cellxgene-census` builder. It's one CZI program across the three components,
+  led with the `cellxgene-census` team, not an external ask.
 
 **In one line:** the paths are ready and de-risked; whether and when to move is product's to decide.
 
