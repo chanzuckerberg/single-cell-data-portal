@@ -9,8 +9,10 @@ digraph storage_spike {
   users    [label=<<B>Users</B>>, shape=oval, fillcolor="#EFEFEF", color="#BBBBBB"];
 
   // cellxgene-census (amber)
-  census [label=<<B>CENSUS CORPUS</B> &#9635; TileDB<BR/><FONT POINT-SIZE="10">cellxgene-census repo</FONT><BR/><FONT POINT-SIZE="9" COLOR="#8A6D1B">biggest build + public API &#8594; leave as-is</FONT>>,
+  census [label=<<B>CENSUS CORPUS</B> &#9635; TileDB<BR/><FONT POINT-SIZE="10">cellxgene-census repo</FONT><BR/><FONT POINT-SIZE="9" COLOR="#8A6D1B">biggest build &#183; heaviest to move</FONT>>,
           fillcolor="#FDE9C8", color="#E0A63B"];
+  readerapi [label=<<B>cellxgene-census reader API</B><BR/><FONT POINT-SIZE="10">Python / R &#183; public, reads live over S3</FONT>>,
+             fillcolor="#FDE9C8", color="#E0A63B"];
 
   // single-cell-data-portal (blue)
   cube [label=<<B>WMG CUBE</B> &#9635; TileDB<BR/><FONT POINT-SIZE="10">single-cell-data-portal repo</FONT><BR/><FONT POINT-SIZE="9" COLOR="#2E5A8F">fast today &#183; alternative proven (not built)</FONT>>,
@@ -29,6 +31,10 @@ digraph storage_spike {
   census   -> cube    [label="aggregated offline\n(once per build)"];
   cube     -> api;
   api      -> users;
+
+  // census public reader API — external users read the corpus directly
+  census    -> readerapi [label="read directly"];
+  readerapi -> users;
 
   // explorer flow
   datasets  -> expmatrix;
