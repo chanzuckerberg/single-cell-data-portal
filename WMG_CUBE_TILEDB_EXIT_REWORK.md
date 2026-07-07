@@ -20,12 +20,14 @@ exit whether or not a driver exists today — the go/no-go is a product decision
 - **Write/build** — the 7 TileDB array writers in the WMG pipeline.
 - **Snapshot/load/deploy** — how the cube is opened, versioned, synced, and served.
 
-**Out of scope — the source read (residual, stays TileDB):** the pipeline reads the
-Census corpus via `cellxgene_census.open_soma(...)` → `tiledbsoma`, which *is* TileDB. Removing
-that isn't a storage-format swap in the data-portal — it needs either the `cellxgene-census` team
-(a different CZI repo) to change the corpus format, or the data-portal to reimplement census
-integration (see §8 and the [census corpus scope](CENSUS_CORPUS_GENERATION_SCOPE.md)). Every option below still reads TileDB-SOMA
-at ingest. There is no full TileDB exit from the data-portal alone; there is a **cube** exit.
+**The source read (the Census corpus) — the paired workstream, covered separately.** The pipeline
+reads the corpus via `cellxgene_census.open_soma(...)` → `tiledbsoma`. That's a *separate* component
+with its own migration path (a non-TileDB SOMA backend, or a source-H5AD bypass), scoped in the
+[census corpus scope](CENSUS_CORPUS_GENERATION_SCOPE.md) and §8. This doc covers the **cube**; the
+corpus is its sibling workstream in the same program. Sequencing note: every option below still reads
+TileDB-SOMA at ingest, so the offline **build** image keeps TileDB until the corpus workstream also
+lands — but the cube exit alone already makes the **serving** tier TileDB-free (the source read is
+build-time only). A full TileDB exit = this cube workstream + the corpus workstream (+ Explorer).
 
 ---
 
@@ -110,7 +112,7 @@ Entrypoint/DAG: `pipeline.py:46-80` — 9 steps producing **7 TileDB arrays + 5 
 categoricals, byteshuffle+zstd-5 on numerics (`schemas/tiledb_filters.py`). Creation util:
 `pipeline/utils.py:50` `create_empty_cube_if_needed`.
 
-**Source read (out of scope — stays TileDB):** `expression_summary_and_cell_counts.py:50`
+**Source read (the paired corpus workstream, §8):** `expression_summary_and_cell_counts.py:50`
 `open_soma(...)` + `axis_query("RNA", value_filter=...)`; obs/var pulled and renamed per
 `constants.py`. The 5 JSON sidecars (`primary_filter_dimensions`, `dataset_metadata`,
 `cell_type_ancestors`, `filter_relationships`, `cell_type_orderings`) are format-agnostic and
@@ -248,17 +250,19 @@ DuckDB/Lance spikes are the proof).
 
 ---
 
-## 8. Residual: the source read stays TileDB
+## 8. The paired workstream: the Census corpus source read
 
-Even a perfect cube exit does **not** remove TileDB from the deployment, because the pipeline
-ingests the Census corpus via `tiledbsoma`. Census publishes one TileDB-free artifact — the
-per-dataset source H5ADs — but those are *pre-integration* raw inputs; reproducing the pipeline's
-cross-corpus `axis_query` over them means re-harmonizing every dataset in the data-portal (a
-reimplementation of the `cellxgene-census` integration, cf. `chanzuckerberg/multimodal-slicing`'s
-gene-universe work). The read leaves TileDB only if (a) the
-`cellxgene-census` team republishes the integrated corpus in a non-TileDB format, or (b) that
-reimplementation is undertaken. Both are separate, larger efforts outside this cube-exit scope —
-and all within CZI, across repos/teams.
+The cube exit makes the cube's **serving** tier TileDB-free. The **build** image still reads the Census
+corpus via `tiledbsoma`, so clearing TileDB from the build too is the corpus's own workstream — running
+in parallel in the same program, not a leftover that blocks this one. The corpus paths: (a) the
+`cellxgene-census` team adds a **non-TileDB SOMA backend** (the clean, ecosystem-wide fix that keeps
+the public reader API working), or (b) the data-portal **bypasses the corpus** by ingesting the
+per-dataset source H5ADs and re-harmonizing them itself (owning a copy of the census integration,
+cf. `chanzuckerberg/multimodal-slicing`'s gene-universe work). Full treatment — including the
+public-API angle — in the [census corpus scope](CENSUS_CORPUS_GENERATION_SCOPE.md).
+
+**Net:** cube exit → TileDB-free *serving*; cube exit **+** corpus workstream → TileDB-free *build*
+too. Both are CZI work, across repos/teams — one program.
 
 ---
 
@@ -383,10 +387,10 @@ worker. Both risky questions are now de-risked.
    and `LowCardinality(String)` on the ontology-ID columns to shrink the ~17 GB DB.
 
 **Whether and when to start this work is a product/leadership decision** — this doc gives the scope and
-cost to make it. Two facts to weight it: a cube exit doesn't, on its own, remove TileDB from the
-deployment (the source read is the Census corpus, SOMA, §8), and the storage-and-serving path is known
-end-to-end — execution, not research. The chDB-build + CH-sidecar path is validated and ready when the
-decision is to proceed.
+cost to make it. Two facts to weight it: the cube exit makes the cube's **serving** tier TileDB-free on
+its own, with the corpus source read as the paired workstream that clears TileDB from the **build**
+image too (§8); and the storage-and-serving path is known end-to-end — execution, not research. The
+chDB-build + CH-sidecar path is validated and ready when the decision is to proceed.
 
 ---
 
