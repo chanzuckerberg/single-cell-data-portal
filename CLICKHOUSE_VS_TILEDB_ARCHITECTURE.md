@@ -27,6 +27,8 @@ So the axis is: *multi-dimensional coordinate index* vs *one linear sort key*.
 
 ## How each one prunes (the load-bearing mechanic)
 
+![TileDB prunes in multi-dimensional coordinate space (R-tree over tile bounding boxes); ClickHouse prunes granules along a single sorted key prefix, falling back to a coarse skip-index off-prefix](storage_pruning_tiledb_vs_clickhouse.png)
+
 **TileDB — R-tree over tile bounding boxes.** Sparse cells are sorted into tiles of ~10,000 cells
 (`capacity=10000`); each tile records a **minimum bounding rectangle (MBR)** over *all* dimensions at
 once. A query like `gene IN (…) AND tissue IN (…)` does a spatial lookup in the R-tree for tiles whose
