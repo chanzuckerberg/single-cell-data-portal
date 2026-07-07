@@ -168,17 +168,17 @@ The §1 framing — a datacenter-scale weekly build in another CZI repo, serving
 filter. "What it takes" is measured in *which CZI team does the work* and *how much*, not in latency
 (there's nothing to benchmark).
 
-| # | Option | What it takes | Cost | Verdict |
+| # | Option | What it takes | Cost | Assessment |
 |---|---|---|---|---|
-| a | **Leave it — consume the TileDB-SOMA corpus as-is** | Nothing. `open_soma` stays; TileDB lives only in the offline build image | ~0 | **Recommended** |
+| a | **Leave it — consume the TileDB-SOMA corpus as-is** | Nothing. `open_soma` stays; TileDB lives only in the offline build image | ~0 | Zero-cost baseline — no data-portal driver requires changing it |
 | b | **Bypass the corpus — build the cube from source H5ADs** | Ingest the pre-integration H5ADs the Census already publishes (`.../<tag>/h5ads/`), then re-implement the cross-dataset **integration + gene-universe harmonization** to reproduce today's `axis_query` semantics | Large, **data-portal-owned, ongoing** (tracks Census schema/integration changes forever) | Fallback only if forced |
 | c | **Change the builder to emit Zarr/Parquet** (obs/var → Parquet, X → sparse Zarr) | In `cellxgene-census`, replace the SOMA/TileDB writer layer in `build_soma/`; still run the 512-GiB weekly build; WMG re-aggregates from the new format | **Largest.** Reworking a datacenter-scale build + breaking the on-disk format | Only done in the `cellxgene-census` repo itself, never a data-portal fork |
 | d | **Add a non-TileDB SOMA backend** | If an Arrow/Zarr-backed SOMA implementation lands in the Census stack, `open_soma` becomes TileDB-free with **small, bounded data-portal change** — swap deps + re-point ~4 census-read files off direct `tiledbsoma` symbols (§6); does *not* alone remove TileDB from the data-portal (the WMG cube is separately TileDB) | Low data-portal-side; long horizon, needs the `cellxgene-census` team | Best *if* it materializes; not actionable today |
 
-**Why (a) is the default and not a cop-out.** The residual is offline-only (§3), the artifact is
-built and served by another CZI team (§1), and the build is enormous (§2). Nothing in the data-portal
-forces its removal: the one thing the cube spike wanted — a TileDB-free serving tier — is reachable
-without touching the corpus at all.
+**Why (a) is the zero-cost baseline.** The residual is offline-only (§3), the artifact is built and
+served by another CZI team (§1), and the build is enormous (§2). Nothing in the data-portal *requires*
+changing it: the one thing the cube spike wanted — a TileDB-free serving tier — is reachable without
+touching the corpus at all. (Whether to change it anyway is a product/leadership decision.)
 
 **Why (b) is heavier than it looks.** The published H5ADs are *pre-integration* raw inputs. WMG's
 `value_filter` + `axis_query` run over the *harmonized* corpus (unioned gene universe, normalized X,
@@ -198,27 +198,27 @@ a data-portal fork.
 
 ---
 
-## 5. Recommendation
+## 5. Assessment & path forward
 
-**Keep consuming the TileDB-SOMA corpus (option a).** It is the lazy-correct choice: for the
-data-portal the residual is offline-only, and a TileDB-free *serving* tier (the actual goal of the
-cube spike) needs nothing from the corpus. And more decisively — the corpus format isn't the
-data-portal team's to change alone: it's a **datacenter-scale build in another CZI repo** *and* a
-**live public API contract** (§3) read directly by a large external Python/R/ML ecosystem. Any format
-move ripples across all of that, not just WMG.
+**The go/no-go on changing the corpus is a product/leadership decision** — this section gives the
+analysis to make it. Two facts frame it: leaving the corpus unchanged has **zero data-portal cost**,
+and nothing in the data-portal *requires* changing it (a TileDB-free *serving* tier, the cube spike's
+goal, needs nothing from the corpus). Against that, the corpus format is a **datacenter-scale build in
+another CZI repo** *and* a **live public API contract** (§3) read directly by a large external
+Python/R/ML ecosystem — so any format move ripples across all of that, not just WMG, and is the
+heaviest, most coordination-sensitive component to touch.
 
-If a full-stack TileDB purge is ever mandated, the order of preference is:
+**If a move is pursued, the order of preference (technical) is:**
 1. **(d) non-TileDB SOMA backend in the Census stack** — least data-portal code, and the *only* path
-   that carries the whole ecosystem (data-portal + public reader API) at once via the SOMA seam. Drive
-   it with the `cellxgene-census` team, not as a fork.
-2. **(b) source-H5AD bypass** — only if (d) never lands and the mandate is hard; accept owning
-   integration. Data-portal-local, so it sidesteps (but doesn't help) the public API.
-3. **(c) change the builder** — avoid; it either breaks or forks the public reader API. Only viable as
-   a `cellxgene-census` builder+reader change, i.e. it collapses into (d).
+   that carries the whole ecosystem (data-portal + public reader API) at once via the SOMA seam. Driven
+   with the `cellxgene-census` team, not as a fork.
+2. **(b) source-H5AD bypass** — only if (d) never lands; accept owning integration. Data-portal-local,
+   so it sidesteps (but doesn't help) the public API.
+3. **(c) change the builder to a bespoke format** — avoid; it either breaks or forks the public reader
+   API. Only viable as a `cellxgene-census` builder+reader change, i.e. it collapses into (d).
 
-This reinforces the spike's standing verdict: **keep TileDB today, buy optionality.** The corpus is
-the part of the stack the data-portal team least controls and least needs to change — de-risking it
-means knowing the paths above exist, not walking one now.
+Either way the value of this scoping is that the paths are known and de-risked — so a decision, in
+whichever direction, is informed rather than a research project.
 
 ---
 

@@ -28,11 +28,11 @@ product/leadership's; this analysis informs it.
 The stack isn't one storage problem — it's **three artifacts with different geometry**, so each gets
 its own answer. Full evidence in the [findings doc](STORAGE_BACKEND_MIGRATION_FINDINGS.md).
 
-| Artifact | Geometry | Verdict | Detail |
+| Artifact | Geometry | Finding | Detail |
 |---|---|---|---|
 | **Explorer per-dataset matrix (`.cxg`)** | per-cell **tensor** | **Zarr works** — proven in `single-cell-explorer` (PR #1369, ran in rdev) | [findings §1](STORAGE_BACKEND_MIGRATION_FINDINGS.md) |
 | **WMG cube** | sparse predicate-filtered **OLAP aggregate** | **chDB replacement validated (matches TileDB); other candidates regress; not yet built** | [rework](WMG_CUBE_TILEDB_EXIT_REWORK.md) · [architecture](CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md) |
-| **Census corpus (source)** | integrated per-cell **tensor** | **Leave as-is** — separate CZI repo (`cellxgene-census`) + a public API; the data-portal only reads it offline | [census scope](CENSUS_CORPUS_GENERATION_SCOPE.md) |
+| **Census corpus (source)** | integrated per-cell **tensor** | **Feasible; heaviest** — a move lives in the `cellxgene-census` repo + affects its public API; the data-portal only reads it offline | [census scope](CENSUS_CORPUS_GENERATION_SCOPE.md) |
 
 The load-bearing lesson from the cube work: **the property that matters is the storage *layout*, not
 the query engine or the "columnar" label.** TileDB is fast because it clusters/tiles data on the
@@ -57,7 +57,8 @@ in a different CZI repo (`cellxgene-census`) — and, though the data-portal's r
 (pipeline-only, never on the data-portal serving path), the same TileDB-SOMA object is also the storage
 engine under the **public `cellxgene-census` reader API** (Python/R, read live over S3 by a broad
 community that includes external, non-CZI users). So the corpus format is a stable public contract
-owned by another CZI team — reinforcing "leave it," and making a non-TileDB **SOMA backend** (in the
+owned by another CZI team — the heaviest, most coordination-sensitive component to move, with a
+non-TileDB **SOMA backend** (in the
 Census stack) the only clean exit. Scoped in
 [census corpus generation](CENSUS_CORPUS_GENERATION_SCOPE.md).
 
