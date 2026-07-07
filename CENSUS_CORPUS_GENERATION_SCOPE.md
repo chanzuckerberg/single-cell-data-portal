@@ -8,8 +8,33 @@ is the Census corpus, which is TileDB. This doc scopes that edge: **how the Cens
 generated, where its TileDB dependency actually sits, and what moving it off TileDB would take.**
 
 **This is a decision doc, not a spike.** A real Census build needs **512 GiB RAM / 2 TiB swap /
-1.8 TiB disk** (§2), so unlike the cube work there is no laptop-runnable proof here — the analysis
-is on the code and the published build requirements, not benchmarks.
+1.8 TiB disk** (§2), so — unlike the cube (real-cube benchmarks) and Explorer (a working Zarr
+adaptor) — there is no laptop-runnable proof here. "Feasible" is a **reasoned assessment, not a run
+result.** What that assessment rests on:
+
+- **Read the builder source** (`cellxgene-census/tools/cellxgene_census_builder/`, §2) to pin what the
+  corpus is, how it's produced, and exactly where TileDB is bound (the SOMA writer layer +
+  `tiledbsoma` platform config).
+- **Read the public reader API** (Python `cellxgene_census` + R, §3) — confirmed the coupling is to
+  `tiledbsoma` *specifically* but rides on the **SOMA abstraction**, the seam option (d) depends on.
+- **Traced the portal's actual consumption** (`open_soma` + the `value_filter`, §1) to scope what WMG
+  needs from the corpus versus what it could re-derive.
+- **Confirmed the TileDB-free artifact** census already publishes — the per-dataset source H5ADs
+  (§2/§4) — the concrete basis for the option (b) bypass.
+- **External corroboration — the closest thing to a proof:** CZI's `chanzuckerberg/multimodal-slicing`
+  spike converts ~662 census-derived per-dataset H5ADs to **Zarr on S3** and builds a shared **gene
+  universe (79,948 genes)** — a real, working partial demonstration of both the tensor→Zarr target
+  (options c/d) and the re-harmonization that option (b) requires. Demo-scale, but not hypothetical.
+- **Geometric inference:** the corpus is the same per-cell tensor geometry as the Explorer `.cxg`,
+  whose Zarr migration is proven — so the *format fit* is established; the open question is
+  scale/engine, not shape.
+- **SOMA is a documented multi-backend spec** (backend-agnostic by design) — the basis for expecting a
+  non-TileDB SOMA backend to be buildable (option d).
+
+**What we did *not* do** (so the confidence is honest): no actual non-TileDB Census rebuild (build
+scale); no benchmark of a non-TileDB SOMA backend (none ships in production yet); no prototype of the
+option (b) re-harmonization at census scale. So this is **"feasible by analysis + external
+corroboration,"** a lower/different bar than the cube's "benchmarked and passed."
 
 ---
 
