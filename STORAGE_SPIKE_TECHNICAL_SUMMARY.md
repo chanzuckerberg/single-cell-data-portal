@@ -7,8 +7,8 @@ path forward per component. Deeper detail lives in three focused docs:
 [census corpus scope](CENSUS_CORPUS_GENERATION_SCOPE.md). For the non-technical version see the
 [product brief](STORAGE_SPIKE_PRODUCT_BRIEF.md).
 
-Branch: `spike/wmg-parquet-duckdb` (pushed to `chanzuckerberg/single-cell-data-portal`, no PR, not
-merged). All three repos in scope (`single-cell-data-portal`, `cellxgene-census`,
+Branch: `spike/tiledb-storage-backend-migration` (pushed to `chanzuckerberg/single-cell-data-portal`,
+no PR, not merged). All three repos in scope (`single-cell-data-portal`, `cellxgene-census`,
 `single-cell-explorer`) are CZI — boundaries here are component/repo/team, not organizational.
 
 **Question:** can the single-cell stack move off TileDB, and how? **Answer:** it depends on the data's
