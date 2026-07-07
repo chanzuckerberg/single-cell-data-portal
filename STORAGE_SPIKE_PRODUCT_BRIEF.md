@@ -76,9 +76,8 @@ Treat a move as one program with three workstreams, in order of how independentl
 ## Go deeper (technical detail)
 
 Full scoping and evidence:
-[Overview](STORAGE_SPIKE_OVERVIEW.md) ·
-[Findings & evidence](STORAGE_BACKEND_MIGRATION_FINDINGS.md) ·
-[Cube exit rework](WMG_CUBE_TILEDB_EXIT_REWORK.md) ·
+[Technical summary](STORAGE_SPIKE_TECHNICAL_SUMMARY.md) ·
+[WMG cube exit plan](WMG_CUBE_TILEDB_EXIT_REWORK.md) ·
 [Engine architecture](CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md) ·
 [Census corpus scope](CENSUS_CORPUS_GENERATION_SCOPE.md)
 

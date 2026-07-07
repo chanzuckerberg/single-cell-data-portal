@@ -1,7 +1,7 @@
 # Rebuilding the WMG cube query engine to exit TileDB — rework scope
 
-Sibling to [`STORAGE_BACKEND_MIGRATION_FINDINGS.md`](STORAGE_BACKEND_MIGRATION_FINDINGS.md). That
-doc's finding: among tested backends, **chDB is the one that matches TileDB for the WMG cube** —
+Sibling to [`STORAGE_SPIKE_TECHNICAL_SUMMARY.md`](STORAGE_SPIKE_TECHNICAL_SUMMARY.md). That doc's
+finding: among tested backends, **chDB is the one that matches TileDB for the WMG cube** —
 DuckDB and Lance regress. This doc answers a *different* question: **what a TileDB exit for the cube
 would actually take** to rebuild the query engine and every supporting layer. It weighs all options and
 inventories the layers, indexing, rework scope, benchmarks, testing, and touchpoints — so the work is
@@ -24,7 +24,7 @@ exit whether or not a driver exists today — the go/no-go is a product decision
 Census corpus via `cellxgene_census.open_soma(...)` → `tiledbsoma`, which *is* TileDB. Removing
 that isn't a storage-format swap in the data-portal — it needs either the `cellxgene-census` team
 (a different CZI repo) to change the corpus format, or the data-portal to reimplement census
-integration (see §8 and the findings doc's §3 footnotes). Every option below still reads TileDB-SOMA
+integration (see §8 and the [census corpus scope](CENSUS_CORPUS_GENERATION_SCOPE.md)). Every option below still reads TileDB-SOMA
 at ingest. There is no full TileDB exit from the data-portal alone; there is a **cube** exit.
 
 ---
@@ -255,7 +255,7 @@ ingests the Census corpus via `tiledbsoma`. Census publishes one TileDB-free art
 per-dataset source H5ADs — but those are *pre-integration* raw inputs; reproducing the pipeline's
 cross-corpus `axis_query` over them means re-harmonizing every dataset in the data-portal (a
 reimplementation of the `cellxgene-census` integration, cf. `chanzuckerberg/multimodal-slicing`'s
-gene-universe work noted in the findings doc). The read leaves TileDB only if (a) the
+gene-universe work). The read leaves TileDB only if (a) the
 `cellxgene-census` team republishes the integrated corpus in a non-TileDB format, or (b) that
 reimplementation is undertaken. Both are separate, larger efforts outside this cube-exit scope —
 and all within CZI, across repos/teams.
@@ -394,4 +394,4 @@ _Companion spike artifacts (throwaway, not production): `query_chdb.py` (the one
 `query_duckdb.py`, `query_lance.py`, `scripts/wmg_build_chdb.py`, `scripts/wmg_chdb_spike_realcube.py`,
 `scripts/wmg_chdb_spike_diffexp.py`, `scripts/wmg_chdb_spike_concurrency.py` (embedded process-pool +
 RSS + gevent check), `scripts/wmg_ch_sidecar_concurrency.py` (clickhouse-server sidecar: socket-client
-load + gevent overlap), and the Lance/DuckDB equivalents. See the findings doc's Artifacts section._
+load + gevent overlap), and the Lance/DuckDB equivalents. See the [technical summary](STORAGE_SPIKE_TECHNICAL_SUMMARY.md)'s Artifacts section._

@@ -1,9 +1,9 @@
 # Census corpus generation — scoping the storage-spike residual
 
-Sibling to [`STORAGE_SPIKE_SUMMARY.md`](STORAGE_SPIKE_SUMMARY.md) (the spike verdict),
-[`WMG_CUBE_TILEDB_EXIT_REWORK.md`](WMG_CUBE_TILEDB_EXIT_REWORK.md) (the cube-exit rework), and
+Sibling to [`STORAGE_SPIKE_TECHNICAL_SUMMARY.md`](STORAGE_SPIKE_TECHNICAL_SUMMARY.md) (the synthesis),
+[`WMG_CUBE_TILEDB_EXIT_REWORK.md`](WMG_CUBE_TILEDB_EXIT_REWORK.md) (the cube-exit plan), and
 [`CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md`](CLICKHOUSE_VS_TILEDB_ARCHITECTURE.md) (the engine
-comparison). Every one of those docs stops at the same unresolved edge — the WMG cube's *source*
+comparison). Those docs stop at the same unresolved edge — the WMG cube's *source*
 is the Census corpus, which is TileDB. This doc scopes that edge: **how the Census corpus is
 generated, where its TileDB dependency actually sits, and what moving it off TileDB would take.**
 
@@ -16,8 +16,8 @@ is on the code and the published build requirements, not benchmarks.
 ## 1. Context & scope
 
 The cube spike proved the WMG **cube** can leave TileDB (chDB build + clickhouse-server sidecar).
-But both `WMG_CUBE_TILEDB_EXIT_REWORK.md` §8 and `STORAGE_SPIKE_SUMMARY.md` §7 close on the same
-residual:
+But both `WMG_CUBE_TILEDB_EXIT_REWORK.md` §8 and the technical summary's "residual" section close on
+the same point:
 
 > the cube's *source* is the Census corpus, read via `cellxgene_census.open_soma` → `tiledbsoma`
 > (TileDB). Even a perfect cube exit leaves TileDB in the pipeline.
@@ -184,7 +184,8 @@ touching the corpus at all. (Whether to change it anyway is a product/leadership
 `value_filter` + `axis_query` run over the *harmonized* corpus (unioned gene universe, normalized X,
 consistent ontology terms). Consuming raw H5ADs means owning that harmonization in the data-portal —
 i.e. maintaining a parallel copy of the Census integration in perpetuity, not a one-time format swap.
-(Cf. the gene-universe work noted in the findings doc.)
+(Cf. the gene-universe work in CZI's `chanzuckerberg/multimodal-slicing` spike — a partial
+reimplementation of that harmonization, no longer hypothetical.)
 
 **Why (c) is the worst trade.** It's (b)'s ongoing ownership burden *plus* the full 512-GiB build,
 just to change the on-disk format of an artifact that already works — and, per §3, that artifact is a

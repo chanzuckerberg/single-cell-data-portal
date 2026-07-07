@@ -1,8 +1,8 @@
 # ClickHouse vs TileDB — architectural differences (for the WMG cube)
 
 Background for the WMG cube storage spikes: see
-[`STORAGE_BACKEND_MIGRATION_FINDINGS.md`](STORAGE_BACKEND_MIGRATION_FINDINGS.md) (the verdict) and
-[`WMG_CUBE_TILEDB_EXIT_REWORK.md`](WMG_CUBE_TILEDB_EXIT_REWORK.md) (the forced-exit rework). This doc
+[`STORAGE_SPIKE_TECHNICAL_SUMMARY.md`](STORAGE_SPIKE_TECHNICAL_SUMMARY.md) (the synthesis) and
+[`WMG_CUBE_TILEDB_EXIT_REWORK.md`](WMG_CUBE_TILEDB_EXIT_REWORK.md) (the cube-exit plan). This doc
 explains *why* the two engines behave the way the benchmarks showed — the architecture underneath the
 numbers. Both store large analytical data and both prune to avoid full scans, but they rest on
 fundamentally different data models.
