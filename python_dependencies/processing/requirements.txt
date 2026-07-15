@@ -4,7 +4,7 @@ boto3>=1.11.17
 cellxgene-schema==7.1.1
 dask==2024.12.0
 dataclasses-json
-ddtrace==2.1.4
+ddtrace==4.8.2
 numba==0.59.1
 numpy<2
 pandas>2,<3
