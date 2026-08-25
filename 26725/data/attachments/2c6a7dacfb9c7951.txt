@@ -1,5 +1,0 @@
-INFO     backend.layers.business.business:business.py:621 {'message': 'ingesting dataset', 'collection_version_id': 32091749-f993-41ae-8831-dc22089381f3, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, is_pre_analysis=False), 'current_dataset_version_id': None}
-INFO     backend.layers.business.business:business.py:1137 {'message': 'Deleting dataset versions', 'dataset_version_ids': []}
-INFO     backend.layers.business.business:business.py:1162 {'message': 'Deleting dataset version artifacts', 'artifacts_to_delete': []}
-INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/dp/v1/datasets/c9232b00-1992-484d-b0db-3300d7ec2f9d', 'method': 'DELETE', 'content_length': None}}
-INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 405, 'content_length': 117, 'response_time': 0.0049555301666259766}}

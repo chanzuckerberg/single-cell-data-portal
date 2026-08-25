@@ -1,7 +1,0 @@
-INFO     backend.layers.business.business:business.py:621 {'message': 'ingesting dataset', 'collection_version_id': e7759893-afc7-431d-a435-43afa6cfc911, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, is_pre_analysis=False), 'current_dataset_version_id': None}
-INFO     backend.layers.business.business:business.py:1137 {'message': 'Deleting dataset versions', 'dataset_version_ids': []}
-INFO     backend.layers.business.business:business.py:1162 {'message': 'Deleting dataset version artifacts', 'artifacts_to_delete': []}
-INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/e7759893-afc7-431d-a435-43afa6cfc911', 'method': 'GET', 'content_length': None}}
-INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 403, 'content_length': 132, 'response_time': 0.002108335494995117}}
-INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/cad54a8e-51e8-4b41-80a3-3b2e1738cdc2', 'method': 'GET', 'content_length': None}}
-INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 3717, 'response_time': 0.005512237548828125}}

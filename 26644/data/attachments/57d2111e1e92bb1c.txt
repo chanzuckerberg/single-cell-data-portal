@@ -1,1 +1,0 @@
-INFO     backend.layers.thirdparty.s3_provider:s3_provider.py:121 {'message': 'Downloading file', 'bucket_name': 'bucket', 'object_key': 'key/file.txt'}

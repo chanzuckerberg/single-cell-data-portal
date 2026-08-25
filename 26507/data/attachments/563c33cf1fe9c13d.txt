@@ -1,2 +1,0 @@
-INFO     processing:logger.py:26 Start download_from_source_uri
-INFO     processing:logger.py:28 Complete download_from_source_uri

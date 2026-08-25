@@ -1,1 +1,0 @@
-ERROR    root:ncbi_provider.py:75 Unexpected NCBI search result, got failed

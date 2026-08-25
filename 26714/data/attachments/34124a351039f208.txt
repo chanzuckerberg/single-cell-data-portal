@@ -1,3 +1,0 @@
-INFO     backend.layers.business.business:business.py:621 {'message': 'ingesting dataset', 'collection_version_id': 57ba07a2-283d-438d-b8aa-1a35095689fb, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, is_pre_analysis=False), 'current_dataset_version_id': None}
-INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/f69df934-2540-45a0-9459-b9ef8e08d96c/datasets/9a71ff37-3bd4-46a8-8e62-14930b2c6426', 'method': 'PATCH', 'content_length': 22}}
-INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 202, 'content_length': None, 'response_time': 0.006785392761230469}}

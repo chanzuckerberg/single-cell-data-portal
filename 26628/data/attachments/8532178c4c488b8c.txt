@@ -1,2 +1,0 @@
-{"levelname": "INFO", "asctime": "2026-06-03T16:33:28.003Z", "name": "backend.layers.business.business", "message": "Deleting dataset version artifacts", "lineno": 1162, "pathname": "/single-cell-data-portal/backend/layers/business/business.py", "request_id": "", "artifacts_to_delete": []}
-{"levelname": "INFO", "asctime": "2026-06-03T16:33:28.003Z", "name": "backend.layers.business.business", "message": "Deleting dataset version artifacts", "lineno": 1162, "pathname": "/single-cell-data-portal/backend/layers/business/business.py", "request_id": "", "artifacts_to_delete": []}
