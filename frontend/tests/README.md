@@ -424,10 +424,4 @@ Where tests are skipped vs. run in different environments.
 
 ## Resources
 
-1. [Datadog testing guide](https://www.datadoghq.com/resources/frontend-monitoring-best-practices/)
-
-   1. The first two sections should be enough! **Best practices for creating
-      end-to-end tests** and **Best practices for
-      maintaining end-to-end tests**
-
 1. [Avoid nesting when you're testing](https://kentcdodds.com/blog/avoid-nesting-when-youre-testing)
