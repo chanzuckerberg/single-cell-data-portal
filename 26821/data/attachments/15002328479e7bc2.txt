@@ -1,0 +1,18 @@
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/0bae800f-78dc-4072-9a3b-8965dff8284d/s3-upload-credentials', 'method': 'GET', 'content_length': None}}
+INFO     backend.curation.api.v1.curation.collections.collection_id.s3_upload_credentials:s3_upload_credentials.py:40 {"RoleArn": "test_role_arn", "RoleSessionName": "test_user_id", "WebIdentityToken": "owner", "DurationSeconds": 43200}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 269, 'response_time': 0.0014874935150146484}}
+INFO     backend.layers.business.business:business.py:621 {'message': 'ingesting dataset', 'collection_version_id': aeea6a94-7fa1-451a-a22f-a0e0862e597e, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, is_pre_analysis=False), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:1137 {'message': 'Deleting dataset versions', 'dataset_version_ids': []}
+INFO     backend.layers.business.business:business.py:1162 {'message': 'Deleting dataset version artifacts', 'artifacts_to_delete': []}
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/afd2fbd7-609d-41a7-bcb1-1914fda6d274/s3-upload-credentials', 'method': 'GET', 'content_length': None}}
+INFO     backend.curation.api.v1.curation.collections.collection_id.s3_upload_credentials:s3_upload_credentials.py:40 {"RoleArn": "test_role_arn", "RoleSessionName": "test_user_id", "WebIdentityToken": "owner", "DurationSeconds": 43200}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 269, 'response_time': 0.002424955368041992}}
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/06930c6e-c1e0-4a2b-b1b5-bc7b93e509a8/s3-upload-credentials', 'method': 'GET', 'content_length': None}}
+INFO     backend.curation.api.v1.curation.collections.collection_id.s3_upload_credentials:s3_upload_credentials.py:40 {"RoleArn": "test_role_arn", "RoleSessionName": "super", "WebIdentityToken": "super", "DurationSeconds": 43200}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 262, 'response_time': 0.0014116764068603516}}
+INFO     backend.layers.business.business:business.py:621 {'message': 'ingesting dataset', 'collection_version_id': 129cda94-03dc-471c-8198-62351df20fdf, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, is_pre_analysis=False), 'current_dataset_version_id': None}
+INFO     backend.layers.business.business:business.py:1137 {'message': 'Deleting dataset versions', 'dataset_version_ids': []}
+INFO     backend.layers.business.business:business.py:1162 {'message': 'Deleting dataset version artifacts', 'artifacts_to_delete': []}
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/6df78063-0720-408a-b511-20301fe83488/s3-upload-credentials', 'method': 'GET', 'content_length': None}}
+INFO     backend.curation.api.v1.curation.collections.collection_id.s3_upload_credentials:s3_upload_credentials.py:40 {"RoleArn": "test_role_arn", "RoleSessionName": "super", "WebIdentityToken": "super", "DurationSeconds": 43200}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 262, 'response_time': 0.002382516860961914}}

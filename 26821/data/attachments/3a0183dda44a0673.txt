@@ -1,0 +1,3 @@
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/dp/v1/collections/f91e1e6a-8cc5-47f9-b05b-0ee885816feb', 'method': 'DELETE', 'content_length': None}}
+INFO     backend.layers.business.business:business.py:1162 {'message': 'Deleting dataset version artifacts', 'artifacts_to_delete': []}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 204, 'content_length': None, 'response_time': 0.0013568401336669922}}

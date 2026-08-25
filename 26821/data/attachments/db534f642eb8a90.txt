@@ -1,0 +1,2 @@
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/63eb5682-6e7e-46bb-914f-cfa3327074e2/datasets/18035609-d2fa-47f0-a423-874634884e2a/manifest', 'method': 'GET', 'content_length': None}}
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 404, 'content_length': 104, 'response_time': 0.001035928726196289}}

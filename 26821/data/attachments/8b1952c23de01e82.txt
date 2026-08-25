@@ -1,0 +1,4 @@
+INFO     backend.layers.business.business:business.py:621 {'message': 'ingesting dataset', 'collection_version_id': 34133519-ddd1-4f31-9fdd-9298d4bfd11b, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, is_pre_analysis=False), 'current_dataset_version_id': None}
+INFO     corpora-api-test:config.py:76 {'type': 'REQUEST', 'details': {'url': '/dp/v1/datasets/cb83df3d-fbf5-4dd1-aef4-4e51027d2c4b/asset/c5b7c59f-93f4-48ff-bee1-00ae504610ae', 'method': 'GET', 'content_length': None}}
+WARNING  root:portal_api.py:748 File size not found
+INFO     corpora-api-test:config.py:88 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 146, 'response_time': 0.0020797252655029297}}
