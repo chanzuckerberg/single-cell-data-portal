@@ -33,5 +33,4 @@ module stack {
   backend_wmg_workers           = 5 # Rule of thumb we are using is num CPUs+1 since backend_wmg is compute bound
 
   wait_for_steady_state        = var.wait_for_steady_state
-  dd_key_secret_arn            = "arn:aws:secretsmanager:us-west-2:231426846575:secret:dd_api_key-tvi1Ey"
 }
