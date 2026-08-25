@@ -9,7 +9,6 @@ from flask_cors import CORS
 from server_timing import Timing as ServerTiming
 from swagger_ui_bundle import swagger_ui_path
 
-from backend.common.server.datadog import initialize_datadog_tracing
 from backend.common.server.logger import configure_logging
 from backend.common.server.request_id import generate_request_id, get_request_id
 from backend.common.utils.aws import AwsSecret
@@ -184,4 +183,3 @@ def create_api_app(api_paths_and_spec_files, **server_args):
 
 
 configure_logging(APP_NAME)
-initialize_datadog_tracing()
