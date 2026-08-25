@@ -31,5 +31,4 @@ module stack {
   backend_wmg_cpus              = 1
   backend_wmg_workers           = 1  
   wait_for_steady_state = var.wait_for_steady_state
-  dd_key_secret_arn     = "arn:aws:secretsmanager:us-west-2:699936264352:secret:dd_api_key-nGPNwx"
 }
