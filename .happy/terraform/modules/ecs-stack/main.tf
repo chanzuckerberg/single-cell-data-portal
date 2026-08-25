@@ -167,7 +167,6 @@ module frontend_service {
   dataset_submissions_bucket = local.dataset_submissions_bucket
   execution_role             = local.ecs_execution_role
   health_check_interval      = 15
-  dd_key_secret_arn          = var.dd_key_secret_arn
 
   wait_for_steady_state = local.wait_for_steady_state
 }
@@ -205,7 +204,6 @@ module backend_service {
   # Bump health_check_interval from 30 seconds to 60 seconds so that WMG snapshot download,
   # which at the time of this writing is around 54GB, has time to complete.
   health_check_interval      = 60 
-  dd_key_secret_arn          = var.dd_key_secret_arn
 
   wait_for_steady_state = local.wait_for_steady_state
 }
@@ -241,7 +239,6 @@ module backend_de_service {
   # Bump health_check_interval from 30 seconds to 60 seconds so that WMG snapshot download,
   # which at the time of this writing is around 54GB, has time to complete.
   health_check_interval      = 60 
-  dd_key_secret_arn          = var.dd_key_secret_arn
 
   wait_for_steady_state = local.wait_for_steady_state
 }
@@ -277,7 +274,6 @@ module backend_wmg_service {
   # Bump health_check_interval from 30 seconds to 60 seconds so that WMG snapshot download,
   # which at the time of this writing is around 54GB, has time to complete.
   health_check_interval      = 60 
-  dd_key_secret_arn          = var.dd_key_secret_arn
 
   wait_for_steady_state = local.wait_for_steady_state
 }
