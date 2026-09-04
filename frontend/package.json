@@ -58,7 +58,7 @@
     "rehype-mathjax": "^4.0.2",
     "rehype-slug": "^5.1.0",
     "remark-math": "^5.1.1",
-    "sass": "^1.63.6"
+    "sass": "^1.104.0"
   },
   "devDependencies": {
     "@aws-sdk/client-secrets-manager": "^3.369.0",
