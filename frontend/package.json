@@ -30,7 +30,7 @@
     "@visx/zoom": "^3.3.0",
     "client-zip": "^2.4.4",
     "clipboard-copy": "^4.0.1",
-    "csv": "^6.3.1",
+    "csv": "^6.6.3",
     "d3-scale-chromatic": "^3.0.0",
     "downloadjs": "^1.4.7",
     "echarts": "^5.4.2",
