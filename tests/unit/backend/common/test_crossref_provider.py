@@ -38,18 +38,16 @@ def _valid_crossref_response() -> Response:
 class TestCrossrefProvider(unittest.TestCase):
     @patch("backend.common.providers.crossref_provider.requests.get")
     @patch("backend.common.providers.crossref_provider.CorporaConfig")
-    def test__provider_falls_back_to_free_api_when_no_api_key(self, mock_config, mock_get):
+    def test__provider_falls_back_to_free_api_when_api_key_missing_entirely(self, mock_config, mock_get):
         """
-        With no Metadata Plus key configured, the provider still calls Crossref, but must omit the
-        Plus token header entirely. Crossref answers 401 to that header if it carries anything
-        other than a valid key, including an empty string.
+        `crossref_api_key` defaults to "", so absence should not normally reach the provider. If a
+        partial config makes it raise anyway, fall back rather than take down DOI lookups.
         """
-        # An unconfigured key surfaces as a RuntimeError from CorporaConfig.
         mock_config.side_effect = RuntimeError("crossref_api_key is not in configuration")
         mock_get.return_value = _valid_crossref_response()
 
         provider = CrossrefProvider()
-        self.assertIsNone(provider.crossref_api_key)
+        self.assertEqual("", provider.crossref_api_key)
         metadata, doi_curie, _ = provider.fetch_metadata("test_doi")
 
         mock_get.assert_called_once()
@@ -65,8 +63,8 @@ class TestCrossrefProvider(unittest.TestCase):
     @patch("backend.common.providers.crossref_provider.CorporaConfig")
     def test__provider_falls_back_to_free_api_when_api_key_is_blank(self, mock_config, mock_get):
         """
-        A blank key must be treated as no key. Crossref 401s the Plus header for an empty or
-        whitespace-only value, so blanking the secret has to fall back rather than send it.
+        "" is the supported way to express "no Metadata Plus subscription". Crossref 401s the Plus
+        header for an empty or whitespace-only value, so it must be omitted rather than sent.
         """
         mock_get.return_value = _valid_crossref_response()
 

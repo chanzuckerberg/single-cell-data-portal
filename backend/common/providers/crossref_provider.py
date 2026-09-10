@@ -9,9 +9,11 @@ from backend.common.corpora_config import CorporaConfig
 from backend.common.doi import doi_curie_from_link
 
 # Crossref serves the same metadata to everyone; a Metadata Plus API key only buys higher rate
-# limits and priority support. When no key is configured we fall back to the free API and
-# identify ourselves per Crossref's guidance, so requests are served from the "polite" pool
-# rather than the anonymous one.
+# limits and priority support. Setting `crossref_api_key` to "" is the supported way to run
+# without a Plus subscription: we then fall back to the free API and identify ourselves per
+# Crossref's guidance, so requests are served from the "polite" pool rather than the anonymous
+# one. `crossref_api_key` defaults to "" (see CorporaConfig), so a key missing from the secret
+# resolves to that same state.
 # https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/
 CROSSREF_DEFAULT_CONTACT_EMAIL = "cellxgene@chanzuckerberg.com"
 CROSSREF_USER_AGENT_PRODUCT = "cellxgene-data-portal"
@@ -57,9 +59,11 @@ class CrossrefProvider(CrossrefProviderInterface):
     def __init__(self) -> None:
         self.base_crossref_uri = "https://api.crossref.org/works"
         try:
+            # Normally "" rather than absent, but tolerate absence so a partial config cannot
+            # take down DOI lookups entirely.
             self.crossref_api_key = CorporaConfig().crossref_api_key
         except RuntimeError:
-            self.crossref_api_key = None
+            self.crossref_api_key = ""
         try:
             self.crossref_contact_email = CorporaConfig().crossref_contact_email
         except RuntimeError:
@@ -86,10 +90,10 @@ class CrossrefProvider(CrossrefProviderInterface):
 
     def _request_headers(self) -> dict:
         """
-        Builds the request headers. The Metadata Plus token is only sent when an API key is
-        actually configured. Crossref answers 401 to this header if it carries anything other
-        than a valid key -- including an empty or whitespace-only value -- so a blank key is
-        treated the same as no key at all and falls back to the free API.
+        Builds the request headers. The Metadata Plus token is only sent when a non-blank API key
+        is configured. Crossref answers 401 to this header if it carries anything other than a
+        valid key, so "" -- the supported "no Plus subscription" value -- must omit the header
+        rather than send an empty one.
         """
         headers = {"User-Agent": self._user_agent()}
         if self.crossref_api_key and str(self.crossref_api_key).strip():
@@ -145,8 +149,8 @@ class CrossrefProvider(CrossrefProviderInterface):
     def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str], Optional[datetime]]:
         """
         Fetches and extracts publisher metadata from Crossref for a specified DOI.
-        Uses the Metadata Plus API when an API key is configured, and otherwise falls back to the
-        free Crossref API, which serves identical metadata at lower rate limits.
+        Uses the Metadata Plus API when a non-blank API key is configured, and otherwise falls
+        back to the free Crossref API, which serves identical metadata at lower rate limits.
         :param doi: str - DOI uri link or curie identifier
         return: tuple - publisher metadata dict and DOI curie identifier
         """

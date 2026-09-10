@@ -28,6 +28,10 @@ class CorporaConfig(SecretConfig):
                 collections_base_url = f"https://cellxgene.{deployment_stage}.single-cell.czi.technology"
 
         template = {
+            # An empty Crossref key is the supported way to express "no Metadata Plus
+            # subscription"; the provider then falls back to the free Crossref API. Defaulting it
+            # here means a key that is absent from the secret resolves to the same explicit state.
+            "crossref_api_key": "",
             "upload_max_file_size_gb": 30,
             "submission_bucket": os.getenv("DATASET_SUBMISSIONS_BUCKET", "cellxgene-dataset-submissions-test"),
             "collections_base_url": collections_base_url,
