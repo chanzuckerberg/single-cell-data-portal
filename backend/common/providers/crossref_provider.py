@@ -87,11 +87,12 @@ class CrossrefProvider(CrossrefProviderInterface):
     def _request_headers(self) -> dict:
         """
         Builds the request headers. The Metadata Plus token is only sent when an API key is
-        configured: Crossref rejects the header with a 401 if it carries anything other than a
-        valid key, so an absent key must mean "omit the header entirely", not "send an empty one".
+        actually configured. Crossref answers 401 to this header if it carries anything other
+        than a valid key -- including an empty or whitespace-only value -- so a blank key is
+        treated the same as no key at all and falls back to the free API.
         """
         headers = {"User-Agent": self._user_agent()}
-        if self.crossref_api_key is not None:
+        if self.crossref_api_key and str(self.crossref_api_key).strip():
             headers["Crossref-Plus-API-Token"] = f"Bearer {self.crossref_api_key}"
         return headers
 
