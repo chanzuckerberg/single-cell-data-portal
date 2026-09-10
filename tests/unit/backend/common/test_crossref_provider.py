@@ -7,6 +7,8 @@ from requests import RequestException
 from requests.models import HTTPError, Response
 
 from backend.common.providers.crossref_provider import (
+    CROSSREF_DEFAULT_CONTACT_EMAIL,
+    CROSSREF_REQUEST_TIMEOUT_SECONDS,
     CrossrefDOINotFoundException,
     CrossrefException,
     CrossrefFetchException,
@@ -15,13 +17,98 @@ from backend.common.providers.crossref_provider import (
 )
 
 
+def _valid_crossref_response() -> Response:
+    response = Response()
+    response.status_code = 200
+    response._content = str.encode(
+        json.dumps(
+            {
+                "status": "ok",
+                "message": {
+                    "author": [{"given": "John", "family": "Doe", "sequence": "first"}],
+                    "published-online": {"date-parts": [[2021, 11, 10]]},
+                    "container-title": ["Nature"],
+                },
+            }
+        )
+    )
+    return response
+
+
 class TestCrossrefProvider(unittest.TestCase):
     @patch("backend.common.providers.crossref_provider.requests.get")
-    def test__provider_does_not_call_crossref_in_test(self, mock_get):
+    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    def test__provider_falls_back_to_free_api_when_api_key_missing_entirely(self, mock_config, mock_get):
+        """
+        `crossref_api_key` defaults to "", so absence should not normally reach the provider. If a
+        partial config makes it raise anyway, fall back rather than take down DOI lookups.
+        """
+        mock_config.side_effect = RuntimeError("crossref_api_key is not in configuration")
+        mock_get.return_value = _valid_crossref_response()
+
         provider = CrossrefProvider()
-        metadata, doi, _ = provider.fetch_metadata("test_doi")
-        self.assertIsNone(metadata)
-        mock_get.assert_not_called()
+        self.assertEqual("", provider.crossref_api_key)
+        metadata, doi_curie, _ = provider.fetch_metadata("test_doi")
+
+        mock_get.assert_called_once()
+        headers = mock_get.call_args.kwargs["headers"]
+        self.assertNotIn("Crossref-Plus-API-Token", headers)
+        self.assertIn(f"mailto:{CROSSREF_DEFAULT_CONTACT_EMAIL}", headers["User-Agent"])
+
+        # The free API returns the same payload shape, so parsing is unaffected.
+        self.assertEqual("test_doi", doi_curie)
+        self.assertEqual("Nature", metadata["journal"])
+
+    @patch("backend.common.providers.crossref_provider.requests.get")
+    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    def test__provider_falls_back_to_free_api_when_api_key_is_blank(self, mock_config, mock_get):
+        """
+        "" is the supported way to express "no Metadata Plus subscription". Crossref 401s the Plus
+        header for an empty or whitespace-only value, so it must be omitted rather than sent.
+        """
+        mock_get.return_value = _valid_crossref_response()
+
+        for blank in ("", "   ", "\n"):
+            with self.subTest(api_key=blank):
+                mock_config.return_value.crossref_api_key = blank
+                mock_config.return_value.crossref_contact_email = CROSSREF_DEFAULT_CONTACT_EMAIL
+
+                provider = CrossrefProvider()
+                provider.fetch_metadata("test_doi")
+
+                headers = mock_get.call_args.kwargs["headers"]
+                self.assertNotIn("Crossref-Plus-API-Token", headers)
+
+    @patch("backend.common.providers.crossref_provider.requests.get")
+    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    def test__provider_sends_plus_token_and_polite_user_agent_when_api_key_defined(self, mock_config, mock_get):
+        """
+        With a key configured, the Plus token is sent. The polite User-Agent is sent alongside it:
+        Crossref routes on the token, so identifying ourselves as well is harmless and encouraged.
+        """
+        mock_config.return_value.crossref_api_key = "fake-key"
+        mock_config.return_value.crossref_contact_email = "fake@example.org"
+        mock_get.return_value = _valid_crossref_response()
+
+        provider = CrossrefProvider()
+        provider.fetch_metadata("test_doi")
+
+        headers = mock_get.call_args.kwargs["headers"]
+        self.assertEqual("Bearer fake-key", headers["Crossref-Plus-API-Token"])
+        self.assertIn("mailto:fake@example.org", headers["User-Agent"])
+
+    @patch("backend.common.providers.crossref_provider.requests.get")
+    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    def test__provider_sets_request_timeout(self, mock_config, mock_get):
+        """
+        Guards against an unbounded wait on Crossref, which has no SLA on the free tier.
+        """
+        mock_config.return_value.crossref_api_key = "fake-key"
+        mock_get.return_value = _valid_crossref_response()
+
+        CrossrefProvider().fetch_metadata("test_doi")
+
+        self.assertEqual(CROSSREF_REQUEST_TIMEOUT_SECONDS, mock_get.call_args.kwargs["timeout"])
 
     @patch("backend.common.providers.crossref_provider.requests.get")
     @patch("backend.common.providers.crossref_provider.CorporaConfig")
