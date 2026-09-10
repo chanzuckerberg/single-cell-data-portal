@@ -1,5 +1,4 @@
 import html
-import logging
 from datetime import datetime
 from typing import Optional, Tuple
 
@@ -8,6 +7,16 @@ import requests
 from backend.common.citation import format_citation_crossref
 from backend.common.corpora_config import CorporaConfig
 from backend.common.doi import doi_curie_from_link
+
+# Crossref serves the same metadata to everyone; a Metadata Plus API key only buys higher rate
+# limits and priority support. When no key is configured we fall back to the free API and
+# identify ourselves per Crossref's guidance, so requests are served from the "polite" pool
+# rather than the anonymous one.
+# https://www.crossref.org/documentation/retrieve-metadata/rest-api/access-and-authentication/
+CROSSREF_DEFAULT_CONTACT_EMAIL = "cellxgene@chanzuckerberg.com"
+CROSSREF_USER_AGENT_PRODUCT = "cellxgene-data-portal"
+CROSSREF_PROJECT_URL = "https://cellxgene.cziscience.com"
+CROSSREF_REQUEST_TIMEOUT_SECONDS = 10
 
 
 class CrossrefProviderInterface:
@@ -51,6 +60,10 @@ class CrossrefProvider(CrossrefProviderInterface):
             self.crossref_api_key = CorporaConfig().crossref_api_key
         except RuntimeError:
             self.crossref_api_key = None
+        try:
+            self.crossref_contact_email = CorporaConfig().crossref_contact_email
+        except RuntimeError:
+            self.crossref_contact_email = CROSSREF_DEFAULT_CONTACT_EMAIL
         super().__init__()
 
     @staticmethod
@@ -61,16 +74,33 @@ class CrossrefProvider(CrossrefProviderInterface):
         day = date_parts[2] if len(date_parts) > 2 else 1
         return (year, month, day)
 
+    def _user_agent(self) -> str:
+        """
+        Identifies this caller to Crossref so requests are served from the "polite" pool.
+        Follows the format Crossref documents: <product> (<url>; mailto:<email>)
+        """
+        agent = f"{CROSSREF_USER_AGENT_PRODUCT} ({CROSSREF_PROJECT_URL}"
+        if self.crossref_contact_email:
+            agent = f"{agent}; mailto:{self.crossref_contact_email}"
+        return f"{agent})"
+
+    def _request_headers(self) -> dict:
+        """
+        Builds the request headers. The Metadata Plus token is only sent when an API key is
+        configured: Crossref rejects the header with a 401 if it carries anything other than a
+        valid key, so an absent key must mean "omit the header entirely", not "send an empty one".
+        """
+        headers = {"User-Agent": self._user_agent()}
+        if self.crossref_api_key is not None:
+            headers["Crossref-Plus-API-Token"] = f"Bearer {self.crossref_api_key}"
+        return headers
+
     def _fetch_crossref_payload(self, doi):
-
-        if self.crossref_api_key is None:
-            logging.info("No Crossref API key found, skipping metadata fetching.")
-            return None
-
         try:
             res = requests.get(
                 f"{self.base_crossref_uri}/{doi}",
-                headers={"Crossref-Plus-API-Token": f"Bearer {self.crossref_api_key}"},
+                headers=self._request_headers(),
+                timeout=CROSSREF_REQUEST_TIMEOUT_SECONDS,
             )
             res.raise_for_status()
         except requests.RequestException as e:
@@ -114,8 +144,8 @@ class CrossrefProvider(CrossrefProviderInterface):
     def fetch_metadata(self, doi: str) -> Tuple[Optional[dict], Optional[str], Optional[datetime]]:
         """
         Fetches and extracts publisher metadata from Crossref for a specified DOI.
-        If the Crossref API URI isn't in the configuration, we will just return an empty object.
-        This is to avoid calling Crossref in non-production environments.
+        Uses the Metadata Plus API when an API key is configured, and otherwise falls back to the
+        free Crossref API, which serves identical metadata at lower rate limits.
         :param doi: str - DOI uri link or curie identifier
         return: tuple - publisher metadata dict and DOI curie identifier
         """
