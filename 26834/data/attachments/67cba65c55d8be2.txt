@@ -1,0 +1,59 @@
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 623}}
+DEBUG    ddtrace.internal.remoteconfig.worker:worker.py:37 RemoteConfigWorker created with polling interval 5
+DEBUG    ddtrace.appsec._remoteconfiguration:_remoteconfiguration.py:65 [1][P: 0] Register ASM Remote Config Callback
+DEBUG    ddtrace.internal.remoteconfig._subscribers:_subscribers.py:30 [PID 1] Subscriber ASM initialized
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 5132862, 'response_time': 3.9937195777893066}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 631}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 124, 'response_time': 0.014668703079223633}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 655}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 124, 'response_time': 0.012017250061035156}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 625}}
+DEBUG    ddtrace.internal.remoteconfig._subscribers:_subscribers.py:45 [PID 1 | PPID 0] Subscriber ASM is getting data
+DEBUG    ddtrace.internal.remoteconfig._subscribers:_subscribers.py:47 [PID 1 | PPID 0] Subscriber ASM got data
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2526256, 'response_time': 1.937220811843872}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 629}}
+DEBUG    ddtrace.internal.remoteconfig.worker:worker.py:53 Agent is down or Remote Config is not enabled in the Agent
+Check your Agent version, you need an Agent running on 7.39.1 version or above.
+Check Your Remote Config environment variables on your Agent:
+DD_REMOTE_CONFIGURATION_ENABLED=true
+See: https://docs.datadoghq.com/agent/guide/how_remote_config_works/
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2826012, 'response_time': 2.1896722316741943}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 653}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2287114, 'response_time': 1.7489638328552246}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 641}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2631089, 'response_time': 2.0122318267822266}}
+DEBUG    ddtrace.internal.remoteconfig._subscribers:_subscribers.py:45 [PID 1 | PPID 0] Subscriber ASM is getting data, 3 additional messages skipped
+DEBUG    ddtrace.internal.remoteconfig._subscribers:_subscribers.py:47 [PID 1 | PPID 0] Subscriber ASM got data, 3 additional messages skipped
+DEBUG    ddtrace.internal.remoteconfig.worker:worker.py:53 Agent is down or Remote Config is not enabled in the Agent
+Check your Agent version, you need an Agent running on 7.39.1 version or above.
+Check Your Remote Config environment variables on your Agent:
+DD_REMOTE_CONFIGURATION_ENABLED=true
+See: https://docs.datadoghq.com/agent/guide/how_remote_config_works/, 1 additional messages skipped
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 623}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 5132862, 'response_time': 3.861170768737793}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 631}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 124, 'response_time': 0.01434016227722168}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 655}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 124, 'response_time': 0.012942075729370117}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 625}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2526256, 'response_time': 1.932450294494629}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 629}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2826012, 'response_time': 2.228504180908203}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 653}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2287114, 'response_time': 1.7576179504394531}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 641}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 125, 'response_time': 0.0378422737121582}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 623}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 5132862, 'response_time': 3.8622419834136963}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 631}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 124, 'response_time': 0.016806364059448242}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 655}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 124, 'response_time': 0.013652801513671875}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 625}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2526256, 'response_time': 1.95558500289917}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 629}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2826012, 'response_time': 2.2017993927001953}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 653}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2287114, 'response_time': 1.7633998394012451}}
+INFO     corpora-api-de-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/de/v1/differentialExpression', 'method': 'POST', 'content_length': 641}}
+INFO     corpora-api-de-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 2630701, 'response_time': 2.0449368953704834}}
