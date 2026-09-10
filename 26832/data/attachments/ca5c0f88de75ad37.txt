@@ -1,0 +1,4 @@
+INFO     corpora-api-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/1fbb7d68-f496-4d0c-ac45-cc927e0d0c7d', 'method': 'GET', 'content_length': None}}
+INFO     corpora-api-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 1084, 'response_time': 0.0018260478973388672}}
+INFO     corpora-api-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/1fbb7d68-f496-4d0c-ac45-cc927e0d0c7d', 'method': 'PATCH', 'content_length': 18}}
+INFO     corpora-api-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 537, 'response_time': 0.0023529529571533203}}
