@@ -19,7 +19,7 @@
     "@mui/lab": "^5.0.0-alpha.136",
     "@mui/material": "^5.14.0",
     "@types/d3-scale-chromatic": "^3.0.0",
-    "@vgrid/sass-inline-svg": "^1.0.1",
+    "@vgrid/sass-inline-svg": "^2.0.1",
     "@visx/clip-path": "^3.3.0",
     "@visx/gradient": "^3.3.0",
     "@visx/group": "^3.3.0",
