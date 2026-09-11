@@ -7,14 +7,15 @@ from unittest import mock
 from unittest.mock import Mock, patch
 
 from backend.common.census_cube.data.snapshot import _get_wmg_snapshot_schema_dir_rel_path
-from backend.wmg.pipeline.constants import MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION
 from backend.wmg.pipeline.expression_summary_and_cell_counts import create_expression_summary_and_cell_counts_cubes
 from backend.wmg.pipeline.load_cube import _get_wmg_snapshot_s3_fullpath
 from backend.wmg.pipeline.pipeline import logger, main
 
 
 def mock_census_schema_version_unsupported(_census):
-    return f"{MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION+1}.0.0", "2023-11-27"
+    # Choose a version that does not satisfy the specifier set (e.g., if spec is '>=1,<3', use '3.0.0')
+    # We take the upper bound from the specifier set for the test by hardcoding a violating value.
+    return "2.4.0", "2025-11-10"
 
 
 @contextlib.contextmanager
