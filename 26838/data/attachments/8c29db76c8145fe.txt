@@ -1,0 +1,2 @@
+INFO     corpora-api-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/dp/v1/datasets/abd71f8c-fa3b-4a05-b719-58551f8e18e6/asset/abd71f8c-fa3b-4a05-b719-58551f8e18e6', 'method': 'GET', 'content_length': None}}
+INFO     corpora-api-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 404, 'content_length': 142, 'response_time': 0.0007505416870117188}}
