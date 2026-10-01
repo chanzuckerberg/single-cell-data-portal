@@ -6,11 +6,11 @@ The data portal no longer deploys through Happy or Terraform Enterprise (TFE). A
 
 The script supports three deployment paths:
 
-| Target | Source | Terraform root | Stack |
-| --- | --- | --- | --- |
-| rdev | An open pull request | `.happy/terraform/envs/rdev` | `rdevstack` |
+| Target  | Source                    | Terraform root                | Stack        |
+| ------- | ------------------------- | ----------------------------- | ------------ |
+| rdev    | An open pull request      | `.happy/terraform/envs/rdev`  | `rdevstack`  |
 | staging | The current `main` commit | `.happy/terraform/envs/stage` | `stagestack` |
-| prod | The current `main` commit | `.happy/terraform/envs/prod` | `prodstack` |
+| prod    | The current `main` commit | `.happy/terraform/envs/prod`  | `prodstack`  |
 
 The rdev root manages one shared stack. It does not create a stack for each pull request, and closing a pull request does not remove it.
 
