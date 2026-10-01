@@ -21,6 +21,59 @@ The deployment roots are:
 
 The rdev root manages one static break-glass stack. It does not create a stack for each pull request. Its first apply creates the stack because no rdev state existed when the TFE states moved to Amazon Simple Storage Service (S3).
 
+## Build images
+
+The `Build Images` GitHub Actions workflow builds the application images and pushes them to the development ECR repositories. Every environment, including prod, pulls these images from the development account. The workflow uses `happy push` only as a Docker build and push wrapper. It does not contact TFE or run Terraform.
+
+For a pull request deployment, trigger the workflow manually against the pull request's head branch:
+
+1. Open the `Build Images` workflow in GitHub Actions.
+2. Select `Run workflow`.
+3. Choose the pull request branch. Do not leave the branch selector on `main`.
+4. Wait for every image matrix job to succeed.
+5. Copy the full commit SHA from the workflow run.
+6. Form the image tag as `sha-` followed by the first eight characters of that SHA.
+
+The same flow is available from the command line:
+
+```bash
+export PR_BRANCH=my-feature-branch
+
+gh workflow run build-images-and-create-deployment.yml --ref "$PR_BRANCH"
+```
+
+After the new workflow run appears in GitHub Actions, capture its ID, wait for it to finish and derive the image tag from its actual head SHA:
+
+```bash
+run_id=$(gh run list \
+  --workflow build-images-and-create-deployment.yml \
+  --branch "$PR_BRANCH" \
+  --event workflow_dispatch \
+  --limit 1 \
+  --json databaseId \
+  --jq '.[0].databaseId')
+gh run watch "$run_id" --exit-status
+export IMAGE_TAG=$(gh run view "$run_id" \
+  --json headSha \
+  --jq '"sha-" + (.headSha[0:8])')
+echo "$IMAGE_TAG"
+```
+
+The workflow also runs automatically after pushes to `main` and `prod`. The staging and prod promotion workflows can request builds through repository dispatch. Always use the SHA from the successful build run rather than deriving a tag from a different local checkout.
+
+### Pull request flow
+
+A pull request no longer creates or updates an rdev automatically. The break-glass pull request flow is:
+
+1. Open the application pull request and let its normal checks pass.
+2. Manually run `Build Images` against the pull request branch.
+3. Record the successful run's SHA image tag.
+4. Check out that exact commit locally.
+5. Use the static `rdevstack` to test the pull request, or use the intended fixed environment root for an approved deployment.
+6. Plan and apply with the recorded image tag.
+
+The static rdev state is shared. Coordinate with other operators before applying it, and do not assume that closing the pull request removes the stack.
+
 ## Plan
 
 Set the environment directory and immutable image tag:
