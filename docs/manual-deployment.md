@@ -74,7 +74,7 @@ For every target, `scripts/deploy.sh`:
 9. Invalidates CloudFront for staging and prod.
 10. Prints the Terraform outputs for validation.
 
-The image workflow pushes every environment's images to the development Elastic Container Registry (ECR) repositories. Staging and prod also pull from those repositories. The workflow uses `happy push` only as a Docker build and push wrapper. It does not contact TFE or run Terraform.
+The image workflow uses Docker Compose to build every environment's images and pushes them to the development Elastic Container Registry (ECR) repositories. Staging and prod also pull from those repositories. Image building does not use Happy, TFE or Terraform.
 
 Do not derive the image tag from a local commit. The script uses the workflow run's actual head SHA and aborts if it differs from the requested deployment commit.
 
