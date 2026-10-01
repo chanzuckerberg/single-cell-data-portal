@@ -1,11 +1,31 @@
 name: rdev tests
+run-name: ${{ inputs.deployment_id || github.sha }}
 
 on:
   workflow_call:
+    inputs:
+      deployment_id:
+        required: false
+        type: string
+      stack_name:
+        default: rdevstack
+        required: false
+        type: string
+  workflow_dispatch:
+    inputs:
+      deployment_id:
+        description: Unique deployment request identifier
+        required: true
+        type: string
+      stack_name:
+        default: rdevstack
+        description: Static rdev stack name
+        required: true
+        type: string
 
 env:
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
-  STACK_NAME: pr-${{ github.event.number }}
+  STACK_NAME: ${{ inputs.stack_name || 'rdevstack' }}
 
 permissions:
   id-token: write
@@ -13,7 +33,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.number || github.ref }}
+  group: rdev-tests-${{ inputs.stack_name || 'rdevstack' }}
   cancel-in-progress: true
 
 jobs:
@@ -133,11 +153,6 @@ jobs:
           path: frontend/allure-results
           retention-days: 20
           if-no-files-found: error
-
-      - name: Install happy
-        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.4.2
-        with:
-          happy_version: "0.110.1"
 
       - uses: 8398a7/action-slack@v3
         with:

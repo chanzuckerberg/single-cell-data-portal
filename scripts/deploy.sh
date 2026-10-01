@@ -69,13 +69,14 @@ images_exist() {
   return "$missing"
 }
 
-wait_for_image_build() {
-  local deployment_id="$1"
+wait_for_workflow_run() {
+  local workflow_name="$1"
+  local deployment_id="$2"
   local run_id=""
 
   for _ in {1..60}; do
     runs=$(gh run list \
-      --workflow "$workflow" \
+      --workflow "$workflow_name" \
       --branch "$source_ref" \
       --event workflow_dispatch \
       --limit 20 \
@@ -91,7 +92,19 @@ wait_for_image_build() {
     sleep 2
   done
 
-  fail "The image build workflow run did not appear"
+  fail "The $workflow_name workflow run did not appear"
+}
+
+run_rdev_tests() {
+  [[ "$target" == "rdev" ]] || return
+
+  test_id="rdev-tests-${source_sha:0:8}-$(date +%s)-$$"
+  gh workflow run rdev-tests.yml \
+    --ref "$source_ref" \
+    --field deployment_id="$test_id" \
+    --field stack_name=rdevstack
+  test_run_id=$(wait_for_workflow_run rdev-tests.yml "$test_id")
+  gh run watch "$test_run_id" --exit-status
 }
 
 run_database_migration() {
@@ -266,7 +279,7 @@ export AWS_REGION=us-west-2
 clear_aws_credentials
 aws sts get-caller-identity >/dev/null
 
-workflow=build-images-and-create-deployment.yml
+image_workflow=build-images-and-create-deployment.yml
 image_tag="${image_tag_override:-sha-${source_sha:0:8}}"
 if images_exist "$image_tag"; then
   echo "Reusing existing images tagged $image_tag"
@@ -274,10 +287,10 @@ elif [[ -n "$image_tag_override" ]]; then
   fail "Not all nine images exist with tag $image_tag"
 else
   deployment_id="deploy-${target}-${source_sha:0:8}-$(date +%s)-$$"
-  gh workflow run "$workflow" \
+  gh workflow run "$image_workflow" \
     --ref "$source_ref" \
     --field deployment_id="$deployment_id"
-  run_id=$(wait_for_image_build "$deployment_id")
+  run_id=$(wait_for_workflow_run "$image_workflow" "$deployment_id")
   gh run watch "$run_id" --exit-status
   image_sha=$(gh run view "$run_id" --json headSha --jq '.headSha')
   [[ "$image_sha" == "$source_sha" ]] || fail "The image build used $image_sha instead of $source_sha"
@@ -305,6 +318,7 @@ read -r -p "Apply $image_tag to $target? [y/N] " answer
 terraform apply "$plan_file"
 run_database_migration
 invalidate_cloudfront
+run_rdev_tests
 terraform output
 
 echo "Deployed $image_tag to $target"

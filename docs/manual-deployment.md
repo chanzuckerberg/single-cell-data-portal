@@ -72,7 +72,8 @@ For every target, `scripts/deploy.sh`:
 7. Applies the saved plan.
 8. Runs the database migration task and verifies its exit code.
 9. Invalidates CloudFront for staging and prod.
-10. Prints the Terraform outputs for validation.
+10. Triggers the rdev functional and end-to-end tests after an rdev deployment and waits for them to pass.
+11. Prints the Terraform outputs for validation.
 
 The image workflow uses Docker Compose to build every environment's images and pushes them to the development Elastic Container Registry (ECR) repositories. Staging and prod also pull from those repositories. The nine images build in parallel and import inline BuildKit cache from their `branch-main` images. Image building does not use Happy, TFE or Terraform.
 
