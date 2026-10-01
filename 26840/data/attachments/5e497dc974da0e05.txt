@@ -1,0 +1,6 @@
+INFO     backend.layers.business.business:business.py:621 {'message': 'ingesting dataset', 'collection_version_id': 09d27668-f29e-4ad2-bbea-5b5db9030fc4, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, is_pre_analysis=False), 'current_dataset_version_id': None}
+INFO     corpora-api-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/09d27668-f29e-4ad2-bbea-5b5db9030fc4/datasets/77cc0075-a5ea-40f7-a6b3-cb87ac18e9c0', 'method': 'PUT', 'content_length': 68}}
+INFO     corpora-api-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 403, 'content_length': 132, 'response_time': 0.002644777297973633}}
+INFO     backend.layers.business.business:business.py:621 {'message': 'ingesting dataset', 'collection_version_id': d87d51b3-0839-4a16-9074-14a91216f34b, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, is_pre_analysis=False), 'current_dataset_version_id': None}
+INFO     corpora-api-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/c4f3e067-797f-49fe-a6c3-9e321ab0a680/datasets/90d9f910-d451-403e-aedd-cc584b435fe6', 'method': 'PUT', 'content_length': 68}}
+INFO     corpora-api-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 403, 'content_length': 132, 'response_time': 0.0027723312377929688}}
