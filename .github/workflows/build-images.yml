@@ -23,14 +23,36 @@ concurrency:
 jobs:
   build_images:
     strategy:
+      fail-fast: false
       matrix:
-        slice:
-          - frontend
-          - upload_failures
-          - upload_success
-          - processing
-          - wmg_processing
-          - cellguide_pipeline
+        include:
+          - service: frontend
+            repository: corpora-frontend
+            profile: fullstack
+          - service: backend
+            repository: corpora-backend
+            profile: backend
+          - service: backend-de
+            repository: corpora-backend-de
+            profile: backend
+          - service: backend-wmg
+            repository: corpora-backend-wmg
+            profile: backend
+          - service: upload_failures
+            repository: corpora-upload-failures
+            profile: upload_failures
+          - service: upload_success
+            repository: corpora-upload-success
+            profile: upload_success
+          - service: processing
+            repository: corpora-upload
+            profile: processing
+          - service: wmg_processing
+            repository: wmg-processing
+            profile: wmg_processing
+          - service: cellguide_pipeline
+            repository: cellguide-pipeline
+            profile: cellguide_pipeline
     runs-on: ubuntu-22.04
     outputs:
       image_tag: ${{ steps.push_images.outputs.image_tag }}
@@ -55,7 +77,9 @@ jobs:
           export BRANCH_TAG=branch-$(echo ${GITHUB_REF_NAME} | sed 's/[\+\/]/-/g')
           echo "IMAGE_TAG=${IMAGE_TAG}" >> $GITHUB_OUTPUT
           scripts/build-images.sh \
-            "${{ matrix.slice }}" \
+            "${{ matrix.service }}" \
+            "${{ matrix.repository }}" \
+            "${{ matrix.profile }}" \
             "${IMAGE_TAG}" \
             "${BRANCH_TAG}" \
             "${GITHUB_SHA}" \

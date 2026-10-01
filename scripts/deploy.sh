@@ -4,9 +4,9 @@ set -euo pipefail
 
 usage() {
   echo "Usage:"
-  echo "  scripts/deploy.sh rdev --pr <number>"
-  echo "  scripts/deploy.sh staging"
-  echo "  scripts/deploy.sh prod"
+  echo "  scripts/deploy.sh rdev --pr <number> [--image-tag <tag>]"
+  echo "  scripts/deploy.sh staging [--image-tag <tag>]"
+  echo "  scripts/deploy.sh prod [--image-tag <tag>]"
 }
 
 fail() {
@@ -22,10 +22,11 @@ clear_aws_credentials() {
   unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
 }
 
-assume_target_role() {
+assume_role() {
+  local account_id="$1"
   clear_aws_credentials
   credentials=$(AWS_PROFILE=czi-id aws sts assume-role \
-    --role-arn "arn:aws:iam::${target_account}:role/tfe-si" \
+    --role-arn "arn:aws:iam::${account_id}:role/tfe-si" \
     --role-session-name single-cell-data-portal-deploy)
   export AWS_ACCESS_KEY_ID
   AWS_ACCESS_KEY_ID=$(jq -r '.Credentials.AccessKeyId' <<<"$credentials")
@@ -33,6 +34,39 @@ assume_target_role() {
   AWS_SECRET_ACCESS_KEY=$(jq -r '.Credentials.SecretAccessKey' <<<"$credentials")
   export AWS_SESSION_TOKEN
   AWS_SESSION_TOKEN=$(jq -r '.Credentials.SessionToken' <<<"$credentials")
+}
+
+assume_target_role() {
+  assume_role "$target_account"
+}
+
+images_exist() {
+  local image_tag="$1"
+  local missing=0
+  local repositories=(
+    corpora-frontend
+    corpora-backend
+    corpora-backend-de
+    corpora-backend-wmg
+    corpora-upload-failures
+    corpora-upload-success
+    corpora-upload
+    wmg-processing
+    cellguide-pipeline
+  )
+
+  assume_role 699936264352
+  for repository in "${repositories[@]}"; do
+    if ! aws ecr describe-images \
+      --repository-name "$repository" \
+      --image-ids "imageTag=$image_tag" >/dev/null 2>&1; then
+      missing=1
+    fi
+  done
+  clear_aws_credentials
+  export AWS_PROFILE=czi-id
+
+  return "$missing"
 }
 
 wait_for_image_build() {
@@ -137,19 +171,45 @@ target="${1:-}"
 shift
 
 pr_number=""
+image_tag_override=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --pr)
+      [[ -n "${2:-}" ]] || {
+        usage
+        exit 1
+      }
+      pr_number="$2"
+      shift 2
+      ;;
+    --image-tag)
+      [[ -n "${2:-}" ]] || {
+        usage
+        exit 1
+      }
+      image_tag_override="$2"
+      shift 2
+      ;;
+    *)
+      usage
+      exit 1
+      ;;
+  esac
+done
+
 if [[ "$target" == "rdev" ]]; then
-  [[ "${1:-}" == "--pr" && -n "${2:-}" && $# -eq 2 ]] || {
+  [[ -n "$pr_number" ]] || {
     usage
     exit 1
   }
-  pr_number="$2"
 elif [[ "$target" != "staging" && "$target" != "prod" ]]; then
   usage
   exit 1
-elif [[ $# -ne 0 ]]; then
+elif [[ -n "$pr_number" ]]; then
   usage
   exit 1
 fi
+[[ -z "$image_tag_override" || "$image_tag_override" =~ ^sha-[0-9a-f]{8}$ ]] || fail "Image tags must use sha- followed by eight lowercase hexadecimal characters"
 
 for command in aws gh git jq terraform; do
   require_command "$command"
@@ -207,15 +267,22 @@ clear_aws_credentials
 aws sts get-caller-identity >/dev/null
 
 workflow=build-images-and-create-deployment.yml
-deployment_id="deploy-${target}-${source_sha:0:8}-$(date +%s)-$$"
-gh workflow run "$workflow" \
-  --ref "$source_ref" \
-  --field deployment_id="$deployment_id"
-run_id=$(wait_for_image_build "$deployment_id")
-gh run watch "$run_id" --exit-status
-image_sha=$(gh run view "$run_id" --json headSha --jq '.headSha')
-[[ "$image_sha" == "$source_sha" ]] || fail "The image build used $image_sha instead of $source_sha"
-image_tag="sha-${image_sha:0:8}"
+image_tag="${image_tag_override:-sha-${source_sha:0:8}}"
+if images_exist "$image_tag"; then
+  echo "Reusing existing images tagged $image_tag"
+elif [[ -n "$image_tag_override" ]]; then
+  fail "Not all nine images exist with tag $image_tag"
+else
+  deployment_id="deploy-${target}-${source_sha:0:8}-$(date +%s)-$$"
+  gh workflow run "$workflow" \
+    --ref "$source_ref" \
+    --field deployment_id="$deployment_id"
+  run_id=$(wait_for_image_build "$deployment_id")
+  gh run watch "$run_id" --exit-status
+  image_sha=$(gh run view "$run_id" --json headSha --jq '.headSha')
+  [[ "$image_sha" == "$source_sha" ]] || fail "The image build used $image_sha instead of $source_sha"
+  image_tag="sha-${image_sha:0:8}"
+fi
 
 cd "$terraform_root"
 terraform init -reconfigure

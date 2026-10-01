@@ -64,9 +64,9 @@ The script prompts before applying the reviewed Terraform plan.
 For every target, `scripts/deploy.sh`:
 
 1. Resolves the exact pull request or `main` commit and verifies the local checkout.
-2. Manually triggers the `Build Images` GitHub Actions workflow against that ref.
-3. Waits for every image build job to succeed.
-4. Reads the workflow run's commit SHA and selects the corresponding `sha-<first eight characters>` image tag.
+2. Checks all nine ECR repositories for the corresponding `sha-<first eight characters>` image tag.
+3. Reuses the images when every repository already has the tag. Otherwise, it triggers the `Build Images` GitHub Actions workflow and waits for every image build job to succeed.
+4. Verifies that the workflow built the requested commit.
 5. Initializes the target Terraform root and creates a saved plan using that image tag.
 6. Displays the plan and asks for confirmation.
 7. Applies the saved plan.
@@ -74,9 +74,19 @@ For every target, `scripts/deploy.sh`:
 9. Invalidates CloudFront for staging and prod.
 10. Prints the Terraform outputs for validation.
 
-The image workflow uses Docker Compose to build every environment's images and pushes them to the development Elastic Container Registry (ECR) repositories. Staging and prod also pull from those repositories. Image building does not use Happy, TFE or Terraform.
+The image workflow uses Docker Compose to build every environment's images and pushes them to the development Elastic Container Registry (ECR) repositories. Staging and prod also pull from those repositories. The nine images build in parallel and import inline BuildKit cache from their `branch-main` images. Image building does not use Happy, TFE or Terraform.
 
 Do not derive the image tag from a local commit. The script uses the workflow run's actual head SHA and aborts if it differs from the requested deployment commit.
+
+Cancelling at the Terraform apply prompt does not discard built images. Run the same deployment command again from the same commit. The script finds all nine SHA-tagged images in ECR, skips the build and returns to Terraform planning.
+
+If the branch advanced after the images were built, pass the previous tag explicitly:
+
+```bash
+scripts/deploy.sh rdev --pr 1234 --image-tag sha-01234567
+```
+
+The script verifies that all nine images exist before using an explicit tag. Use this option only when you intend to deploy images from a commit other than the current checkout.
 
 ## Review the plan
 
