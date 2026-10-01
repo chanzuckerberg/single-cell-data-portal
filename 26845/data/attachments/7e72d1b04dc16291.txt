@@ -1,0 +1,3 @@
+INFO     corpora-api-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/dp/v1/collections/03b6753a-2fdf-4ec5-b070-e92ee0d7e962/upload-links', 'method': 'POST', 'content_length': 66}}
+INFO     backend.layers.business.business:business.py:621 {'message': 'ingesting dataset', 'collection_version_id': 03b6753a-2fdf-4ec5-b070-e92ee0d7e962, 'manifest': IngestionManifest(anndata=HttpUrl('https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0'), atac_fragment=None, is_pre_analysis=False), 'current_dataset_version_id': None}
+INFO     corpora-api-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 413, 'content_length': 143, 'response_time': 0.0019452571868896484}}
