@@ -4,7 +4,7 @@
       "command": "npx",
       "args": [
         "--yes",
-        "@modelcontextprotocol/server-postgres",
+        "@modelcontextprotocol/server-postgres@0.6.2",
         "postgresql://postgres:password_postgres@localhost:5432/platformics"
       ]
     },
@@ -12,7 +12,7 @@
       "command": "npx",
       "args": [
         "--yes",
-        "@modelcontextprotocol/server-github"
+        "@modelcontextprotocol/server-github@2025.4.8"
       ],
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
@@ -22,7 +22,7 @@
       "command": "npx",
       "args": [
         "--yes",
-        "@modelcontextprotocol/server-filesystem",
+        "@modelcontextprotocol/server-filesystem@2025.8.21",
         "."
       ]
     },
@@ -30,17 +30,17 @@
       "command": "npx",
       "args": [
         "--yes",
-        "@playwright/mcp"
+        "@playwright/mcp@0.0.40"
       ]
     },
     "sds-mcp": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@czi-sds/mcp"]
+      "args": ["-y", "@czi-sds/mcp@0.5.2"]
     },
     "zeroheight": {
       "command": "npx",
-      "args": ["-y", "@zeroheight/mcp-server@latest"],
+      "args": ["-y", "@zeroheight/mcp-server@1.2.0"],
       "env": {
         "ZEROHEIGHT_ACCESS_TOKEN": "${ZEROHEIGHT_ACCESS_TOKEN}",
         "ZEROHEIGHT_CLIENT_ID": "${ZEROHEIGHT_CLIENT_ID}"
