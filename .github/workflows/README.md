@@ -4,25 +4,7 @@
 
 ---
 
-### Workflow: `deploy-happy-stack.yml`
-
-#### Ran on:
-
-- `deployment`: (deployments are triggered by `push-tests`)
-
-#### Jobs:
-
-- ##### `upgrade`: TODO
-- ##### `e2e-test`:
-  - Runs playwright against deployed frontend app uploading any artifacts
-    - https://github.com/chanzuckerberg/single-cell-data-portal/blob/6a423183c255737d2a44e40447a91d0ece041a41/.github/workflows/deploy-happy-stack.yml#L133-L144
-- ##### `functional-test`:
-  - If environment is not `prod` start up backend container and run `make local-functional-test`
-  - https://github.com/chanzuckerberg/single-cell-data-portal/blob/6a423183c255737d2a44e40447a91d0ece041a41/Makefile#L215-L223
-    - https://github.com/chanzuckerberg/single-cell-data-portal/blob/6a423183c255737d2a44e40447a91d0ece041a41/Makefile#L49-L51
-- ##### `performance-test`:
-  - If environment is `prod` run `make prod-performance-test`
-  - https://github.com/chanzuckerberg/single-cell-data-portal/blob/6a423183c255737d2a44e40447a91d0ece041a41/Makefile#L54-L55
+Deployments do not run in GitHub Actions. Follow [the manual deployment runbook](../../docs/manual-deployment.md).
 
 ### Workflow: `lint-pr.yml`
 
@@ -33,10 +15,6 @@
   - opening, editing, and syncing a pull request
 
   #### Summary: Runs a GitHub action that lints the PR commit message according to conventional commit standards
-
-### Workflow: `push-rdev.yml`
-
-TODO
 
 ### Workflow: `push-tests.yml`
 
