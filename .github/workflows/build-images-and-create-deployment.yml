@@ -1,4 +1,5 @@
 name: Build Images
+run-name: ${{ inputs.deployment_id || github.sha }}
 
 on:
   push:
@@ -8,6 +9,11 @@ on:
   repository_dispatch:
     types: [build-images-for-staging, build-images-for-prod]
   workflow_dispatch:
+    inputs:
+      deployment_id:
+        description: Unique deployment request identifier
+        required: false
+        type: string
   workflow_call:
 env:
   # Force using BuildKit instead of normal Docker, required so that metadata

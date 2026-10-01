@@ -1,233 +1,101 @@
 # Manual deployment
 
-The data portal no longer deploys through Happy or Terraform Enterprise (TFE). A core infrastructure engineer must run Terraform from a local checkout for a break-glass deployment.
+The data portal no longer deploys through Happy or Terraform Enterprise (TFE). A core infrastructure engineer must use `scripts/deploy.sh` for a break-glass deployment.
+
+## Supported deployments
+
+The script supports three deployment paths:
+
+| Target | Source | Terraform root | Stack |
+| --- | --- | --- | --- |
+| rdev | An open pull request | `.happy/terraform/envs/rdev` | `rdevstack` |
+| staging | The current `main` commit | `.happy/terraform/envs/stage` | `stagestack` |
+| prod | The current `main` commit | `.happy/terraform/envs/prod` | `prodstack` |
+
+The rdev root manages one shared stack. It does not create a stack for each pull request, and closing a pull request does not remove it.
 
 ## Prerequisites
 
-- Terraform 1.3.0
+- Terraform 1.3
+- authenticated `aws`, `gh`, `git` and `jq` command-line tools
 - AWS access through the `czi-id` profile
-- permission to assume `tfe-si` in the target account and in `core-platform-prod`
-- an image tag that exists in every required Elastic Container Registry (ECR) repository
-- a clean checkout of the commit to deploy
+- permission to assume `tfe-si` in the target account and `core-platform-prod`
+- a clean checkout of the exact commit to deploy
 
-The deployment roots are:
+Run the script from the repository root. It stops if the working tree is dirty, the checkout does not match the requested source or a fixed environment has empty state.
 
-| Environment | Directory | AWS account | Stack |
-| --- | --- | --- | --- |
-| dev | `.happy/terraform/envs/dev` | `699936264352` | `devstack` |
-| rdev | `.happy/terraform/envs/rdev` | `699936264352` | `rdevstack` |
-| staging | `.happy/terraform/envs/stage` | `699936264352` | `stagestack` |
-| prod | `.happy/terraform/envs/prod` | `231426846575` | `prodstack` |
+## Deploy a pull request to rdev
 
-The rdev root manages one static break-glass stack. It does not create a stack for each pull request. Its first apply creates the stack because no rdev state existed when the TFE states moved to Amazon Simple Storage Service (S3).
-
-## Build images
-
-The `Build Images` GitHub Actions workflow builds the application images and pushes them to the development ECR repositories. Every environment, including prod, pulls these images from the development account. The workflow uses `happy push` only as a Docker build and push wrapper. It does not contact TFE or run Terraform.
-
-For a pull request deployment, trigger the workflow manually against the pull request's head branch:
-
-1. Open the `Build Images` workflow in GitHub Actions.
-2. Select `Run workflow`.
-3. Choose the pull request branch. Do not leave the branch selector on `main`.
-4. Wait for every image matrix job to succeed.
-5. Copy the full commit SHA from the workflow run.
-6. Form the image tag as `sha-` followed by the first eight characters of that SHA.
-
-The same flow is available from the command line:
+Use rdev to test an open pull request before merge:
 
 ```bash
-export PR_BRANCH=my-feature-branch
-
-gh workflow run build-images-and-create-deployment.yml --ref "$PR_BRANCH"
+gh pr checkout 1234
+scripts/deploy.sh rdev --pr 1234
 ```
 
-After the new workflow run appears in GitHub Actions, capture its ID, wait for it to finish and derive the image tag from its actual head SHA:
+The script confirms that the local commit matches the pull request head. Cross-repository pull requests are not supported because GitHub cannot dispatch the image workflow against a fork branch.
+
+Coordinate with other operators before using rdev. A deployment replaces the application version in the shared `rdevstack`.
+
+## Deploy main to staging
+
+Update the local `main` branch to exactly match `origin/main`, then deploy:
 
 ```bash
-run_id=$(gh run list \
-  --workflow build-images-and-create-deployment.yml \
-  --branch "$PR_BRANCH" \
-  --event workflow_dispatch \
-  --limit 1 \
-  --json databaseId \
-  --jq '.[0].databaseId')
-gh run watch "$run_id" --exit-status
-export IMAGE_TAG=$(gh run view "$run_id" \
-  --json headSha \
-  --jq '"sha-" + (.headSha[0:8])')
-echo "$IMAGE_TAG"
+git checkout main
+git pull --ff-only origin main
+scripts/deploy.sh staging
 ```
 
-The workflow also runs automatically after pushes to `main` and `prod`. The staging and prod promotion workflows can request builds through repository dispatch. Always use the SHA from the successful build run rather than deriving a tag from a different local checkout.
+## Deploy main to prod
 
-### Pull request flow
-
-A pull request no longer creates or updates an rdev automatically. The break-glass pull request flow is:
-
-1. Open the application pull request and let its normal checks pass.
-2. Manually run `Build Images` against the pull request branch.
-3. Record the successful run's SHA image tag.
-4. Check out that exact commit locally.
-5. Use the static `rdevstack` to test the pull request, or use the intended fixed environment root for an approved deployment.
-6. Plan and apply with the recorded image tag.
-
-The static rdev state is shared. Coordinate with other operators before applying it, and do not assume that closing the pull request removes the stack.
-
-## Plan
-
-Set the environment directory and immutable image tag:
+Production also deploys from `main`. Update the local branch, review the commit and run:
 
 ```bash
-export AWS_PROFILE=czi-id
-export AWS_REGION=us-west-2
-export TF_ROOT=.happy/terraform/envs/dev
-export IMAGE_TAG=sha-01234567
-
-cd "$TF_ROOT"
-terraform init -reconfigure
-terraform state list
-terraform plan -var "image_tag=$IMAGE_TAG" -out deploy.tfplan
-terraform show deploy.tfplan
+git checkout main
+git pull --ff-only origin main
+scripts/deploy.sh prod
 ```
 
-For staging, use `stage` as the directory name. Stop if `terraform state list` is empty for dev, staging or prod. An empty state means Terraform is using the wrong state key and the plan will try to recreate the environment.
+The script prompts before applying the reviewed Terraform plan.
 
-Review replacements and deletions before continuing. The dev state predates the current configuration and can contain substantial drift. Do not include unrelated drift in a break-glass deployment.
+## What the script does
 
-## Apply
+For every target, `scripts/deploy.sh`:
 
-Apply only the saved plan that you reviewed:
+1. Resolves the exact pull request or `main` commit and verifies the local checkout.
+2. Manually triggers the `Build Images` GitHub Actions workflow against that ref.
+3. Waits for every image build job to succeed.
+4. Reads the workflow run's commit SHA and selects the corresponding `sha-<first eight characters>` image tag.
+5. Initializes the target Terraform root and creates a saved plan using that image tag.
+6. Displays the plan and asks for confirmation.
+7. Applies the saved plan.
+8. Runs the database migration task and verifies its exit code.
+9. Invalidates CloudFront for staging and prod.
+10. Prints the Terraform outputs for validation.
 
-```bash
-terraform apply deploy.tfplan
-terraform output
-rm deploy.tfplan
-```
+The image workflow pushes every environment's images to the development Elastic Container Registry (ECR) repositories. Staging and prod also pull from those repositories. The workflow uses `happy push` only as a Docker build and push wrapper. It does not contact TFE or run Terraform.
 
-Terraform waits for the Elastic Container Service (ECS) services to reach a steady state in dev, staging and prod. The rdev root does not wait.
+Do not derive the image tag from a local commit. The script uses the workflow run's actual head SHA and aborts if it differs from the requested deployment commit.
 
-## Run the database migration
+## Review the plan
 
-Happy ran the database migration after every Terraform apply. Terraform does not run it automatically. Run the migration task after the apply:
+Stop if a fixed environment plans to create every resource. That indicates an empty or incorrect state key.
 
-```bash
-unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
+Review every replacement and deletion before answering the apply prompt. The dev state predates the current configuration and contains substantial drift, but this script does not support deploying dev. Staging and prod can also contain drift that is unrelated to the application commit.
 
-case "$TF_ROOT" in
-  */prod)
-    TARGET_ACCOUNT=231426846575
-    CONFIG_SECRET=happy/env-prod-config
-    ;;
-  */stage)
-    TARGET_ACCOUNT=699936264352
-    CONFIG_SECRET=happy/env-stage-config
-    ;;
-  */dev)
-    TARGET_ACCOUNT=699936264352
-    CONFIG_SECRET=happy/env-dev-config
-    ;;
-  */rdev)
-    TARGET_ACCOUNT=699936264352
-    CONFIG_SECRET=happy/env-rdev-config
-    ;;
-  *)
-    exit 1
-    ;;
-esac
+## Validate the deployment
 
-credentials=$(AWS_PROFILE=czi-id aws sts assume-role \
-  --role-arn "arn:aws:iam::${TARGET_ACCOUNT}:role/tfe-si" \
-  --role-session-name single-cell-data-portal-deploy)
-export AWS_ACCESS_KEY_ID=$(jq -r '.Credentials.AccessKeyId' <<<"$credentials")
-export AWS_SECRET_ACCESS_KEY=$(jq -r '.Credentials.SecretAccessKey' <<<"$credentials")
-export AWS_SESSION_TOKEN=$(jq -r '.Credentials.SessionToken' <<<"$credentials")
+Use the outputs printed by the script to find the frontend and backend URLs. Confirm that:
 
-config=$(aws secretsmanager get-secret-value \
-  --secret-id "$CONFIG_SECRET" \
-  --query SecretString \
-  --output text)
-cluster=$(jq -r '.cluster_arn' <<<"$config")
-subnets=$(jq -c '.private_subnets' <<<"$config")
-security_groups=$(jq -c '.security_groups' <<<"$config")
-task_definition=$(terraform output -raw migrate_db_task_definition_arn)
-
-task_arn=$(aws ecs run-task \
-  --cluster "$cluster" \
-  --task-definition "$task_definition" \
-  --launch-type FARGATE \
-  --network-configuration \
-    "awsvpcConfiguration={subnets=${subnets},securityGroups=${security_groups},assignPublicIp=DISABLED}" \
-  --query 'tasks[0].taskArn' \
-  --output text)
-
-aws ecs wait tasks-stopped --cluster "$cluster" --tasks "$task_arn"
-exit_code=$(aws ecs describe-tasks \
-  --cluster "$cluster" \
-  --tasks "$task_arn" \
-  --query 'tasks[0].containers[0].exitCode' \
-  --output text)
-test "$exit_code" = "0"
-
-unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
-unset credentials config
-export AWS_PROFILE=czi-id
-```
-
-Do not continue if the migration task fails.
-
-## Invalidate CloudFront
-
-The frontend uses CloudFront in dev, staging and prod. Find its distribution and invalidate `index.html`:
-
-```bash
-case "$TF_ROOT" in
-  */prod)
-    AWS_ACCOUNT=231426846575
-    DOMAIN_NAME=frontend.production.single-cell.czi.technology
-    ALIAS=cellxgene.cziscience.com
-    ;;
-  */stage)
-    AWS_ACCOUNT=699936264352
-    DOMAIN_NAME=frontend.stage.single-cell.czi.technology
-    ALIAS=cellxgene.staging.single-cell.czi.technology
-    ;;
-  */dev)
-    AWS_ACCOUNT=699936264352
-    DOMAIN_NAME=frontend.dev.single-cell.czi.technology
-    ALIAS=cellxgene.dev.single-cell.czi.technology
-    ;;
-esac
-
-credentials=$(AWS_PROFILE=czi-id aws sts assume-role \
-  --role-arn "arn:aws:iam::${AWS_ACCOUNT}:role/tfe-si" \
-  --role-session-name single-cell-data-portal-cloudfront)
-export AWS_ACCESS_KEY_ID=$(jq -r '.Credentials.AccessKeyId' <<<"$credentials")
-export AWS_SECRET_ACCESS_KEY=$(jq -r '.Credentials.SecretAccessKey' <<<"$credentials")
-export AWS_SESSION_TOKEN=$(jq -r '.Credentials.SessionToken' <<<"$credentials")
-
-distribution_id=$(aws cloudfront list-distributions \
-  --query "DistributionList.Items[*].{id:Id,domain_name:Origins.Items[*].DomainName,alias:Aliases.Items[0]}[?contains(domain_name,'${DOMAIN_NAME}')&&alias=='${ALIAS}'].id" \
-  --output text)
-test -n "$distribution_id"
-aws cloudfront create-invalidation \
-  --distribution-id "$distribution_id" \
-  --paths /index.html
-
-unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
-unset credentials
-export AWS_PROFILE=czi-id
-```
-
-The rdev stack does not use this CloudFront invalidation step.
-
-## Validate
-
-Use `terraform output` to get the frontend and backend URLs. Confirm the frontend loads, the backend health endpoint responds and the ECS services have reached their desired task counts. Run any release-specific functional or performance checks manually.
+- the frontend loads
+- the backend health endpoint responds
+- the Elastic Container Service (ECS) services reach their desired task counts
+- release-specific functional or performance checks pass
 
 ## State recovery
 
-State lives in `s3://terragrunt-engine-state` and uses the `terragrunt-engine-state-lock` DynamoDB table. Never edit or upload the state object with the AWS CLI because that bypasses Terraform's lock-table digest.
+State lives in `s3://terragrunt-engine-state` and uses the `terragrunt-engine-state-lock` DynamoDB table. Never edit or upload a state object with the AWS CLI because that bypasses Terraform's lock-table digest.
 
 If a state restore is necessary, stop all other Terraform work, retain a copy of the current state and use `terraform state push` with a known-good encrypted backup:
 
