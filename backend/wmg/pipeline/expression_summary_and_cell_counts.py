@@ -4,14 +4,15 @@ import cellxgene_census
 import tiledb
 import tiledbsoma as soma
 from packaging import version
+from packaging.specifiers import SpecifierSet
 
 from backend.common.census_cube.data.snapshot import (
     CELL_COUNTS_CUBE_NAME,
 )
 from backend.wmg.pipeline.cell_counts import create_cell_counts_cube
 from backend.wmg.pipeline.constants import (
+    ADMISSIBLE_CENSUS_SCHEMA_VERSION_SPECIFIER_SET,
     EXPRESSION_SUMMARY_AND_CELL_COUNTS_CUBE_CREATED_FLAG,
-    MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION,
     ORGANISM_INFO,
     CensusParameters,
 )
@@ -50,11 +51,13 @@ def create_expression_summary_and_cell_counts_cubes(corpus_path: str):
     with cellxgene_census.open_soma(census_version=CensusParameters.census_version) as census:
         census_schema_version, census_build_date = get_census_version_and_build_date(census)
 
-        major_census_schema_version = version.parse(census_schema_version).major
-        if major_census_schema_version > MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION:
+        # Validate the census schema version against an admissible SpecifierSet.
+        specifier_set = SpecifierSet(ADMISSIBLE_CENSUS_SCHEMA_VERSION_SPECIFIER_SET)
+        parsed_version = version.parse(census_schema_version)
+        if parsed_version not in specifier_set:
             raise ValueError(
-                f"Unsupported census schema version: {census_schema_version}. "
-                f"Please use a version of cellxgene-census that supports census schema version {MAXIMUM_ADMISSIBLE_CENSUS_SCHEMA_MAJOR_VERSION} or lower."
+                f"Unsupported CELLxGENE Census schema version: {census_schema_version}. "
+                f"Please use a version of CELLxGENE Census with schema version {ADMISSIBLE_CENSUS_SCHEMA_VERSION_SPECIFIER_SET}."
             )
 
         dataset_metadata = census["census_info"]["datasets"].read().concat().to_pandas()
