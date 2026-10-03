@@ -5,4 +5,4 @@ numba~=0.59.1
 cellxgene-ontology-guide~=1.0.0
 tiledb
 psutil~=5.9.8
-pyarrow==16.0.0
+pyarrow==23.0.1
