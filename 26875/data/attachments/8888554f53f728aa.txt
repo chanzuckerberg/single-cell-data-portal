@@ -1,0 +1,2 @@
+INFO     corpora-api-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/dp/v1/collections/30ecdbdd-d782-447c-b9fe-007ce6a336b9', 'method': 'PUT', 'content_length': 128}}
+INFO     corpora-api-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 448, 'response_time': 0.0011973381042480469}}
