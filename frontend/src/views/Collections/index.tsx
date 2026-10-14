@@ -56,7 +56,6 @@ import RevisionButton from "src/components/common/Grid/components/RevisionButton
 import CategoryFilters from "src/components/common/Filter/components/Filters";
 import { useViewMode, VIEW_MODE } from "src/common/hooks/useViewMode";
 import { GridLoader as Loader } from "src/components/common/Grid/components/Loader/style";
-import BYODToast from "src/components/BYODConnectors/BYODToast";
 
 export default function Collections(): JSX.Element {
   const { mode, status } = useViewMode();
@@ -396,7 +395,6 @@ export default function Collections(): JSX.Element {
             </View>
             {/* May be added in the future after sign off */}
             {/* <BottomBanner /> */}
-            <BYODToast />
           </>
         )
       )}

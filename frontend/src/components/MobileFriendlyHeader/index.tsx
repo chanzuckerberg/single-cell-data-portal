@@ -1,11 +1,10 @@
-import { Banner, Button } from "@czi-sds/components";
+import { Banner } from "@czi-sds/components";
 import { useRouter } from "next/router";
 import { FC, useRef, useState, useEffect } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import AuthButtons from "src/components/Header/components/AuthButtons";
-import { useBYODModal } from "src/contexts/BYODModalContext";
 import { HomepageLink } from "../common/HomepageLink";
 import {
   BannerWrapper,
@@ -52,11 +51,6 @@ const LandingHeader: FC<Props> = ({
 
   const mobileNavTray = useRef<HTMLDivElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { openModal } = useBYODModal();
-
-  const handleBYODClick = () => {
-    openModal();
-  };
 
   function mobileNavHandler(mobileMenuOpen: boolean) {
     if (!mobileMenuOpen) {
@@ -153,14 +147,6 @@ const LandingHeader: FC<Props> = ({
                 <Nav pathname={pathname} />
               </Left>
               <Right>
-                <Button
-                  sdsType="primary"
-                  sdsStyle="square"
-                  onClick={handleBYODClick}
-                >
-                  Explore Your Data
-                </Button>
-
                 <LinkWrapper isActive={isRouteActive(pathname, ROUTES.DOCS)}>
                   <a
                     onClick={() => {
