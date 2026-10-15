@@ -1,0 +1,4 @@
+INFO     backend.layers.business.business:business.py:621 {'message': 'ingesting dataset', 'collection_version_id': 64359bed-315f-432f-9a1b-539d50486e57, 'manifest': IngestionManifest(anndata=HttpUrl('http://fake.url/'), atac_fragment=None, is_pre_analysis=False), 'current_dataset_version_id': None}
+INFO     processing:process.py:109 Processing dataset version 6905b805-2b4e-4ee7-bd8f-401da72a94ef
+INFO     processing:process.py:139 Skipping CXG remaster for pre-analysis dataset 6905b805-2b4e-4ee7-bd8f-401da72a94ef
+INFO     processing:process_logic.py:49 Updating processing status
