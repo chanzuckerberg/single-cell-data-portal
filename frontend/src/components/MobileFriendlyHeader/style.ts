@@ -23,40 +23,6 @@ export const Wrapper = styled.div`
   }
 `;
 
-export const BannerWrapper = styled.div`
-  p {
-    margin: auto 0;
-    font-weight: 500;
-  }
-
-  a {
-    color: white;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  @media (max-width: ${MAX_WIDTH_BREAKPOINT_PX}px) {
-    display: none;
-  }
-`;
-
-export const MobileBannerWrapper = styled.div`
-  p {
-    margin: auto 0;
-    font-weight: 500;
-  }
-
-  a {
-    color: white;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  @media (min-width: ${MAX_WIDTH_BREAKPOINT_PX + 1}px) {
-    display: none;
-  }
-`;
-
 export const MainWrapper = styled.div`
   align-items: center;
   display: flex;

@@ -16,7 +16,7 @@ const Layout = ({ children }: Props) => {
   if (pathname === ROUTES.HOMEPAGE || pathname === ROUTES.SITEMAP) {
     return (
       <>
-        <LandingHeader data-testid="landing-footer" />
+        <LandingHeader />
         {children}
         <LandingFooter />
       </>
