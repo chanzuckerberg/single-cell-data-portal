@@ -1,0 +1,2 @@
+INFO     corpora-api-test:config.py:75 {'type': 'REQUEST', 'details': {'url': '/curation/v1/collections/8a473945-c12b-45dc-8c8e-1041a5589299', 'method': 'PATCH', 'content_length': 118}}
+INFO     corpora-api-test:config.py:87 {'type': 'RESPONSE', 'details': {'status_code': 200, 'content_length': 208, 'response_time': 0.0018694400787353516}}
