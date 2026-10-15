@@ -1,9 +1,8 @@
-import { MenuSelect, Button } from "@czi-sds/components";
+import { MenuSelect } from "@czi-sds/components";
 import { FC } from "react";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
 import Nav from "src/components/Header/components/Nav";
-import { useBYODModal } from "src/contexts/BYODModalContext";
 import { useConnect } from "./connect";
 import {
   Left,
@@ -26,12 +25,6 @@ const Header: FC = () => {
     handleHelpClose,
   } = useConnect();
 
-  const { openModal } = useBYODModal();
-
-  const handleBYODClick = () => {
-    openModal();
-  };
-
   return (
     <Wrapper id={HEADER_ID}>
       <MainWrapper>
@@ -40,10 +33,6 @@ const Header: FC = () => {
           <Nav pathname={pathname} />
         </Left>
         <Right>
-          <Button sdsType="primary" sdsStyle="square" onClick={handleBYODClick}>
-            Explore Your Data
-          </Button>
-
           <StyledInputDropdown
             disabled={false}
             label="Help & Documentation"
