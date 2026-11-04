@@ -27,17 +27,17 @@ jobs:
     runs-on: lg-amd64-privileged
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1800
       - name: Login to ECR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ secrets.ECR_REPO }}
       - name: Checkout ${{ matrix.branch }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
         with:
           ref: ${{ matrix.branch }}
           fetch-depth: 1
